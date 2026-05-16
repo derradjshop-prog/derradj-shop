@@ -960,10 +960,10 @@
     /* حماية شاملة: لا overflow أفقي في أي حال */
     @media (max-width: 768px) {
       .order-page,
-      .ch-section,
       #productsList {
         overflow-x: hidden;
       }
+      /* .ch-section لا يأخذ overflow-x:hidden لأنه يقص قوائم الولاية/البلدية المنسدلة */
     }
   </style>
 </head>
@@ -1665,14 +1665,43 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
   renumberRows();
 });
 
-/* إضافة الصف الأول عند تحميل الصفحة */
-(function initFirstRow() {
-  const row = createProductRow();
-  document.getElementById('productsList').appendChild(row);
+/* تحميل المنتجات من السلة، أو إضافة صف فارغ إذا كانت السلة فارغة */
+(function initProductRows() {
+  var cartItems = (function () {
+    try { return JSON.parse(localStorage.getItem('derradj_cart')) || []; }
+    catch { return []; }
+  }());
+
+  var list = document.getElementById('productsList');
+
+  if (cartItems.length > 0) {
+    cartItems.forEach(function (cartItem) {
+      var row = createProductRow();
+      list.appendChild(row);
+
+      var catIdx = parseInt(cartItem.catalogId);
+      if (!isNaN(catIdx) && window.PRODUCTS_CATALOG[catIdx]) {
+        var sel = row.querySelector('.pr-select');
+        if (sel) {
+          sel.value = String(catIdx);
+          sel.classList.add('has-value');
+          sel.dispatchEvent(new Event('change'));
+        }
+        var qtyInput = row.querySelector('.pr-qty-input');
+        if (qtyInput && cartItem.qty > 0) {
+          qtyInput.value = parseInt(cartItem.qty) || 1;
+          qtyInput.dispatchEvent(new Event('input'));
+        }
+      }
+    });
+  } else {
+    list.appendChild(createProductRow());
+  }
+
   renumberRows();
   recalcAll();
   updateSummary();
-})();
+}());
 
 function getProductsTotal() {
   let total = 0;

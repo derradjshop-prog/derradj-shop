@@ -58,6 +58,10 @@
 
     <div style="display:flex;align-items:center;gap:10px;">
       <a href="ordre/index.html" class="btn-header-cta">🛒 اطلب الآن</a>
+      <button class="cart-btn" aria-label="فتح السلة">
+        🛒
+        <span class="cart-badge" aria-live="polite"></span>
+      </button>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
         <span></span><span></span><span></span>
       </button>
@@ -125,7 +129,10 @@
     <div class="products-grid">
 
       <!-- المنتج 1 -->
-      <a href="products/electronics-components-starter-kit/index.html" class="product-card">
+      <div class="product-card" role="link" tabindex="0"
+           onclick="if(!event.target.closest('button,a'))location.href='products/electronics-components-starter-kit/index.html'"
+           onkeydown="if(event.key==='Enter'&&!event.target.closest('button,a'))location.href='products/electronics-components-starter-kit/index.html'"
+           style="cursor:pointer;">
         <div class="product-badge new">متوفر الآن</div>
         <div class="product-img-area">
           <img
@@ -149,9 +156,12 @@
           <div class="product-prices">
             <span class="price-current">7,000 DA</span>
           </div>
-          <button class="btn-order-card">🛒 اطلب الآن</button>
+          <div class="product-card-btns">
+            <a href="products/electronics-components-starter-kit/index.html" class="btn-order-card">🛒 اطلب الآن</a>
+            <button class="btn-add-cart" data-add-to-cart="0">🛒 أضف إلى السلة</button>
+          </div>
         </div>
-      </a>
+      </div>
 
     </div>
 
@@ -573,5 +583,7 @@
   }, { passive: true });
 </script>
 
+
+<script src="cart.js"></script>
 </body>
 </html>

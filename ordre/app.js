@@ -251,7 +251,8 @@
         console.log(`✅ Order items saved: ${orderItems.length} item(s)`);
       }
 
-      /* ── 4. نجاح — التوجيه لصفحة النجاح ────────────────── */
+      /* ── 4. نجاح — مسح السلة ثم التوجيه لصفحة النجاح ─────── */
+      localStorage.removeItem('derradj_cart');
       window.location.href = "success.html";
 
     } catch (err) {

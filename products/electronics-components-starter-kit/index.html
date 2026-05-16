@@ -27,6 +27,10 @@
     </nav>
     <div style="display:flex;align-items:center;gap:10px;">
       <a href="../../ordre/index.html" class="btn-header-cta">🛒 اطلب الآن</a>
+      <button class="cart-btn" aria-label="فتح السلة">
+        🛒
+        <span class="cart-badge" aria-live="polite"></span>
+      </button>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
         <span></span><span></span><span></span>
       </button>
@@ -157,8 +161,11 @@
 
         <div class="product-cta-buttons">
           <a href="../../ordre/index.html" class="btn-buy-now">
-            ⚡ اطلب الآن —    7,000 دج
+            ⚡ اطلب الآن — 7,000 دج
           </a>
+          <button class="btn-add-cart" data-add-to-cart="0">
+            🛒 أضف إلى السلة
+          </button>
           <a href="../../contact.html" class="btn-order-product">
             💬 استفسر عن المنتج
           </a>
@@ -522,5 +529,7 @@
     }
   });
 </script>
+
+<script src="../../cart.js"></script>
 </body>
 </html>
