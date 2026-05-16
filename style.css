@@ -76,9 +76,9 @@ input, select, textarea { font-family: inherit; }
   padding: 0 20px;
 }
 
-.section-wrap { padding: 80px 0; }
+.section-wrap { padding: 30px 0; }
 
-.section-header { text-align: center; margin-bottom: 52px; }
+.section-header { text-align: center; margin-bottom: 36px; }
 
 .section-label {
   display: inline-block;
@@ -481,15 +481,15 @@ input, select, textarea { font-family: inherit; }
 .benefit-item {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding: 22px 16px;
+  gap: 10px;
+  padding: 12px 16px;
   border-inline-start: 1px solid var(--border);
   transition: var(--transition);
 }
 .benefit-item:first-child { border-inline-start: none; }
 .benefit-item:hover { background: var(--bg-alt); }
 
-.benefit-icon { font-size: 28px; flex-shrink: 0; }
+.benefit-icon { font-size: 22px; flex-shrink: 0; }
 
 .benefit-text strong {
   display: block;
@@ -565,7 +565,7 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* === 9. PRODUCTS SECTION === */
-.products-section { padding: 60px 0 80px; background: var(--bg-alt); }
+.products-section { padding: 30px 0 60px; background: var(--bg-alt); }
 
 .products-grid {
   display: grid;
@@ -1674,7 +1674,7 @@ input, select, textarea { font-family: inherit; }
 
 @media (max-width: 768px) {
   /* Section headers */
-  .section-header { margin-bottom: 36px; }
+  .section-header { margin-bottom: 24px; }
 
   /* Why grid */
   .why-grid { gap: 16px; }
@@ -1692,7 +1692,7 @@ input, select, textarea { font-family: inherit; }
 
 @media (max-width: 640px) {
   /* Global */
-  .section-wrap { padding: 48px 0; }
+  .section-wrap { padding: 30px 0; }
   .container    { padding: 0 16px; }
 
   /* Grids */
@@ -1711,7 +1711,7 @@ input, select, textarea { font-family: inherit; }
   /* Section headers */
   .section-title    { font-size: clamp(20px, 5.5vw, 28px); }
   .section-subtitle { font-size: 14px; }
-  .section-header   { margin-bottom: 28px; }
+  .section-header   { margin-bottom: 20px; }
 
   /* Hero */
   .hero-title    { font-size: clamp(26px, 7vw, 38px); }
