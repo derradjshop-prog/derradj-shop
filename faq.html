@@ -25,9 +25,23 @@
       <a href="faq.html"            class="nav-link">الأسئلة الشائعة</a>
       <a href="contact.html"        class="nav-link">تواصل معنا</a>
     </nav>
-    <a href="ordre/index.html" class="btn-header-cta">🛒 اطلب الآن</a>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="ordre/index.html" class="btn-header-cta">🛒 اطلب الآن</a>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
   </div>
 </header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="index.html#products">المنتجات</a>
+  <a href="about.html">من نحن</a>
+  <a href="delivery.html">التوصيل</a>
+  <a href="faq.html">الأسئلة الشائعة</a>
+  <a href="contact.html">تواصل معنا</a>
+  <a href="ordre/index.html" class="mobile-cta-link">🛒 اطلب الآن</a>
+</div>
 
 <section class="inner-hero">
   <div class="container">
@@ -292,8 +306,21 @@
     }
   }
 
+  const menuBtn    = document.getElementById('mobileMenuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const header     = document.getElementById('mainHeader');
+  menuBtn?.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+    menuBtn.classList.toggle('open');
+  });
+  document.querySelectorAll('.mobile-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu.classList.remove('open');
+      menuBtn.classList.remove('open');
+    });
+  });
   window.addEventListener('scroll', () => {
-    document.getElementById('mainHeader').classList.toggle('scrolled', window.scrollY > 50);
+    header.classList.toggle('scrolled', window.scrollY > 50);
   }, { passive: true });
 </script>
 </body>

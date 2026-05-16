@@ -336,12 +336,63 @@
     .items-table tfoot td { background: #f8fafc; font-weight: 800; border-top: 2px solid var(--border); }
 
     /* ━━ RESPONSIVE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    @media (max-width: 900px) {
+      .admin-main { padding: 18px 14px; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .admin-header { padding: 0 16px; }
+    }
     @media (max-width: 700px) {
-      .admin-main { padding: 14px 10px; }
+      .admin-main { padding: 12px 10px; }
       .stats-grid { grid-template-columns: 1fr; gap: 10px; }
-      .info-grid { grid-template-columns: 1fr; }
-      .controls-bar { flex-direction: column; align-items: stretch; }
-      .modal-body { padding: 14px; }
+      .stat-num   { font-size: 28px; }
+      .info-grid  { grid-template-columns: 1fr; }
+      .controls-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+      .search-input { min-width: unset; }
+      .modal-body { padding: 14px 12px; }
+      .modal-box  { margin: 10px; }
+      .page-title { font-size: 18px; }
+
+      /* جعل الجدول يُمرّر أفقياً بشكل واضح */
+      .table-wrap { border-radius: 12px; }
+      table       { min-width: 700px; }
+      th, td      { padding: 9px 10px; font-size: 12px; }
+
+      /* الأزرار في الجدول أصغر */
+      .btn-confirm,
+      .btn-delete,
+      .btn-receipt { padding: 5px 8px; font-size: 11px; gap: 3px; }
+
+      /* رأس الأدمن */
+      .header-logo  { font-size: 15px; }
+      .admin-badge  { display: none; }
+      .btn-logout   { padding: 6px 12px; font-size: 12px; }
+    }
+
+    @media (max-width: 480px) {
+      .admin-main  { padding: 10px 8px; }
+      .stats-grid  { gap: 8px; }
+      .stat-card   { padding: 14px 16px; }
+      .controls-bar { padding: 10px 12px; }
+      .orders-count { display: none; }
+    }
+
+    /* Scroll hint for mobile table */
+    @media (max-width: 700px) {
+      .table-scroll-hint {
+        display: block !important;
+      }
+    }
+  </style>
+  <style>
+    .table-scroll-hint {
+      display: none;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 6px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 12px 12px;
     }
   </style>
 </head>
@@ -411,6 +462,7 @@
         <tr><td colspan="10" class="empty">⏳ جاري التحميل...</td></tr>
       </tbody>
     </table>
+    <div class="table-scroll-hint">← اسحب لرؤية المزيد →</div>
   </div>
 
 </main>

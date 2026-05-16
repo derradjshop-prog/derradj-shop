@@ -12,9 +12,121 @@
 </script>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>الشروط والأحكام</title>
+  <title>الشروط والأحكام — Derradj Shop</title>
   <link rel="icon" type="image/jpeg" href="Logo.png">
-  <meta name="description" content="الشروط والأحكام الخاصة باستخدام منصة البيع عبر الإنترنت." />
+  <meta name="description" content="الشروط والأحكام الخاصة باستخدام منصة البيع عبر الإنترنت — Derradj Shop." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* ── Top nav bar ── */
+    .terms-topnav {
+      background: #0f172a;
+      color: #fff;
+      padding: 0 20px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 12px rgba(0,0,0,.4);
+      font-family: "Cairo", sans-serif;
+    }
+    .terms-logo {
+      font-size: 18px;
+      font-weight: 900;
+      color: #fff;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .terms-logo span { color: #60a5fa; }
+    .terms-topnav-links {
+      display: flex;
+      gap: 4px;
+      align-items: center;
+    }
+    .terms-topnav-links a {
+      color: rgba(255,255,255,.75);
+      padding: 7px 13px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .terms-topnav-links a:hover { color: #fff; background: rgba(255,255,255,.08); text-decoration: none; }
+    .terms-cta {
+      background: #1d4ed8;
+      color: #fff !important;
+      padding: 9px 18px !important;
+      border-radius: 10px !important;
+      font-weight: 700 !important;
+    }
+    .terms-cta:hover { background: #1e40af !important; }
+
+    /* Mobile hamburger */
+    .terms-mob-btn {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 8px;
+    }
+    .terms-mob-btn span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: #fff;
+      border-radius: 2px;
+      transition: all .25s;
+    }
+    .terms-mob-btn.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .terms-mob-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    .terms-mob-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* Mobile dropdown menu */
+    .terms-mobile-menu {
+      display: none;
+      position: fixed;
+      top: 62px;
+      right: 0; left: 0;
+      background: #0a111e;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+      z-index: 999;
+      padding: 12px 16px 20px;
+      font-family: "Cairo", sans-serif;
+    }
+    .terms-mobile-menu.open { display: block; animation: tdrop .25s ease; }
+    @keyframes tdrop { from { opacity:0; transform:translateY(-8px); } to { opacity:1; transform:none; } }
+    .terms-mobile-menu a {
+      display: block;
+      color: rgba(255,255,255,.78);
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all .2s;
+    }
+    .terms-mobile-menu a:hover { color:#fff; background:rgba(255,255,255,.06); text-decoration:none; }
+    .terms-mobile-menu .terms-mob-cta {
+      background: #1d4ed8;
+      color: #fff;
+      margin-top: 10px;
+      text-align: center;
+      border-radius: 10px;
+    }
+  </style>
   <style>
     :root{
       --bg:#f9fafb;
@@ -167,11 +279,48 @@
     @media (max-width: 900px){
       .grid{grid-template-columns: 1fr;}
       .toc{position:relative; top:auto}
+      .terms-topnav-links { display: none; }
+      .terms-mob-btn { display: flex; }
+    }
+    @media (max-width: 640px){
+      .wrap { padding: 16px 12px 48px; }
+      .hero { padding: 18px 16px; }
+      .hero h1 { font-size: 20px; }
+      .content { padding: 14px 14px; }
+      .section { padding: 10px 0 14px; }
+      .section h2 { font-size: 15px; }
+      .toc { padding: 12px; }
     }
   </style>
 </head>
 
 <body>
+
+<!-- ناف بار رئيسي -->
+<nav class="terms-topnav">
+  <a href="index.html" class="terms-logo">Derradj <span>Shop</span></a>
+  <div class="terms-topnav-links">
+    <a href="index.html#products">المنتجات</a>
+    <a href="about.html">من نحن</a>
+    <a href="delivery.html">التوصيل</a>
+    <a href="faq.html">الأسئلة الشائعة</a>
+    <a href="contact.html">تواصل معنا</a>
+    <a href="ordre/index.html" class="terms-cta">🛒 اطلب الآن</a>
+  </div>
+  <button class="terms-mob-btn" id="termsMobBtn" aria-label="القائمة">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="terms-mobile-menu" id="termsMobMenu">
+  <a href="index.html#products">المنتجات</a>
+  <a href="about.html">من نحن</a>
+  <a href="delivery.html">التوصيل</a>
+  <a href="faq.html">الأسئلة الشائعة</a>
+  <a href="contact.html">تواصل معنا</a>
+  <a href="ordre/index.html" class="terms-mob-cta">🛒 اطلب الآن</a>
+</div>
+
   <div class="wrap">
     <header class="hero" id="top">
       <h1>الشروط والأحكام</h1>
@@ -308,6 +457,19 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    const mobBtn  = document.getElementById('termsMobBtn');
+    const mobMenu = document.getElementById('termsMobMenu');
+    mobBtn?.addEventListener('click', () => {
+      mobMenu.classList.toggle('open');
+      mobBtn.classList.toggle('open');
+    });
+    document.querySelectorAll('.terms-mobile-menu a').forEach(link => {
+      link.addEventListener('click', () => {
+        mobMenu.classList.remove('open');
+        mobBtn.classList.remove('open');
+      });
+    });
   </script>
 </body>
 </html>
