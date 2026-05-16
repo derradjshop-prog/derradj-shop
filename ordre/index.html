@@ -651,12 +651,74 @@
     .btn-copy:hover { background: var(--primary); color: #fff; }
     .btn-copy.copied { background: #059669; color: #fff; border-color: #059669; }
 
-    /* جدول CCP */
-    .ccp-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-    .ccp-table tr:not(:last-child) td { border-bottom: 1px solid var(--bg-alt); }
-    .ccp-table td { padding: 9px 12px; font-size: 14px; }
-    .ccp-table td:first-child { color: var(--text-muted); font-weight: 600; width: 90px; text-align: right; }
-    .ccp-table td:last-child { color: var(--text); font-weight: 800; direction: ltr; text-align: left; }
+    /* قائمة معلومات CCP */
+    .ccp-info { display: flex; flex-direction: column; gap: 0; margin: 0; }
+    .ccp-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 14px;
+      gap: 10px;
+      border-bottom: 1px solid #e9f5ee;
+      direction: ltr;
+    }
+    .ccp-row:last-child { border-bottom: none; }
+    .ccp-row-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 68px;
+      text-align: left;
+    }
+    .ccp-row-val {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111827;
+      direction: ltr;
+      text-align: right;
+      word-break: break-all;
+      flex: 1;
+    }
+    /* صف RIP خاص */
+    .ccp-rip-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: none;
+    }
+    .ccp-rip-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      direction: ltr;
+    }
+    .ccp-rip-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      flex-shrink: 0;
+      text-align: left;
+    }
+    .ccp-rip-number {
+      font-size: 14px;
+      font-weight: 900;
+      color: #065f46;
+      direction: ltr;
+      letter-spacing: 0.5px;
+      word-break: break-all;
+      flex: 1;
+      text-align: right;
+    }
+    @media (max-width: 480px) {
+      .ccp-rip-top { flex-wrap: wrap; }
+      .ccp-rip-number { font-size: 13px; letter-spacing: 0; }
+      .ccp-row-label { min-width: 60px; font-size: 12px; }
+      .ccp-row-val { font-size: 13px; }
+    }
     .pm-note {
       font-size: 13px;
       color: #065f46;
@@ -1127,29 +1189,42 @@
 
           <!-- ── تفاصيل: CCP / RIP ── -->
           <div id="detail_ccp" class="pm-detail-box pm-detail-ccp" style="display:none">
-            <p style="font-size:14px;color:#065f46;font-weight:700;margin-bottom:10px;">
+            <p style="font-size:14px;color:#065f46;font-weight:700;margin-bottom:12px;">
               🏦 الدفع عبر بريد الجزائر (CCP) — أرسل المبلغ إلى:
             </p>
             <div class="rip-card">
-              <table class="ccp-table">
-                <tr><td>Clé :</td>      <td>61</td></tr>
-                <tr><td>Compte :</td>   <td>0015323203</td></tr>
-                <tr><td>Nom :</td>      <td>DARADJ</td></tr>
-                <tr><td>Prénom :</td>   <td>AMAR</td></tr>
-                <tr><td>Adresse :</td>  <td>BOUIRA</td></tr>
-                <tr>
-                  <td>RIP :</td>
-                  <td>
-                    <div class="rip-value-row">
-                      <span id="ccp_rip" style="font-size:15px;font-weight:900;letter-spacing:1px;direction:ltr;">007 99999 0015323203 61</span>
-                      <button type="button" class="btn-copy" id="copyCcpBtn"
-                              onclick="copyRIP('ccp_rip','copyCcpBtn')">
-                        📋 نسخ RIP
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              </table>
+              <div class="ccp-info">
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Clé</span>
+                  <span class="ccp-row-val">61</span>
+                </div>
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Compte</span>
+                  <span class="ccp-row-val">0015323203</span>
+                </div>
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Nom</span>
+                  <span class="ccp-row-val">DARADJ</span>
+                </div>
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Prénom</span>
+                  <span class="ccp-row-val">AMAR</span>
+                </div>
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Adresse</span>
+                  <span class="ccp-row-val">BOUIRA</span>
+                </div>
+                <div class="ccp-row ccp-rip-row">
+                  <div class="ccp-rip-top">
+                    <span class="ccp-rip-label">RIP</span>
+                    <span class="ccp-rip-number" id="ccp_rip">007 99999 0015323203 61</span>
+                  </div>
+                  <button type="button" class="btn-copy" id="copyCcpBtn"
+                          onclick="copyRIP('ccp_rip','copyCcpBtn')" style="width:100%;">
+                    📋 نسخ رقم RIP
+                  </button>
+                </div>
+              </div>
             </div>
             <div class="pm-note">
               أرسل المبلغ إلى الحساب أعلاه ثم ارفع صورة الوصل في قسم "وصل الدفع" أدناه.
