@@ -139,7 +139,7 @@
     const items = [];
     rows.forEach(row => {
       const idx = parseInt(row.querySelector(".pr-select")?.value);
-      const qty = Math.max(1, parseInt(row.querySelector(".pr-qty")?.value) || 1);
+      const qty = Math.max(1, parseInt(row.querySelector(".pr-qty-input")?.value) || 1);
       const cat = (window.PRODUCTS_CATALOG || [])[idx];
       if (!isNaN(idx) && cat) {
         items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty });

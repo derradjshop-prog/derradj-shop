@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <!-- Google Analytics -->
@@ -277,132 +277,226 @@
       direction: rtl;
     }
 
-    /* === صفوف المنتجات === */
-    #productsList { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+    /* ═══════════════════════════════════════════════════
+       قسم المنتجات — تصميم احترافي ومتجاوب
+    ═══════════════════════════════════════════════════ */
+    #productsList {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      margin-bottom: 16px;
+      overflow-x: hidden;   /* منع أي تمدد أفقي */
+      min-width: 0;         /* flex container يجب أن يقيّد أبناءه */
+    }
 
+    /* بطاقة المنتج — يجب تجاوز display:grid من style.css العام */
     .product-row {
-      background: var(--bg-alt);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 14px;
-      display: grid;
-      grid-template-columns: 2fr 80px 120px auto 36px;
-      gap: 10px;
-      align-items: end;
-      transition: box-shadow .2s;
-    }
-    .product-row:hover { box-shadow: var(--shadow-sm); }
-
-    .pr-field { display: flex; flex-direction: column; gap: 4px; }
-    .pr-field label { font-size: 12px; font-weight: 700; color: var(--text-light); }
-    .pr-field select {
-      padding: 9px 12px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: var(--font);
-      color: var(--text);
+      display: block !important;       /* تجاوز grid من style.css */
+      grid-template-columns: none;
+      padding: 0 !important;
+      margin-bottom: 0 !important;
       background: #fff;
-      direction: rtl;
-      width: 100%;
-      cursor: pointer;
-    }
-    .pr-field select:focus { outline: none; border-color: var(--primary); }
-    .pr-field input[type="number"] {
-      padding: 9px 12px;
       border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: var(--font);
-      color: var(--text);
-      background: #fff;
-      width: 100%;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      min-width: 0;         /* منع flex item من التمدد تلقائياً */
+      width: 100%;          /* يضمن أن البطاقة لا تتجاوز الحاوية */
       box-sizing: border-box;
-      text-align: center;
+      transition: box-shadow .2s, border-color .2s;
+      box-shadow: 0 1px 6px rgba(0,0,0,.04);
     }
-    .pr-field input[type="number"]:focus { outline: none; border-color: var(--primary); }
+    .product-row:hover {
+      box-shadow: 0 4px 18px rgba(0,0,0,.09);
+      border-color: rgba(29,78,216,.22);
+    }
 
-    /* عرض السعر (للقراءة فقط) */
-    .pr-price-display { display: flex; flex-direction: column; gap: 4px; }
-    .pr-price-display label { font-size: 12px; font-weight: 700; color: var(--text-light); }
-    .pr-price-value {
-      padding: 9px 12px;
-      background: var(--bg-alt);
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-light);
-      min-height: 40px;
+    /* رأس البطاقة: رقم المنتج + زر الحذف */
+    .pr-header {
       display: flex;
       align-items: center;
-      justify-content: center;
-      direction: ltr;
+      justify-content: space-between;
+      padding: 10px 14px 8px;
+    }
+    .pr-num-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--primary);
+      background: var(--primary-bg);
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    /* حقل اختيار المنتج */
+    .pr-select-wrap {
+      padding: 0 14px 12px;
+      overflow: hidden;     /* يحبس الـ select داخل البطاقة */
+      min-width: 0;
+    }
+    .pr-select-wrap > label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 6px;
+    }
+    .pr-select {
+      width: 100%;
+      max-width: 100%;      /* لا يتجاوز عرض الحاوية أبداً */
+      min-width: 0;         /* يمنع التمدد الافتراضي */
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;      /* iOS: font-size >= 16px يمنع الزوم التلقائي */
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg-alt);
+      direction: rtl;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      box-sizing: border-box;
+      display: block;       /* يضمن سلوك block-level صحيح */
+    }
+    .pr-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+      background: #fff;
+    }
+    .pr-select.has-value {
+      border-color: #10b981;
+      background: #f0fdf4;
+      color: #065f46;
+      font-weight: 700;
+    }
+
+    /* الصف السفلي: كمية + سعر + مجموع */
+    .pr-bottom-row {
+      display: grid;
+      grid-template-columns: 90px 1fr 1fr;  /* كمية | سعر | مجموع */
+      border-top: 1.5px solid var(--border);
+      background: #f8fafc;
+    }
+    .pr-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 11px 14px 13px;
+      min-width: 0;           /* السماح للـ flex items بالتقلص */
+    }
+    /* فاصل بين الخلايا — يعمل صح في RTL */
+    .pr-cell + .pr-cell { border-right: 1px solid var(--border); }
+
+    .pr-cell > label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .3px;
       white-space: nowrap;
     }
 
-    /* المجموع الجزئي */
-    .pr-subtotal {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 2px;
-      padding-bottom: 2px;
+    /* حقل الكمية */
+    .pr-qty-input {
+      padding: 8px 4px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 17px;
+      font-weight: 800;
+      font-family: var(--font);
+      color: var(--text);
+      background: #fff;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color .2s;
     }
-    .pr-subtotal .sub-label { font-size: 11px; color: var(--text-muted); }
-    .pr-subtotal .sub-amount { font-size: 15px; font-weight: 900; color: var(--primary); }
+    .pr-qty-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(29,78,216,.1);
+    }
+
+    /* قيم السعر والإجمالي */
+    .pr-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;    /* يمنع تقطيع "7,000 دج" عمودياً */
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color .2s;
+      padding: 2px 0;
+      direction: ltr;         /* يضمن عرض الأرقام من اليسار */
+      letter-spacing: 0.01em;
+    }
+    .pr-value.is-price.loaded { color: var(--text); font-weight: 800; }
+    .pr-value.is-sub          { font-size: 17px; font-weight: 900; }
+    .pr-value.is-sub.loaded   { color: var(--primary); }
 
     /* زر الحذف */
     .pr-delete {
-      width: 36px;
-      height: 36px;
+      width: 30px;
+      height: 30px;
       border-radius: 8px;
       background: #fef2f2;
       color: var(--accent);
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 13px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border: none;
+      border: 1.5px solid #fecaca;
       cursor: pointer;
-      transition: background .2s, color .2s;
+      transition: all .2s;
       flex-shrink: 0;
     }
-    .pr-delete:hover { background: var(--accent); color: #fff; }
+    .pr-delete:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
 
     /* زر إضافة منتج */
     .btn-add-product {
-      display: inline-flex;
+      display: flex;
       align-items: center;
-      gap: 6px;
-      background: var(--primary-bg);
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      box-sizing: border-box;
+      background: #fff;
       color: var(--primary);
-      border: 1.5px solid rgba(29,78,216,.25);
-      padding: 10px 20px;
-      border-radius: var(--radius);
+      border: 1.5px dashed rgba(29,78,216,.35);
+      padding: 13px 20px;
+      border-radius: var(--radius-lg);
       font-size: 14px;
       font-weight: 700;
       cursor: pointer;
-      transition: background .2s, color .2s;
+      transition: all .2s;
       font-family: var(--font);
+      margin-top: 2px;
     }
-    .btn-add-product:hover { background: var(--primary); color: #fff; }
+    .btn-add-product:hover {
+      background: var(--primary-bg);
+      border-color: var(--primary);
+      border-style: solid;
+    }
 
     /* مجموع المنتجات */
     .products-footer {
+      background: linear-gradient(135deg, var(--primary-bg), rgba(29,78,216,.03));
+      border: 1.5px solid rgba(29,78,216,.18);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      margin-top: 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 14px;
-      background: var(--bg-alt);
-      border-radius: var(--radius);
-      margin-top: 14px;
-      font-size: 15px;
+      gap: 12px;
     }
-    .products-footer span { color: var(--text-light); font-weight: 600; }
-    .products-footer strong { color: var(--text); font-weight: 900; font-size: 17px; }
+    .products-footer span   { font-size: 14px; font-weight: 700; color: var(--text-light); }
+    .products-footer strong { font-size: 20px; font-weight: 900; color: var(--primary); direction: ltr; }
 
     /* === بطاقات طريقة الدفع === */
     .pm-grid {
@@ -773,26 +867,41 @@
       .pm-grid { grid-template-columns: 1fr; gap: 10px; }
       .pm-card { flex-direction: row; text-align: right; padding: 14px; }
       .pm-card .pm-icon { font-size: 24px; }
-      .product-row {
-        grid-template-columns: 1fr 36px;
-        grid-template-rows: auto auto auto auto;
+
+      /* قسم المنتجات على الهاتف */
+      .product-row { display: block !important; width: 100%; min-width: 0; overflow: hidden; }
+      .pr-select-wrap { padding: 0 10px 10px; overflow: hidden; }
+      .pr-select {
+        font-size: 16px !important;  /* iOS: يمنع الزوم التلقائي عند الضغط */
+        max-width: 100% !important;
+        min-width: 0 !important;
+        width: 100% !important;
       }
-      .product-row .pr-field:first-child { grid-column: 1; grid-row: 1; }
-      .product-row .pr-field:nth-child(2) { grid-column: 1; grid-row: 2; }
-      .product-row .pr-price-display { grid-column: 1; grid-row: 3; }
-      .product-row .pr-subtotal {
-        grid-column: 1;
-        grid-row: 4;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0 0;
-        border-top: 1px solid var(--border);
-      }
-      .product-row .pr-delete { grid-column: 2; grid-row: 1; align-self: start; }
+      .pr-bottom-row { grid-template-columns: 75px 1fr 1fr; }
+      .pr-cell { padding: 9px 10px 11px; min-width: 0; }
+      .pr-cell > label { font-size: 9px; white-space: nowrap; }
+      .pr-qty-input { font-size: 16px; padding: 7px 4px; }
+      .pr-value { font-size: 13px; min-height: 34px; white-space: nowrap; }
+      .pr-value.is-sub { font-size: 15px; }
+      .products-footer { padding: 12px 14px; }
+      .products-footer strong { font-size: 18px; }
     }
-    @media (min-width: 641px) and (max-width: 900px) {
-      .product-row { grid-template-columns: 1.5fr 70px 110px auto 36px; }
+
+    @media (max-width: 400px) {
+      .product-row { display: block !important; overflow: hidden; }
+      .pr-select-wrap { padding: 0 8px 8px; }
+      .pr-select { font-size: 16px !important; max-width: 100% !important; }
+      .pr-bottom-row { grid-template-columns: 60px 1fr 1fr; }
+      .pr-value { font-size: 12px; }
+    }
+
+    /* حماية شاملة: لا overflow أفقي في أي حال */
+    @media (max-width: 768px) {
+      .order-page,
+      .ch-section,
+      #productsList {
+        overflow-x: hidden;
+      }
     }
   </style>
 </head>
@@ -1199,6 +1308,7 @@
 window.PRODUCTS_CATALOG = [
   {
     name: "Electronics Components Kit — Starter Kit (830 Breadboard + Box)",
+    shortName: "Electronics Components Kit",
     price: 7000,
     paymentUrl: "http://pay.chargily.com/payment-links/01krrc0k7t7m5e91s0t1ba48k5"
   }
@@ -1356,24 +1466,37 @@ document.getElementById('paymentReceipt')?.addEventListener('change', function (
   }
 });
 
-/* ── إدارة المنتجات (اختيار من قائمة) ──────────────────────── */
+/*/* ══════════════════════════════════════════════════════════════
+   إدارة المنتجات — منطق كامل ومصحح
+══════════════════════════════════════════════════════════════ */
 let productCounter = 0;
 
+/* تنسيق المبلغ: 7,000 دج — بدون مشاكل wrap أو BiDi */
 function formatDZD(n) {
-  return Number(n || 0).toLocaleString('fr-DZ') + ' دج';
+  return Number(n || 0).toLocaleString('en-US') + ' دج';
 }
 
 function formatDZDSummary(n) {
-  const num = Number(n || 0).toLocaleString('fr-DZ');
-  return '‭جد ' + num + '‬';
+  return Number(n || 0).toLocaleString('en-US') + ' دج';
 }
 
+/* خيارات القائمة المنسدلة باسم مختصر واضح */
 function buildOptions() {
-  return window.PRODUCTS_CATALOG.map((p, i) =>
-    `<option value="${i}">${p.name} — ${formatDZD(p.price)}</option>`
-  ).join('');
+  return window.PRODUCTS_CATALOG.map(function(p, i) {
+    var display = (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج';
+    return '<option value="' + i + '" title="' + p.name + '">' + display + '</option>';
+  }).join('');
 }
 
+/* إعادة ترقيم الصفوف حسب ترتيبها الفعلي في DOM */
+function renumberRows() {
+  document.querySelectorAll('#productsList .product-row').forEach(function(row, idx) {
+    var badge = row.querySelector('.pr-num-badge');
+    if (badge) badge.textContent = '📦 منتج ' + (idx + 1);
+  });
+}
+
+/* إنشاء صف منتج جديد — المستخدم يختار بنفسه */
 function createProductRow() {
   productCounter++;
   const id  = productCounter;
@@ -1382,64 +1505,102 @@ function createProductRow() {
   row.dataset.id = id;
 
   row.innerHTML = `
-    <div class="pr-field">
-      <label>المنتج *</label>
+    <div class="pr-header">
+      <span class="pr-num-badge">📦 منتج —</span>
+      <button type="button" class="pr-delete" title="حذف المنتج">✕</button>
+    </div>
+    <div class="pr-select-wrap">
+      <label>اختر المنتج *</label>
       <select class="pr-select" required>
-        <option value="" disabled selected>— اختر المنتج —</option>
+        <option value="" disabled selected>— اختر المنتج من القائمة —</option>
         ${buildOptions()}
       </select>
     </div>
-    <div class="pr-field">
-      <label>الكمية</label>
-      <input type="number" class="pr-qty" value="1" min="1" required>
+    <div class="pr-bottom-row">
+      <div class="pr-cell">
+        <label>الكمية</label>
+        <input type="number" class="pr-qty-input" value="1" min="1" required>
+      </div>
+      <div class="pr-cell">
+        <label>السعر / وحدة</label>
+        <div class="pr-value is-price" id="price_${id}">—</div>
+      </div>
+      <div class="pr-cell">
+        <label>المجموع</label>
+        <div class="pr-value is-sub" id="sub_${id}">—</div>
+      </div>
     </div>
-    <div class="pr-price-display">
-      <label>السعر / وحدة</label>
-      <div class="pr-price-value" id="price_${id}">—</div>
-    </div>
-    <div class="pr-subtotal">
-      <span class="sub-label">الإجمالي</span>
-      <span class="sub-amount" id="sub_${id}">0 دج</span>
-    </div>
-    <button type="button" class="pr-delete" title="حذف المنتج">✕</button>
   `;
 
   const sel   = row.querySelector('.pr-select');
-  const qty   = row.querySelector('.pr-qty');
-  const prEl  = row.querySelector('.pr-price-value');   /* querySelector داخل الصف لأن الصف لم يُضَف للـ DOM بعد */
-  const subEl = row.querySelector('.sub-amount');
+  const qty   = row.querySelector('.pr-qty-input');
+  const prEl  = row.querySelector('#price_' + id);
+  const subEl = row.querySelector('#sub_' + id);
 
   function calcRow() {
     const idx = parseInt(sel.value);
     const cat = isNaN(idx) ? null : window.PRODUCTS_CATALOG[idx];
-    if (!cat) { prEl.textContent = '—'; subEl.textContent = '0 دج'; recalcAll(); return; }
+
+    if (!cat) {
+      prEl.textContent = '—';
+      prEl.classList.remove('loaded');
+      subEl.textContent = '—';
+      subEl.classList.remove('loaded');
+      sel.classList.remove('has-value');
+      recalcAll();
+      return;
+    }
+
     const q = Math.max(1, parseInt(qty.value) || 1);
-    qty.value           = q;
-    prEl.textContent    = formatDZD(cat.price);
-    subEl.textContent   = formatDZD(cat.price * q);
+    qty.value = q;
+
+    prEl.textContent = formatDZD(cat.price);
+    prEl.classList.add('loaded');
+
+    subEl.textContent = formatDZD(cat.price * q);
+    subEl.classList.add('loaded');
+
+    sel.classList.add('has-value');
     recalcAll();
   }
 
-  sel.addEventListener('change', () => { calcRow(); updateSummary(); });
-  qty.addEventListener('input',  calcRow);
+  /* تحديث فوري عند تغيير المنتج أو الكمية */
+  sel.addEventListener('change', function() { calcRow(); updateSummary(); });
+  qty.addEventListener('input',  function() { calcRow(); updateSummary(); });
 
-  row.querySelector('.pr-delete').addEventListener('click', () => {
+  /* حذف الصف: إزالة + إعادة ترقيم + إعادة حساب */
+  row.querySelector('.pr-delete').addEventListener('click', function() {
     row.remove();
+    renumberRows();
     recalcAll();
+    updateSummary();
   });
+
+  /* لا auto-select — المستخدم يختار بنفسه */
 
   return row;
 }
 
-document.getElementById('addProductBtn').addEventListener('click', () => {
+/* زر إضافة منتج: صف فارغ جديد + إعادة ترقيم */
+document.getElementById('addProductBtn').addEventListener('click', function() {
   document.getElementById('productsList').appendChild(createProductRow());
+  renumberRows();
 });
+
+/* إضافة الصف الأول عند تحميل الصفحة */
+(function initFirstRow() {
+  const row = createProductRow();
+  document.getElementById('productsList').appendChild(row);
+  renumberRows();
+  recalcAll();
+  updateSummary();
+})();
 
 function getProductsTotal() {
   let total = 0;
   document.querySelectorAll('.product-row').forEach(row => {
     const idx = parseInt(row.querySelector('.pr-select')?.value);
-    const qty = Math.max(1, parseInt(row.querySelector('.pr-qty')?.value) || 1);
+    const qty = Math.max(1, parseInt(row.querySelector('.pr-qty-input')?.value) || 1);
     const cat = isNaN(idx) ? null : window.PRODUCTS_CATALOG[idx];
     if (cat) total += cat.price * qty;
   });
@@ -1502,7 +1663,7 @@ function updateSummary() {
 
   rows.forEach(row => {
     const idx = parseInt(row.querySelector('.pr-select')?.value);
-    const qty = Math.max(1, parseInt(row.querySelector('.pr-qty')?.value) || 1);
+    const qty = Math.max(1, parseInt(row.querySelector('.pr-qty-input')?.value) || 1);
     const cat = isNaN(idx) ? null : window.PRODUCTS_CATALOG[idx];
     if (cat) {
       html += `<div class="os-row">
@@ -1609,7 +1770,7 @@ window.validateCheckout = function () {
     let ok = true;
     rows.forEach(row => {
       const idx = parseInt(row.querySelector('.pr-select')?.value);
-      const qty = parseInt(row.querySelector('.pr-qty')?.value);
+      const qty = parseInt(row.querySelector('.pr-qty-input')?.value);
       if (isNaN(idx) || !window.PRODUCTS_CATALOG[idx] || isNaN(qty) || qty < 1) ok = false;
     });
     if (!ok) {

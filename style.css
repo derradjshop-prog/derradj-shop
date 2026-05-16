@@ -1743,9 +1743,6 @@ input, select, textarea { font-family: inherit; }
   .delivery-options  { grid-template-columns: 1fr; }
   .btn-header-cta    { display: none; }
 
-  /* Product row in order form */
-  .product-row { grid-template-columns: 1fr 80px 80px 36px; }
-
   /* Product detail page */
   .product-cta-buttons { flex-direction: column; }
   .trust-badges        { grid-template-columns: 1fr; }
@@ -1833,8 +1830,7 @@ input, select, textarea { font-family: inherit; }
   .btn-confirm, .btn-delete, .btn-receipt { min-height: 36px; }
 }
 
-/* Ensure no horizontal overflow */
-*, *::before, *::after { max-width: 100%; }
+/* Ensure images never overflow */
 img { max-width: 100%; height: auto; }
 
 .product-img-gallery {
