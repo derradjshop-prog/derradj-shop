@@ -16,6 +16,7 @@
   /* ── State ─────────────────────────────────────────────── */
   let ALL_ORDERS   = [];
   let ACTIVE_ORDER = null;
+  let ALL_MESSAGES = [];
 
   /* ── Constants ─────────────────────────────────────────── */
   const PM_LABELS = {
@@ -119,6 +120,135 @@
   }
 
   /* ─────────────────────────────────────────────────────────
+     FETCH — الرسائل
+  ───────────────────────────────────────────────────────── */
+  async function fetchMessages() {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("id, name, contact, message, created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     DELETE MESSAGE
+  ───────────────────────────────────────────────────────── */
+  async function deleteMessage(msgId) {
+    const { error } = await supabase
+      .from("messages")
+      .delete()
+      .eq("id", msgId);
+    if (error) throw error;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     FILTER MESSAGES
+  ───────────────────────────────────────────────────────── */
+  function getFilteredMessages() {
+    const q = (document.getElementById("msgSearchInput")?.value || "").trim().toLowerCase();
+    if (!q) return ALL_MESSAGES;
+    return ALL_MESSAGES.filter(m =>
+      (m.name    || "").toLowerCase().includes(q) ||
+      (m.contact || "").includes(q) ||
+      (m.message || "").toLowerCase().includes(q)
+    );
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     RENDER MESSAGES TABLE
+  ───────────────────────────────────────────────────────── */
+  function renderMessagesTable(messages) {
+    const tbody = document.getElementById("msgTbody");
+    const cnt   = messages.length;
+
+    document.getElementById("msgCount").textContent =
+      cnt + " رسالة" + (cnt !== ALL_MESSAGES.length ? ` (من ${ALL_MESSAGES.length})` : "");
+    document.getElementById("tab-badge-messages").textContent = ALL_MESSAGES.length;
+
+    if (!cnt) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty">لا توجد رسائل</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = messages.map(m => `
+      <tr data-msg-id="${esc(m.id)}" style="cursor:pointer;">
+        <td class="nowrap"><strong>${esc(m.name || "—")}</strong></td>
+        <td class="nowrap" style="direction:ltr;">${esc(m.contact || "—")}</td>
+        <td><div class="msg-text">${esc(m.message || "—")}</div></td>
+        <td class="nowrap" style="font-size:12px;color:var(--text-light);">${esc(fmtDate(m.created_at))}</td>
+        <td class="nowrap">
+          <div class="actions-col">
+            <a href="tel:${esc(m.contact || "")}" class="btn-receipt">📞 اتصال</a>
+            <button class="btn-delete" data-msg-id="${esc(m.id)}" data-action="delete-msg">🗑 حذف</button>
+          </div>
+        </td>
+      </tr>`).join("");
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     HANDLE DELETE MESSAGE
+  ───────────────────────────────────────────────────────── */
+  async function handleDeleteMessage(msgId, btn) {
+    if (!confirm("هل أنت متأكد من حذف هذه الرسالة نهائياً؟")) return;
+    btn.disabled    = true;
+    btn.textContent = "⏳...";
+    try {
+      await deleteMessage(msgId);
+      ALL_MESSAGES = ALL_MESSAGES.filter(m => m.id !== msgId);
+      document.querySelector(`#msgTbody tr[data-msg-id="${msgId}"]`)?.remove();
+      renderMessagesTable(getFilteredMessages());
+      if (document.getElementById("modal").classList.contains("open")) closeModal();
+    } catch (err) {
+      console.error("Delete message error:", err);
+      alert("❌ خطأ في حذف الرسالة:\n" + (err.message || ""));
+      btn.disabled    = false;
+      btn.textContent = "🗑 حذف";
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     SHOW MESSAGE MODAL
+  ───────────────────────────────────────────────────────── */
+  function showMessageModal(msgId) {
+    const msg = ALL_MESSAGES.find(m => m.id === msgId);
+    if (!msg) return;
+    document.getElementById("modalTitle").textContent = "رسالة من: " + (msg.name || "—");
+    document.getElementById("modalBody").innerHTML = `
+      <div class="m-section">
+        <div class="m-title">معلومات المرسل</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="i-lbl">الاسم</span>
+            <span class="i-val">${esc(msg.name || "—")}</span>
+          </div>
+          <div class="info-item">
+            <span class="i-lbl">رقم الهاتف</span>
+            <span class="i-val" style="direction:ltr;">${esc(msg.contact || "—")}</span>
+          </div>
+          <div class="info-item">
+            <span class="i-lbl">التاريخ</span>
+            <span class="i-val" style="font-size:12px;">${esc(fmtDate(msg.created_at))}</span>
+          </div>
+        </div>
+      </div>
+      <div class="m-section">
+        <div class="m-title">نص الرسالة</div>
+        <div class="msg-full">${esc(msg.message || "—")}</div>
+      </div>
+      <div class="m-section">
+        <div class="m-title">الإجراءات</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+          <a href="tel:${esc(msg.contact || "")}" class="btn-receipt" style="font-size:14px;padding:10px 20px;">📞 اتصال</a>
+          <button class="btn-delete" data-msg-id="${esc(msg.id)}" data-action="delete-msg"
+                  style="font-size:14px;padding:10px 20px;">🗑 حذف الرسالة</button>
+        </div>
+      </div>`;
+    openModal();
+  }
+
+  /* ─────────────────────────────────────────────────────────
      STATS — 3 بطاقات فقط
   ───────────────────────────────────────────────────────── */
   function renderStats(orders) {
@@ -128,6 +258,7 @@
     document.getElementById("stat-all").textContent       = orders.length;
     document.getElementById("stat-pending").textContent   = pending;
     document.getElementById("stat-confirmed").textContent = confirmed;
+    document.getElementById("tab-badge-orders").textContent = orders.length;
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -387,6 +518,46 @@
       location.href = "login.html";
     });
 
+    /* ── Tab switching ─────────────────────────────────────── */
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + tab).classList.add("active");
+        document.getElementById("pageTitle").textContent =
+          tab === "orders" ? "📦 إدارة الطلبات" : "✉️ الرسائل الواردة";
+      });
+    });
+
+    /* ── Messages search & refresh ─────────────────────────── */
+    document.getElementById("msgSearchInput").addEventListener("input",
+      () => renderMessagesTable(getFilteredMessages()));
+
+    document.getElementById("msgRefreshBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("msgRefreshBtn");
+      btn.disabled = true; btn.textContent = "⏳ جاري التحديث...";
+      try {
+        ALL_MESSAGES = await fetchMessages();
+        renderMessagesTable(getFilteredMessages());
+      } catch (err) { alert("❌ فشل التحديث: " + (err.message || "")); }
+      btn.disabled = false; btn.textContent = "↻ تحديث";
+    });
+
+    /* ── Messages table — click row to open modal, delete ──── */
+    document.getElementById("msgTbody").addEventListener("click", async e => {
+      const deleteBtn = e.target.closest("[data-action='delete-msg']");
+      if (deleteBtn) {
+        await handleDeleteMessage(deleteBtn.dataset.msgId, deleteBtn);
+        return;
+      }
+      const row = e.target.closest("tr[data-msg-id]");
+      if (row) showMessageModal(row.dataset.msgId);
+    });
+
+    /* ── Modal body — delete message ──────────────────────── */
+
     document.getElementById("modalClose").addEventListener("click", closeModal);
     document.getElementById("modal").addEventListener("click", e => {
       if (e.target.id === "modal") closeModal();
@@ -419,8 +590,9 @@
     document.getElementById("modalBody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
-      if (btn.dataset.action === "confirm") await handleConfirm(btn.dataset.id, btn);
-      if (btn.dataset.action === "delete")  await handleDelete(btn.dataset.id, btn);
+      if (btn.dataset.action === "confirm")    await handleConfirm(btn.dataset.id, btn);
+      if (btn.dataset.action === "delete")     await handleDelete(btn.dataset.id, btn);
+      if (btn.dataset.action === "delete-msg") await handleDeleteMessage(btn.dataset.msgId, btn);
     });
   }
 
@@ -436,9 +608,10 @@
         (staff.role === "admin" ? "👑 Admin" : "👤 Staff") +
         (staff.full_name ? " — " + staff.full_name : "");
 
-      ALL_ORDERS = await fetchOrders();
+      [ALL_ORDERS, ALL_MESSAGES] = await Promise.all([fetchOrders(), fetchMessages()]);
       renderStats(ALL_ORDERS);
       renderTable(ALL_ORDERS);
+      renderMessagesTable(ALL_MESSAGES);
       bindEvents();
 
     } catch (err) {
