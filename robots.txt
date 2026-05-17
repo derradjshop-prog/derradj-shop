@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+
+# Exclude admin and test pages
+Disallow: /admin/
+Disallow: /ordre/Essai/
+Disallow: /css/js/
+
+# Allow crawling of all public pages
+Allow: /products/
+Allow: /books/
+Allow: /ordre/index.html
+
+Sitemap: https://www.derradjshop.com/sitemap.xml
