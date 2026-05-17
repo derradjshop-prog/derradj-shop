@@ -163,6 +163,41 @@
         </div>
       </div>
 
+      <!-- المنتج 2 -->
+      <div class="product-card" role="link" tabindex="0"
+           onclick="if(!event.target.closest('button,a'))location.href='products/arduino-uno-r3-super-learning-kit/index.html'"
+           onkeydown="if(event.key==='Enter'&&!event.target.closest('button,a'))location.href='products/arduino-uno-r3-super-learning-kit/index.html'"
+           style="cursor:pointer;">
+        <div class="product-badge new">متوفر الآن</div>
+        <div class="product-img-area">
+          <img
+            src="products/arduino-uno-r3-super-learning-kit/pictures/main-1.jpg"
+            alt="YNINCH Super Learning Kit Arduino UNO R3"
+            class="product-image"
+          />
+        </div>
+        <div class="product-info">
+          <div class="product-cat-label">Arduino UNO R3 — Super Learning Kit</div>
+          <h3 class="product-name">YNINCH Super Learning Kit for Arduino UNO R3, Including Development Board, Code Tutorial, Breadboard, LED Diodes</h3>
+          <div class="product-rating">
+            <span class="product-stars">★★★★★</span>
+            <span class="product-rating-count">جودة ممتازة</span>
+          </div>
+          <div class="product-tags">
+            <span class="product-tag">Arduino UNO R3</span>
+            <span class="product-tag">35 Sensors</span>
+            <span class="product-tag">Breadboard</span>
+          </div>
+          <div class="product-prices">
+            <span class="price-current">7,300 DA</span>
+          </div>
+          <div class="product-card-btns">
+            <a href="products/arduino-uno-r3-super-learning-kit/index.html" class="btn-order-card">🛒 اطلب الآن</a>
+            <button class="btn-add-cart" data-add-to-cart="1">🛒 أضف إلى السلة</button>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="products-cta-row">
@@ -421,7 +456,7 @@
 
         <div class="contact-item">
           <span class="contact-item-icon">📞</span>
-          <a href="tel:+213555491316">0555 49 13 16</a>
+          <a href="tel:+213555491316" dir="ltr" style="unicode-bidi:embed;">0555 49 13 16</a>
         </div>
         <div class="contact-item">
           <span class="contact-item-icon">📧</span>
@@ -485,6 +520,7 @@
       <h4>المنتجات</h4>
       <ul>
         <li><a href="products/electronics-components-starter-kit/index.html">Electronics Components Kit — Arduino Starter DIY</a></li>
+        <li><a href="products/arduino-uno-r3-super-learning-kit/index.html">YNINCH Super Learning Kit — Arduino UNO R3</a></li>
       </ul>
     </div>
 
@@ -521,20 +557,19 @@
 </footer>
 
 <!-- ===================== SCRIPTS ===================== -->
-<script type="module">
-  import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+<script>
+  const SUPABASE_URL = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
 
-  const supabase = createClient(
-    "https://jbmcbjzcedqpvnhbmrhk.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk"
-  );
-
-  const form = document.getElementById("contactForm");
+  const form      = document.getElementById("contactForm");
   const statusMsg = document.getElementById("contactStatus");
 
-  form?.addEventListener("submit", async (e) => {
+  form.addEventListener("submit", async function(e) {
     e.preventDefault();
-    statusMsg.style.color = "gray";
+
+    const submitBtn = form.querySelector(".form-submit");
+    submitBtn.disabled = true;
+    statusMsg.style.color = "#666";
     statusMsg.textContent = "⏳ جاري الإرسال...";
 
     const name    = document.getElementById("name").value.trim();
@@ -544,20 +579,39 @@
     if (!name || !contact || !message) {
       statusMsg.style.color = "red";
       statusMsg.textContent = "❌ يرجى ملء جميع الحقول.";
+      submitBtn.disabled = false;
       return;
     }
 
-    const { error } = await supabase.from("message").insert([{ name, contact, message }]);
+    try {
+      const response = await fetch(SUPABASE_URL + "/rest/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": SUPABASE_KEY,
+          "Authorization": "Bearer " + SUPABASE_KEY,
+          "Prefer": "return=minimal"
+        },
+        body: JSON.stringify({ name: name, contact: contact, message: message })
+      });
 
-    if (error) {
+      if (!response.ok) {
+        const errBody = await response.text();
+        console.error("Supabase error:", response.status, errBody);
+        throw new Error("HTTP " + response.status);
+      }
+
+      console.log("Message sent successfully");
+      statusMsg.style.color = "green";
+      statusMsg.textContent = "✅ تم إرسال رسالتك بنجاح! سنرد عليك قريباً.";
+      form.reset();
+    } catch (err) {
+      console.error("Send failed:", err);
       statusMsg.style.color = "red";
-      statusMsg.textContent = "❌ فشل الإرسال، حاول لاحقاً.";
-      return;
+      statusMsg.textContent = "❌ حدث خطأ أثناء إرسال الرسالة، حاول مرة أخرى.";
+    } finally {
+      submitBtn.disabled = false;
     }
-
-    statusMsg.style.color = "green";
-    statusMsg.textContent = "✅ تم إرسال رسالتك بنجاح، سنرد عليك قريباً.";
-    form.reset();
   });
 </script>
 

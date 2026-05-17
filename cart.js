@@ -21,6 +21,13 @@
       price:     7000,
       image:     BASE + '/products/electronics-components-starter-kit/pictures/main-4.jpg',
     },
+    {
+      catalogId: 1,
+      name:      'YNINCH Super Learning Kit for Arduino UNO R3, Including Development Board, Code Tutorial, Breadboard, LED Diodes',
+      shortName: 'YNINCH Super Learning Kit — Arduino UNO R3',
+      price:     7300,
+      image:     BASE + '/products/electronics-components-starter-kit/pictures/main-4.jpg',
+    },
   ];
 
   /* ══════════════════════════════════════════════════════════
