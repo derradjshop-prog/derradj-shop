@@ -16,13 +16,13 @@ window.BOOKS_DATA = (function () {
     {
       id: 3, title: 'العادات الذرية', titleEn: 'Atomic Habits',
       author: 'جيمس كلير', translator: 'محمد فتحي خضر', year: 2018,
-      category: 'تطوير الذات', price: 1000, image: 'atomic-habits/main.png', url: 'atomic-habits/',
+      category: 'تطوير الذات', price: 950, image: 'atomic-habits/main.png', url: 'atomic-habits/',
       description: 'استراتيجيات علمية وعملية لبناء عادات إيجابية والتخلص من العادات السلبية عبر تغييرات صغيرة تتراكم لتُحدث نتائج استثنائية.',
     },
     {
       id: 4, title: 'قاعدة الـ 333', titleEn: 'Rule 3-3-3',
       author: 'شهاب الهاشمي', translator: null, year: 2024,
-      category: 'تطوير الذات', price: 1500, image: 'rule-333/main.png', url: 'rule-333/',
+      category: 'تطوير الذات', price: 1350, image: 'rule-333/main.png', url: 'rule-333/',
       description: 'خلاصات وأفكار قيّمة في العلاقات العامة وصناعة المحتوى الرقمي وبناء الحضور الشخصي عبر قاعدة مبسّطة وفعّالة.',
     },
     {
@@ -34,7 +34,7 @@ window.BOOKS_DATA = (function () {
     {
       id: 6, title: 'متعة عدم الكمال', titleEn: 'The Joy of Imperfection',
       author: 'ديمون زهاريادس', translator: null, year: 2017,
-      category: 'تطوير الذات', price: 1200, image: 'joy-of-imperfection/main.png', url: 'joy-of-imperfection/',
+      category: 'تطوير الذات', price: 900, image: 'joy-of-imperfection/main.png', url: 'joy-of-imperfection/',
       description: 'دليل شامل للتغلب على وسواس الكمالية وإسكات الناقد الداخلي، واكتشاف أن النقص الإنساني هو أصل الجمال والتطور.',
     },
     {
@@ -46,25 +46,25 @@ window.BOOKS_DATA = (function () {
     {
       id: 8, title: 'قوة الآن', titleEn: 'The Power of Now',
       author: 'إيكهارت تول', translator: 'مينا كمال', year: 1997,
-      category: 'الفلسفة والفكر', price: 1200, image: 'power-of-now/main.png', url: 'power-of-now/',
+      category: 'الفلسفة والفكر', price: 1100, image: 'power-of-now/main.png', url: 'power-of-now/',
       description: 'دليل روحي عميق للعيش في اللحظة الراهنة والتحرر من قيود الماضي وقلق المستقبل لتحقيق السلام الداخلي الحقيقي.',
     },
     {
       id: 9, title: 'بروباغندا', titleEn: 'Propaganda',
       author: 'إدوارد بيرنايز', translator: 'يحيى العريضي', year: 1928,
-      category: 'علم النفس والمجتمع', price: 1300, image: 'propaganda/main.png', url: 'propaganda/',
+      category: 'علم النفس والمجتمع', price: 1100, image: 'propaganda/main.png', url: 'propaganda/',
       description: 'الكتاب الأصل في علم العلاقات العامة يكشف آليات التأثير في الجماهير والرأي العام وكيف يمكن توجيه سلوك الناس على نطاق واسع.',
     },
     {
       id: 10, title: 'فوضى الإدارة', titleEn: 'Management Mess to Leadership Success',
       author: 'سكوت جيفري ميلر', translator: null, year: 2019,
-      category: 'الإدارة والأعمال', price: 1500, image: 'management-mess/main.png', url: 'management-mess/',
+      category: 'الإدارة والأعمال', price: 1600, image: 'management-mess/main.png', url: 'management-mess/',
       description: 'ثلاثون تحدياً حقيقياً يواجهها القادة في مسيرتهم المهنية، مع حلول عملية وتجارب واقعية للتغلب عليها.',
     },
     {
       id: 11, title: 'السعادة الحقيقية والسعادة الزائفة', titleEn: 'The Myths of Happiness',
       author: 'سونيا ليوبوميرسكي', translator: 'سمر حجازي', year: 2013,
-      category: 'علم النفس والمجتمع', price: 1500, image: 'myths-of-happiness/main.png', url: 'myths-of-happiness/',
+      category: 'علم النفس والمجتمع', price: 1600, image: 'myths-of-happiness/main.png', url: 'myths-of-happiness/',
       description: 'تدحض الباحثة النفسية الأساطير الشائعة حول مصادر السعادة وتقدم بدائل علمية مستندة إلى أبحاث موثقة لبناء سعادة حقيقية ومستدامة.',
     },
     {
@@ -86,34 +86,16 @@ window.BOOKS_DATA = (function () {
       description: 'رحلة علمية مبسّطة ورائعة في أعماق الكون من أصغر الجسيمات إلى أسرار الزمان والمكان والثقوب السوداء وأصل الكون.',
     },
     {
-      id: 15, title: 'الجسد لا ينسى', titleEn: 'The Body Keeps the Score',
-      author: 'بيسل فان دير كولك', translator: null, year: 2014,
-      category: 'علم النفس والمجتمع', price: 1800, image: 'body-keeps-the-score/main.png', url: 'body-keeps-the-score/',
-      description: 'كيف يختزن الجسم آثار الصدمات النفسية وكيف يمكن للعلاج أن يُعيد توصيل العقل بالجسد ويستعيد الصحة النفسية الكاملة.',
-    },
-    {
       id: 16, title: 'متعة أن تكون في الثلاثين', titleEn: 'The Joy of Being Thirty',
       author: 'علا ديوب', translator: null, year: 2019,
-      category: 'تطوير الذات', price: 1000, image: 'joy-of-thirties/main.png', url: 'joy-of-thirties/',
+      category: 'تطوير الذات', price: 950, image: 'joy-of-thirties/main.png', url: 'joy-of-thirties/',
       description: 'مقالات متنوعة وملهمة حول مرحلة الثلاثينيات وما تحمله من نضج وخبرة وتحولات عميقة في الرؤية للذات والعالم.',
     },
     {
       id: 17, title: 'كن مع الشخص الذي يجعلك سعيداً', titleEn: 'Be with the One Who Makes You Happy',
       author: 'مؤلفون مختلفون', translator: null, year: null,
-      category: 'العلاقات والحياة', price: 1000, image: 'be-happy-with-someone/main.png', url: 'be-happy-with-someone/',
+      category: 'العلاقات والحياة', price: 1200, image: 'be-happy-with-someone/main.png', url: 'be-happy-with-someone/',
       description: 'أهمية البيئة الداعمة واختيار الشريك المناسب لبناء حياة مليئة بالسعادة والانسجام والنمو الشخصي المشترك.',
-    },
-    {
-      id: 18, title: 'الثالوث المظلم', titleEn: 'The Dark Triad',
-      author: 'غير محدد', translator: null, year: null,
-      category: 'علم النفس والمجتمع', price: 1200, image: 'dark-triad/main.png', url: 'dark-triad/',
-      description: 'سمات الشخصية المظلمة (النرجسية، الميكيافيلية، والسيكوباتية) وكيفية التعرف عليها والتعامل معها في بيئة العمل والعلاقات الشخصية.',
-    },
-    {
-      id: 19, title: 'كيف تتقن فن البيع', titleEn: 'How to Master the Art of Selling',
-      author: 'توم هوبكنز', translator: null, year: 1980,
-      category: 'الإدارة والأعمال', price: 1500, image: 'art-of-selling/main.png', url: 'art-of-selling/',
-      description: 'مرجع أساسي لاكتساب مهارات الإقناع والبيع الاحترافي من أحد أعظم المدربين في مجال المبيعات على مستوى العالم.',
     },
     {
       id: 20, title: 'الذكاء العاطفي', titleEn: 'Emotional Intelligence',
@@ -124,7 +106,7 @@ window.BOOKS_DATA = (function () {
     {
       id: 21, title: 'كيف تبيع أي شيء لأي إنسان', titleEn: 'How to Sell Anything to Anybody',
       author: 'جو جيرارد', translator: null, year: 1977,
-      category: 'الإدارة والأعمال', price: 1300, image: 'sell-anything/main.png', url: 'sell-anything/',
+      category: 'الإدارة والأعمال', price: 1100, image: 'sell-anything/main.png', url: 'sell-anything/',
       description: 'أسرار المبيعات من أفضل بائع في العالم وفقاً لموسوعة غينيس، مع أساليب عملية وقصص واقعية تُغير طريقة التفكير في البيع.',
     },
   ];
