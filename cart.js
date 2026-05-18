@@ -180,7 +180,7 @@
         <span>المجموع الكلي</span>
         <strong>${total.toLocaleString('en-US')} دج</strong>
       </div>
-      <div class="cart-free-ship">🚚 التوصيل مجاني لجميع الطلبات</div>
+      <div class="cart-free-ship">🚚 سعر التوصيل يُحسب حسب الولاية عند إتمام الطلب</div>
       <button class="cart-checkout-btn" id="cartCheckoutBtn">✅ إتمام الطلب</button>`;
 
     /* أحداث أزرار الكمية */

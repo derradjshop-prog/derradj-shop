@@ -31,8 +31,8 @@
        CHECKOUT PAGE — Styles exclusifs à cette page uniquement
     ================================================================ */
 
-    /* === Bannière توصيل مجاني === */
-    .free-shipping-banner {
+    /* === بانر التوصيل === */
+    .shipping-banner {
       background: linear-gradient(135deg, #059669, #047857);
       color: #fff;
       text-align: center;
@@ -316,6 +316,7 @@
       max-height: 230px;
       -webkit-overflow-scrolling: touch;
       overscroll-behavior: contain;
+      touch-action: pan-y;
     }
     .cs-item {
       padding: 10px 16px;
@@ -350,17 +351,28 @@
     @media (max-width: 640px) {
       .cs-panel {
         position: fixed !important;
-        bottom: 0 !important; left: 0 !important; right: 0 !important; top: auto !important;
+        /* bottom بدون !important حتى يتمكن JS من تجاوزه عند ظهور لوحة المفاتيح */
+        bottom: 0;
+        left: 0 !important; right: 0 !important; top: auto !important;
         border-radius: 20px 20px 0 0;
         border: none;
         box-shadow: 0 -4px 40px rgba(0,0,0,.2);
         max-height: 72vh;
         animation: none !important;
+        /* انتقال سلس عند تحريك اللوحة فوق لوحة المفاتيح */
+        transition: bottom 0.16s ease, max-height 0.16s ease;
+        /* مساحة آمنة للأجهزة ذات الشق السفلي (notch) */
+        padding-bottom: env(safe-area-inset-bottom, 0px);
       }
       .cs-panel.open { animation: csSlideUp .22s cubic-bezier(.22,.61,.36,1) !important; }
       @keyframes csSlideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
       .cs-panel-header { display: flex !important; }
-      .cs-list { max-height: none; flex: 1; }
+      .cs-list {
+        max-height: none; flex: 1;
+        touch-action: pan-y;            /* تأكيد أن التمرير عمودي للقائمة */
+        overscroll-behavior: contain;   /* منع انتقال التمرير للصفحة */
+        -webkit-overflow-scrolling: touch;
+      }
       .cs-item { padding: 14px 20px; min-height: 52px; }
       .cs-item-ar { font-size: 15px; }
       .cs-item-fr { font-size: 12px; }
@@ -1136,7 +1148,7 @@
   <div class="container" style="max-width:800px;">
 
     <!-- ▶ بانر التوصيل -->
-    <div class="free-shipping-banner">
+    <div class="shipping-banner">
       🚚 التوصيل 24-72 ساعة لجميع ولايات الجزائر الـ 58 — اختر ولايتك لرؤية سعر التوصيل
     </div>
 
@@ -2315,7 +2327,17 @@ class CustomSelect {
         sublabel: el.dataset.sublabel || '',
       });
       el.addEventListener('mousedown', e => { e.preventDefault(); pick(); });
-      el.addEventListener('touchend',  e => { e.preventDefault(); pick(); });
+
+      /* تفريق بين النقر والتمرير: تجاهل الحدث إذا تحرك الإصبع أكثر من 8px */
+      let _tsY = 0;
+      el.addEventListener('touchstart', e => {
+        _tsY = e.touches[0].clientY;
+      }, { passive: true });
+      el.addEventListener('touchend', e => {
+        if (Math.abs(e.changedTouches[0].clientY - _tsY) > 8) return;
+        e.preventDefault();
+        pick();
+      });
     });
   }
 
@@ -2362,12 +2384,39 @@ class CustomSelect {
     this.trigger.classList.add('open');
     this.trigger.setAttribute('aria-expanded', 'true');
     this.filtered = [...this.items];
-    if (this._searchEl) { this._searchEl.value = ''; this._searchEl.focus(); }
+    if (this._searchEl) this._searchEl.value = '';
     this._render();
+
     if (window.innerWidth <= 640 && this._backdrop) {
       this._backdrop.classList.add('show');
-      document.body.style.overflow = 'hidden';
+
+      /* قفل التمرير بأمان على iOS (بدلاً من overflow:hidden الغير موثوق) */
+      this._savedScrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top      = `-${this._savedScrollY}px`;
+      document.body.style.width    = '100%';
+
+      /* مراقبة لوحة المفاتيح لتحريك اللوحة فوقها */
+      if (window.visualViewport) {
+        this._vvHandler = () => this._adjustForKeyboard();
+        window.visualViewport.addEventListener('resize', this._vvHandler);
+        window.visualViewport.addEventListener('scroll', this._vvHandler);
+      }
+      /* على الجوال: لا تفتح لوحة المفاتيح تلقائياً — المستخدم يمسّ حقل البحث إذا أراد */
+    } else {
+      /* على الحاسوب: ركّز على البحث فوراً */
+      if (this._searchEl) this._searchEl.focus();
     }
+  }
+
+  /* يضبط موضع وارتفاع اللوحة فوق لوحة المفاتيح عند ظهورها */
+  _adjustForKeyboard() {
+    const vv = window.visualViewport;
+    if (!vv || window.innerWidth > 640) return;
+    /* ارتفاع لوحة المفاتيح = الفرق بين نافذة المتصفح والمساحة المرئية */
+    const keyboardH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    this.panel.style.bottom    = keyboardH + 'px';
+    this.panel.style.maxHeight = Math.floor(vv.height * 0.88) + 'px';
   }
 
   _closePanel() {
@@ -2375,7 +2424,28 @@ class CustomSelect {
     this.trigger.classList.remove('open');
     this.trigger.setAttribute('aria-expanded', 'false');
     if (this._backdrop) this._backdrop.classList.remove('show');
-    document.body.style.overflow = '';
+
+    /* استعادة تمرير الصفحة بأمان (iOS) */
+    if (this._savedScrollY !== undefined) {
+      document.body.style.position = '';
+      document.body.style.top      = '';
+      document.body.style.width    = '';
+      window.scrollTo(0, this._savedScrollY);
+      this._savedScrollY = undefined;
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    /* إزالة مستمعي لوحة المفاتيح */
+    if (this._vvHandler && window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this._vvHandler);
+      window.visualViewport.removeEventListener('scroll', this._vvHandler);
+      this._vvHandler = null;
+    }
+
+    /* إعادة ضبط الموضع المُضمَّن */
+    this.panel.style.bottom    = '';
+    this.panel.style.maxHeight = '';
   }
 }
 
