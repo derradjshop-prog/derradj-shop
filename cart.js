@@ -14,6 +14,7 @@
      catalogId = index في PRODUCTS_CATALOG (يبدأ من 0)
   ══════════════════════════════════════════════════════════ */
   window.SHOP_CATALOG = [
+    /* ── أجهزة Arduino والإلكترونيات ─────────────────── */
     {
       catalogId: 0,
       name:      'Electronics Components Kit — Starter Kit (830 Breadboard + Box)',
@@ -28,6 +29,27 @@
       price:     7300,
       image:     BASE + '/products/electronics-components-starter-kit/pictures/main-4.jpg',
     },
+    /* ── الكتب (catalogId يتطابق مع id في books-data.js) ─ */
+    { catalogId: 2,  name: 'العادات السبع للناس الأكثر فعالية',   shortName: 'العادات السبع',                    price: 1400, image: BASE + '/books/7-habits/main.png' },
+    { catalogId: 3,  name: 'العادات الذرية',                       shortName: 'العادات الذرية',                   price: 1000, image: BASE + '/books/atomic-habits/main.png' },
+    { catalogId: 4,  name: 'قاعدة الـ 333',                        shortName: 'قاعدة الـ 333',                    price: 1500, image: BASE + '/books/rule-333/main.png' },
+    { catalogId: 5,  name: 'الأثر المذهل للعادات البسيطة',         shortName: 'الأثر المذهل للعادات البسيطة',    price: 1200, image: BASE + '/books/small-habits-revolution/main.png' },
+    { catalogId: 6,  name: 'متعة عدم الكمال',                      shortName: 'متعة عدم الكمال',                  price: 1200, image: BASE + '/books/joy-of-imperfection/main.png' },
+    { catalogId: 7,  name: 'الشجاعة تنادي',                        shortName: 'الشجاعة تنادي',                    price: 1300, image: BASE + '/books/courage-is-calling/main.png' },
+    { catalogId: 8,  name: 'قوة الآن',                             shortName: 'قوة الآن',                         price: 1200, image: BASE + '/books/power-of-now/main.png' },
+    { catalogId: 9,  name: 'بروباغندا',                            shortName: 'بروباغندا',                        price: 1300, image: BASE + '/books/propaganda/main.png' },
+    { catalogId: 10, name: 'فوضى الإدارة',                         shortName: 'فوضى الإدارة',                     price: 1500, image: BASE + '/books/management-mess/main.png' },
+    { catalogId: 11, name: 'السعادة الحقيقية والسعادة الزائفة',    shortName: 'السعادة الحقيقية والزائفة',        price: 1500, image: BASE + '/books/myths-of-happiness/main.png' },
+    { catalogId: 12, name: 'مسارات السعادة',                       shortName: 'مسارات السعادة',                   price: 1300, image: BASE + '/books/happy-ever-after/main.png' },
+    { catalogId: 13, name: 'في عالم الأشباح الجائعة',              shortName: 'في عالم الأشباح الجائعة',         price: 1800, image: BASE + '/books/hungry-ghosts/main.png' },
+    { catalogId: 14, name: 'تاريخ موجز للزمان',                    shortName: 'تاريخ موجز للزمان',                price: 1200, image: BASE + '/books/brief-history-of-time/main.png' },
+    { catalogId: 15, name: 'الجسد لا ينسى',                        shortName: 'الجسد لا ينسى',                    price: 1800, image: BASE + '/books/body-keeps-the-score/main.png' },
+    { catalogId: 16, name: 'متعة أن تكون في الثلاثين',             shortName: 'متعة أن تكون في الثلاثين',        price: 1000, image: BASE + '/books/joy-of-thirties/main.png' },
+    { catalogId: 17, name: 'كن مع الشخص الذي يجعلك سعيداً',       shortName: 'كن مع من يجعلك سعيداً',           price: 1000, image: BASE + '/books/be-happy-with-someone/main.png' },
+    { catalogId: 18, name: 'الثالوث المظلم',                       shortName: 'الثالوث المظلم',                   price: 1200, image: BASE + '/books/dark-triad/main.png' },
+    { catalogId: 19, name: 'كيف تتقن فن البيع',                    shortName: 'كيف تتقن فن البيع',                price: 1500, image: BASE + '/books/art-of-selling/main.png' },
+    { catalogId: 20, name: 'الذكاء العاطفي',                       shortName: 'الذكاء العاطفي',                   price: 1600, image: BASE + '/books/emotional-intelligence/main.png' },
+    { catalogId: 21, name: 'كيف تبيع أي شيء لأي إنسان',           shortName: 'كيف تبيع أي شيء لأي إنسان',      price: 1300, image: BASE + '/books/sell-anything/main.png' },
   ];
 
   /* ══════════════════════════════════════════════════════════
@@ -50,12 +72,13 @@
         const p = window.SHOP_CATALOG.find(c => c.catalogId === catalogId);
         if (!p) return false;
         items.push({
-          catalogId: p.catalogId,
-          name:      p.name,
-          shortName: p.shortName,
-          price:     p.price,
-          image:     p.image,
-          qty:       1,
+          catalogId:    p.catalogId,
+          name:         p.name,
+          shortName:    p.shortName,
+          price:        p.price,
+          priceDisplay: p.priceDisplay || null,
+          image:        p.image,
+          qty:          1,
         });
       }
       this.save(items);
@@ -138,8 +161,8 @@
         </div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.shortName || item.name}</div>
-          <div class="cart-item-price">${item.price.toLocaleString('en-US')} دج / وحدة</div>
-          <div class="cart-item-sub">${(item.price * item.qty).toLocaleString('en-US')} دج</div>
+          <div class="cart-item-price">${item.priceDisplay ? item.priceDisplay : item.price.toLocaleString('en-US') + ' دج'} / وحدة</div>
+          <div class="cart-item-sub">${item.priceDisplay ? '—' : (item.price * item.qty).toLocaleString('en-US') + ' دج'}</div>
         </div>
         <div class="cart-item-actions">
           <div class="cart-qty-row">

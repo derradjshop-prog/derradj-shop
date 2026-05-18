@@ -18,7 +18,7 @@
   );
 
   /* ── رموز الولايات (للشحن) ────────────────────────────── */
-  const WILAYA_CODE = {
+  const WILAYA_CODE = window.WILAYA_CODE = {
     "أدرار":1,"الشلف":2,"الأغواط":3,"أم البواقي":4,"باتنة":5,
     "بجاية":6,"بسكرة":7,"بشار":8,"البليدة":9,"البويرة":10,
     "تمنراست":11,"تبسة":12,"تلمسان":13,"تيارت":14,"تيزي وزو":15,
@@ -159,13 +159,15 @@
     const address    = document.getElementById("addressInput")?.value?.trim() || "";
     const wilaya     = document.getElementById("wilayaHidden")?.value?.trim() || "";
     const commune    = document.getElementById("communeHidden")?.value?.trim() || null;
-    const notes      = document.getElementById("notes")?.value?.trim() || null;
-    const pm         = document.querySelector('input[name="payment_method"]:checked')?.value || "";
-    const wilayaCode = WILAYA_CODE[wilaya] || null;
+    const notes        = document.getElementById("notes")?.value?.trim() || null;
+    const pm           = document.querySelector('input[name="payment_method"]:checked')?.value || "";
+    const deliveryType = document.querySelector('input[name="delivery_type"]:checked')?.value || "home";
+    const wilayaCode   = WILAYA_CODE[wilaya] || null;
 
-    const items      = getProductItems();
-    const subtotal   = items.reduce((s, it) => s + it.subtotal, 0);
-    const totalPrice = subtotal; /* التوصيل مجاني */
+    const items       = getProductItems();
+    const subtotal    = items.reduce((s, it) => s + it.subtotal, 0);
+    const shippingFee = parseInt(document.getElementById("shippingFeeInput")?.value || "0");
+    const totalPrice  = subtotal + shippingFee;
 
     const submitBtn = document.getElementById("submitBtn");
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "⏳ جاري الإرسال..."; }
@@ -211,8 +213,8 @@
           wilaya:         wilaya,
           wilaya_code:    wilayaCode,
           commune:        commune,
-          delivery_type:  "home",
-          shipping_fee:   0,
+          delivery_type:  deliveryType,
+          shipping_fee:   shippingFee,
           subtotal:       subtotal,
           total_price:    totalPrice,
           payment_method: pm,

@@ -481,24 +481,24 @@ input, select, textarea { font-family: inherit; }
 .benefit-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
+  gap: 7px;
+  padding: 7px 14px;
   border-inline-start: 1px solid var(--border);
   transition: var(--transition);
 }
 .benefit-item:first-child { border-inline-start: none; }
 .benefit-item:hover { background: var(--bg-alt); }
 
-.benefit-icon { font-size: 22px; flex-shrink: 0; }
+.benefit-icon { font-size: 15px; flex-shrink: 0; }
 
 .benefit-text strong {
   display: block;
-  font-size: 14px;
-  font-weight: 800;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text);
-  margin-bottom: 2px;
+  white-space: nowrap;
 }
-.benefit-text span { font-size: 12px; color: var(--text-light); }
+.benefit-text span { display: none; }
 
 /* === 8. CATEGORIES === */
 .categories-section { padding: 80px 0 60px; background: var(--bg); }
@@ -1726,7 +1726,9 @@ input, select, textarea { font-family: inherit; }
   /* Benefit items border fix */
   .benefit-item { border-left: none !important; border-bottom: 1px solid var(--border); }
   .benefit-item:last-child { border-bottom: none; }
-  .benefits-inner { grid-template-columns: 1fr !important; }
+  .benefits-inner { grid-template-columns: repeat(2, 1fr) !important; }
+  .benefit-item:nth-child(2n) { border-left: none !important; border-bottom: 1px solid var(--border); }
+  .benefit-item:nth-last-child(-n+2) { border-bottom: none; }
 
   /* Section headers */
   .section-title    { font-size: clamp(20px, 5.5vw, 28px); }
@@ -1812,9 +1814,9 @@ input, select, textarea { font-family: inherit; }
   .hero-inner       { padding: 40px 14px; }
   .hero-title       { font-size: clamp(24px, 7.5vw, 32px); }
 
-  /* Benefits: 1 column on very small */
-  .benefits-inner   { grid-template-columns: 1fr; }
-  .benefit-item     { padding: 14px 16px; }
+  /* Benefits: 2 columns on very small screens */
+  .benefits-inner   { grid-template-columns: repeat(2, 1fr) !important; }
+  .benefit-item     { padding: 6px 10px; }
 
   /* Info cards */
   .info-card        { padding: 16px 14px; }
@@ -2028,6 +2030,15 @@ img { max-width: 100%; height: auto; }
     width: 74px;
     height: 74px;
   }
+}
+
+/* Home page books grid — full cover, uniform height, no cropping */
+#homeBooksGrid .product-img-area {
+  height: 220px;
+  background: #f8fafc;
+}
+#homeBooksGrid .product-img-area img {
+  object-fit: contain;
 }
 
 /* ============================================================

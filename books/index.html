@@ -1,0 +1,654 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N4NME3KN9N');
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>كتب تطوير الذات والفلسفة وعلم النفس في الجزائر | Derradj Shop — كتب اون لاين</title>
+
+  <meta name="description" content="اشتري أفضل كتب تطوير الذات، الفلسفة، علم النفس والإدارة في الجزائر — Derradj Shop. 20 كتاباً مختاراً بعناية مع التوصيل السريع لجميع ولايات الجزائر. أسعار منافسة.">
+
+  <meta property="og:title" content="كتب تطوير الذات والفلسفة وعلم النفس — Derradj Shop الجزائر">
+  <meta property="og:description" content="20 كتاباً مختاراً في تطوير الذات، الفلسفة، علم النفس والإدارة. توصيل سريع لجميع ولايات الجزائر.">
+  <meta property="og:url" content="https://www.derradjshop.com/books/">
+  <meta property="og:image" content="https://www.derradjshop.com/Logo.jpg">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ar_DZ">
+
+  <meta name="keywords" content="شراء كتب الجزائر, كتب اون لاين الجزائر, كتب تطوير الذات الجزائر, كتب فلسفة الجزائر, كتب علم النفس الجزائر, كتب الإدارة والأعمال, Derradj Shop كتب, كتب بالعربي الجزائر, أفضل كتب الجزائر">
+  <meta name="author" content="Derradj Shop">
+  <meta name="geo.region" content="DZ">
+
+  <link rel="canonical" href="https://www.derradjshop.com/books/">
+  <link rel="icon" type="image/png" href="../Logo.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="../style.css" />
+
+  <style>
+    /* ── عناصر التحكم: البحث والتصفية ───────────────────── */
+    .books-controls {
+      margin-bottom: 32px;
+    }
+
+    .books-search-wrap {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .books-search-icon {
+      position: absolute;
+      right: 16px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 18px;
+      pointer-events: none;
+      color: #94a3b8;
+    }
+
+    .books-search-input {
+      width: 100%;
+      padding: 13px 48px 13px 20px;
+      border: 2px solid #e0e7ef;
+      border-radius: 14px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      text-align: right;
+      direction: rtl;
+      background: #fff;
+      box-sizing: border-box;
+      color: #1e293b;
+    }
+
+    .books-search-input:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
+    }
+
+    .books-search-input::placeholder { color: #94a3b8; }
+
+    .books-filter-tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .filter-tab {
+      padding: 8px 18px;
+      border: 2px solid #e0e7ef;
+      border-radius: 24px;
+      background: #fff;
+      cursor: pointer;
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.2s;
+      color: #475569;
+      line-height: 1.4;
+    }
+
+    .filter-tab:hover {
+      border-color: #2563eb;
+      color: #2563eb;
+      background: #eff6ff;
+    }
+
+    .filter-tab.active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+
+    /* ── رسالة لا توجد نتائج ────────────────────────────── */
+    .no-results-msg {
+      text-align: center;
+      padding: 64px 20px;
+      color: #64748b;
+      font-size: 16px;
+      grid-column: 1 / -1;
+    }
+
+    .no-results-msg .no-results-icon {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    /* ── نافذة تفاصيل الكتاب ────────────────────────────── */
+    .book-modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .book-modal-overlay.open {
+      display: flex;
+    }
+
+    .book-modal {
+      background: #fff;
+      border-radius: 20px;
+      max-width: 520px;
+      width: 100%;
+      padding: 32px;
+      position: relative;
+      max-height: 88vh;
+      overflow-y: auto;
+      animation: modalPop 0.22s ease;
+      direction: rtl;
+    }
+
+    @keyframes modalPop {
+      from { opacity: 0; transform: scale(0.92) translateY(12px); }
+      to   { opacity: 1; transform: scale(1)    translateY(0); }
+    }
+
+    .book-modal-close {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: #f1f5f9;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #475569;
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s;
+    }
+
+    .book-modal-close:hover { background: #e2e8f0; }
+
+    .modal-book-img {
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      background: #f8fafc;
+    }
+
+    /* Book grid — full cover, uniform card height, no cropping */
+    #booksGrid .product-img-area {
+      height: 220px;
+      background: #f8fafc;
+    }
+
+    #booksGrid .product-img-area img {
+      object-fit: contain;
+    }
+
+    .modal-book-category {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      color: #2563eb;
+      background: #eff6ff;
+      border-radius: 8px;
+      padding: 3px 10px;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+
+    .modal-book-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1e293b;
+      margin: 0 0 8px;
+      line-height: 1.4;
+    }
+
+    .modal-book-author {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 16px;
+    }
+
+    .modal-book-author span { font-weight: 700; color: #475569; }
+
+    .modal-book-desc {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.8;
+      margin-bottom: 24px;
+    }
+
+    .modal-book-price {
+      font-size: 20px;
+      font-weight: 800;
+      color: #2563eb;
+      margin-bottom: 20px;
+    }
+
+    .modal-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .modal-btns .btn-add-cart {
+      flex: 1;
+      text-align: center;
+      padding: 13px 20px;
+      font-size: 15px;
+    }
+
+    /* ── شارة "قيد الإضافة" للكتب المؤقتة ─────────────── */
+    .product-badge.draft { background: #94a3b8; }
+
+    /* ── عداد النتائج ────────────────────────────────────── */
+    .results-count {
+      font-size: 13px;
+      color: #64748b;
+      margin-bottom: 20px;
+      font-weight: 600;
+    }
+
+    @media (max-width: 600px) {
+      .book-modal { padding: 24px 18px; }
+      .modal-book-title { font-size: 17px; }
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ===================== HEADER ===================== -->
+<header class="main-header" id="mainHeader">
+  <div class="header-inner">
+    <a href="../" class="logo">
+      <span>Derradj <span class="logo-accent">Shop</span></span>
+    </a>
+
+    <nav class="main-nav">
+      <a href="../index.html#products"   class="nav-link">المنتجات</a>
+      <a href="../index.html#categories" class="nav-link">الأقسام</a>
+      <a href="index.html"               class="nav-link" style="color:#2563eb;font-weight:700;">الكتب</a>
+      <a href="../about.html"            class="nav-link">من نحن</a>
+      <a href="../faq.html"              class="nav-link">الأسئلة الشائعة</a>
+      <a href="../contact.html"          class="nav-link">تواصل معنا</a>
+    </nav>
+
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="../ordre/index.html" class="btn-header-cta">🛒 اطلب الآن</a>
+      <button class="cart-btn" aria-label="فتح السلة">
+        🛒
+        <span class="cart-badge" aria-live="polite"></span>
+      </button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile Menu -->
+<div class="mobile-menu" id="mobileMenu">
+  <a href="../index.html#products">المنتجات</a>
+  <a href="../index.html#categories">الأقسام</a>
+  <a href="index.html" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
+  <a href="../about.html">من نحن</a>
+  <a href="../faq.html">الأسئلة الشائعة</a>
+  <a href="../contact.html">تواصل معنا</a>
+  <a href="../ordre/index.html" class="mobile-cta-link">🛒 اطلب الآن</a>
+</div>
+
+<!-- H1 مخفي للـ SEO -->
+<h1 style="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;">
+  قسم الكتب — Derradj Shop | كتب تطوير الذات، الفلسفة، علم النفس والمجتمع في الجزائر
+</h1>
+
+<!-- ===================== قسم الكتب ===================== -->
+<section class="products-section section-wrap" id="books" style="padding-top:48px;">
+  <div class="container">
+
+    <!-- رأس القسم -->
+    <div class="section-header">
+      <div class="section-label">📚 كتب مختارة</div>
+      <h2 class="section-title">قسم الكتب</h2>
+      <p class="section-subtitle">
+        كتب في تطوير الذات، الفلسفة، علم النفس، الإدارة والأعمال، العلوم والمعرفة —
+        تصفح واطلب مباشرة مع التوصيل لجميع ولايات الجزائر
+      </p>
+    </div>
+
+    <!-- البحث والتصفية -->
+    <div class="books-controls">
+      <div class="books-search-wrap">
+        <span class="books-search-icon">🔍</span>
+        <input
+          type="search"
+          id="bookSearch"
+          class="books-search-input"
+          placeholder="ابحث عن كتاب بالاسم..."
+          autocomplete="off"
+          aria-label="البحث عن كتاب"
+        />
+      </div>
+
+      <div class="books-filter-tabs" id="booksFilterTabs" role="group" aria-label="تصفية حسب التصنيف">
+        <button class="filter-tab active" data-cat="الكل">الكل</button>
+        <button class="filter-tab" data-cat="تطوير الذات">تطوير الذات</button>
+        <button class="filter-tab" data-cat="الفلسفة والفكر">الفلسفة والفكر</button>
+        <button class="filter-tab" data-cat="علم النفس والمجتمع">علم النفس والمجتمع</button>
+        <button class="filter-tab" data-cat="الإدارة والأعمال">الإدارة والأعمال</button>
+        <button class="filter-tab" data-cat="العلوم والمعرفة">العلوم والمعرفة</button>
+        <button class="filter-tab" data-cat="العلاقات والحياة">العلاقات والحياة</button>
+      </div>
+    </div>
+
+    <!-- عداد النتائج -->
+    <div class="results-count" id="resultsCount"></div>
+
+    <!-- شبكة الكتب -->
+    <div class="products-grid" id="booksGrid" aria-live="polite"></div>
+
+    <!-- رسالة لا توجد نتائج -->
+    <div class="no-results-msg" id="noBooksMsg" style="display:none;" role="status">
+      <span class="no-results-icon">📭</span>
+      لا توجد كتب مطابقة للبحث — جرّب كلمة أخرى أو تصنيفاً مختلفاً.
+    </div>
+
+    <div class="products-cta-row">
+      <a href="../ordre/index.html" class="btn-primary">🛒 اطلب الآن — توصيل لكل الجزائر</a>
+    </div>
+
+  </div>
+</section>
+
+<!-- ===================== نافذة تفاصيل الكتاب ===================== -->
+<div class="book-modal-overlay" id="bookModalOverlay" role="dialog" aria-modal="true" aria-label="تفاصيل الكتاب">
+  <div class="book-modal" id="bookModal">
+    <button class="book-modal-close" id="bookModalClose" aria-label="إغلاق">✕</button>
+    <div id="bookModalContent"></div>
+  </div>
+</div>
+
+<!-- ===================== FOOTER ===================== -->
+<footer class="main-footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="../" class="footer-logo">
+        <span>Derradj <span class="logo-accent">Shop</span></span>
+      </a>
+      <p>متجر كتب جزائري متخصص في تطوير الذات، الفلسفة، علم النفس، الإدارة والعلوم — كتب مختارة مع توصيل سريع.</p>
+      <div class="footer-contact-list">
+        <a href="tel:+213555491316" class="footer-contact-link">
+          <span class="contact-icon">📞</span>
+          <span class="phone-number" dir="ltr">0555 49 13 16</span>
+        </a>
+        <a href="mailto:derradjshop@gmail.com">📧 derradjshop@gmail.com</a>
+        <span>📍 الجزائر العاصمة، الجزائر</span>
+      </div>
+    </div>
+
+    <div class="footer-links-col">
+      <h4>الكتب</h4>
+      <ul>
+        <li><a href="index.html">📚 جميع الكتب</a></li>
+        <li><a href="index.html">تطوير الذات</a></li>
+        <li><a href="index.html">الفلسفة والفكر</a></li>
+        <li><a href="index.html">علم النفس والمجتمع</a></li>
+        <li><a href="index.html">الإدارة والأعمال</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-links-col">
+      <h4>المتجر</h4>
+      <ul>
+        <li><a href="../about.html">من نحن</a></li>
+        <li><a href="../delivery.html">سياسة التوصيل</a></li>
+        <li><a href="../payment.html">الدفع والضمان</a></li>
+        <li><a href="../faq.html">الأسئلة الشائعة</a></li>
+        <li><a href="../contact.html">تواصل معنا</a></li>
+        <li><a href="../terms.html">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-links-col">
+      <h4>الدعم</h4>
+      <ul>
+        <li><a href="../ordre/index.html">اطلب الآن</a></li>
+        <li><a href="../faq.html">كيف أطلب؟</a></li>
+        <li><a href="../contact.html">خدمة العملاء</a></li>
+      </ul>
+      <div style="margin-top:20px;">
+        <h4>طريقة الدفع</h4>
+        <div class="footer-pay-badge">💳 دفع مسبق (CIB / BaridiMob / CCP)</div>
+        <div class="footer-pay-badge" style="margin-top:8px;">🏠 دفع عند الاستلام</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2025 Derradj Shop — جميع الحقوق محفوظة | متجر كتب الجزائر اون لاين</p>
+  </div>
+</footer>
+
+<!-- ===================== SCRIPTS ===================== -->
+<script>
+  /* ── Sticky header ─────────────────────────────────── */
+  window.addEventListener('scroll', () => {
+    document.getElementById('mainHeader')
+      .classList.toggle('scrolled', window.scrollY > 50);
+  }, { passive: true });
+
+  /* ── Mobile menu ────────────────────────────────────── */
+  const _menuBtn    = document.getElementById('mobileMenuBtn');
+  const _mobileMenu = document.getElementById('mobileMenu');
+  _menuBtn?.addEventListener('click', () => {
+    _mobileMenu.classList.toggle('open');
+    _menuBtn.classList.toggle('open');
+  });
+  document.querySelectorAll('.mobile-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+      _mobileMenu.classList.remove('open');
+      _menuBtn.classList.remove('open');
+    });
+  });
+</script>
+
+<!-- بيانات الكتب — يجب تحميله قبل سكريبت العرض -->
+<script src="../books-data.js"></script>
+
+<script>
+/* ============================================================
+   قسم الكتب — عرض، بحث، تصفية، نافذة التفاصيل
+   ============================================================ */
+(function () {
+  'use strict';
+
+  let currentCategory = 'الكل';
+  let currentSearch   = '';
+
+  /* ── بناء HTML كارت كتاب واحد ──────────────────────── */
+  function buildCard(book) {
+    const badge     = '<div class="product-badge new">متوفر</div>';
+    const bookUrl   = book.url || '#';
+    const priceLabel = `<span class="price-current">${book.price.toLocaleString('en-US')} دج</span>`;
+
+    return `
+      <div class="product-card"
+           data-category="${book.category}"
+           data-title="${book.title.toLowerCase()}"
+           role="article"
+           aria-label="${book.title}">
+        ${badge}
+        <a href="${bookUrl}" class="product-img-area" style="display:block;text-decoration:none;">
+          <img
+            src="${book.image}"
+            alt="غلاف كتاب ${book.title}"
+            class="product-image"
+            loading="lazy"
+            width="400"
+            height="400"
+            onerror="this.src='../Logo.jpg'"
+          />
+        </a>
+        <div class="product-info">
+          <div class="product-cat-label">${book.category}</div>
+          <a href="${bookUrl}" style="text-decoration:none;color:inherit;">
+            <h3 class="product-name">${book.title}</h3>
+          </a>
+          <div class="product-rating">
+            <span class="product-stars">📖</span>
+            <span class="product-rating-count">${book.author}</span>
+          </div>
+          <div class="product-prices">${priceLabel}</div>
+          <div class="product-card-btns">
+            <a href="${bookUrl}" class="btn-order-card">📖 التفاصيل</a>
+            <button class="btn-add-cart" data-add-to-cart="${book.id}">🛒 أضف للسلة</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  /* ── عرض الكتب في الشبكة ────────────────────────────── */
+  function renderBooks() {
+    const grid    = document.getElementById('booksGrid');
+    const noMsg   = document.getElementById('noBooksMsg');
+    const counter = document.getElementById('resultsCount');
+    if (!grid || !window.BOOKS_DATA) return;
+
+    const searchLow = currentSearch.trim().toLowerCase();
+    const filtered  = window.BOOKS_DATA.filter(book => {
+      const matchCat    = currentCategory === 'الكل' || book.category === currentCategory;
+      const matchSearch = !searchLow || book.title.toLowerCase().includes(searchLow)
+                                     || book.author.toLowerCase().includes(searchLow);
+      return matchCat && matchSearch;
+    });
+
+    if (!filtered.length) {
+      grid.innerHTML = '';
+      noMsg.style.display   = 'block';
+      counter.textContent   = '';
+    } else {
+      grid.innerHTML      = filtered.map(buildCard).join('');
+      noMsg.style.display = 'none';
+      counter.textContent = `${filtered.length} كتاب`;
+      bindDetailsButtons();
+    }
+  }
+
+  /* ── ربط أزرار "التفاصيل" ───────────────────────────── */
+  function bindDetailsButtons() {
+    document.querySelectorAll('.btn-book-details').forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        const id   = parseInt(btn.dataset.bookId);
+        const book = window.BOOKS_DATA.find(b => b.id === id);
+        if (book) openModal(book);
+      });
+    });
+  }
+
+  /* ── نافذة التفاصيل ─────────────────────────────────── */
+  function openModal(book) {
+    const priceLabel = book.priceDisplay
+      ? book.priceDisplay
+      : `${book.price.toLocaleString('en-US')} دج`;
+
+    document.getElementById('bookModalContent').innerHTML = `
+      <img src="${book.image}" alt="غلاف ${book.title}"
+           class="modal-book-img"
+           onerror="this.src='../Logo.jpg'">
+      <span class="modal-book-category">${book.category}</span>
+      <h2 class="modal-book-title">${book.title}</h2>
+      <p class="modal-book-author">المؤلف: <span>${book.author}</span></p>
+      <p class="modal-book-desc">${book.description}</p>
+      <div class="modal-book-price">${priceLabel}</div>
+      <div class="modal-btns">
+        <button class="btn-add-cart" data-add-to-cart="${book.id}">
+          🛒 أضف إلى السلة
+        </button>
+      </div>`;
+
+    document.getElementById('bookModalOverlay').classList.add('open');
+    document.body.classList.add('cart-body-lock');
+
+    /* ربط زر السلة داخل النافذة — cart.js يُعيد البحث عند الفتح */
+    const inModalBtn = document.querySelector('#bookModalContent [data-add-to-cart]');
+    inModalBtn?.addEventListener('click', e => {
+      e.stopPropagation();
+      const cid = parseInt(inModalBtn.dataset.addToCart);
+      if (window.DerradjCart?.add(cid)) {
+        document.querySelectorAll('.cart-badge').forEach(el => {
+          const cnt = window.DerradjCart.count();
+          el.textContent   = cnt > 9 ? '9+' : String(cnt);
+          el.style.display = cnt > 0 ? 'flex' : 'none';
+        });
+        window.DerradjCartUI?.showToast('✅ تمت إضافة الكتاب إلى السلة');
+      }
+    });
+  }
+
+  function closeModal() {
+    document.getElementById('bookModalOverlay').classList.remove('open');
+    document.body.classList.remove('cart-body-lock');
+  }
+
+  /* ── أحداث ───────────────────────────────────────────── */
+  document.getElementById('bookModalClose')
+    ?.addEventListener('click', closeModal);
+
+  document.getElementById('bookModalOverlay')
+    ?.addEventListener('click', e => {
+      if (e.target === document.getElementById('bookModalOverlay')) closeModal();
+    });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  /* أزرار التصفية */
+  document.getElementById('booksFilterTabs')
+    ?.addEventListener('click', e => {
+      const tab = e.target.closest('.filter-tab');
+      if (!tab) return;
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentCategory = tab.dataset.cat;
+      renderBooks();
+    });
+
+  /* البحث */
+  document.getElementById('bookSearch')
+    ?.addEventListener('input', e => {
+      currentSearch = e.target.value;
+      renderBooks();
+    });
+
+  /* العرض الأولي */
+  renderBooks();
+
+})();
+</script>
+
+<!-- نظام السلة — يجب تحميله آخراً ليلتقط data-add-to-cart -->
+<script src="../cart.js"></script>
+
+</body>
+</html>
