@@ -13,7 +13,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>اطلب الآن — Derradj Shop</title>
-  <meta name="description" content="اطلب منتجاتك من Derradj Shop — دفع مسبق بالبطاقة الذهبية أو BaridiMob أو CCP، توصيل مجاني، ضمان كامل.">
+  <meta name="description" content="اطلب منتجاتك من Derradj Shop — دفع مسبق (CCP / BaridiMob) أو دفع عند الاستلام، توصيل 24-72 ساعة لجميع ولايات الجزائر، ضمان كامل.">
   <link rel="canonical" href="https://www.derradjshop.com/ordre/">
   <link rel="icon" type="image/png" href="../Logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -333,7 +333,10 @@
     .cs-item-fr { font-size: 11px; color: var(--text-muted); font-weight: 600; }
     .cs-item.is-selected .cs-item-ar { color: var(--primary); }
     .cs-item.is-selected .cs-item-fr { color: rgba(29,78,216,.55); }
-    .cs-empty { padding: 20px 16px; text-align: center; color: var(--text-muted); font-size: 14px; direction: rtl; }
+    .cs-empty { padding: 20px 16px; text-align: center; color: var(--text-muted); font-size: 14px; direction: rtl; transition: color .2s; }
+    .cs-empty.cs-empty-alert { color: #dc2626; font-weight: 700; }
+    @keyframes csShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .cs-empty-shake { animation: csShake .4s ease; }
 
     /* الخلفية المعتمة */
     .cs-backdrop {
@@ -1132,9 +1135,9 @@
 <main class="order-page">
   <div class="container" style="max-width:800px;">
 
-    <!-- ▶ بانر التوصيل المجاني -->
+    <!-- ▶ بانر التوصيل -->
     <div class="free-shipping-banner">
-      🚚 التوصيل لجميع ولايات الجزائر الـ 58 — اختر ولايتك لرؤية سعر التوصيل
+      🚚 التوصيل 24-72 ساعة لجميع ولايات الجزائر الـ 58 — اختر ولايتك لرؤية سعر التوصيل
     </div>
 
     <div class="order-card" style="padding:0;background:transparent;border:none;box-shadow:none;">
@@ -1527,9 +1530,8 @@
     </div>
     <div class="footer-links-col">
       <h4>الدفع</h4>
-      <div class="footer-pay-badge">💳 البطاقة الذهبية</div>
-      <div class="footer-pay-badge" style="margin-top:8px;">📱 BaridiMob</div>
-      <div class="footer-pay-badge" style="margin-top:8px;">🏦 CCP / RIP</div>
+      <div class="footer-pay-badge">💳 CCP / BaridiMob</div>
+      <div class="footer-pay-badge" style="margin-top:8px;">🏠 الدفع عند الاستلام</div>
     </div>
   </div>
   <div class="footer-bottom">
@@ -2245,6 +2247,15 @@ class CustomSelect {
 
     if (this._searchEl) {
       this._searchEl.addEventListener('input', () => this._filter(this._searchEl.value));
+      this._searchEl.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (this.filtered.length > 0) {
+          this._select(this.filtered[0]);
+        } else {
+          this._alertNoResult();
+        }
+      });
     }
 
     if (this._closeBtn) {
@@ -2306,6 +2317,20 @@ class CustomSelect {
       el.addEventListener('mousedown', e => { e.preventDefault(); pick(); });
       el.addEventListener('touchend',  e => { e.preventDefault(); pick(); });
     });
+  }
+
+  _alertNoResult() {
+    const emptyEl = this._listEl.querySelector('.cs-empty');
+    if (!emptyEl) return;
+    emptyEl.textContent = '⚠️ لا توجد نتيجة — جرّب كلمة مختلفة';
+    emptyEl.classList.add('cs-empty-alert', 'cs-empty-shake');
+    setTimeout(() => {
+      emptyEl.classList.remove('cs-empty-shake');
+      setTimeout(() => {
+        emptyEl.textContent = 'لا توجد نتائج مطابقة';
+        emptyEl.classList.remove('cs-empty-alert');
+      }, 2000);
+    }, 400);
   }
 
   _select(item) {
