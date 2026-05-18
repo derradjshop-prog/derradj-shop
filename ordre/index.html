@@ -1323,7 +1323,7 @@
           <div class="pm-grid" role="radiogroup" aria-label="طريقة الدفع">
 
             <label class="pm-card" id="card_prepay" for="pay_prepay">
-              <input type="radio" name="payment_method" id="pay_prepay" value="prepay">
+              <input type="radio" name="payment_method" id="pay_prepay" value="prepaid">
               <span class="pm-check">✓</span>
               <span class="pm-icon">💳</span>
               <span class="pm-name">دفع قبل التسليم</span>
@@ -1562,19 +1562,9 @@
    السعر بالدينار الجزائري (DA).
 ──────────────────────────────────────────────────────────── */
 window.PRODUCTS_CATALOG = [
-  /* ── أجهزة Arduino والإلكترونيات ──────────────────────────────── */
-  {
-    name: "Electronics Components Kit — Starter Kit (830 Breadboard + Box)",
-    shortName: "Electronics Components Kit",
-    price: 7000,
-    paymentUrl: "http://pay.chargily.com/payment-links/01krrc0k7t7m5e91s0t1ba48k5"
-  },
-  {
-    name: "YNINCH Super Learning Kit for Arduino UNO R3, Including Development Board, Code Tutorial, Breadboard, LED Diodes",
-    shortName: "YNINCH Super Learning Kit — Arduino UNO R3",
-    price: 7300,
-    paymentUrl: "http://pay.chargily.com/payment-links/01krtrjs6qyr6r1azdsva1ngzb"
-  },
+  /* ── منتجات مخفية (تحتفظ بها لضمان تطابق catalogId — لا تظهر في القائمة) ── */
+  { name: "Electronics Components Kit",          shortName: "Electronics Components Kit",        price: 7000, hidden: true },
+  { name: "YNINCH Super Learning Kit Arduino",   shortName: "YNINCH Super Learning Kit",         price: 7300, hidden: true },
   /* ── الكتب (index يتطابق مع catalogId في cart.js) ────────────── */
   { name: "العادات السبع للناس الأكثر فعالية",         shortName: "العادات السبع",              price: 1400, paymentUrl: null },
   { name: "العادات الذرية",                             shortName: "العادات الذرية",             price: 1000, paymentUrl: null },
@@ -1709,12 +1699,12 @@ dtRadios.forEach(r => {
 /* ── اختيار طريقة الدفع ─────────────────────────────────────── */
 const pmRadios = document.querySelectorAll('input[name="payment_method"]');
 const detailBoxes = {
-  prepay:           document.getElementById('detail_prepay'),
+  prepaid:          document.getElementById('detail_prepay'),
   cash_on_delivery: document.getElementById('detail_cod'),
 };
 const receiptSection = document.getElementById('receiptSection');
 const pmCards = {
-  prepay:           document.getElementById('card_prepay'),
+  prepaid:          document.getElementById('card_prepay'),
   cash_on_delivery: document.getElementById('card_cod'),
 };
 
@@ -1731,7 +1721,7 @@ pmRadios.forEach(radio => {
       /* الدفع عند الاستلام — لا حاجة لوصل */
       receiptSection.style.display = 'none';
       document.getElementById('paymentReceipt').required = false;
-    } else {
+    } else if (radio.value === 'prepaid') {
       /* دفع قبل التسليم — وصل إجباري */
       receiptSection.style.display = 'block';
       document.getElementById('paymentReceipt').required = true;
@@ -1773,9 +1763,10 @@ function formatDZDSummary(n) {
   return Number(n || 0).toLocaleString('en-US') + ' دج';
 }
 
-/* خيارات القائمة المنسدلة باسم مختصر واضح */
+/* خيارات القائمة المنسدلة — تتجاهل المنتجات المخفية */
 function buildOptions() {
   return window.PRODUCTS_CATALOG.map(function(p, i) {
+    if (p.hidden) return '';
     var display = (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج';
     return '<option value="' + i + '" title="' + p.name + '">' + display + '</option>';
   }).join('');
@@ -2031,7 +2022,7 @@ function recalcAll() {
 }
 /* ── ملخص الطلب ──────────────────────────────────────────────── */
 function getPaymentLabel(v) {
-  return { prepay: '💳 دفع قبل التسليم (CCP / BaridiMob)', cash_on_delivery: '🏠 الدفع عند الاستلام' }[v] || null;
+  return { prepaid: '💳 دفع قبل التسليم (CCP / BaridiMob)', cash_on_delivery: '🏠 الدفع عند الاستلام' }[v] || null;
 }
 
 function updateSummary() {
@@ -2181,7 +2172,7 @@ window.validateCheckout = function () {
   }
 
   /* وصل الدفع — إجباري للدفع المسبق فقط */
-  if (pm && pm.value !== 'cash_on_delivery') {
+  if (pm && pm.value === 'prepaid') {
     const receipt = document.getElementById('paymentReceipt');
     if (!receipt?.files?.length) {
       document.getElementById('receiptError').style.display = 'block';

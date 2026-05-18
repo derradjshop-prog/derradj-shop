@@ -14,21 +14,9 @@
      catalogId = index في PRODUCTS_CATALOG (يبدأ من 0)
   ══════════════════════════════════════════════════════════ */
   window.SHOP_CATALOG = [
-    /* ── أجهزة Arduino والإلكترونيات ─────────────────── */
-    {
-      catalogId: 0,
-      name:      'Electronics Components Kit — Starter Kit (830 Breadboard + Box)',
-      shortName: 'Electronics Components Kit',
-      price:     7000,
-      image:     BASE + '/products/electronics-components-starter-kit/pictures/main-4.jpg',
-    },
-    {
-      catalogId: 1,
-      name:      'YNINCH Super Learning Kit for Arduino UNO R3, Including Development Board, Code Tutorial, Breadboard, LED Diodes',
-      shortName: 'YNINCH Super Learning Kit — Arduino UNO R3',
-      price:     7300,
-      image:     BASE + '/products/electronics-components-starter-kit/pictures/main-4.jpg',
-    },
+    /* ── منتجات مخفية (احتفاظ بها لتطابق catalogId — لا تظهر للمستخدم) ── */
+    { catalogId: 0, name: 'Electronics Components Kit',       shortName: 'Electronics Components Kit',  price: 7000, hidden: true, image: '' },
+    { catalogId: 1, name: 'YNINCH Super Learning Kit Arduino', shortName: 'YNINCH Super Learning Kit', price: 7300, hidden: true, image: '' },
     /* ── الكتب (catalogId يتطابق مع id في books-data.js) ─ */
     { catalogId: 2,  name: 'العادات السبع للناس الأكثر فعالية',   shortName: 'العادات السبع',                    price: 1400, image: BASE + '/books/7-habits/main.png' },
     { catalogId: 3,  name: 'العادات الذرية',                       shortName: 'العادات الذرية',                   price: 1000, image: BASE + '/books/atomic-habits/main.png' },
@@ -70,7 +58,7 @@
         found.qty += 1;
       } else {
         const p = window.SHOP_CATALOG.find(c => c.catalogId === catalogId);
-        if (!p) return false;
+        if (!p || p.hidden) return false;   /* رفض المنتجات المخفية */
         items.push({
           catalogId:    p.catalogId,
           name:         p.name,
@@ -136,7 +124,11 @@
     const footer = document.getElementById('cartSidebarFooter');
     if (!body || !footer) return;
 
-    const items = Cart.get();
+    /* تصفية المنتجات المخفية من localStorage قبل العرض */
+    const items = Cart.get().filter(item => {
+      const p = (window.SHOP_CATALOG || []).find(c => c.catalogId === item.catalogId);
+      return !p || !p.hidden;
+    });
 
     if (!items.length) {
       body.innerHTML = `

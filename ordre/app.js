@@ -133,7 +133,7 @@
   const orderForm = document.getElementById("orderForm");
   if (!orderForm) return;
 
-  /* ── جلب بيانات المنتجات من الصفوف ────────────────────── */
+  /* ── جلب بيانات المنتجات من الصفوف (تجاهل المخفية) ──── */
   function getProductItems() {
     const rows  = document.querySelectorAll("#productsList .product-row");
     const items = [];
@@ -141,11 +141,47 @@
       const idx = parseInt(row.querySelector(".pr-select")?.value);
       const qty = Math.max(1, parseInt(row.querySelector(".pr-qty-input")?.value) || 1);
       const cat = (window.PRODUCTS_CATALOG || [])[idx];
-      if (!isNaN(idx) && cat) {
+      if (!isNaN(idx) && cat && !cat.hidden) {
         items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty });
       }
     });
     return items;
+  }
+
+  /* ── مساعد: ترجمة كود الخطأ إلى رسالة واضحة ─────────── */
+  function friendlyError(err) {
+    const code = err?.code || "";
+    const msg  = (err?.message || "").toLowerCase();
+
+    if (code === "42501" || msg.includes("row-level security") || msg.includes("rls")) {
+      return (
+        "❌ خطأ في إعدادات قاعدة البيانات (RLS).\n\n" +
+        "يجب تشغيل ملف supabase-setup.sql في لوحة تحكم Supabase لتفعيل صلاحية الإرسال.\n\n" +
+        "للمساعدة تواصل معنا: 0555 49 13 16"
+      );
+    }
+    if (code === "42703" || msg.includes("column") || msg.includes("does not exist")) {
+      return (
+        "❌ عمود مفقود في الجدول (schema mismatch).\n" +
+        "الخطأ: " + (err?.message || "") + "\n\n" +
+        "تواصل معنا: 0555 49 13 16"
+      );
+    }
+    if (code === "23502" || msg.includes("null value") || msg.includes("not-null")) {
+      return (
+        "❌ حقل إجباري فارغ.\n" +
+        "الخطأ: " + (err?.message || "") + "\n\n" +
+        "تواصل معنا: 0555 49 13 16"
+      );
+    }
+    if (msg.includes("fetch") || msg.includes("network") || msg.includes("failed to fetch")) {
+      return "❌ خطأ في الاتصال بالإنترنت. تحقق من الشبكة وأعد المحاولة.";
+    }
+    return (
+      "❌ حدث خطأ أثناء إرسال الطلب.\n" +
+      "تأكد من اتصالك بالإنترنت وحاول مجدداً.\n\n" +
+      "أو تواصل معنا مباشرة: 0555 49 13 16"
+    );
   }
 
   /* ── إرسال الطلب ──────────────────────────────────────── */
@@ -154,22 +190,61 @@
 
     if (typeof window.validateCheckout === "function" && !window.validateCheckout()) return;
 
-    const fullName   = document.getElementById("full_name")?.value?.trim() || "";
-    const phone      = onlyDigits10(document.getElementById("phoneInput")?.value || "");
-    const address    = document.getElementById("addressInput")?.value?.trim() || "";
-    const wilaya     = document.getElementById("wilayaHidden")?.value?.trim() || "";
-    const commune    = document.getElementById("communeHidden")?.value?.trim() || null;
-    const notes        = document.getElementById("notes")?.value?.trim() || null;
+    /* ── جمع بيانات النموذج ─────────────────────────────── */
+    const fullName     = document.getElementById("full_name")?.value?.trim()    || "";
+    const phone        = onlyDigits10(document.getElementById("phoneInput")?.value || "");
+    const address      = document.getElementById("addressInput")?.value?.trim() || "";
+    const wilaya       = document.getElementById("wilayaHidden")?.value?.trim() || "";
+    const commune      = document.getElementById("communeHidden")?.value?.trim() || null;
+    const notes        = document.getElementById("notes")?.value?.trim()        || null;
     const pm           = document.querySelector('input[name="payment_method"]:checked')?.value || "";
-    const deliveryType = document.querySelector('input[name="delivery_type"]:checked')?.value || "home";
+    const deliveryType = document.querySelector('input[name="delivery_type"]:checked')?.value  || "home";
+
+    /* ── حماية: القيم المقبولة بقاعدة البيانات ────────────
+       payment_method : 'prepaid' | 'cash_on_delivery'
+       delivery_type  : 'home'    | 'office'            */
+    const VALID_PM = ["prepaid", "cash_on_delivery"];
+    const VALID_DT = ["home", "office"];
+    if (!VALID_PM.includes(pm)) {
+      alert("❌ طريقة الدفع غير صالحة. يرجى اختيار طريقة دفع من القائمة.");
+      return;
+    }
+    if (!VALID_DT.includes(deliveryType)) {
+      alert("❌ طريقة التوصيل غير صالحة. يرجى اختيار طريقة توصيل صحيحة.");
+      return;
+    }
     const wilayaCode   = WILAYA_CODE[wilaya] || null;
 
     const items       = getProductItems();
     const subtotal    = items.reduce((s, it) => s + it.subtotal, 0);
-    const shippingFee = parseInt(document.getElementById("shippingFeeInput")?.value || "0");
+    const shippingFee = Math.max(0, parseInt(document.getElementById("shippingFeeInput")?.value || "0", 10) || 0);
     const totalPrice  = subtotal + shippingFee;
 
+    /* ── سجّل البيانات قبل الإرسال (للتشخيص) ──────────── */
+    console.log("📦 Order payload:", {
+      fullName, phone, address, wilaya, wilayaCode, commune,
+      deliveryType, shippingFee, subtotal, totalPrice, pm,
+      itemsCount: items.length,
+    });
+
+    /* ── تحقق إضافي: بيانات المنتجات ───────────────────── */
+    if (items.length === 0) {
+      alert("❌ يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.");
+      return;
+    }
+    if (!wilaya) {
+      alert("❌ يرجى اختيار الولاية قبل إرسال الطلب.");
+      return;
+    }
+    if (!pm) {
+      alert("❌ يرجى اختيار طريقة الدفع.");
+      return;
+    }
+
     const submitBtn = document.getElementById("submitBtn");
+    const resetBtn  = () => {
+      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "✅ تأكيد الطلب"; }
+    };
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "⏳ جاري الإرسال..."; }
 
     try {
@@ -182,6 +257,7 @@
         const ext      = receiptFile.name.split(".").pop().toLowerCase() || "jpg";
         const filePath = `receipts/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
 
+        console.log("📤 Uploading receipt:", filePath);
         const { data: upData, error: upErr } = await supabase.storage
           .from("payment-receipts")
           .upload(filePath, receiptFile, { upsert: false, contentType: receiptFile.type });
@@ -191,7 +267,6 @@
           throw new Error("فشل رفع وصل الدفع: " + (upErr.message || JSON.stringify(upErr)));
         }
 
-        /* جلب الرابط العام الصحيح من Supabase Storage */
         const { data: urlData } = supabase.storage
           .from("payment-receipts")
           .getPublicUrl(upData.path);
@@ -202,29 +277,36 @@
 
       /* ── 2. إنشاء الطلب في جدول orders ─────────────────── */
       const orderId = crypto.randomUUID();
+      console.log("🔑 Order ID:", orderId);
+
+      const orderPayload = {
+        id:             orderId,
+        full_name:      fullName,
+        phone:          phone,
+        address:        address,
+        wilaya:         wilaya,
+        wilaya_code:    wilayaCode,
+        commune:        commune,
+        delivery_type:  deliveryType,
+        shipping_fee:   shippingFee,
+        subtotal:       subtotal,
+        total_price:    totalPrice,
+        payment_method: pm,
+        is_confirmed:   null,
+        receipt_url:    receiptUrl,
+        notes:          notes,
+      };
+      console.log("📝 Inserting order:", orderPayload);
 
       const { error: orderErr } = await supabase
         .from("orders")
-        .insert({
-          id:             orderId,
-          full_name:      fullName,
-          phone:          phone,
-          address:        address,
-          wilaya:         wilaya,
-          wilaya_code:    wilayaCode,
-          commune:        commune,
-          delivery_type:  deliveryType,
-          shipping_fee:   shippingFee,
-          subtotal:       subtotal,
-          total_price:    totalPrice,
-          payment_method: pm,
-          is_confirmed:   null,
-          receipt_url:    receiptUrl,
-          notes:          notes,
-        });
+        .insert(orderPayload);
 
       if (orderErr) {
-        console.error("❌ Order insert error:", orderErr);
+        console.error("❌ Order insert error — code:", orderErr.code,
+          "| message:", orderErr.message,
+          "| details:", orderErr.details,
+          "| hint:", orderErr.hint);
         throw orderErr;
       }
 
@@ -234,23 +316,26 @@
       if (items.length > 0) {
         const orderItems = items.map(it => ({
           order_id:     orderId,
-          product_id:   null,           /* null لأن المنتجات ليست في DB بعد */
+          product_id:   null,
           product_name: it.name,
           unit_price:   it.price,
           quantity:     it.qty,
           subtotal:     it.subtotal,
         }));
 
+        console.log("📝 Inserting order_items:", orderItems);
         const { error: itemsErr } = await supabase
           .from("order_items")
           .insert(orderItems);
 
         if (itemsErr) {
-          console.error("❌ Order items insert error:", itemsErr);
-          throw itemsErr;
+          console.error("❌ Order items insert error — code:", itemsErr.code,
+            "| message:", itemsErr.message);
+          /* لا نوقف العملية: الطلب الرئيسي تم — ندوّن الخطأ فقط */
+          console.warn("⚠️ Order created but items could not be saved. orderId:", orderId);
+        } else {
+          console.log(`✅ Order items saved: ${orderItems.length} item(s)`);
         }
-
-        console.log(`✅ Order items saved: ${orderItems.length} item(s)`);
       }
 
       /* ── 4. نجاح — مسح السلة ثم التوجيه لصفحة النجاح ─────── */
@@ -259,12 +344,16 @@
 
     } catch (err) {
       console.error("❌ Submit error:", err);
-      if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "✅ تأكيد الطلب"; }
-      alert(
-        "❌ حدث خطأ أثناء إرسال الطلب.\n" +
-        "تأكد من اتصالك بالإنترنت وحاول مجدداً.\n\n" +
-        "أو تواصل معنا مباشرة: 0555 49 13 16"
-      );
+      resetBtn();
+      const alertEl = document.getElementById("formAlert");
+      const userMsg = friendlyError(err);
+      if (alertEl) {
+        alertEl.innerHTML = userMsg.replace(/\n/g, "<br>");
+        alertEl.classList.add("show");
+        alertEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        alert(userMsg);
+      }
     }
   });
 
