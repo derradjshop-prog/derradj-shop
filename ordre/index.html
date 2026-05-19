@@ -765,6 +765,9 @@
       letter-spacing: 1.5px;
       direction: ltr;
       flex: 1;
+      min-width: 0;
+      word-break: break-all;
+      overflow-wrap: break-word;
     }
     .btn-copy {
       display: inline-flex;
@@ -1102,12 +1105,70 @@
     }
 
     /* حماية شاملة: لا overflow أفقي في أي حال */
-    @media (max-width: 768px) {
-      .order-page,
-      #productsList {
+    html, body {
+      overflow-x: hidden;
+      max-width: 100%;
+    }
+    .order-page,
+    #productsList {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100%;
+    }
+
+    @media (max-width: 640px) {
+      /* آمن على الجوال: القوائم المنسدلة تستخدم position:fixed ≤640px فلا تُقطع */
+      .ch-section {
         overflow-x: hidden;
       }
-      /* .ch-section لا يأخذ overflow-x:hidden لأنه يقص قوائم الولاية/البلدية المنسدلة */
+    }
+
+    /* === شاشات صغيرة جداً (≤375px) === */
+    @media (max-width: 375px) {
+      .rip-number {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+      }
+      .pm-detail-box {
+        padding: 10px;
+      }
+      .rip-card {
+        padding: 8px 10px;
+      }
+      /* نقل زر النسخ تحت الرقم لإعطاء الرقم عرضاً كاملاً */
+      .rip-value-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .btn-copy {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* === شاشات 320px === */
+    @media (max-width: 320px) {
+      .ch-section {
+        padding: 8px;
+      }
+      .checkout-header {
+        padding: 10px 12px;
+      }
+      .rip-number {
+        font-size: 13px;
+        letter-spacing: 0;
+      }
+      .ccp-row-label {
+        min-width: 52px;
+        font-size: 11px;
+      }
+      .ccp-row-val {
+        font-size: 12px;
+      }
+      .pr-bottom-row {
+        grid-template-columns: 50px 1fr 1fr;
+      }
     }
 
     /* === Custom Product Selector — always opens downward (position:fixed) === */
@@ -1235,7 +1296,7 @@
 
 <!-- ══════════════════════ MAIN ══════════════════════ -->
 <main class="order-page">
-  <div class="container" style="max-width:800px;">
+  <div class="container" style="max-width:800px;width:100%;box-sizing:border-box;">
 
     <!-- ▶ بانر التوصيل -->
     <div class="shipping-banner">
