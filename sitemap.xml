@@ -104,39 +104,39 @@
 
   <!-- ══ صفحة الطلب ══ -->
   <url>
-    <loc>https://www.derradjshop.com/ordre/index.html</loc>
+    <loc>https://www.derradjshop.com/ordre/</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- ══ صفحات معلومات المتجر ══ -->
   <url>
-    <loc>https://www.derradjshop.com/faq.html</loc>
+    <loc>https://www.derradjshop.com/faq</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/about.html</loc>
+    <loc>https://www.derradjshop.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/contact.html</loc>
+    <loc>https://www.derradjshop.com/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/delivery.html</loc>
+    <loc>https://www.derradjshop.com/delivery</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/payment.html</loc>
+    <loc>https://www.derradjshop.com/payment</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/terms.html</loc>
+    <loc>https://www.derradjshop.com/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>
   </url>
