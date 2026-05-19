@@ -652,6 +652,17 @@
     { catalogId: 17, price: 1200, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/be-happy-with-someone/main.png' },
     { catalogId: 20, price: 1600, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/emotional-intelligence/main.png' },
     { catalogId: 21, price: 1100, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/sell-anything/main.png' },
+    { catalogId: 22, price: 1700, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/sell-yourself/main.png' },
+    { catalogId: 23, price: 1500, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/mastering-deals/main.png' },
+    { catalogId: 24, price: 1600, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/psychology-of-money/main.png' },
+    { catalogId: 25, price: 950,  category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/subconscious-mind/main.png' },
+    { catalogId: 26, price: 900,  category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/subtle-art/main.png' },
+    { catalogId: 27, price: 750,  category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/crowd-psychology/main.png' },
+    { catalogId: 28, price: 1300, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/psychological-laws/main.png' },
+    { catalogId: 29, price: 1550, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/opinions-beliefs/main.png' },
+    { catalogId: 30, price: 2100, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/rational-male/main.png' },
+    { catalogId: 31, price: 1400, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/6-sales-skills/main.png' },
+    { catalogId: 32, price: 1800, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/small-habits-effect/main.png' },
   ];
 
   /* جلب حالة التوفر من Supabase */

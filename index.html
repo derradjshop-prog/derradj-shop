@@ -78,7 +78,7 @@
         },
         "currenciesAccepted": "DZD",
         "paymentAccepted": "Credit Card, Debit Card",
-        "priceRange": "900-1800 DZD",
+        "priceRange": "750-2100 DZD",
         "openingHoursSpecification": [
           {
             "@type": "OpeningHoursSpecification",
@@ -231,7 +231,7 @@
     </div>
 
     <div class="products-cta-row">
-      <a href="books/" class="btn-primary">📚 تصفح كل الكتب الـ 17</a>
+      <a href="books/" class="btn-primary" id="allBooksBtn">📚 تصفح كل الكتب</a>
     </div>
   </div>
 </section>
@@ -718,6 +718,9 @@
     var grid = document.getElementById('homeBooksGrid');
     if (!grid || !window.BOOKS_DATA) return;
     grid.innerHTML = window.BOOKS_DATA.slice(0, 6).map(buildHomeCard).join('');
+    /* تحديث نص زر "تصفح الكتب" بالعدد الحقيقي من المصدر */
+    var btn = document.getElementById('allBooksBtn');
+    if (btn) btn.textContent = '📚 تصفح كل الكتب الـ ' + window.BOOKS_DATA.length;
   }
 
   renderHomeBooks();

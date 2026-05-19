@@ -45,6 +45,17 @@
     { catalogId: 19, name: 'كيف تتقن فن البيع',                    shortName: 'كيف تتقن فن البيع',                price: 1500, hidden: true,  available: true, image: '' },
     { catalogId: 20, name: 'الذكاء العاطفي',                       shortName: 'الذكاء العاطفي',                   price: 1600, available: true, image: BASE + '/books/emotional-intelligence/main.png' },
     { catalogId: 21, name: 'كيف تبيع أي شيء لأي إنسان',           shortName: 'كيف تبيع أي شيء لأي إنسان',      price: 1100, available: true, image: BASE + '/books/sell-anything/main.png' },
+    { catalogId: 22, name: 'كيف تسوق نفسك',                        shortName: 'كيف تسوق نفسك',                   price: 1700, available: true, image: BASE + '/books/sell-yourself/main.png' },
+    { catalogId: 23, name: 'كيف تتقن إتمام الصفقات',               shortName: 'كيف تتقن إتمام الصفقات',          price: 1500, available: true, image: BASE + '/books/mastering-deals/main.png' },
+    { catalogId: 24, name: 'سيكولوجية المال',                       shortName: 'سيكولوجية المال',                  price: 1600, available: true, image: BASE + '/books/psychology-of-money/main.png' },
+    { catalogId: 25, name: 'العقل الباطن',                          shortName: 'العقل الباطن',                     price: 950,  available: true, image: BASE + '/books/subconscious-mind/main.png' },
+    { catalogId: 26, name: 'فن اللامبالاة',                         shortName: 'فن اللامبالاة',                    price: 900,  available: true, image: BASE + '/books/subtle-art/main.png' },
+    { catalogId: 27, name: 'سيكولوجية الجماهير',                    shortName: 'سيكولوجية الجماهير',               price: 750,  available: true, image: BASE + '/books/crowd-psychology/main.png' },
+    { catalogId: 28, name: 'السنن النفسية لتطور الأمم',             shortName: 'السنن النفسية لتطور الأمم',        price: 1300, available: true, image: BASE + '/books/psychological-laws/main.png' },
+    { catalogId: 29, name: 'الآراء والمعتقدات',                     shortName: 'الآراء والمعتقدات',                price: 1550, available: true, image: BASE + '/books/opinions-beliefs/main.png' },
+    { catalogId: 30, name: 'الذكر العقلاني: الذكورة الإيجابية',     shortName: 'الذكر العقلاني',                   price: 2100, available: true, image: BASE + '/books/rational-male/main.png' },
+    { catalogId: 31, name: '6 مهارات لتحقيق مبيعات مختلفة مذهلة',  shortName: '6 مهارات مبيعات مذهلة',            price: 1400, available: true, image: BASE + '/books/6-sales-skills/main.png' },
+    { catalogId: 32, name: 'الأثر المذهل للعادات البسيطة',          shortName: 'الأثر المذهل للعادات البسيطة',    price: 1800, available: true, image: BASE + '/books/small-habits-effect/main.png' },
   ];
 
   /* ══════════════════════════════════════════════════════════
