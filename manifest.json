@@ -1,7 +1,7 @@
 {
-  "name": "Derradj Shop — Arduino والمكونات الإلكترونية في الجزائر",
+  "name": "Derradj Shop — كتب تطوير الذات والفلسفة وعلم النفس في الجزائر",
   "short_name": "Derradj Shop",
-  "description": "متجر جزائري متخصص في بيع أطقم Arduino والمكونات الإلكترونية بأسعار مناسبة. توصيل لجميع ولايات الجزائر.",
+  "description": "متجر كتب جزائري متخصص في تطوير الذات، الفلسفة، علم النفس والإدارة. كتب مختارة بعناية مع توصيل سريع لجميع ولايات الجزائر.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,7 +10,7 @@
   "lang": "ar",
   "dir": "rtl",
   "orientation": "portrait",
-  "categories": ["shopping", "electronics"],
+  "categories": ["shopping", "books", "education"],
   "icons": [
     {
       "src": "/Logo.png",

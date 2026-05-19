@@ -1,30 +1,119 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
-  <!-- الصفحة الرئيسية -->
+  <!-- ══ الصفحة الرئيسية ══ -->
   <url>
     <loc>https://www.derradjshop.com/</loc>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
-  <!-- صفحات المنتجات الإلكترونية — الأعلى أولوية -->
+  <!-- ══ قسم الكتب ══ -->
   <url>
-    <loc>https://www.derradjshop.com/products/electronics-components-starter-kit/</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://www.derradjshop.com/products/arduino-uno-r3-super-learning-kit/</loc>
+    <loc>https://www.derradjshop.com/books/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
-  <!-- صفحات معلومات المتجر -->
+  <!-- ══ صفحات الكتب ══ -->
+  <url>
+    <loc>https://www.derradjshop.com/books/atomic-habits/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/7-habits/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/emotional-intelligence/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/power-of-now/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/courage-is-calling/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/management-mess/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/myths-of-happiness/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/hungry-ghosts/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/propaganda/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/rule-333/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/small-habits-revolution/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/joy-of-imperfection/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/happy-ever-after/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/brief-history-of-time/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/joy-of-thirties/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/be-happy-with-someone/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.derradjshop.com/books/sell-anything/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ══ صفحة الطلب ══ -->
+  <url>
+    <loc>https://www.derradjshop.com/ordre/index.html</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ══ صفحات معلومات المتجر ══ -->
   <url>
     <loc>https://www.derradjshop.com/faq.html</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.7</priority>
   </url>
   <url>
     <loc>https://www.derradjshop.com/about.html</loc>

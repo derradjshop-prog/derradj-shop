@@ -15,10 +15,10 @@
 
   <title>كتب تطوير الذات والفلسفة وعلم النفس في الجزائر | Derradj Shop — كتب اون لاين</title>
 
-  <meta name="description" content="اشتري أفضل كتب تطوير الذات، الفلسفة، علم النفس والإدارة في الجزائر — Derradj Shop. 17 كتاباً مختاراً بعناية مع التوصيل السريع لجميع ولايات الجزائر. أسعار منافسة.">
+  <meta name="description" content="اشتري أفضل كتب تطوير الذات، الفلسفة، علم النفس والإدارة في الجزائر — Derradj Shop. كتب مختارة بعناية مع التوصيل السريع لجميع ولايات الجزائر. أسعار منافسة.">
 
   <meta property="og:title" content="كتب تطوير الذات والفلسفة وعلم النفس — Derradj Shop الجزائر">
-  <meta property="og:description" content="17 كتاباً مختاراً في تطوير الذات، الفلسفة، علم النفس والإدارة. توصيل سريع لجميع ولايات الجزائر.">
+  <meta property="og:description" content="كتب مختارة في تطوير الذات، الفلسفة، علم النفس والإدارة. توصيل سريع لجميع ولايات الجزائر.">
   <meta property="og:url" content="https://www.derradjshop.com/books/">
   <meta property="og:image" content="https://www.derradjshop.com/Logo.jpg">
   <meta property="og:type" content="website">
@@ -641,7 +641,16 @@
       renderBooks();
     });
 
-  /* العرض الأولي */
+  /* العرض الأولي — مع دعم فلترة من عنوان URL (?cat=...) */
+  const _urlCat = new URLSearchParams(window.location.search).get('cat');
+  if (_urlCat) {
+    const _tab = document.querySelector(`.filter-tab[data-cat="${_urlCat}"]`);
+    if (_tab) {
+      document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+      _tab.classList.add('active');
+      currentCategory = _urlCat;
+    }
+  }
   renderBooks();
 
 })();

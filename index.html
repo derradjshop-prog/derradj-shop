@@ -13,12 +13,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
-  <title>Derradj Shop — كتب تطوير الذات، الفلسفة وعلم النفس في الجزائر | متجر كتب اون لاين</title>
+  <title>اشترِ الكتب اون لاين في الجزائر | Derradj Shop — متجر كتب عربي</title>
 
-  <meta name="description" content="Derradj Shop — متجر كتب جزائري متخصص في تطوير الذات، الفلسفة، علم النفس، الإدارة والعلوم. كتب مختارة بعناية مع التوصيل 24-72 ساعة لجميع ولايات الجزائر. دفع مسبق (CCP/BaridiMob) أو عند الاستلام.">
+  <meta name="description" content="اكتشف واشترِ أفضل الكتب العربية اون لاين في الجزائر من Derradj Shop — كتب تطوير الذات، الفلسفة، علم النفس، الإدارة والعلوم. توصيل سريع 24-72 ساعة لجميع ولايات الجزائر. دفع عند الاستلام أو مسبق.">
 
-  <meta property="og:title"       content="Derradj Shop — كتب تطوير الذات والفلسفة وعلم النفس في الجزائر">
-  <meta property="og:description" content="أفضل كتب تطوير الذات، الفلسفة، علم النفس والإدارة بأسعار منافسة. توصيل 24-72 ساعة لكل الجزائر — دفع مسبق (CCP/BaridiMob) أو عند الاستلام.">
+  <meta property="og:title"       content="اشترِ الكتب اون لاين في الجزائر | Derradj Shop">
+  <meta property="og:description" content="أفضل الكتب العربية في تطوير الذات، الفلسفة، علم النفس والإدارة بأسعار منافسة. توصيل سريع لكل ولايات الجزائر — دفع عند الاستلام أو مسبق.">
   <meta property="og:url"         content="https://www.derradjshop.com/">
   <meta property="og:image"       content="https://www.derradjshop.com/Logo.jpg">
   <meta property="og:image:width" content="1200">
@@ -144,7 +144,7 @@
 <!-- ===================== HEADER ===================== -->
 <header class="main-header" id="mainHeader">
   <div class="header-inner">
-    <a href="/" class="logo">
+    <a href="#" class="logo" id="homeLogoLink">
 
       <span>Derradj <span class="logo-accent">Shop</span></span>
 
@@ -337,32 +337,32 @@
       <p class="section-subtitle">كتب مختارة في ستة تصنيفات لكل اهتمام وكل مرحلة من مراحل حياتك</p>
     </div>
     <div class="categories-grid">
-      <a href="books/index.html" class="category-card active">
+      <a href="books/index.html?cat=تطوير الذات" class="category-card active">
         <div class="cat-icon">🌱</div>
         <h3>تطوير الذات</h3>
         <p>عادات، إنتاجية، نجاح ومهارات حياتية</p>
       </a>
-      <a href="books/index.html" class="category-card">
+      <a href="books/index.html?cat=علم النفس والمجتمع" class="category-card">
         <div class="cat-icon">🧠</div>
         <h3>علم النفس والمجتمع</h3>
         <p>فهم النفس، السلوك، والعلاقات الإنسانية</p>
       </a>
-      <a href="books/index.html" class="category-card">
+      <a href="books/index.html?cat=الفلسفة والفكر" class="category-card">
         <div class="cat-icon">💡</div>
         <h3>الفلسفة والفكر</h3>
         <p>رؤى عميقة لفهم الحياة والوجود</p>
       </a>
-      <a href="books/index.html" class="category-card">
+      <a href="books/index.html?cat=الإدارة والأعمال" class="category-card">
         <div class="cat-icon">💼</div>
         <h3>الإدارة والأعمال</h3>
         <p>قيادة، مبيعات، وبناء المشاريع</p>
       </a>
-      <a href="books/index.html" class="category-card">
+      <a href="books/index.html?cat=العلوم والمعرفة" class="category-card">
         <div class="cat-icon">🔭</div>
         <h3>العلوم والمعرفة</h3>
         <p>علوم مبسطة لعقل فضولي</p>
       </a>
-      <a href="books/index.html" class="category-card offers">
+      <a href="books/index.html?cat=العلاقات والحياة" class="category-card offers">
         <div class="cat-icon">❤️</div>
         <h3>العلاقات والحياة</h3>
         <p>سعادة، علاقات، وجودة الحياة</p>
@@ -380,7 +380,7 @@
       <h2>كتب تُغيّر طريقة تفكيرك وتُطوّر حياتك</h2>
       <p>اخترنا لك أفضل الكتب في تطوير الذات، الفلسفة، علم النفس، الإدارة والعلوم — كتب أثبتت تأثيرها على ملايين القراء حول العالم، متوفرة الآن بالتوصيل السريع لكل ولايات الجزائر.</p>
       <div class="banner-checks">
-        <span>17 كتاباً مختاراً بعناية</span>
+        <span>كتب مختارة بعناية</span>
         <span>بحث وتصفية حسب التصنيف</span>
         <span>توصيل لكل الجزائر</span>
         <span>أسعار منافسة</span>
@@ -753,6 +753,13 @@
   window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 50);
   }, { passive: true });
+
+  document.getElementById('homeLogoLink')?.addEventListener('click', function (e) {
+    e.preventDefault();
+    if (window.scrollY > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  });
 </script>
 
 
