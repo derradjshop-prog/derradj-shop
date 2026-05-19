@@ -2067,10 +2067,30 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
 
 /* تحميل المنتجات من السلة، أو إضافة صف فارغ إذا كانت السلة فارغة */
 (function initProductRows() {
-  var cartItems = (function () {
-    try { return JSON.parse(localStorage.getItem('derradj_cart')) || []; }
-    catch { return []; }
+  var rawItems = (function () {
+    try {
+      var raw = localStorage.getItem('derradj_cart');
+      if (!raw) return [];
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
   }());
+
+  /* تجاهل المنتجات المخفية أو غير الصالحة */
+  var cartItems = rawItems.filter(function (item) {
+    if (!item || typeof item.catalogId !== 'number') return false;
+    var cat = (window.PRODUCTS_CATALOG || [])[item.catalogId];
+    return cat && !cat.hidden;
+  });
+
+  /* تنظيف localStorage إذا كانت البيانات فاسدة */
+  if (rawItems.length > 0 && cartItems.length !== rawItems.length) {
+    if (cartItems.length === 0) {
+      localStorage.removeItem('derradj_cart');
+    } else {
+      localStorage.setItem('derradj_cart', JSON.stringify(cartItems));
+    }
+  }
 
   var list = document.getElementById('productsList');
 

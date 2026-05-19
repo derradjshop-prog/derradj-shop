@@ -45,11 +45,47 @@
   ══════════════════════════════════════════════════════════ */
   const Cart = {
     get () {
-      try { return JSON.parse(localStorage.getItem(CART_KEY)) || []; }
-      catch { return []; }
+      try {
+        const raw = localStorage.getItem(CART_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+      } catch { return []; }
     },
     save (items) {
-      localStorage.setItem(CART_KEY, JSON.stringify(items));
+      if (!Array.isArray(items) || items.length === 0) {
+        localStorage.removeItem(CART_KEY);
+      } else {
+        localStorage.setItem(CART_KEY, JSON.stringify(items));
+      }
+    },
+    /* Remove hidden, unknown, or invalid items from localStorage */
+    sanitize () {
+      try {
+        const raw = localStorage.getItem(CART_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed) || parsed.length === 0) {
+          localStorage.removeItem(CART_KEY);
+          return;
+        }
+        const catalog = window.SHOP_CATALOG || [];
+        const valid = parsed.filter(item => {
+          if (!item || typeof item.catalogId !== 'number' || !Number.isFinite(item.catalogId)) return false;
+          if (!item.qty || item.qty < 1) return false;
+          const p = catalog.find(c => c.catalogId === item.catalogId);
+          return p && !p.hidden;
+        });
+        if (valid.length !== parsed.length) {
+          if (valid.length === 0) {
+            localStorage.removeItem(CART_KEY);
+          } else {
+            localStorage.setItem(CART_KEY, JSON.stringify(valid));
+          }
+        }
+      } catch {
+        localStorage.removeItem(CART_KEY);
+      }
     },
     add (catalogId) {
       const items = this.get();
@@ -82,8 +118,21 @@
       this.save(this.get().filter(i => i.catalogId !== catalogId));
     },
     clear ()  { localStorage.removeItem(CART_KEY); },
-    count ()  { return this.get().reduce((s, i) => s + i.qty, 0); },
-    total ()  { return this.get().reduce((s, i) => s + i.price * i.qty, 0); },
+    /* Only count visible (non-hidden, valid catalog) items */
+    count () {
+      const catalog = window.SHOP_CATALOG || [];
+      return this.get().reduce((s, i) => {
+        const p = catalog.find(c => c.catalogId === i.catalogId);
+        return (p && !p.hidden) ? s + i.qty : s;
+      }, 0);
+    },
+    total () {
+      const catalog = window.SHOP_CATALOG || [];
+      return this.get().reduce((s, i) => {
+        const p = catalog.find(c => c.catalogId === i.catalogId);
+        return (p && !p.hidden) ? s + i.price * i.qty : s;
+      }, 0);
+    },
   };
 
   window.DerradjCart = Cart;
@@ -124,10 +173,11 @@
     const footer = document.getElementById('cartSidebarFooter');
     if (!body || !footer) return;
 
-    /* تصفية المنتجات المخفية من localStorage قبل العرض */
+    /* تصفية المنتجات المخفية أو غير الصالحة من localStorage قبل العرض */
     const items = Cart.get().filter(item => {
+      if (!item || typeof item.catalogId !== 'number') return false;
       const p = (window.SHOP_CATALOG || []).find(c => c.catalogId === item.catalogId);
-      return !p || !p.hidden;
+      return p && !p.hidden;
     });
 
     if (!items.length) {
@@ -276,6 +326,7 @@
       });
     });
 
+    Cart.sanitize();
     updateBadge();
   }
 
