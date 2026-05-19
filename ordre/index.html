@@ -44,8 +44,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-wrap: wrap;
       gap: 8px;
       box-shadow: 0 2px 10px rgba(5,150,105,0.25);
+      width: 100%;
+      box-sizing: border-box;
     }
 
     /* === رأس الصفحة === */
@@ -1108,12 +1111,21 @@
     html, body {
       overflow-x: hidden;
       max-width: 100%;
+      width: 100%;
+    }
+    body {
+      position: relative;
     }
     .order-page,
-    #productsList {
+    #productsList,
+    .container,
+    .ch-section,
+    .checkout-header,
+    .shipping-banner {
       overflow-x: hidden;
       width: 100%;
       max-width: 100%;
+      box-sizing: border-box;
     }
 
     @media (max-width: 640px) {
@@ -1714,30 +1726,53 @@
 ──────────────────────────────────────────────────────────── */
 window.PRODUCTS_CATALOG = [
   /* ── منتجات مخفية (تحتفظ بها لضمان تطابق catalogId — لا تظهر في القائمة) ── */
-  { name: "Electronics Components Kit",          shortName: "Electronics Components Kit",        price: 7000, hidden: true },
-  { name: "YNINCH Super Learning Kit Arduino",   shortName: "YNINCH Super Learning Kit",         price: 7300, hidden: true },
+  { name: "Electronics Components Kit",          shortName: "Electronics Components Kit",        price: 7000, hidden: true,  available: true },
+  { name: "YNINCH Super Learning Kit Arduino",   shortName: "YNINCH Super Learning Kit",         price: 7300, hidden: true,  available: true },
   /* ── الكتب (index يتطابق مع catalogId في cart.js) ────────────── */
-  { name: "العادات السبع للناس الأكثر فعالية",         shortName: "العادات السبع",              price: 1400, paymentUrl: null },
-  { name: "العادات الذرية",                             shortName: "العادات الذرية",             price: 1000, paymentUrl: null },
-  { name: "قاعدة الـ 333",                              shortName: "قاعدة الـ 333",              price: 1500, paymentUrl: null },
-  { name: "الأثر المذهل للعادات البسيطة",               shortName: "الأثر المذهل للعادات",      price: 1200, paymentUrl: null },
-  { name: "متعة عدم الكمال",                            shortName: "متعة عدم الكمال",           price: 1200, paymentUrl: null },
-  { name: "الشجاعة تنادي",                              shortName: "الشجاعة تنادي",             price: 1300, paymentUrl: null },
-  { name: "قوة الآن",                                   shortName: "قوة الآن",                  price: 1200, paymentUrl: null },
-  { name: "بروباغندا",                                  shortName: "بروباغندا",                 price: 1300, paymentUrl: null },
-  { name: "فوضى الإدارة",                               shortName: "فوضى الإدارة",              price: 1500, paymentUrl: null },
-  { name: "السعادة الحقيقية والسعادة الزائفة",          shortName: "السعادة الحقيقية",          price: 1500, paymentUrl: null },
-  { name: "مسارات السعادة",                             shortName: "مسارات السعادة",            price: 1300, paymentUrl: null },
-  { name: "في عالم الأشباح الجائعة",                    shortName: "الأشباح الجائعة",           price: 1800, paymentUrl: null },
-  { name: "تاريخ موجز للزمان",                          shortName: "تاريخ موجز للزمان",         price: 1200, paymentUrl: null },
-  { name: "الجسد لا ينسى",                              shortName: "الجسد لا ينسى",             price: 1800, paymentUrl: null },
-  { name: "متعة أن تكون في الثلاثين",                   shortName: "متعة أن تكون في الثلاثين", price: 1000, paymentUrl: null },
-  { name: "كن مع الشخص الذي يجعلك سعيداً",             shortName: "كن مع من يجعلك سعيداً",    price: 1000, paymentUrl: null },
-  { name: "الثالوث المظلم",                             shortName: "الثالوث المظلم",            price: 1200, paymentUrl: null },
-  { name: "كيف تتقن فن البيع",                          shortName: "فن البيع",                  price: 1500, paymentUrl: null },
-  { name: "الذكاء العاطفي",                             shortName: "الذكاء العاطفي",            price: 1600, paymentUrl: null },
-  { name: "كيف تبيع أي شيء لأي إنسان",                 shortName: "كيف تبيع أي شيء",          price: 1300, paymentUrl: null },
+  { name: "العادات السبع للناس الأكثر فعالية",         shortName: "العادات السبع",              price: 1400, available: true, paymentUrl: null },
+  { name: "العادات الذرية",                             shortName: "العادات الذرية",             price: 1000, available: true, paymentUrl: null },
+  { name: "قاعدة الـ 333",                              shortName: "قاعدة الـ 333",              price: 1500, available: true, paymentUrl: null },
+  { name: "الأثر المذهل للعادات البسيطة",               shortName: "الأثر المذهل للعادات",      price: 1200, available: true, paymentUrl: null },
+  { name: "متعة عدم الكمال",                            shortName: "متعة عدم الكمال",           price: 1200, available: true, paymentUrl: null },
+  { name: "الشجاعة تنادي",                              shortName: "الشجاعة تنادي",             price: 1300, available: true, paymentUrl: null },
+  { name: "قوة الآن",                                   shortName: "قوة الآن",                  price: 1200, available: true, paymentUrl: null },
+  { name: "بروباغندا",                                  shortName: "بروباغندا",                 price: 1300, available: true, paymentUrl: null },
+  { name: "فوضى الإدارة",                               shortName: "فوضى الإدارة",              price: 1500, available: true, paymentUrl: null },
+  { name: "السعادة الحقيقية والسعادة الزائفة",          shortName: "السعادة الحقيقية",          price: 1500, available: true, paymentUrl: null },
+  { name: "مسارات السعادة",                             shortName: "مسارات السعادة",            price: 1300, available: true, paymentUrl: null },
+  { name: "في عالم الأشباح الجائعة",                    shortName: "الأشباح الجائعة",           price: 1800, available: true, paymentUrl: null },
+  { name: "تاريخ موجز للزمان",                          shortName: "تاريخ موجز للزمان",         price: 1200, available: true, paymentUrl: null },
+  { name: "الجسد لا ينسى",                              shortName: "الجسد لا ينسى",             price: 1800, hidden: true,  available: true, paymentUrl: null },
+  { name: "متعة أن تكون في الثلاثين",                   shortName: "متعة أن تكون في الثلاثين", price: 1000, available: true, paymentUrl: null },
+  { name: "كن مع الشخص الذي يجعلك سعيداً",             shortName: "كن مع من يجعلك سعيداً",    price: 1000, available: true, paymentUrl: null },
+  { name: "الثالوث المظلم",                             shortName: "الثالوث المظلم",            price: 1200, hidden: true,  available: true, paymentUrl: null },
+  { name: "كيف تتقن فن البيع",                          shortName: "فن البيع",                  price: 1500, hidden: true,  available: true, paymentUrl: null },
+  { name: "الذكاء العاطفي",                             shortName: "الذكاء العاطفي",            price: 1600, available: true, paymentUrl: null },
+  { name: "كيف تبيع أي شيء لأي إنسان",                 shortName: "كيف تبيع أي شيء",          price: 1300, available: true, paymentUrl: null },
 ];
+
+/* ── جلب حالة التوفر من Supabase وتطبيقها على PRODUCTS_CATALOG ── */
+(function () {
+  var SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
+  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
+
+  fetch(SB_URL + '/rest/v1/product_availability?select=catalog_id,available', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  })
+  .then(function (r) { return r.ok ? r.json() : []; })
+  .then(function (rows) {
+    if (!Array.isArray(rows)) return;
+    rows.forEach(function (row) {
+      var entry = (window.PRODUCTS_CATALOG || [])[row.catalog_id];
+      if (entry) entry.available = row.available;
+    });
+    /* إعادة بناء الصفوف المحملة من السلة لتعكس التوفر الحديث */
+    if (typeof window._refreshProductRowsAvailability === 'function') {
+      window._refreshProductRowsAvailability();
+    }
+  })
+  .catch(function () { /* نتجاهل الأخطاء — نكمل بالقيم الافتراضية */ });
+}());
 /* ── Sticky header ──────────────────────────────────────────── */
 window.addEventListener('scroll', () => {
   document.getElementById('mainHeader')
@@ -1914,10 +1949,11 @@ function formatDZDSummary(n) {
   return Number(n || 0).toLocaleString('en-US') + ' دج';
 }
 
-/* خيارات القائمة المنسدلة — تتجاهل المنتجات المخفية */
+/* خيارات القائمة المنسدلة — تتجاهل المخفية وغير المتوفرة */
 function buildOptions() {
   return window.PRODUCTS_CATALOG.map(function(p, i) {
     if (p.hidden) return '';
+    if (p.available === false) return '';
     var display = (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج';
     return '<option value="' + i + '" title="' + p.name + '">' + display + '</option>';
   }).join('');
@@ -1937,9 +1973,10 @@ function initPrCustomSelect(row, hiddenSel) {
   var panel   = row.querySelector('.pr-cs-panel');
   var list    = row.querySelector('.pr-cs-list');
 
-  /* بناء عناصر القائمة */
+  /* بناء عناصر القائمة — يتجاهل المخفية وغير المتوفرة */
   list.innerHTML = window.PRODUCTS_CATALOG.map(function(p, i) {
     if (p.hidden) return '';
+    if (p.available === false) return '';
     return '<div class="pr-cs-item" data-value="' + i + '" role="option">' +
       (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج' +
       '</div>';
@@ -2125,6 +2162,48 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
   document.getElementById('productsList').appendChild(createProductRow());
   renumberRows();
 });
+
+/* إعادة بناء القوائم بعد تحميل التوفر من Supabase */
+window._refreshProductRowsAvailability = function () {
+  document.querySelectorAll('#productsList .product-row').forEach(function (row) {
+    var trigger = row.querySelector('.pr-cs-trigger');
+    var list    = row.querySelector('.pr-cs-list');
+    var sel     = row.querySelector('.pr-select');
+    if (!list || !sel) return;
+
+    /* إعادة بناء قائمة العناصر مع استبعاد غير المتوفرة */
+    list.innerHTML = window.PRODUCTS_CATALOG.map(function(p, i) {
+      if (p.hidden || p.available === false) return '';
+      return '<div class="pr-cs-item" data-value="' + i + '" role="option">' +
+        (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج' +
+        '</div>';
+    }).join('');
+
+    /* إذا كان المنتج المحدد حالياً غير متوفر، أعد ضبط الصف */
+    var curIdx = parseInt(sel.value);
+    if (!isNaN(curIdx) && window.PRODUCTS_CATALOG[curIdx] && window.PRODUCTS_CATALOG[curIdx].available === false) {
+      sel.value = '';
+      if (trigger) trigger.textContent = 'اختر المنتج...';
+      trigger && trigger.classList.remove('has-value');
+    }
+
+    /* إعادة ربط أحداث اختيار العنصر */
+    list.querySelectorAll('.pr-cs-item').forEach(function (item) {
+      item.addEventListener('click', function () {
+        var val = parseInt(item.dataset.value);
+        var cat = (window.PRODUCTS_CATALOG || [])[val];
+        if (!cat || cat.available === false) return;
+        sel.value = val;
+        sel.dispatchEvent(new Event('change'));
+        if (trigger) {
+          trigger.textContent = item.textContent;
+          trigger.classList.add('has-value');
+        }
+        list.closest('.pr-select-wrap')?.querySelector('.pr-cs-panel')?.classList.remove('open');
+      });
+    });
+  });
+};
 
 /* تحميل المنتجات من السلة، أو إضافة صف فارغ إذا كانت السلة فارغة */
 (function initProductRows() {
@@ -2435,13 +2514,19 @@ window.validateCheckout = function () {
     valid = false;
   } else {
     let ok = true;
+    let hasUnavail = false;
     rows.forEach(row => {
       const idx = parseInt(row.querySelector('.pr-select')?.value);
       const qty = parseInt(row.querySelector('.pr-qty-input')?.value);
-      if (isNaN(idx) || !window.PRODUCTS_CATALOG[idx] || isNaN(qty) || qty < 1) ok = false;
+      if (isNaN(idx) || !window.PRODUCTS_CATALOG[idx] || isNaN(qty) || qty < 1) { ok = false; return; }
+      if (window.PRODUCTS_CATALOG[idx].available === false) hasUnavail = true;
     });
     if (!ok) {
       showAlert('❌ يرجى اختيار منتج وكمية صحيحة (≥ 1) لكل سطر.');
+      valid = false;
+    }
+    if (hasUnavail) {
+      showAlert('❌ بعض المنتجات التي اخترتها غير متوفرة حاليا. يرجى إزالتها والمحاولة مرة أخرى.');
       valid = false;
     }
   }

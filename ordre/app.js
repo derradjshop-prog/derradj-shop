@@ -133,7 +133,7 @@
   const orderForm = document.getElementById("orderForm");
   if (!orderForm) return;
 
-  /* ── جلب بيانات المنتجات من الصفوف (تجاهل المخفية) ──── */
+  /* ── جلب بيانات المنتجات من الصفوف (تجاهل المخفية وغير المتوفرة) ──── */
   function getProductItems() {
     const rows  = document.querySelectorAll("#productsList .product-row");
     const items = [];
@@ -141,11 +141,24 @@
       const idx = parseInt(row.querySelector(".pr-select")?.value);
       const qty = Math.max(1, parseInt(row.querySelector(".pr-qty-input")?.value) || 1);
       const cat = (window.PRODUCTS_CATALOG || [])[idx];
-      if (!isNaN(idx) && cat && !cat.hidden) {
+      if (!isNaN(idx) && cat && !cat.hidden && cat.available !== false) {
         items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty });
       }
     });
     return items;
+  }
+
+  /* ── التحقق من توفر جميع المنتجات المحددة ──────────── */
+  function checkAllAvailable() {
+    const rows = document.querySelectorAll("#productsList .product-row");
+    for (const row of rows) {
+      const idx = parseInt(row.querySelector(".pr-select")?.value);
+      const cat = (window.PRODUCTS_CATALOG || [])[idx];
+      if (!isNaN(idx) && cat && !cat.hidden && cat.available === false) {
+        return cat.name;
+      }
+    }
+    return null;
   }
 
   /* ── مساعد: ترجمة كود الخطأ إلى رسالة واضحة ─────────── */
@@ -226,6 +239,21 @@
       deliveryType, shippingFee, subtotal, totalPrice, pm,
       itemsCount: items.length,
     });
+
+    /* ── تحقق إضافي: توفر المنتجات ─────────────────────── */
+    const unavailName = checkAllAvailable();
+    if (unavailName) {
+      const alertEl2 = document.getElementById("formAlert");
+      const msg2 = `❌ عذرًا، الكتاب "${unavailName}" غير متوفر حاليا. يرجى إزالته من طلبك.`;
+      if (alertEl2) {
+        alertEl2.innerHTML = msg2;
+        alertEl2.classList.add("show");
+        alertEl2.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else {
+        alert(msg2);
+      }
+      return;
+    }
 
     /* ── تحقق إضافي: بيانات المنتجات ───────────────────── */
     if (items.length === 0) {

@@ -17,6 +17,7 @@
   let ALL_ORDERS   = [];
   let ACTIVE_ORDER = null;
   let ALL_MESSAGES = [];
+  let ALL_PRODUCTS = [];
 
   /* ── Constants ─────────────────────────────────────────── */
   const PM_LABELS = {
@@ -535,6 +536,134 @@
   }
 
   /* ─────────────────────────────────────────────────────────
+     PRODUCTS — قائمة الكتب من SHOP_CATALOG المدمجة مع Supabase
+  ───────────────────────────────────────────────────────── */
+
+  /* بيانات المنتجات الثابتة (للصورة والتصنيف) */
+  const BOOKS_META = [
+    { catalogId: 2,  price: 1400, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/7-habits/main.png' },
+    { catalogId: 3,  price: 950,  category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/atomic-habits/main.png' },
+    { catalogId: 4,  price: 1350, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/rule-333/main.png' },
+    { catalogId: 5,  price: 1200, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/small-habits-revolution/main.png' },
+    { catalogId: 6,  price: 900,  category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/joy-of-imperfection/main.png' },
+    { catalogId: 7,  price: 1300, category: 'الفلسفة والفكر',     image: 'https://www.derradjshop.com/books/courage-is-calling/main.png' },
+    { catalogId: 8,  price: 1100, category: 'الفلسفة والفكر',     image: 'https://www.derradjshop.com/books/power-of-now/main.png' },
+    { catalogId: 9,  price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/propaganda/main.png' },
+    { catalogId: 10, price: 1600, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/management-mess/main.png' },
+    { catalogId: 11, price: 1600, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/myths-of-happiness/main.png' },
+    { catalogId: 12, price: 1300, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/happy-ever-after/main.png' },
+    { catalogId: 13, price: 1800, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/hungry-ghosts/main.png' },
+    { catalogId: 14, price: 1200, category: 'العلوم والمعرفة',    image: 'https://www.derradjshop.com/books/brief-history-of-time/main.png' },
+    { catalogId: 16, price: 950,  category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/joy-of-thirties/main.png' },
+    { catalogId: 17, price: 1200, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/be-happy-with-someone/main.png' },
+    { catalogId: 20, price: 1600, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/emotional-intelligence/main.png' },
+    { catalogId: 21, price: 1100, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/sell-anything/main.png' },
+  ];
+
+  /* جلب حالة التوفر من Supabase */
+  async function fetchProducts() {
+    const { data, error } = await supabase
+      .from("product_availability")
+      .select("catalog_id, name, available")
+      .order("catalog_id");
+    if (error) throw error;
+    return (data || []).map(row => {
+      const meta = BOOKS_META.find(m => m.catalogId === row.catalog_id) || {};
+      return {
+        catalogId: row.catalog_id,
+        name:      row.name,
+        available: row.available,
+        category:  meta.category || '—',
+        price:     meta.price    || null,
+        image:     meta.image    || '',
+      };
+    });
+  }
+
+  /* تحديث حالة التوفر في Supabase */
+  async function setProductAvailability(catalogId, available) {
+    const { error } = await supabase
+      .from("product_availability")
+      .update({ available, updated_at: new Date().toISOString() })
+      .eq("catalog_id", catalogId);
+    if (error) throw error;
+  }
+
+  /* عرض جدول المنتجات */
+  function renderProductsTable(products) {
+    const tbody = document.getElementById("productsTbody");
+    const cnt   = products.length;
+    document.getElementById("productsCount").textContent = cnt + " منتج";
+    document.getElementById("tab-badge-products").textContent = cnt;
+
+    if (!cnt) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty">لا توجد منتجات — تأكد من تشغيل supabase-setup-products.sql</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = products.map(p => `
+      <tr data-catalog-id="${p.catalogId}">
+        <td>
+          ${p.image
+            ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="prod-thumb"
+                   onerror="this.style.display='none'">`
+            : '<span style="font-size:24px;">📚</span>'
+          }
+        </td>
+        <td><strong>${esc(p.name)}</strong></td>
+        <td class="nowrap" style="color:var(--primary);font-weight:800;" dir="ltr">
+          ${p.price ? p.price.toLocaleString("fr-DZ") + " دج" : "—"}
+        </td>
+        <td class="nowrap">
+          <span class="pm-tag">${esc(p.category)}</span>
+        </td>
+        <td class="nowrap">
+          <span class="avail-status ${p.available ? 'is-avail' : 'not-avail'}">
+            ${p.available ? '✅ متوفر' : '⚠️ غير متوفر حاليا'}
+          </span>
+        </td>
+        <td class="nowrap">
+          <label class="avail-toggle" title="${p.available ? 'اضغط لإيقاف التوفر' : 'اضغط لتفعيل التوفر'}">
+            <input type="checkbox" data-action="toggle-avail" data-catalog-id="${p.catalogId}"
+                   ${p.available ? 'checked' : ''}>
+            <span class="avail-slider"></span>
+          </label>
+        </td>
+      </tr>`).join("");
+  }
+
+  /* معالجة تغيير التوفر */
+  async function handleToggleAvailability(catalogId, newValue, checkbox) {
+    checkbox.disabled = true;
+
+    try {
+      await setProductAvailability(catalogId, newValue);
+
+      /* تحديث الكاش */
+      const p = ALL_PRODUCTS.find(p => p.catalogId === catalogId);
+      if (p) p.available = newValue;
+
+      /* تحديث الصف في الجدول */
+      const row = document.querySelector(`#productsTbody tr[data-catalog-id="${catalogId}"]`);
+      if (row) {
+        const badge = row.querySelector(".avail-status");
+        if (badge) {
+          badge.className = `avail-status ${newValue ? 'is-avail' : 'not-avail'}`;
+          badge.textContent = newValue ? '✅ متوفر' : '⚠️ غير متوفر حاليا';
+        }
+      }
+
+    } catch (err) {
+      console.error("Toggle availability error:", err);
+      /* إعادة القيمة السابقة إذا فشل التحديث */
+      checkbox.checked = !newValue;
+      alert("❌ فشل تحديث حالة التوفر:\n" + (err.message || "تحقق من صلاحيات قاعدة البيانات."));
+    }
+
+    checkbox.disabled = false;
+  }
+
+  /* ─────────────────────────────────────────────────────────
      EVENTS
   ───────────────────────────────────────────────────────── */
   function bindEvents() {
@@ -553,7 +682,9 @@
         btn.classList.add("active");
         document.getElementById("tab-" + tab).classList.add("active");
         document.getElementById("pageTitle").textContent =
-          tab === "orders" ? "📦 إدارة الطلبات" : "✉️ الرسائل الواردة";
+          tab === "orders"   ? "📦 إدارة الطلبات"
+        : tab === "messages" ? "✉️ الرسائل الواردة"
+        : "📚 إدارة المنتجات";
       });
     });
 
@@ -620,6 +751,24 @@
       if (btn.dataset.action === "delete")     await handleDelete(btn.dataset.id, btn);
       if (btn.dataset.action === "delete-msg") await handleDeleteMessage(btn.dataset.msgId, btn);
     });
+
+    /* ── Products — تحديث التوفر عبر Toggle ───────────────── */
+    document.getElementById("productsTbody").addEventListener("change", async e => {
+      const cb = e.target.closest('input[data-action="toggle-avail"]');
+      if (!cb) return;
+      const catalogId = parseInt(cb.dataset.catalogId);
+      await handleToggleAvailability(catalogId, cb.checked, cb);
+    });
+
+    document.getElementById("productsRefreshBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("productsRefreshBtn");
+      btn.disabled = true; btn.textContent = "⏳ جاري التحديث...";
+      try {
+        ALL_PRODUCTS = await fetchProducts();
+        renderProductsTable(ALL_PRODUCTS);
+      } catch (err) { alert("❌ فشل تحديث المنتجات: " + (err.message || "")); }
+      btn.disabled = false; btn.textContent = "↻ تحديث";
+    });
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -634,10 +783,13 @@
         (staff.role === "admin" ? "👑 Admin" : "👤 Staff") +
         (staff.full_name ? " — " + staff.full_name : "");
 
-      [ALL_ORDERS, ALL_MESSAGES] = await Promise.all([fetchOrders(), fetchMessages()]);
+      [ALL_ORDERS, ALL_MESSAGES, ALL_PRODUCTS] = await Promise.all([
+        fetchOrders(), fetchMessages(), fetchProducts().catch(() => []),
+      ]);
       renderStats(ALL_ORDERS);
       renderTable(ALL_ORDERS);
       renderMessagesTable(ALL_MESSAGES);
+      renderProductsTable(ALL_PRODUCTS);
       bindEvents();
 
     } catch (err) {

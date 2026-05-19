@@ -48,7 +48,7 @@
 
 /* === 2. RESET === */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { scroll-behavior: smooth; font-size: 16px; overflow-x: hidden; max-width: 100%; }
+html { scroll-behavior: smooth; font-size: 16px; overflow-x: hidden; max-width: 100%; width: 100%; }
 
 body {
   font-family: var(--font);
@@ -58,6 +58,9 @@ body {
   color: var(--text);
   line-height: 1.75;
   overflow-x: hidden;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   word-break: break-word;
@@ -72,8 +75,10 @@ input, select, textarea { font-family: inherit; }
 /* === 3. LAYOUT UTILITIES === */
 .container {
   max-width: 1200px;
+  width: 100%;
   margin: 0 auto;
   padding: 0 20px;
+  box-sizing: border-box;
 }
 
 .section-wrap { padding: 30px 0; }
@@ -2144,17 +2149,18 @@ img { max-width: 100%; height: auto; }
 .cart-sidebar {
   position: fixed;
   top: 0;
-  left: 0;
+  right: 0;
+  left: auto;
   height: 100%;
   width: 400px;
   max-width: 96vw;
   background: #fff;
   z-index: 10001;
-  transform: translateX(-100%);
+  transform: translateX(100%);
   transition: transform .32s cubic-bezier(.4,0,.2,1);
   display: flex;
   flex-direction: column;
-  box-shadow: 6px 0 40px rgba(0,0,0,0.18);
+  box-shadow: -6px 0 40px rgba(0,0,0,0.18);
 }
 .cart-sidebar.open { transform: translateX(0); }
 
@@ -2419,4 +2425,38 @@ img { max-width: 100%; height: auto; }
   .cart-item-img-wrap{ width: 58px; height: 58px; }
   .cart-item-name    { font-size: 12px; }
   .cart-item-sub     { font-size: 13px; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   GLOBAL MOBILE OVERFLOW FIX
+   يمنع أي تمرير أفقي أو فراغ جانبي على الهواتف
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* كل العناصر الرئيسية تبقى داخل الشاشة */
+  .container,
+  .header-inner,
+  .footer-top,
+  .banner-inner,
+  .hero-inner,
+  .main-header,
+  .mobile-menu,
+  .order-page,
+  main,
+  section,
+  header,
+  footer {
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  /* منع أي عنصر من تجاوز عرض الشاشة */
+  img, video, iframe, embed, object {
+    max-width: 100%;
+  }
 }

@@ -486,9 +486,15 @@
 
   /* ── بناء HTML كارت كتاب واحد ──────────────────────── */
   function buildCard(book) {
-    const badge     = '<div class="product-badge new">متوفر</div>';
-    const bookUrl   = book.url || '#';
+    const isAvail    = book.available !== false;
+    const badgeText  = isAvail ? 'متوفر' : 'غير متوفر حاليا';
+    const badgeCls   = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
+    const badge      = `<div class="${badgeCls}" data-avail-badge="${book.id}">${badgeText}</div>`;
+    const bookUrl    = book.url || '#';
     const priceLabel = `<span class="price-current">${book.price.toLocaleString('en-US')} دج</span>`;
+
+    const cartBtnText  = isAvail ? '🛒 أضف للسلة' : 'غير متوفر حاليا';
+    const cartBtnExtra = isAvail ? '' : ' disabled style="opacity:.6;cursor:not-allowed;"';
 
     return `
       <div class="product-card"
@@ -523,7 +529,7 @@
           <div class="product-prices">${priceLabel}</div>
           <div class="product-card-btns">
             <a href="${bookUrl}" class="btn-order-card">📖 التفاصيل</a>
-            <button class="btn-add-cart" data-add-to-cart="${book.id}">🛒 أضف للسلة</button>
+            <button class="btn-add-cart" data-add-to-cart="${book.id}"${cartBtnExtra}>${cartBtnText}</button>
           </div>
         </div>
       </div>`;
@@ -587,9 +593,10 @@
       <p class="modal-book-desc">${book.description}</p>
       <div class="modal-book-price">${priceLabel}</div>
       <div class="modal-btns">
-        <button class="btn-add-cart" data-add-to-cart="${book.id}">
-          🛒 أضف إلى السلة
-        </button>
+        ${book.available !== false
+          ? `<button class="btn-add-cart" data-add-to-cart="${book.id}">🛒 أضف إلى السلة</button>`
+          : `<button class="btn-add-cart" disabled style="opacity:.6;cursor:not-allowed;">غير متوفر حاليا</button>`
+        }
       </div>`;
 
     document.getElementById('bookModalOverlay').classList.add('open');
@@ -659,8 +666,22 @@
   }
   renderBooks();
 
+  /* إعادة عرض الكتب بعد تحميل حالة التوفر من Supabase */
+  document.addEventListener('derradj:availability-loaded', () => {
+    renderBooks();
+  });
+
 })();
 </script>
+
+<style>
+  /* شارة غير متوفر حاليا */
+  .product-badge--unavail {
+    background: #f59e0b !important;
+    color: #fff !important;
+    font-size: 10px !important;
+  }
+</style>
 
 <!-- نظام السلة — يجب تحميله آخراً ليلتقط data-add-to-cart -->
 <script src="../cart.js"></script>

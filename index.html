@@ -675,17 +675,22 @@
 /* عرض أول 6 كتب في الصفحة الرئيسية */
 (function () {
   'use strict';
-  var grid = document.getElementById('homeBooksGrid');
-  if (!grid || !window.BOOKS_DATA) return;
 
-  grid.innerHTML = window.BOOKS_DATA.slice(0, 6).map(function (book) {
+  function buildHomeCard(book) {
+    var isAvail    = book.available !== false;
     var bookUrl    = 'books/' + (book.url || '');
     var priceLabel = book.priceDisplay
       ? '<span class="price-current" style="color:#64748b;font-size:15px;">' + book.priceDisplay + '</span>'
       : '<span class="price-current">' + book.price.toLocaleString('en-US') + ' دج</span>';
 
+    var badgeCls  = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
+    var badgeText = isAvail ? 'متوفر' : 'غير متوفر حاليا';
+    var cartBtn   = isAvail
+      ? '<button class="btn-add-cart" data-add-to-cart="' + book.id + '">🛒 أضف للسلة</button>'
+      : '<button class="btn-add-cart" disabled style="opacity:.6;cursor:not-allowed;">غير متوفر حاليا</button>';
+
     return '<div class="product-card">' +
-      '<div class="product-badge new">متوفر</div>' +
+      '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
       '<a href="' + bookUrl + '" class="product-img-area" style="display:block;text-decoration:none;">' +
         '<picture><source srcset="books/' + book.image.replace('.png','.webp').replace('.jpg','.webp') + '" type="image/webp"><img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
              ' class="product-image" loading="lazy" width="400" height="400"' +
@@ -703,13 +708,28 @@
         '<div class="product-prices">' + priceLabel + '</div>' +
         '<div class="product-card-btns">' +
           '<a href="' + bookUrl + '" class="btn-order-card">📖 تفاصيل الكتاب</a>' +
-          '<button class="btn-add-cart" data-add-to-cart="' + book.id + '">🛒 أضف للسلة</button>' +
+          cartBtn +
         '</div>' +
       '</div>' +
     '</div>';
-  }).join('');
+  }
+
+  function renderHomeBooks() {
+    var grid = document.getElementById('homeBooksGrid');
+    if (!grid || !window.BOOKS_DATA) return;
+    grid.innerHTML = window.BOOKS_DATA.slice(0, 6).map(buildHomeCard).join('');
+  }
+
+  renderHomeBooks();
+
+  /* إعادة العرض بعد تحميل حالة التوفر من Supabase (يُطلقه cart.js) */
+  document.addEventListener('derradj:availability-loaded', renderHomeBooks);
 })();
 </script>
+<style>
+  /* شارة غير متوفر حاليا في الصفحة الرئيسية */
+  .product-badge--unavail { background: #f59e0b !important; color: #fff !important; font-size: 10px !important; }
+</style>
 
 <script src="cart.js"></script>
 </body>

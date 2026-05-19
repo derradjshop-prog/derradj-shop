@@ -494,6 +494,10 @@
       ✉️ الرسائل
       <span class="tab-badge" id="tab-badge-messages">—</span>
     </button>
+    <button class="tab-btn" data-tab="products">
+      📚 المنتجات
+      <span class="tab-badge" id="tab-badge-products">—</span>
+    </button>
   </div>
 
   <!-- Tab: Orders -->
@@ -586,6 +590,92 @@
     </div>
 
   </div><!-- /tab-messages -->
+
+  <!-- Tab: Products -->
+  <div class="tab-content" id="tab-products">
+
+    <div class="controls-bar">
+      <span style="font-size:14px;font-weight:700;color:var(--text);">إدارة توفر المنتجات — قم بتشغيل أو إيقاف كل كتاب</span>
+      <button class="btn-refresh" id="productsRefreshBtn">↻ تحديث</button>
+      <span class="orders-count" id="productsCount"></span>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>الصورة</th>
+            <th>اسم الكتاب</th>
+            <th>السعر</th>
+            <th>التصنيف</th>
+            <th>الحالة</th>
+            <th>تغيير التوفر</th>
+          </tr>
+        </thead>
+        <tbody id="productsTbody">
+          <tr><td colspan="6" class="empty">⏳ جاري التحميل...</td></tr>
+        </tbody>
+      </table>
+      <div class="table-scroll-hint">← اسحب لرؤية المزيد →</div>
+    </div>
+
+    <style>
+      /* ── Toggle Switch ───────────────────────────────────── */
+      .avail-toggle {
+        position: relative;
+        display: inline-block;
+        width: 52px;
+        height: 28px;
+        flex-shrink: 0;
+      }
+      .avail-toggle input { opacity: 0; width: 0; height: 0; }
+      .avail-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background: #cbd5e1;
+        border-radius: 28px;
+        transition: background .25s;
+      }
+      .avail-slider::before {
+        content: '';
+        position: absolute;
+        height: 20px; width: 20px;
+        left: 4px; top: 4px;
+        background: #fff;
+        border-radius: 50%;
+        transition: transform .25s;
+        box-shadow: 0 1px 4px rgba(0,0,0,.18);
+      }
+      .avail-toggle input:checked + .avail-slider { background: #10b981; }
+      .avail-toggle input:checked + .avail-slider::before { transform: translateX(24px); }
+      .avail-toggle input:disabled + .avail-slider { opacity: .55; cursor: wait; }
+
+      /* ── حالة التوفر ─────────────────────────────────────── */
+      .avail-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 99px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .avail-status.is-avail   { background: #d1fae5; color: #065f46; }
+      .avail-status.not-avail  { background: #fef3c7; color: #92400e; }
+
+      /* ── صورة المنتج في الجدول ───────────────────────────── */
+      .prod-thumb {
+        width: 48px;
+        height: 64px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: #f8fafc;
+      }
+    </style>
+
+  </div><!-- /tab-products -->
 
 </main>
 
