@@ -349,7 +349,7 @@
           <div class="m-prod-bottom">
             <span class="m-prod-price" dir="ltr">${p.price ? p.price.toLocaleString("fr-DZ") + " دج" : "—"}</span>
             <span class="avail-status ${p.available ? 'is-avail' : 'not-avail'}">
-              ${p.available ? '✅ متوفر' : '⚠️ غير متوفر'}
+              ${p.available ? '✅ متوفر' : '⚠️ نفذت الكمية مؤقتًا'}
             </span>
             <label class="avail-toggle" title="${p.available ? 'إيقاف التوفر' : 'تفعيل التوفر'}">
               <input type="checkbox" data-action="toggle-avail" data-catalog-id="${p.catalogId}"
@@ -714,7 +714,7 @@
         </td>
         <td class="nowrap">
           <span class="avail-status ${p.available ? 'is-avail' : 'not-avail'}">
-            ${p.available ? '✅ متوفر' : '⚠️ غير متوفر حاليا'}
+            ${p.available ? '✅ متوفر' : '⚠️ نفذت الكمية مؤقتًا'}
           </span>
         </td>
         <td class="nowrap">
@@ -727,41 +727,48 @@
       </tr>`).join("");
   }
 
-  /* معالجة تغيير التوفر */
+  /* تحديث شارة التوفر في الجدول والبطاقات المحمولة */
+  function applyAvailabilityUI(catalogId, value) {
+    const label = value ? '✅ متوفر' : '⚠️ نفذت الكمية مؤقتًا';
+    const cls   = value ? 'is-avail' : 'not-avail';
+
+    const row = document.querySelector(`#productsTbody tr[data-catalog-id="${catalogId}"]`);
+    if (row) {
+      const badge = row.querySelector(".avail-status");
+      if (badge) { badge.className = `avail-status ${cls}`; badge.textContent = label; }
+    }
+
+    const mCard = document.querySelector(`#productsMobileCards [data-catalog-id="${catalogId}"]`);
+    if (mCard) {
+      const mBadge = mCard.querySelector(".avail-status");
+      if (mBadge) { mBadge.className = `avail-status ${cls}`; mBadge.textContent = label; }
+    }
+  }
+
+  /* معالجة تغيير التوفر — Optimistic UI */
   async function handleToggleAvailability(catalogId, newValue, checkbox) {
+    /* منع النقر المزدوج */
     checkbox.disabled = true;
 
+    /* حفظ القيمة السابقة للتراجع عند الفشل */
+    const p = ALL_PRODUCTS.find(p => p.catalogId === catalogId);
+    const previousValue = p ? p.available : !newValue;
+
+    /* 1. تحديث فوري للواجهة (Optimistic update) */
+    if (p) p.available = newValue;
+    applyAvailabilityUI(catalogId, newValue);
+
+    /* 2. إرسال التحديث لقاعدة البيانات في الخلفية */
     try {
       await setProductAvailability(catalogId, newValue);
-
-      /* تحديث الكاش */
-      const p = ALL_PRODUCTS.find(p => p.catalogId === catalogId);
-      if (p) p.available = newValue;
-
-      /* تحديث الصف في الجدول */
-      const row = document.querySelector(`#productsTbody tr[data-catalog-id="${catalogId}"]`);
-      if (row) {
-        const badge = row.querySelector(".avail-status");
-        if (badge) {
-          badge.className = `avail-status ${newValue ? 'is-avail' : 'not-avail'}`;
-          badge.textContent = newValue ? '✅ متوفر' : '⚠️ غير متوفر حاليا';
-        }
-      }
-
-      /* تحديث بطاقة المنتج في العرض المحمول */
-      const mCard = document.querySelector(`#productsMobileCards [data-catalog-id="${catalogId}"]`);
-      if (mCard) {
-        const mBadge = mCard.querySelector(".avail-status");
-        if (mBadge) {
-          mBadge.className = `avail-status ${newValue ? 'is-avail' : 'not-avail'}`;
-          mBadge.textContent = newValue ? '✅ متوفر' : '⚠️ غير متوفر';
-        }
-      }
-
     } catch (err) {
       console.error("Toggle availability error:", err);
-      /* إعادة القيمة السابقة إذا فشل التحديث */
-      checkbox.checked = !newValue;
+
+      /* 3. عند الفشل: التراجع عن التغيير في الواجهة */
+      checkbox.checked = previousValue;
+      if (p) p.available = previousValue;
+      applyAvailabilityUI(catalogId, previousValue);
+
       alert("❌ فشل تحديث حالة التوفر:\n" + (err.message || "تحقق من صلاحيات قاعدة البيانات."));
     }
 
