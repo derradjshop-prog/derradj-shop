@@ -270,6 +270,96 @@
   }
 
   /* ─────────────────────────────────────────────────────────
+     MOBILE CARDS — Orders
+  ───────────────────────────────────────────────────────── */
+  function renderOrdersMobileCards(orders) {
+    const container = document.getElementById("ordersMobileCards");
+    if (!container) return;
+
+    if (!orders.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:15px;">لا توجد طلبات مطابقة</div>`;
+      return;
+    }
+
+    container.innerHTML = orders.map(o => {
+      const items    = o.order_items || [];
+      const totalQty = items.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
+      return `
+        <div class="m-order-card" data-id="${esc(o.id)}">
+          <div class="m-order-name">${esc(o.full_name || "—")}</div>
+          <div class="m-order-meta">
+            <span class="m-order-total">${esc(fmtMoney(o.total_price))}</span>
+            <span class="m-order-count">${totalQty} كتب</span>
+          </div>
+          <button class="btn-details" data-id="${esc(o.id)}" data-action="details">التفاصيل</button>
+        </div>`;
+    }).join("");
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     MOBILE CARDS — Messages
+  ───────────────────────────────────────────────────────── */
+  function renderMsgMobileCards(messages) {
+    const container = document.getElementById("msgMobileCards");
+    if (!container) return;
+
+    if (!messages.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:15px;">لا توجد رسائل</div>`;
+      return;
+    }
+
+    container.innerHTML = messages.map(m => `
+      <div class="m-msg-card" data-msg-id="${esc(m.id)}">
+        <div class="m-msg-top">
+          <span class="m-msg-name">${esc(m.name || "—")}</span>
+          <span class="m-msg-date">${esc(fmtDate(m.created_at))}</span>
+        </div>
+        <div class="m-msg-phone" dir="ltr">${esc(m.contact || "—")}</div>
+        <div class="m-msg-preview">${esc(m.message || "—")}</div>
+        <div class="m-msg-actions">
+          <a href="tel:${esc(m.contact || "")}" class="btn-receipt">📞 اتصال</a>
+          <button class="btn-delete" data-msg-id="${esc(m.id)}" data-action="delete-msg">🗑 حذف</button>
+        </div>
+      </div>`).join("");
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     MOBILE CARDS — Products
+  ───────────────────────────────────────────────────────── */
+  function renderProductsMobileCards(products) {
+    const container = document.getElementById("productsMobileCards");
+    if (!container) return;
+
+    if (!products.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:15px;">لا توجد منتجات</div>`;
+      return;
+    }
+
+    container.innerHTML = products.map(p => `
+      <div class="m-product-card" data-catalog-id="${p.catalogId}">
+        ${p.image
+          ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="m-prod-img" onerror="this.style.display='none'">`
+          : '<span style="font-size:32px;flex-shrink:0;line-height:1;">📚</span>'
+        }
+        <div class="m-prod-body">
+          <div class="m-prod-name">${esc(p.name)}</div>
+          <div class="m-prod-cat">${esc(p.category)}</div>
+          <div class="m-prod-bottom">
+            <span class="m-prod-price" dir="ltr">${p.price ? p.price.toLocaleString("fr-DZ") + " دج" : "—"}</span>
+            <span class="avail-status ${p.available ? 'is-avail' : 'not-avail'}">
+              ${p.available ? '✅ متوفر' : '⚠️ غير متوفر'}
+            </span>
+            <label class="avail-toggle" title="${p.available ? 'إيقاف التوفر' : 'تفعيل التوفر'}">
+              <input type="checkbox" data-action="toggle-avail" data-catalog-id="${p.catalogId}"
+                     ${p.available ? 'checked' : ''}>
+              <span class="avail-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>`).join("");
+  }
+
+  /* ─────────────────────────────────────────────────────────
      FILTER
   ───────────────────────────────────────────────────────── */
   function getFiltered() {
