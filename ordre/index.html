@@ -1109,6 +1109,96 @@
       }
       /* .ch-section لا يأخذ overflow-x:hidden لأنه يقص قوائم الولاية/البلدية المنسدلة */
     }
+
+    /* === Custom Product Selector — always opens downward (position:fixed) === */
+    .pr-custom-select { position: relative; }
+    .pr-cs-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-family: var(--font);
+      color: var(--text-muted);
+      background: var(--bg-alt);
+      cursor: pointer;
+      direction: rtl;
+      text-align: right;
+      box-sizing: border-box;
+      transition: border-color .2s, box-shadow .2s, background .15s;
+      min-height: 42px;
+    }
+    .pr-cs-trigger:focus { outline: none; }
+    .pr-cs-trigger.open,
+    .pr-cs-trigger:focus-visible {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+    }
+    .pr-cs-trigger.has-value {
+      border-color: #10b981;
+      background: #f0fdf4;
+      color: #065f46;
+      font-weight: 700;
+    }
+    .pr-cs-label {
+      flex: 1;
+      text-align: right;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .pr-cs-chevron {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: transform .2s;
+    }
+    .pr-cs-trigger.open .pr-cs-chevron { transform: rotate(180deg); }
+    /* position:fixed escapes overflow:hidden on any ancestor — always opens down */
+    .pr-cs-panel {
+      position: fixed;
+      background: #fff;
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+      z-index: 99999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 280px;
+    }
+    .pr-cs-panel.open { display: flex; animation: csDropIn .15s ease; }
+    .pr-cs-list {
+      overflow-y: auto;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    .pr-cs-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--bg-alt);
+      direction: rtl;
+      text-align: right;
+      transition: background .1s;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pr-cs-item:last-child { border-bottom: none; }
+    .pr-cs-item:hover { background: var(--primary-bg); }
+    .pr-cs-item.is-selected {
+      background: rgba(29,78,216,.06);
+      color: var(--primary);
+      font-weight: 700;
+    }
   </style>
 </head>
 
@@ -1780,6 +1870,98 @@ function renumberRows() {
   });
 }
 
+/* ── تهيئة القائمة المخصصة للمنتج — تفتح دائماً لأسفل ─── */
+function initPrCustomSelect(row, hiddenSel) {
+  var trigger = row.querySelector('.pr-cs-trigger');
+  var panel   = row.querySelector('.pr-cs-panel');
+  var list    = row.querySelector('.pr-cs-list');
+
+  /* بناء عناصر القائمة */
+  list.innerHTML = window.PRODUCTS_CATALOG.map(function(p, i) {
+    if (p.hidden) return '';
+    return '<div class="pr-cs-item" data-value="' + i + '" role="option">' +
+      (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج' +
+      '</div>';
+  }).join('');
+
+  /* تحديد موضع اللوحة أسفل الزر مباشرة */
+  function positionPanel() {
+    var r = trigger.getBoundingClientRect();
+    panel.style.top   = (r.bottom + 4) + 'px';
+    panel.style.left  = r.left + 'px';
+    panel.style.width = r.width + 'px';
+  }
+
+  /* فتح القائمة مع إغلاق أي قائمة أخرى مفتوحة */
+  function openPanel() {
+    document.querySelectorAll('.pr-cs-panel.open').forEach(function(p) { p.classList.remove('open'); });
+    document.querySelectorAll('.pr-cs-trigger.open').forEach(function(t) {
+      t.classList.remove('open'); t.setAttribute('aria-expanded', 'false');
+    });
+    positionPanel();
+    panel.classList.add('open');
+    trigger.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  function closePanel() {
+    panel.classList.remove('open');
+    trigger.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  /* مزامنة العرض المرئي مع قيمة الـ select المخفي */
+  function syncDisplay() {
+    var val  = hiddenSel.value;
+    var item = (val !== '' && val !== undefined)
+               ? list.querySelector('[data-value="' + val + '"]')
+               : null;
+    if (item) {
+      trigger.querySelector('.pr-cs-label').textContent = item.textContent;
+      trigger.classList.add('has-value');
+      list.querySelectorAll('.pr-cs-item').forEach(function(el) {
+        el.classList.toggle('is-selected', el === item);
+      });
+    } else {
+      trigger.querySelector('.pr-cs-label').textContent = '— اختر المنتج من القائمة —';
+      trigger.classList.remove('has-value');
+      list.querySelectorAll('.pr-cs-item').forEach(function(el) { el.classList.remove('is-selected'); });
+    }
+  }
+
+  /* فتح / إغلاق عند النقر على الزر */
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    panel.classList.contains('open') ? closePanel() : openPanel();
+  });
+
+  /* اختيار منتج من القائمة */
+  list.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var item = e.target.closest('.pr-cs-item');
+    if (!item) return;
+    hiddenSel.value = item.dataset.value;
+    hiddenSel.dispatchEvent(new Event('change'));
+    closePanel();
+  });
+
+  /* إغلاق عند النقر خارج الصف */
+  document.addEventListener('click', function(e) {
+    if (!row.contains(e.target)) closePanel();
+  });
+
+  /* إعادة تحديد الموضع عند التمرير أو تغيير حجم النافذة */
+  window.addEventListener('scroll', function() {
+    if (panel.classList.contains('open')) positionPanel();
+  }, { passive: true });
+  window.addEventListener('resize', function() {
+    if (panel.classList.contains('open')) positionPanel();
+  }, { passive: true });
+
+  /* مزامنة العرض عند تغيير القيمة من خارج (مثل تهيئة السلة) */
+  hiddenSel.addEventListener('change', syncDisplay);
+}
+
 /* إنشاء صف منتج جديد — المستخدم يختار بنفسه */
 function createProductRow() {
   productCounter++;
@@ -1795,10 +1977,21 @@ function createProductRow() {
     </div>
     <div class="pr-select-wrap">
       <label>اختر المنتج *</label>
-      <select class="pr-select" required>
-        <option value="" disabled selected>— اختر المنتج من القائمة —</option>
+      <select class="pr-select" required
+              style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;"
+              tabindex="-1" aria-hidden="true">
+        <option value="" disabled selected></option>
         ${buildOptions()}
       </select>
+      <div class="pr-custom-select">
+        <button type="button" class="pr-cs-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="pr-cs-label">— اختر المنتج من القائمة —</span>
+          <svg class="pr-cs-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </button>
+        <div class="pr-cs-panel" role="listbox">
+          <div class="pr-cs-list"></div>
+        </div>
+      </div>
     </div>
     <div class="pr-bottom-row">
       <div class="pr-cell">
@@ -1817,6 +2010,7 @@ function createProductRow() {
   `;
 
   const sel   = row.querySelector('.pr-select');
+  initPrCustomSelect(row, sel);
   const qty   = row.querySelector('.pr-qty-input');
   const prEl  = row.querySelector('#price_' + id);
   const subEl = row.querySelector('#sub_' + id);
