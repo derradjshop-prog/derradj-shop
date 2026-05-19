@@ -1263,7 +1263,7 @@
 
                 <label class="pm-card selected" id="dm_home" for="dt_home">
                   <input type="radio" name="delivery_type" id="dt_home" value="home" checked>
-                  <span class="pm-check" style="display:flex;">✓</span>
+                  <span class="pm-check">✓</span>
                   <span class="pm-icon">🏠</span>
                   <span class="pm-name">توصيل للمنزل</span>
                   <small>يصلك الكتاب لباب منزلك</small>
@@ -2049,6 +2049,15 @@ function updateSummary() {
   });
 
   if (html) {
+    const dt = document.querySelector('input[name="delivery_type"]:checked');
+    if (dt) {
+      const dtLabel = dt.value === 'home' ? '🏠 توصيل للمنزل' : '📮 استلام من نقطة توصيل';
+      html += `<div class="os-row">
+        <span class="os-label">طريقة التوصيل</span>
+        <span class="os-value"><span class="os-pm-badge">${dtLabel}</span></span>
+      </div>`;
+    }
+
     if (hasWilaya) {
       const noteLabel = officeUnavailable ? ' <small style="font-size:10px;opacity:.7;">(منزلي فقط)</small>' : '';
       html += `<div class="os-row">
@@ -2124,10 +2133,11 @@ window.validateCheckout = function () {
     phoneErrEl.style.display = 'none';
   }
 
-  /* العنوان */
-  const addrEl   = document.getElementById('addressInput');
-  const addrWrap = addrEl.closest('.field-wrap');
-  if (!addrEl.value.trim()) {
+  /* العنوان — إجباري فقط عند التوصيل للمنزل */
+  const addrEl       = document.getElementById('addressInput');
+  const addrWrap     = addrEl.closest('.field-wrap');
+  const isHomeDelivery = document.querySelector('input[name="delivery_type"]:checked')?.value === 'home';
+  if (isHomeDelivery && !addrEl.value.trim()) {
     addrWrap.classList.add('has-error'); valid = false;
   } else { addrWrap.classList.remove('has-error'); }
 

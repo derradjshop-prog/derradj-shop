@@ -301,7 +301,7 @@
       cnt + " طلب" + (cnt !== ALL_ORDERS.length ? ` (من ${ALL_ORDERS.length})` : "");
 
     if (!cnt) {
-      tbody.innerHTML = `<tr><td colspan="10" class="empty">لا توجد طلبات مطابقة</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="11" class="empty">لا توجد طلبات مطابقة</td></tr>`;
       return;
     }
 
@@ -333,10 +333,11 @@
           <td class="nowrap">${esc(o.wilaya || "—")}</td>
           <td class="nowrap">${esc(o.commune || "—")}</td>
           <td class="td-address">${esc(o.address || "—")}</td>
+          <td class="nowrap"><span class="pm-tag">${esc(DT_LABELS[o.delivery_type] || o.delivery_type || "—")}</span></td>
           <td class="td-products">${productsHTML}</td>
           <td class="nowrap">
             <strong style="color:#1d4ed8;">${esc(fmtMoney(o.total_price))}</strong>
-            <br><small style="color:var(--text-light);font-size:10px;">${esc(DT_LABELS[o.delivery_type] || o.delivery_type || "—")}</small>
+            <br><small style="color:var(--text-light);font-size:10px;">${esc(fmtMoney(o.shipping_fee))} توصيل</small>
           </td>
           <td class="nowrap"><span class="pm-tag">${esc(PM_LABELS[o.payment_method] || o.payment_method || "—")}</span></td>
           <td class="nowrap">${confirmBadge(o.is_confirmed)}</td>
@@ -368,7 +369,7 @@
       /* تحديث الصف مباشرة */
       const row = document.querySelector(`#ordersTbody tr[data-id="${orderId}"]`);
       if (row) {
-        row.cells[8].innerHTML = confirmBadge(true);           /* حالة التأكيد */
+        row.cells[9].innerHTML = confirmBadge(true);           /* حالة التأكيد */
         btn.textContent = "✔ تم التأكيد";                     /* زر التأكيد */
         btn.removeAttribute("data-action");
       }
@@ -411,7 +412,7 @@
 
       if (!ALL_ORDERS.length) {
         document.getElementById("ordersTbody").innerHTML =
-          `<tr><td colspan="10" class="empty">لا توجد طلبات</td></tr>`;
+          `<tr><td colspan="11" class="empty">لا توجد طلبات</td></tr>`;
       }
 
       if (ACTIVE_ORDER?.id === orderId) closeModal();
