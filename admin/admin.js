@@ -168,6 +168,7 @@
      RENDER MESSAGES TABLE
   ───────────────────────────────────────────────────────── */
   function renderMessagesTable(messages) {
+    renderMsgMobileCards(messages);
     const tbody = document.getElementById("msgTbody");
     const cnt   = messages.length;
 
@@ -206,6 +207,7 @@
       await deleteMessage(msgId);
       ALL_MESSAGES = ALL_MESSAGES.filter(m => m.id !== msgId);
       document.querySelector(`#msgTbody tr[data-msg-id="${msgId}"]`)?.remove();
+      document.querySelector(`#msgMobileCards [data-msg-id="${msgId}"]`)?.remove();
       renderMessagesTable(getFilteredMessages());
       if (document.getElementById("modal").classList.contains("open")) closeModal();
     } catch (err) {
@@ -386,6 +388,7 @@
      RENDER TABLE
   ───────────────────────────────────────────────────────── */
   function renderTable(orders) {
+    renderOrdersMobileCards(orders);
     const tbody = document.getElementById("ordersTbody");
     const cnt   = orders.length;
     document.getElementById("ordersCount").textContent =
@@ -491,9 +494,10 @@
     try {
       await deleteOrder(orderId);
 
-      /* إزالة من الكاش والجدول */
+      /* إزالة من الكاش والجدول والبطاقات المحمولة */
       ALL_ORDERS = ALL_ORDERS.filter(o => o.id !== orderId);
       document.querySelector(`#ordersTbody tr[data-id="${orderId}"]`)?.remove();
+      document.querySelector(`#ordersMobileCards [data-id="${orderId}"]`)?.remove();
 
       /* تحديث العداد والإحصائيات */
       const filtered = getFiltered();
@@ -681,6 +685,7 @@
 
   /* عرض جدول المنتجات */
   function renderProductsTable(products) {
+    renderProductsMobileCards(products);
     const tbody = document.getElementById("productsTbody");
     const cnt   = products.length;
     document.getElementById("productsCount").textContent = cnt + " منتج";
@@ -740,6 +745,16 @@
         if (badge) {
           badge.className = `avail-status ${newValue ? 'is-avail' : 'not-avail'}`;
           badge.textContent = newValue ? '✅ متوفر' : '⚠️ غير متوفر حاليا';
+        }
+      }
+
+      /* تحديث بطاقة المنتج في العرض المحمول */
+      const mCard = document.querySelector(`#productsMobileCards [data-catalog-id="${catalogId}"]`);
+      if (mCard) {
+        const mBadge = mCard.querySelector(".avail-status");
+        if (mBadge) {
+          mBadge.className = `avail-status ${newValue ? 'is-avail' : 'not-avail'}`;
+          mBadge.textContent = newValue ? '✅ متوفر' : '⚠️ غير متوفر';
         }
       }
 
@@ -848,6 +863,30 @@
       if (!cb) return;
       const catalogId = parseInt(cb.dataset.catalogId);
       await handleToggleAvailability(catalogId, cb.checked, cb);
+    });
+
+    /* ── Mobile: Orders cards ──────────────────────────────── */
+    document.getElementById("ordersMobileCards").addEventListener("click", async e => {
+      const detailsBtn = e.target.closest("[data-action='details']");
+      if (detailsBtn) { showOrderModal(detailsBtn.dataset.id); return; }
+    });
+
+    /* ── Mobile: Products cards toggle ─────────────────────── */
+    document.getElementById("productsMobileCards").addEventListener("change", async e => {
+      const cb = e.target.closest('input[data-action="toggle-avail"]');
+      if (!cb) return;
+      await handleToggleAvailability(parseInt(cb.dataset.catalogId), cb.checked, cb);
+    });
+
+    /* ── Mobile: Messages cards ─────────────────────────────── */
+    document.getElementById("msgMobileCards").addEventListener("click", async e => {
+      const deleteBtn = e.target.closest("[data-action='delete-msg']");
+      if (deleteBtn) {
+        await handleDeleteMessage(deleteBtn.dataset.msgId, deleteBtn);
+        return;
+      }
+      const card = e.target.closest(".m-msg-card");
+      if (card) showMessageModal(card.dataset.msgId);
     });
 
     document.getElementById("productsRefreshBtn").addEventListener("click", async () => {
