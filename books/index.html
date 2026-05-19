@@ -504,9 +504,7 @@
            aria-label="${book.title}">
         ${badge}
         <a href="${bookUrl}" class="product-img-area" style="display:block;text-decoration:none;">
-          <picture>
-            <source srcset="${book.image.replace('.png','.webp').replace('.jpg','.webp')}" type="image/webp">
-            <img
+          <img
               src="${book.image}"
               alt="غلاف كتاب ${book.title}"
               class="product-image"
@@ -515,7 +513,6 @@
               height="400"
               onerror="this.src='../Logo.jpg'"
             />
-          </picture>
         </a>
         <div class="product-info">
           <div class="product-cat-label">${book.category}</div>
@@ -581,12 +578,9 @@
       : `${book.price.toLocaleString('en-US')} دج`;
 
     document.getElementById('bookModalContent').innerHTML = `
-      <picture>
-        <source srcset="${book.image.replace('.png','.webp').replace('.jpg','.webp')}" type="image/webp">
-        <img src="${book.image}" alt="غلاف ${book.title}"
-             class="modal-book-img"
-             onerror="this.src='../Logo.jpg'">
-      </picture>
+      <img src="${book.image}" alt="غلاف ${book.title}"
+           class="modal-book-img"
+           onerror="this.src='../Logo.jpg'">
       <span class="modal-book-category">${book.category}</span>
       <h2 class="modal-book-title">${book.title}</h2>
       <p class="modal-book-author">المؤلف: <span>${book.author}</span></p>

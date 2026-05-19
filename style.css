@@ -167,8 +167,7 @@ input, select, textarea { font-family: inherit; }
 
 /* === 5. HEADER === */
 .main-header {
-  position: sticky;
-  top: 0;
+  position: relative;
   z-index: 1000;
   background: var(--bg-dark);
   border-bottom: 1px solid rgba(255,255,255,0.06);

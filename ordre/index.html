@@ -1116,9 +1116,18 @@
     body {
       position: relative;
     }
-    .order-page,
+
+    /* حاوية الصفحة — عرض كامل بدون overflow */
+    .order-page {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    /* العناصر الداخلية فقط — لا نُدرج .container لأن overflow-x: hidden
+       في RTL يُزيح مركز العنصر ويُنتج مسافة فارغة على اليسار */
     #productsList,
-    .container,
     .ch-section,
     .checkout-header,
     .shipping-banner {
@@ -1132,6 +1141,18 @@
       /* آمن على الجوال: القوائم المنسدلة تستخدم position:fixed ≤640px فلا تُقطع */
       .ch-section {
         overflow-x: hidden;
+      }
+      /* تقليل padding الحاوية الداخلية على الشاشات الصغيرة */
+      .container {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .container {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
       }
     }
 
@@ -1308,7 +1329,7 @@
 
 <!-- ══════════════════════ MAIN ══════════════════════ -->
 <main class="order-page">
-  <div class="container" style="max-width:800px;width:100%;box-sizing:border-box;">
+  <div class="container" style="max-width:800px;width:100%;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:0 20px;">
 
     <!-- ▶ بانر التوصيل -->
     <div class="shipping-banner">

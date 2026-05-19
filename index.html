@@ -692,9 +692,9 @@
     return '<div class="product-card">' +
       '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
       '<a href="' + bookUrl + '" class="product-img-area" style="display:block;text-decoration:none;">' +
-        '<picture><source srcset="books/' + book.image.replace('.png','.webp').replace('.jpg','.webp') + '" type="image/webp"><img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
+        '<img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
              ' class="product-image" loading="lazy" width="400" height="400"' +
-             ' onerror="this.src=\'Logo.jpg\'"></picture>' +
+             ' onerror="this.src=\'Logo.jpg\'">' +
       '</a>' +
       '<div class="product-info">' +
         '<div class="product-cat-label">' + book.category + '</div>' +
