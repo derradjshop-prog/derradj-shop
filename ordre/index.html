@@ -1301,17 +1301,18 @@
 <!-- ══════════════════════ HEADER ══════════════════════ -->
 <header class="main-header" id="mainHeader">
   <div class="header-inner">
-    <a href="../index.html" class="logo">
+    <a href="../" class="logo">
       <span>Derradj <span class="logo-accent">Shop</span></span>
     </a>
     <nav class="main-nav">
-      <a href="../index.html#products" class="nav-link">المنتجات</a>
-      <a href="../about.html"          class="nav-link">من نحن</a>
-      <a href="../delivery.html"       class="nav-link">التوصيل</a>
-      <a href="../contact.html"        class="nav-link">تواصل معنا</a>
+      <a href="../books/"    class="nav-link">📚 الكتب</a>
+      <a href="../about.html"     class="nav-link">من نحن</a>
+      <a href="../delivery.html"  class="nav-link">التوصيل</a>
+      <a href="../faq.html"       class="nav-link">الأسئلة الشائعة</a>
+      <a href="../contact.html"   class="nav-link">تواصل معنا</a>
     </nav>
     <div style="display:flex;align-items:center;gap:10px;">
-      <a href="../index.html" class="btn-header-cta">← العودة للمتجر</a>
+      <a href="../" class="btn-header-cta">🏠 الرئيسية</a>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
         <span></span><span></span><span></span>
       </button>
@@ -1320,11 +1321,12 @@
 </header>
 
 <div class="mobile-menu" id="mobileMenu">
-  <a href="../index.html#products">المنتجات</a>
+  <a href="../books/">📚 الكتب</a>
   <a href="../about.html">من نحن</a>
   <a href="../delivery.html">التوصيل</a>
+  <a href="../faq.html">الأسئلة الشائعة</a>
   <a href="../contact.html">تواصل معنا</a>
-  <a href="../index.html" class="mobile-cta-link">← العودة للمتجر</a>
+  <a href="../" class="mobile-cta-link">🏠 الرئيسية</a>
 </div>
 
 <!-- ══════════════════════ MAIN ══════════════════════ -->
@@ -1751,25 +1753,25 @@ window.PRODUCTS_CATALOG = [
   { name: "YNINCH Super Learning Kit Arduino",   shortName: "YNINCH Super Learning Kit",         price: 7300, hidden: true,  available: true },
   /* ── الكتب (index يتطابق مع catalogId في cart.js) ────────────── */
   { name: "العادات السبع للناس الأكثر فعالية",         shortName: "العادات السبع",              price: 1400, available: true, paymentUrl: null },
-  { name: "العادات الذرية",                             shortName: "العادات الذرية",             price: 1000, available: true, paymentUrl: null },
-  { name: "قاعدة الـ 333",                              shortName: "قاعدة الـ 333",              price: 1500, available: true, paymentUrl: null },
+  { name: "العادات الذرية",                             shortName: "العادات الذرية",             price:  950, available: true, paymentUrl: null },
+  { name: "قاعدة الـ 333",                              shortName: "قاعدة الـ 333",              price: 1350, available: true, paymentUrl: null },
   { name: "الأثر المذهل للعادات البسيطة",               shortName: "الأثر المذهل للعادات",      price: 1200, available: true, paymentUrl: null },
-  { name: "متعة عدم الكمال",                            shortName: "متعة عدم الكمال",           price: 1200, available: true, paymentUrl: null },
+  { name: "متعة عدم الكمال",                            shortName: "متعة عدم الكمال",           price:  900, available: true, paymentUrl: null },
   { name: "الشجاعة تنادي",                              shortName: "الشجاعة تنادي",             price: 1300, available: true, paymentUrl: null },
-  { name: "قوة الآن",                                   shortName: "قوة الآن",                  price: 1200, available: true, paymentUrl: null },
-  { name: "بروباغندا",                                  shortName: "بروباغندا",                 price: 1300, available: true, paymentUrl: null },
-  { name: "فوضى الإدارة",                               shortName: "فوضى الإدارة",              price: 1500, available: true, paymentUrl: null },
-  { name: "السعادة الحقيقية والسعادة الزائفة",          shortName: "السعادة الحقيقية",          price: 1500, available: true, paymentUrl: null },
+  { name: "قوة الآن",                                   shortName: "قوة الآن",                  price: 1100, available: true, paymentUrl: null },
+  { name: "بروباغندا",                                  shortName: "بروباغندا",                 price: 1100, available: true, paymentUrl: null },
+  { name: "فوضى الإدارة",                               shortName: "فوضى الإدارة",              price: 1600, available: true, paymentUrl: null },
+  { name: "السعادة الحقيقية والسعادة الزائفة",          shortName: "السعادة الحقيقية",          price: 1600, available: true, paymentUrl: null },
   { name: "مسارات السعادة",                             shortName: "مسارات السعادة",            price: 1300, available: true, paymentUrl: null },
   { name: "في عالم الأشباح الجائعة",                    shortName: "الأشباح الجائعة",           price: 1800, available: true, paymentUrl: null },
   { name: "تاريخ موجز للزمان",                          shortName: "تاريخ موجز للزمان",         price: 1200, available: true, paymentUrl: null },
   { name: "الجسد لا ينسى",                              shortName: "الجسد لا ينسى",             price: 1800, hidden: true,  available: true, paymentUrl: null },
-  { name: "متعة أن تكون في الثلاثين",                   shortName: "متعة أن تكون في الثلاثين", price: 1000, available: true, paymentUrl: null },
-  { name: "كن مع الشخص الذي يجعلك سعيداً",             shortName: "كن مع من يجعلك سعيداً",    price: 1000, available: true, paymentUrl: null },
+  { name: "متعة أن تكون في الثلاثين",                   shortName: "متعة أن تكون في الثلاثين", price:  950, available: true, paymentUrl: null },
+  { name: "كن مع الشخص الذي يجعلك سعيداً",             shortName: "كن مع من يجعلك سعيداً",    price: 1200, available: true, paymentUrl: null },
   { name: "الثالوث المظلم",                             shortName: "الثالوث المظلم",            price: 1200, hidden: true,  available: true, paymentUrl: null },
   { name: "كيف تتقن فن البيع",                          shortName: "فن البيع",                  price: 1500, hidden: true,  available: true, paymentUrl: null },
   { name: "الذكاء العاطفي",                             shortName: "الذكاء العاطفي",            price: 1600, available: true, paymentUrl: null },
-  { name: "كيف تبيع أي شيء لأي إنسان",                 shortName: "كيف تبيع أي شيء",          price: 1300, available: true, paymentUrl: null },
+  { name: "كيف تبيع أي شيء لأي إنسان",                 shortName: "كيف تبيع أي شيء",          price: 1100, available: true, paymentUrl: null },
 ];
 
 /* ── جلب حالة التوفر من Supabase وتطبيقها على PRODUCTS_CATALOG ── */

@@ -61,6 +61,7 @@ body {
   width: 100%;
   max-width: 100%;
   position: relative;
+  padding-top: 68px;
   -webkit-font-smoothing: antialiased;
   -webkit-text-size-adjust: 100%;
   word-break: break-word;
@@ -167,7 +168,11 @@ input, select, textarea { font-family: inherit; }
 
 /* === 5. HEADER === */
 .main-header {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
   z-index: 1000;
   background: var(--bg-dark);
   border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -1815,6 +1820,8 @@ input, select, textarea { font-family: inherit; }
   .products-grid    { grid-template-columns: 1fr; }
   .categories-grid  { grid-template-columns: 1fr 1fr; }
   .header-inner     { height: 60px; }
+  body              { padding-top: 60px; }
+  .mobile-menu      { top: 60px; }
   .hero-inner       { padding: 40px 14px; }
   .hero-title       { font-size: clamp(24px, 7.5vw, 32px); }
 
