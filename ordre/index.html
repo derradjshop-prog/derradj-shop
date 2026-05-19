@@ -1109,6 +1109,178 @@
       }
       /* .ch-section لا يأخذ overflow-x:hidden لأنه يقص قوائم الولاية/البلدية المنسدلة */
     }
+
+    /* ═══════════════════════════════════════════════════════
+       قائمة المنتجات المنسدلة المخصصة — Custom Product Select
+    ═══════════════════════════════════════════════════════ */
+
+    /* الحاوية الرئيسية */
+    .pr-custom-select {
+      position: relative;
+    }
+
+    /* زر التشغيل */
+    .pr-cs-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text-muted);
+      background: var(--bg-alt);
+      cursor: pointer;
+      direction: rtl;
+      text-align: right;
+      box-sizing: border-box;
+      transition: border-color .2s, box-shadow .2s, background .15s;
+      min-height: 40px;
+    }
+    .pr-cs-trigger:focus { outline: none; }
+    .pr-cs-trigger.open,
+    .pr-cs-trigger:focus-visible {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+    }
+    .pr-cs-trigger.has-value {
+      border-color: #10b981;
+      background: #f0fdf4;
+      color: #065f46;
+      font-weight: 700;
+    }
+
+    /* نص الزر */
+    .pr-cs-label {
+      flex: 1;
+      text-align: right;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 13px;
+      line-height: 1.3;
+    }
+
+    /* أيقونة السهم */
+    .pr-cs-chevron {
+      width: 16px; height: 16px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: transform .2s;
+    }
+    .pr-cs-trigger.open .pr-cs-chevron { transform: rotate(180deg); }
+
+    /* لوحة القائمة المنسدلة */
+    .pr-cs-panel {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0; left: 0;
+      background: #fff;
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 28px rgba(0,0,0,.16);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .pr-cs-panel.open {
+      display: flex;
+      animation: csDropIn .15s ease;
+    }
+
+    /* شريط البحث */
+    .pr-cs-search {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--bg-alt);
+      display: flex; align-items: center; gap: 6px;
+      flex-shrink: 0;
+    }
+    .pr-cs-search-icon { width: 14px; height: 14px; color: var(--text-muted); flex-shrink: 0; }
+    .pr-cs-search-input {
+      flex: 1;
+      border: none; outline: none;
+      font-size: 13px;
+      font-family: var(--font);
+      direction: rtl;
+      background: transparent;
+      color: var(--text);
+      padding: 2px 0;
+    }
+    .pr-cs-search-input::placeholder { color: var(--text-muted); }
+
+    /* قائمة الخيارات — max-height مُقيَّدة مع تمرير داخلي */
+    .pr-cs-list {
+      overflow-y: auto;
+      max-height: 210px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+
+    /* عنصر في القائمة */
+    .pr-cs-item {
+      padding: 9px 12px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--bg-alt);
+      direction: rtl;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      transition: background .1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pr-cs-item:last-child { border-bottom: none; }
+    .pr-cs-item:hover, .pr-cs-item.focused { background: var(--primary-bg); }
+    .pr-cs-item.is-selected { background: rgba(29,78,216,.06); }
+
+    /* اسم المنتج */
+    .pr-cs-item-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      flex: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      text-align: right;
+      line-height: 1.3;
+    }
+    .pr-cs-item.is-selected .pr-cs-item-name { color: var(--primary); }
+
+    /* سعر المنتج */
+    .pr-cs-item-price {
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-muted);
+      white-space: nowrap;
+      direction: ltr;
+      flex-shrink: 0;
+    }
+    .pr-cs-item.is-selected .pr-cs-item-price { color: var(--primary); }
+
+    /* رسالة لا توجد نتائج */
+    .pr-cs-empty {
+      padding: 14px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      direction: rtl;
+    }
+
+    /* جوال: ضبط أحجام اللمس */
+    @media (max-width: 640px) {
+      .pr-cs-trigger { font-size: 16px; min-height: 44px; }
+      .pr-cs-label   { font-size: 16px; }
+      .pr-cs-search-input { font-size: 16px; }
+      .pr-cs-item { padding: 11px 14px; }
+      .pr-cs-item-name { font-size: 14px; }
+      .pr-cs-item-price { font-size: 12px; }
+      .pr-cs-list { max-height: 240px; }
+    }
   </style>
 </head>
 
@@ -1518,7 +1690,7 @@
       <a href="../" class="footer-logo">
         <span>Derradj <span class="logo-accent">Shop</span></span>
       </a>
-      <p>متجر جزائري متخصص في أطقم Arduino والمكونات الإلكترونية.</p>
+      <p>متجر كتب جزائري — كتب مختارة في تطوير الذات، الفلسفة، علم النفس والإدارة مع توصيل سريع لجميع ولايات الجزائر.</p>
     </div>
     <div class="footer-links-col">
       <h4>روابط سريعة</h4>
@@ -1780,6 +1952,146 @@ function renumberRows() {
   });
 }
 
+/* ────────────────────────────────────────────────────────────
+   سجل كل قوائم المنتجات المنسدلة المفتوحة
+──────────────────────────────────────────────────────────── */
+const _pcsRegistry = [];
+
+/* ────────────────────────────────────────────────────────────
+   createProductCustomSelect — قائمة منسدلة مخصصة قابلة للبحث
+   • container    : .pr-custom-select الحاوية
+   • hiddenSelect : <select class="pr-select"> المخفي
+   • onChangeCb   : دالة تُستدعى عند تغيير الاختيار
+──────────────────────────────────────────────────────────── */
+function createProductCustomSelect(container, hiddenSelect, onChangeCb) {
+  const trigger = container.querySelector('.pr-cs-trigger');
+  const panel   = container.querySelector('.pr-cs-panel');
+  const search  = container.querySelector('.pr-cs-search-input');
+  const listEl  = container.querySelector('.pr-cs-list');
+
+  let selIdx = '';
+
+  /* بناء قائمة الخيارات مع فلتر بحث اختياري */
+  function buildList(q) {
+    const term = (q || '').trim().toLowerCase();
+    const visible = window.PRODUCTS_CATALOG
+      .map(function(p, i) { return { p: p, i: i }; })
+      .filter(function(e) { return !e.p.hidden; })
+      .filter(function(e) {
+        if (!term) return true;
+        return (e.p.shortName || e.p.name).toLowerCase().includes(term);
+      });
+
+    if (!visible.length) {
+      listEl.innerHTML = '<div class="pr-cs-empty">لا توجد نتائج</div>';
+      return;
+    }
+
+    listEl.innerHTML = visible.map(function(e) {
+      var isSel = String(e.i) === selIdx;
+      return '<div class="pr-cs-item' + (isSel ? ' is-selected' : '') +
+             '" data-idx="' + e.i + '">' +
+             '<span class="pr-cs-item-name">' +
+             (e.p.shortName || e.p.name).replace(/</g, '&lt;') +
+             '</span>' +
+             '<span class="pr-cs-item-price" dir="ltr">' +
+             e.p.price.toLocaleString('en-US') + ' دج' +
+             '</span></div>';
+    }).join('');
+
+    listEl.querySelectorAll('.pr-cs-item').forEach(function(el) {
+      var pick = function() { pickItem(el.dataset.idx); };
+      el.addEventListener('mousedown', function(e) { e.preventDefault(); pick(); });
+      var ty = 0;
+      el.addEventListener('touchstart', function(e) { ty = e.touches[0].clientY; }, { passive: true });
+      el.addEventListener('touchend', function(e) {
+        if (Math.abs(e.changedTouches[0].clientY - ty) > 8) return;
+        e.preventDefault(); pick();
+      });
+    });
+
+    /* تمرير العنصر المحدد إلى منتصف القائمة */
+    var selEl = listEl.querySelector('.is-selected');
+    if (selEl) selEl.scrollIntoView({ block: 'nearest' });
+  }
+
+  /* اختيار منتج بالفهرس */
+  function pickItem(idx) {
+    selIdx = String(idx);
+    hiddenSelect.value = idx;
+    var p = window.PRODUCTS_CATALOG[parseInt(idx)];
+    if (p) {
+      trigger.querySelector('.pr-cs-label').textContent =
+        (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج';
+      trigger.classList.add('has-value');
+    }
+    closePanel();
+    onChangeCb();
+  }
+
+  /* فتح اللوحة */
+  function openPanel() {
+    /* إغلاق أي قائمة منتج أخرى مفتوحة */
+    _pcsRegistry.forEach(function(s) { if (s !== inst) s.close(); });
+    panel.classList.add('open');
+    trigger.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+    search.value = '';
+    buildList('');
+    setTimeout(function() { search.focus(); }, 40);
+  }
+
+  /* إغلاق اللوحة */
+  function closePanel() {
+    panel.classList.remove('open');
+    trigger.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  /* الأحداث */
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    panel.classList.contains('open') ? closePanel() : openPanel();
+  });
+
+  search.addEventListener('input', function() { buildList(search.value); });
+
+  search.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { closePanel(); trigger.focus(); }
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      var first = listEl.querySelector('.pr-cs-item');
+      if (first) pickItem(first.dataset.idx);
+    }
+  });
+
+  /* إغلاق عند النقر خارج الحاوية */
+  document.addEventListener('click', function(e) {
+    if (panel.classList.contains('open') && !container.contains(e.target)) {
+      closePanel();
+    }
+  });
+
+  /* الواجهة العامة */
+  var inst = {
+    close: closePanel,
+    setValue: function(idx) {
+      selIdx = String(idx);
+      hiddenSelect.value = idx;
+      var p = window.PRODUCTS_CATALOG[parseInt(idx)];
+      if (p) {
+        trigger.querySelector('.pr-cs-label').textContent =
+          (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج';
+        trigger.classList.add('has-value');
+        onChangeCb();
+      }
+    }
+  };
+
+  _pcsRegistry.push(inst);
+  return inst;
+}
+
 /* إنشاء صف منتج جديد — المستخدم يختار بنفسه */
 function createProductRow() {
   productCounter++;
@@ -1795,8 +2107,21 @@ function createProductRow() {
     </div>
     <div class="pr-select-wrap">
       <label>اختر المنتج *</label>
-      <select class="pr-select" required>
-        <option value="" disabled selected>— اختر المنتج من القائمة —</option>
+      <div class="pr-custom-select" id="pcs_${id}">
+        <button type="button" class="pr-cs-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="pr-cs-label">— اختر المنتج من القائمة —</span>
+          <svg class="pr-cs-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </button>
+        <div class="pr-cs-panel" role="listbox">
+          <div class="pr-cs-search">
+            <svg class="pr-cs-search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+            <input type="text" class="pr-cs-search-input" placeholder="ابحث عن المنتج..." autocomplete="off" inputmode="search">
+          </div>
+          <div class="pr-cs-list"></div>
+        </div>
+      </div>
+      <select class="pr-select" required style="display:none;">
+        <option value="" disabled selected></option>
         ${buildOptions()}
       </select>
     </div>
@@ -1820,6 +2145,7 @@ function createProductRow() {
   const qty   = row.querySelector('.pr-qty-input');
   const prEl  = row.querySelector('#price_' + id);
   const subEl = row.querySelector('#sub_' + id);
+  const pcsEl = row.querySelector('.pr-custom-select');
 
   function calcRow() {
     const idx = parseInt(sel.value);
@@ -1830,7 +2156,6 @@ function createProductRow() {
       prEl.classList.remove('loaded');
       subEl.textContent = '—';
       subEl.classList.remove('loaded');
-      sel.classList.remove('has-value');
       recalcAll();
       return;
     }
@@ -1844,23 +2169,28 @@ function createProductRow() {
     subEl.textContent = formatDZD(cat.price * q);
     subEl.classList.add('loaded');
 
-    sel.classList.add('has-value');
     recalcAll();
   }
 
-  /* تحديث فوري عند تغيير المنتج أو الكمية */
-  sel.addEventListener('change', function() { calcRow(); updateSummary(); });
-  qty.addEventListener('input',  function() { calcRow(); updateSummary(); });
+  /* تهيئة القائمة المنسدلة المخصصة */
+  const pcsCtrl = createProductCustomSelect(pcsEl, sel, function() {
+    calcRow();
+    updateSummary();
+  });
+  row._pcsCtrl = pcsCtrl;
 
-  /* حذف الصف: إزالة + إعادة ترقيم + إعادة حساب */
+  /* تحديث فوري عند تغيير الكمية */
+  qty.addEventListener('input', function() { calcRow(); updateSummary(); });
+
+  /* حذف الصف: إزالة من السجل + إعادة ترقيم + إعادة حساب */
   row.querySelector('.pr-delete').addEventListener('click', function() {
+    var regIdx = _pcsRegistry.indexOf(pcsCtrl);
+    if (regIdx !== -1) _pcsRegistry.splice(regIdx, 1);
     row.remove();
     renumberRows();
     recalcAll();
     updateSummary();
   });
-
-  /* لا auto-select — المستخدم يختار بنفسه */
 
   return row;
 }
@@ -1887,11 +2217,9 @@ document.getElementById('addProductBtn').addEventListener('click', function() {
 
       var catIdx = parseInt(cartItem.catalogId);
       if (!isNaN(catIdx) && window.PRODUCTS_CATALOG[catIdx]) {
-        var sel = row.querySelector('.pr-select');
-        if (sel) {
-          sel.value = String(catIdx);
-          sel.classList.add('has-value');
-          sel.dispatchEvent(new Event('change'));
+        /* تحديث القائمة المخصصة مباشرةً (تُحرِّك calcRow تلقائياً) */
+        if (row._pcsCtrl) {
+          row._pcsCtrl.setValue(String(catIdx));
         }
         var qtyInput = row.querySelector('.pr-qty-input');
         if (qtyInput && cartItem.qty > 0) {

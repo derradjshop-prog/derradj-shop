@@ -5,8 +5,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /ordre/Essai/
 
-# Allow crawling of all public pages
-Allow: /books/
-Allow: /ordre/index.html
+# Note: electronics product pages (/products/) are marked noindex via meta tag
+# and are intentionally excluded from sitemap.xml — Derradj Shop is now a bookstore.
 
 Sitemap: https://www.derradjshop.com/sitemap.xml
