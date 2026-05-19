@@ -444,22 +444,23 @@
       btn.addEventListener('click', openCart);
     });
 
-    /* ربط أزرار "أضف إلى السلة" في صفحات المنتجات */
-    document.querySelectorAll('[data-add-to-cart]').forEach(btn => {
-      btn.addEventListener('click', e => {
-        e.preventDefault();
-        e.stopPropagation();
-        const cid = parseInt(btn.dataset.addToCart);
-        if (Cart.add(cid)) {
-          updateBadge();
-          /* تأثير bounce على أيقونة السلة */
-          document.querySelectorAll('.cart-btn').forEach(b => {
-            b.classList.add('cart-btn--bounce');
-            setTimeout(() => b.classList.remove('cart-btn--bounce'), 600);
-          });
-          showToast('✅ تمت إضافة المنتج إلى السلة');
-        }
-      });
+    /* ربط أزرار "أضف إلى السلة" — Event Delegation على document
+       يدعم الأزرار المُنشأة ديناميكيًا بعد إعادة عرض الشبكة */
+    document.addEventListener('click', function (e) {
+      const btn = e.target.closest('[data-add-to-cart]');
+      if (!btn || btn.disabled) return;
+      e.preventDefault();
+      const cid = parseInt(btn.dataset.addToCart);
+      if (isNaN(cid)) return;
+      if (Cart.add(cid)) {
+        updateBadge();
+        /* تأثير bounce على أيقونة السلة */
+        document.querySelectorAll('.cart-btn').forEach(b => {
+          b.classList.add('cart-btn--bounce');
+          setTimeout(() => b.classList.remove('cart-btn--bounce'), 600);
+        });
+        showToast('✅ تمت إضافة المنتج إلى السلة');
+      }
     });
 
     Cart.sanitize();
