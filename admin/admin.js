@@ -20,9 +20,16 @@
 
   /* ── Constants ─────────────────────────────────────────── */
   const PM_LABELS = {
-    carte_doree: "💳 البطاقة الذهبية",
-    baridimob:   "📱 BaridiMob",
-    ccp:         "🏦 CCP / RIP",
+    carte_doree:      "💳 البطاقة الذهبية",
+    baridimob:        "📱 BaridiMob",
+    ccp:              "🏦 CCP / RIP",
+    prepaid:          "💳 دفع مسبق (CCP / BaridiMob)",
+    cash_on_delivery: "🚪 دفع عند الاستلام",
+  };
+
+  const DT_LABELS = {
+    home:   "🏠 توصيل للمنزل",
+    office: "📮 استلام من أقرب نقطة توصيل",
   };
 
   /* ── Helpers ───────────────────────────────────────────── */
@@ -327,7 +334,10 @@
           <td class="nowrap">${esc(o.commune || "—")}</td>
           <td class="td-address">${esc(o.address || "—")}</td>
           <td class="td-products">${productsHTML}</td>
-          <td class="nowrap"><strong style="color:#1d4ed8;">${esc(fmtMoney(o.total_price))}</strong></td>
+          <td class="nowrap">
+            <strong style="color:#1d4ed8;">${esc(fmtMoney(o.total_price))}</strong>
+            <br><small style="color:var(--text-light);font-size:10px;">${esc(DT_LABELS[o.delivery_type] || o.delivery_type || "—")}</small>
+          </td>
           <td class="nowrap"><span class="pm-tag">${esc(PM_LABELS[o.payment_method] || o.payment_method || "—")}</span></td>
           <td class="nowrap">${confirmBadge(o.is_confirmed)}</td>
           <td class="td-actions">
@@ -450,8 +460,16 @@
            </tbody>
            <tfoot>
              <tr>
-               <td colspan="3">الإجمالي الكلي</td>
-               <td style="direction:ltr;color:#1d4ed8;">${esc(fmtMoney(o.total_price))}</td>
+               <td colspan="3">مجموع المنتجات</td>
+               <td style="direction:ltr;">${esc(fmtMoney(o.subtotal))}</td>
+             </tr>
+             <tr>
+               <td colspan="3">التوصيل</td>
+               <td style="direction:ltr;">${esc(fmtMoney(o.shipping_fee))}</td>
+             </tr>
+             <tr>
+               <td colspan="3" style="font-weight:800;">الإجمالي الكلي</td>
+               <td style="direction:ltr;font-weight:800;color:#1d4ed8;">${esc(fmtMoney(o.total_price))}</td>
              </tr>
            </tfoot>
          </table>`
@@ -463,15 +481,22 @@
          </a>`
       : `<span style="color:var(--text-muted);font-size:13px;">لا يوجد وصل دفع مرفوع</span>`;
 
+    const isHomeDelivery = o.delivery_type === "home";
+    const addressRow = isHomeDelivery
+      ? `<div class="info-item full"><span class="i-lbl">العنوان الكامل</span><span class="i-val" style="white-space:normal;line-height:1.6;">${esc(o.address || "—")}</span></div>`
+      : `<div class="info-item full"><span class="i-lbl">نقطة الاستلام (البلدية)</span><span class="i-val">${esc(o.commune || "—")} — ${esc(o.wilaya || "—")}</span></div>`;
+
     return `
       <div class="m-section">
         <div class="m-title">معلومات الزبون والتوصيل</div>
         <div class="info-grid">
-          <div class="info-item"><span class="i-lbl">الاسم</span><span class="i-val">${esc(o.full_name || "—")}</span></div>
-          <div class="info-item"><span class="i-lbl">الهاتف</span><span class="i-val" style="direction:ltr;">${esc(o.phone || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">الاسم الكامل</span><span class="i-val">${esc(o.full_name || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">رقم الهاتف</span><span class="i-val" style="direction:ltr;">${esc(o.phone || "—")}</span></div>
           <div class="info-item"><span class="i-lbl">الولاية</span><span class="i-val">${esc(o.wilaya || "—")}</span></div>
-          <div class="info-item"><span class="i-lbl">البلدية</span><span class="i-val">${esc(o.commune || "—")}</span></div>
-          <div class="info-item full"><span class="i-lbl">العنوان</span><span class="i-val" style="white-space:normal;line-height:1.6;">${esc(o.address || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">البلدية / المدينة</span><span class="i-val">${esc(o.commune || "—")}</span></div>
+          <div class="info-item full"><span class="i-lbl">طريقة التوصيل</span><span class="i-val"><strong>${esc(DT_LABELS[o.delivery_type] || o.delivery_type || "—")}</strong></span></div>
+          ${addressRow}
+          <div class="info-item"><span class="i-lbl">سعر التوصيل</span><span class="i-val" style="direction:ltr;font-weight:700;color:#059669;">${esc(fmtMoney(o.shipping_fee))}</span></div>
           <div class="info-item"><span class="i-lbl">طريقة الدفع</span><span class="i-val">${esc(PM_LABELS[o.payment_method] || o.payment_method || "—")}</span></div>
           <div class="info-item"><span class="i-lbl">تاريخ الطلب</span><span class="i-val" style="font-size:12px;">${esc(fmtDate(o.created_at))}</span></div>
         </div>
