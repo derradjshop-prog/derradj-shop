@@ -56,6 +56,16 @@
     { catalogId: 30, name: 'الذكر العقلاني: الذكورة الإيجابية',     shortName: 'الذكر العقلاني',                   price: 2100, available: true, image: BASE + '/books/rational-male/main.png' },
     { catalogId: 31, name: '6 مهارات لتحقيق مبيعات مختلفة مذهلة',  shortName: '6 مهارات مبيعات مذهلة',            price: 1400, available: true, image: BASE + '/books/6-sales-skills/main.png' },
     { catalogId: 32, name: 'الأثر المذهل للعادات البسيطة',          shortName: 'الأثر المذهل للعادات البسيطة',    price: 1800, available: true, image: BASE + '/books/small-habits-effect/main.png' },
+    { catalogId: 33, name: 'العادات السبع للمراهقين الأكثر فعالية', shortName: 'العادات السبع للمراهقين',           price: 1100, available: true, image: BASE + '/books/7-habits-teens/main.png' },
+    { catalogId: 34, name: 'القائد في داخلي',                        shortName: 'القائد في داخلي',                  price: 1300, available: true, image: BASE + '/books/leader-in-me/main.png' },
+    { catalogId: 35, name: 'الأنوثة المظلمة',                        shortName: 'الأنوثة المظلمة',                  price:  800, available: true, image: BASE + '/books/dark-feminine-power/main.png' },
+    { catalogId: 36, name: 'لماذا لا تذهب الخراف إلى الطبيب؟',       shortName: 'لماذا لا تذهب الخراف؟',           price: 1100, available: true, image: BASE + '/books/why-sheep-dont-go-to-doctor/main.png' },
+    { catalogId: 37, name: 'من صفر إلى واحد',                        shortName: 'من صفر إلى واحد',                 price:  850, available: true, image: BASE + '/books/zero-to-one/main.png' },
+    { catalogId: 38, name: 'اللطف وآثاره الجانبية الخمسة',           shortName: 'اللطف وآثاره الجانبية',           price:  950, available: true, image: BASE + '/books/kindness-side-effects/main.png' },
+    { catalogId: 39, name: 'طاقة الأنوثة',                           shortName: 'طاقة الأنوثة',                    price:  900, available: true, image: BASE + '/books/feminine-energy/main.png' },
+    { catalogId: 40, name: 'ممتلئ بالفراغ',                          shortName: 'ممتلئ بالفراغ',                   price: 1400, available: true, image: BASE + '/books/full-of-emptiness/main.png' },
+    { catalogId: 41, name: 'أبي الذي أكره',                          shortName: 'أبي الذي أكره',                   price: 1100, available: true, image: BASE + '/books/father-i-hate/main.png' },
+    { catalogId: 42, name: 'بلورة الرأي العام',                      shortName: 'بلورة الرأي العام',               price: 1100, available: true, image: BASE + '/books/crystallizing-public-opinion/main.png' },
   ];
 
   /* ══════════════════════════════════════════════════════════

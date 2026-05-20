@@ -662,6 +662,16 @@
     { catalogId: 30, price: 2100, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/rational-male/main.png' },
     { catalogId: 31, price: 1400, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/6-sales-skills/main.png' },
     { catalogId: 32, price: 1800, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/small-habits-effect/main.png' },
+    { catalogId: 33, price: 1100, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/7-habits-teens/main.png' },
+    { catalogId: 34, price: 1300, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/leader-in-me/main.png' },
+    { catalogId: 35, price:  800, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/dark-feminine-power/main.png' },
+    { catalogId: 36, price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/why-sheep-dont-go-to-doctor/main.png' },
+    { catalogId: 37, price:  850, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/zero-to-one/main.png' },
+    { catalogId: 38, price:  950, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/kindness-side-effects/main.png' },
+    { catalogId: 39, price:  900, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/feminine-energy/main.png' },
+    { catalogId: 40, price: 1400, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/full-of-emptiness/main.png' },
+    { catalogId: 41, price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/father-i-hate/main.png' },
+    { catalogId: 42, price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/crystallizing-public-opinion/main.png' },
   ];
 
   /* جلب حالة التوفر من Supabase */
