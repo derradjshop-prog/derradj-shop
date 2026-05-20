@@ -29,16 +29,9 @@ window.BOOKS_DATA = (function () {
       description: 'خلاصات وأفكار قيّمة في العلاقات العامة وصناعة المحتوى الرقمي وبناء الحضور الشخصي عبر قاعدة مبسّطة وفعّالة.',
     },
     {
-      id: 5, title: 'الأثر المذهل للعادات البسيطة', titleEn: 'Small Habits Revolution',
-      author: 'ديمون زهاريادس', translator: 'مروة هاشم', year: 2016,
-      category: 'تطوير الذات', price: 1200, image: 'small-habits-revolution/main.png', url: 'small-habits-revolution/',
-      available: true,
-      description: 'دليل عملي لاكتساب عادات مستدامة تدريجياً بدلاً من التغيير الجذري المفاجئ، مع التركيز على الاتساق والمثابرة اليومية.',
-    },
-    {
       id: 6, title: 'متعة عدم الكمال', titleEn: 'The Joy of Imperfection',
       author: 'ديمون زهاريادس', translator: null, year: 2017,
-      category: 'تطوير الذات', price: 900, image: 'joy-of-imperfection/main.png', url: 'joy-of-imperfection/',
+      category: 'تطوير الذات', price: 1800, image: 'joy-of-imperfection/main.png', url: 'joy-of-imperfection/',
       available: true,
       description: 'دليل شامل للتغلب على وسواس الكمالية وإسكات الناقد الداخلي، واكتشاف أن النقص الإنساني هو أصل الجمال والتطور.',
     },

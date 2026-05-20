@@ -36,7 +36,6 @@ INSERT INTO public.product_availability (catalog_id, name, available) VALUES
   (2,  'العادات السبع للناس الأكثر فعالية',   true),
   (3,  'العادات الذرية',                       true),
   (4,  'قاعدة الـ 333',                        true),
-  (5,  'الأثر المذهل للعادات البسيطة',         true),
   (6,  'متعة عدم الكمال',                      true),
   (7,  'الشجاعة تنادي',                        true),
   (8,  'قوة الآن',                             true),
