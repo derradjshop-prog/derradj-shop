@@ -288,42 +288,174 @@
     /* ━━ MODAL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .modal-overlay {
       position: fixed; inset: 0;
-      background: rgba(15,23,42,.65);
+      background: rgba(15,23,42,.55);
       z-index: 1000;
       display: none;
-      align-items: flex-start;
+      align-items: center;
       justify-content: center;
-      padding: 20px;
-      overflow-y: auto;
+      padding: 16px;
     }
     .modal-overlay.open { display: flex; }
+
+    @keyframes modal-pop {
+      from { opacity: 0; transform: translateY(10px) scale(.97); }
+      to   { opacity: 1; transform: translateY(0)   scale(1);   }
+    }
     .modal-box {
       background: var(--white);
-      border-radius: var(--radius-lg);
+      border-radius: 18px;
       width: 100%;
-      max-width: 720px;
-      margin: auto;
-      box-shadow: 0 24px 80px rgba(0,0,0,.3);
+      max-width: 520px;
+      max-height: calc(100vh - 32px);
+      max-height: calc(100svh - 32px);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 60px rgba(0,0,0,.22);
       overflow: hidden;
+      animation: modal-pop .16s ease-out;
     }
     .modal-header {
       background: #0f172a;
       color: #fff;
-      padding: 18px 24px;
+      padding: 14px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      flex-shrink: 0;
     }
-    .modal-title { font-size: 16px; font-weight: 900; }
+    .modal-title { font-size: 15px; font-weight: 900; }
     .modal-close {
       background: rgba(255,255,255,.1); border: none; color: #fff;
-      width: 34px; height: 34px; border-radius: 8px; font-size: 17px;
+      width: 32px; height: 32px; border-radius: 8px; font-size: 16px;
       cursor: pointer; display: flex; align-items: center; justify-content: center;
-      transition: background .2s;
+      transition: background .2s; flex-shrink: 0;
     }
     .modal-close:hover { background: rgba(255,255,255,.22); }
-    .modal-body { padding: 24px; }
+    .modal-body {
+      padding: 16px 18px;
+      overflow-y: auto;
+      flex: 1;
+      overscroll-behavior: contain;
+    }
 
+    /* ── Compact detail rows (order modal) ── */
+    .detail-rows {
+      background: var(--bg);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+    .detail-row {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      padding: 9px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .detail-row:last-child { border-bottom: none; }
+    .dr-key {
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+      min-width: 76px;
+      flex-shrink: 0;
+      padding-top: 2px;
+    }
+    .dr-val {
+      color: var(--text);
+      font-weight: 700;
+      flex: 1;
+      word-break: break-word;
+      line-height: 1.4;
+    }
+
+    /* ── Modal section label ── */
+    .modal-sec-lbl {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      margin: 0 0 7px;
+    }
+
+    /* ── Product rows ── */
+    .modal-products { margin-bottom: 14px; }
+    .prod-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--bg);
+      font-size: 13px;
+    }
+    .prod-row:last-child { border-bottom: none; }
+    .prod-name { flex: 1; color: var(--text); font-weight: 600; line-height: 1.3; word-break: break-word; }
+    .prod-qty {
+      background: #eff6ff;
+      color: #1d4ed8;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-weight: 800;
+      font-size: 12px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .prod-sub {
+      font-weight: 800;
+      color: #1d4ed8;
+      direction: ltr;
+      white-space: nowrap;
+      font-size: 13px;
+      flex-shrink: 0;
+      min-width: 68px;
+    }
+
+    /* ── Totals block ── */
+    .modal-totals {
+      background: var(--bg);
+      border-radius: 10px;
+      padding: 10px 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+    .total-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 0;
+      font-size: 13px;
+      color: var(--text-light);
+    }
+    .total-row.grand {
+      border-top: 2px solid var(--border);
+      margin-top: 6px;
+      padding-top: 10px;
+      font-size: 16px;
+      font-weight: 900;
+      color: var(--text);
+    }
+    .total-val { direction: ltr; font-weight: 700; }
+    .total-row.grand .total-val { color: #1d4ed8; }
+
+    /* ── Modal action bar (bottom of body) ── */
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+      margin-top: 2px;
+    }
+    .modal-actions .btn-confirm,
+    .modal-actions .btn-delete  { flex: 1; justify-content: center; }
+
+    /* ── Keep old styles for messages modal ── */
     .m-section { margin-bottom: 22px; }
     .m-section:last-child { margin-bottom: 0; }
     .m-title {
@@ -356,8 +488,8 @@
       .info-grid  { grid-template-columns: 1fr; }
       .controls-bar { flex-direction: column; align-items: stretch; gap: 8px; }
       .search-input { min-width: unset; }
-      .modal-body { padding: 14px 12px; }
-      .modal-box  { margin: 10px; }
+      .modal-body { padding: 12px 14px; }
+      .modal-box  { max-width: 100%; border-radius: 14px; }
       .page-title { font-size: 18px; }
 
       /* جعل الجدول يُمرّر أفقياً بشكل واضح */
@@ -588,6 +720,92 @@
       .tab-btn  { padding: 8px 3px; font-size: 11px; }
     }
   </style>
+
+<style>
+  /* ━━ ORDERS TABLE — DESKTOP: NO HORIZONTAL SCROLL ━━━━━━━━━━ */
+  .orders-tbl {
+    table-layout: fixed;
+  }
+  .orders-tbl th {
+    padding: 10px 6px;
+    font-size: 10px;
+    overflow: hidden;
+  }
+  .orders-tbl td {
+    padding: 9px 6px;
+    font-size: 12px;
+    overflow: hidden;
+    word-break: break-word;
+    white-space: normal;
+    vertical-align: top;
+  }
+  /* Columns that should truncate on one line */
+  .orders-tbl td.nowrap {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  /* Reset min-widths so table-layout:fixed can enforce column widths */
+  .orders-tbl .td-products,
+  .orders-tbl .td-address,
+  .orders-tbl .td-actions {
+    min-width: 0;
+    white-space: normal;
+  }
+  /* Compact action buttons inside orders table */
+  .orders-tbl .btn-confirm,
+  .orders-tbl .btn-delete,
+  .orders-tbl .btn-receipt {
+    padding: 5px 7px;
+    font-size: 11px;
+    gap: 3px;
+  }
+  /* Product summary line (single-line with ellipsis) */
+  .product-summary {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+  /* In-table details button */
+  .btn-tbl-details {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 9px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: var(--font);
+    white-space: nowrap;
+    transition: background .15s;
+  }
+  .btn-tbl-details:hover { background: #dbeafe; }
+
+  /* ━━ MOBILE ORDER CARD — phone + status improvements ━━━━━━━━━ */
+  @media (max-width: 768px) {
+    .m-card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 6px;
+    }
+    .m-order-phone {
+      font-size: 14px;
+      color: var(--text-light);
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+  }
+</style>
 </head>
 <body>
 
@@ -655,7 +873,20 @@
 
   <!-- Table (desktop) -->
   <div class="table-wrap">
-    <table>
+    <table class="orders-tbl">
+      <colgroup>
+        <col style="width:10%"> <!-- اسم الزبون -->
+        <col style="width:9%">  <!-- الهاتف -->
+        <col style="width:7%">  <!-- الولاية -->
+        <col style="width:7%">  <!-- البلدية -->
+        <col style="width:8%">  <!-- العنوان -->
+        <col style="width:9%">  <!-- طريقة التوصيل -->
+        <col style="width:11%"> <!-- المنتجات -->
+        <col style="width:7%">  <!-- الإجمالي -->
+        <col style="width:9%">  <!-- طريقة الدفع -->
+        <col style="width:9%">  <!-- حالة التأكيد -->
+        <col style="width:14%"> <!-- الإجراءات -->
+      </colgroup>
       <thead>
         <tr>
           <th>اسم الزبون</th>
@@ -675,7 +906,6 @@
         <tr><td colspan="11" class="empty">⏳ جاري التحميل...</td></tr>
       </tbody>
     </table>
-    <div class="table-scroll-hint">← اسحب لرؤية المزيد →</div>
   </div>
 
   <!-- Cards (mobile) -->

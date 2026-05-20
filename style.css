@@ -714,7 +714,7 @@ input, select, textarea { font-family: inherit; }
   margin-top: 2px;
 }
 
-.price-current { font-size: 18px; font-weight: 900; color: var(--accent); }
+.price-current { font-size: 18px; font-weight: 900; color: var(--primary); }
 .price-old { font-size: 13px; color: var(--text-muted); text-decoration: line-through; }
 
 .btn-order-card {
@@ -1542,12 +1542,12 @@ input, select, textarea { font-family: inherit; }
   gap: 14px;
   margin-bottom: 24px;
   padding: 20px;
-  background: linear-gradient(135deg, #fef2f2, #fff5f5);
+  background: linear-gradient(135deg, #eff6ff, #f0f9ff);
   border-radius: var(--radius);
-  border: 1px solid #fecaca;
+  border: 1px solid #bfdbfe;
   flex-wrap: wrap;
 }
-.product-price-box .price-current { font-size: 36px; font-weight: 900; color: var(--accent); }
+.product-price-box .price-current { font-size: 36px; font-weight: 900; color: var(--primary); }
 .product-price-box .price-old     { font-size: 18px; color: var(--text-muted); text-decoration: line-through; }
 
 .discount-tag {

@@ -288,12 +288,16 @@
       const totalQty = items.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
       return `
         <div class="m-order-card" data-id="${esc(o.id)}">
-          <div class="m-order-name">${esc(o.full_name || "—")}</div>
+          <div class="m-card-top">
+            <div class="m-order-name">${esc(o.full_name || "—")}</div>
+            ${confirmBadge(o.is_confirmed)}
+          </div>
+          <div class="m-order-phone" dir="ltr">${esc(o.phone || "—")}</div>
           <div class="m-order-meta">
             <span class="m-order-total">${esc(fmtMoney(o.total_price))}</span>
             <span class="m-order-count">${totalQty} كتب</span>
           </div>
-          <button class="btn-details" data-id="${esc(o.id)}" data-action="details">التفاصيل</button>
+          <button class="btn-details" data-id="${esc(o.id)}" data-action="details">عرض التفاصيل الكاملة</button>
         </div>`;
     }).join("");
   }
@@ -403,12 +407,19 @@
       const items     = o.order_items || [];
       const confirmed = o.is_confirmed === true;
 
-      /* المنتجات: اسم × كمية */
-      const productsHTML = items.length
-        ? items.map(it =>
-            `<span class="product-line">${esc(it.product_name)} <span class="product-qty">× ${esc(it.quantity)}</span></span>`
-          ).join("")
-        : `<span style="color:var(--text-muted);">—</span>`;
+      /* المنتجات: ملخص مضغوط + زر التفاصيل */
+      const totalQty = items.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
+      let productsHTML;
+      if (!items.length) {
+        productsHTML = `<span style="color:var(--text-muted);">—</span>`;
+      } else if (items.length === 1) {
+        const it = items[0];
+        productsHTML = `<span class="product-summary">${esc(it.product_name)} <span class="product-qty">× ${esc(it.quantity)}</span></span>
+          <button class="btn-tbl-details" data-id="${esc(o.id)}" data-action="details">تفاصيل</button>`;
+      } else {
+        productsHTML = `<span class="product-summary"><strong>${items.length} منتجات</strong> · ${totalQty} قطعة</span>
+          <button class="btn-tbl-details" data-id="${esc(o.id)}" data-action="details">تفاصيل</button>`;
+      }
 
       /* زر وصل الدفع */
       const receiptBtn = o.receipt_url
@@ -539,93 +550,102 @@
   }
 
   function buildModalHTML(o) {
-    const items      = o.order_items || [];
-    const confirmed  = o.is_confirmed === true;
+    const items     = o.order_items || [];
+    const confirmed = o.is_confirmed === true;
+    const isHome    = o.delivery_type === "home";
 
-    const itemsHTML = items.length
-      ? `<table class="items-table">
-           <thead><tr><th>المنتج</th><th>السعر</th><th>الكمية</th><th>الإجمالي</th></tr></thead>
-           <tbody>
-             ${items.map(it => `
-               <tr>
-                 <td>${esc(it.product_name)}</td>
-                 <td style="direction:ltr;">${esc(fmtMoney(it.unit_price))}</td>
-                 <td style="text-align:center;font-weight:800;">${esc(it.quantity)}</td>
-                 <td style="direction:ltr;font-weight:800;color:#1d4ed8;">${esc(fmtMoney(it.subtotal))}</td>
-               </tr>`).join("")}
-           </tbody>
-           <tfoot>
-             <tr>
-               <td colspan="3">مجموع المنتجات</td>
-               <td style="direction:ltr;">${esc(fmtMoney(o.subtotal))}</td>
-             </tr>
-             <tr>
-               <td colspan="3">التوصيل</td>
-               <td style="direction:ltr;">${esc(fmtMoney(o.shipping_fee))}</td>
-             </tr>
-             <tr>
-               <td colspan="3" style="font-weight:800;">الإجمالي الكلي</td>
-               <td style="direction:ltr;font-weight:800;color:#1d4ed8;">${esc(fmtMoney(o.total_price))}</td>
-             </tr>
-           </tfoot>
-         </table>`
-      : `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:12px 0;">لا توجد منتجات</p>`;
+    /* ── Products rows ── */
+    const productsHTML = items.length
+      ? items.map(it => `
+          <div class="prod-row">
+            <span class="prod-name">${esc(it.product_name)}</span>
+            <span class="prod-qty">× ${esc(it.quantity)}</span>
+            <span class="prod-sub">${esc(fmtMoney(it.subtotal))}</span>
+          </div>`).join("")
+      : `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:10px 0;">لا توجد منتجات</p>`;
 
-    const receiptSection = o.receipt_url
-      ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" class="btn-receipt" style="font-size:14px;padding:10px 20px;">
-           🧾 فتح وصل الدفع في نافذة جديدة
-         </a>`
-      : `<span style="color:var(--text-muted);font-size:13px;">لا يوجد وصل دفع مرفوع</span>`;
+    /* ── Receipt ── */
+    const receiptHTML = o.receipt_url
+      ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" class="btn-receipt"
+            style="display:inline-flex;margin-bottom:14px;">🧾 فتح وصل الدفع</a>`
+      : ``;
 
-    const isHomeDelivery = o.delivery_type === "home";
-    const addressRow = isHomeDelivery
-      ? `<div class="info-item full"><span class="i-lbl">العنوان الكامل</span><span class="i-val" style="white-space:normal;line-height:1.6;">${esc(o.address || "—")}</span></div>`
-      : `<div class="info-item full"><span class="i-lbl">نقطة الاستلام (البلدية)</span><span class="i-val">${esc(o.commune || "—")} — ${esc(o.wilaya || "—")}</span></div>`;
+    /* ── Action buttons ── */
+    const confirmBtn = confirmed
+      ? `<button class="btn-confirm" disabled>✔ تم التأكيد</button>`
+      : `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`;
 
     return `
-      <div class="m-section">
-        <div class="m-title">معلومات الزبون والتوصيل</div>
-        <div class="info-grid">
-          <div class="info-item"><span class="i-lbl">الاسم الكامل</span><span class="i-val">${esc(o.full_name || "—")}</span></div>
-          <div class="info-item"><span class="i-lbl">رقم الهاتف</span><span class="i-val" style="direction:ltr;">${esc(o.phone || "—")}</span></div>
-          <div class="info-item"><span class="i-lbl">الولاية</span><span class="i-val">${esc(o.wilaya || "—")}</span></div>
-          <div class="info-item"><span class="i-lbl">البلدية / المدينة</span><span class="i-val">${esc(o.commune || "—")}</span></div>
-          <div class="info-item full"><span class="i-lbl">طريقة التوصيل</span><span class="i-val"><strong>${esc(DT_LABELS[o.delivery_type] || o.delivery_type || "—")}</strong></span></div>
-          ${addressRow}
-          <div class="info-item"><span class="i-lbl">سعر التوصيل</span><span class="i-val" style="direction:ltr;font-weight:700;color:#059669;">${esc(fmtMoney(o.shipping_fee))}</span></div>
-          <div class="info-item"><span class="i-lbl">طريقة الدفع</span><span class="i-val">${esc(PM_LABELS[o.payment_method] || o.payment_method || "—")}</span></div>
-          <div class="info-item"><span class="i-lbl">تاريخ الطلب</span><span class="i-val" style="font-size:12px;">${esc(fmtDate(o.created_at))}</span></div>
+      <!-- Customer & delivery info -->
+      <div class="detail-rows">
+        <div class="detail-row">
+          <span class="dr-key">الاسم</span>
+          <span class="dr-val">${esc(o.full_name || "—")}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dr-key">الهاتف</span>
+          <span class="dr-val" dir="ltr">${esc(o.phone || "—")}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dr-key">الولاية</span>
+          <span class="dr-val">${esc(o.wilaya || "—")} · ${esc(o.commune || "—")}</span>
+        </div>
+        ${isHome ? `
+        <div class="detail-row">
+          <span class="dr-key">العنوان</span>
+          <span class="dr-val">${esc(o.address || "—")}</span>
+        </div>` : ""}
+        <div class="detail-row">
+          <span class="dr-key">التوصيل</span>
+          <span class="dr-val">${esc(DT_LABELS[o.delivery_type] || o.delivery_type || "—")}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dr-key">طريقة الدفع</span>
+          <span class="dr-val">${esc(PM_LABELS[o.payment_method] || o.payment_method || "—")}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dr-key">الحالة</span>
+          <span class="dr-val">${confirmBadge(o.is_confirmed)}</span>
+        </div>
+        <div class="detail-row">
+          <span class="dr-key">التاريخ</span>
+          <span class="dr-val" style="font-size:12px;">${esc(fmtDate(o.created_at))}</span>
         </div>
       </div>
 
-      <div class="m-section">
-        <div class="m-title">المنتجات المطلوبة</div>
-        ${itemsHTML}
+      <!-- Products -->
+      <p class="modal-sec-lbl">المنتجات المطلوبة</p>
+      <div class="modal-products">${productsHTML}</div>
+
+      <!-- Totals -->
+      <div class="modal-totals">
+        <div class="total-row">
+          <span>مجموع المنتجات</span>
+          <span class="total-val">${esc(fmtMoney(o.subtotal))}</span>
+        </div>
+        <div class="total-row">
+          <span>التوصيل</span>
+          <span class="total-val" style="color:#059669;">${esc(fmtMoney(o.shipping_fee))}</span>
+        </div>
+        <div class="total-row grand">
+          <span>الإجمالي الكلي</span>
+          <span class="total-val">${esc(fmtMoney(o.total_price))}</span>
+        </div>
       </div>
 
-      <div class="m-section">
-        <div class="m-title">وصل الدفع</div>
-        ${receiptSection}
-      </div>
+      ${receiptHTML}
 
       ${o.notes ? `
-      <div class="m-section">
-        <div class="m-title">ملاحظات الزبون</div>
-        <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:10px;padding:14px;font-size:14px;color:#78350f;line-height:1.7;">${esc(o.notes)}</div>
+      <p class="modal-sec-lbl">ملاحظات الزبون</p>
+      <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:12px;
+                  font-size:13px;color:#78350f;line-height:1.6;margin-bottom:14px;">
+        ${esc(o.notes)}
       </div>` : ""}
 
-      <div class="m-section">
-        <div class="m-title">الإجراءات</div>
-        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-          <span>الحالة: ${confirmBadge(o.is_confirmed)}</span>
-          ${confirmed
-            ? `<button class="btn-confirm" disabled style="font-size:14px;padding:10px 22px;">✔ تم التأكيد</button>`
-            : `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm"
-                       style="font-size:14px;padding:10px 22px;">✅ تأكيد الطلب</button>`
-          }
-          <button class="btn-delete" data-id="${esc(o.id)}" data-action="delete"
-                  style="font-size:14px;padding:10px 22px;">🗑 حذف الطلب</button>
-        </div>
+      <!-- Actions -->
+      <div class="modal-actions">
+        ${confirmBtn}
+        <button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>
       </div>`;
   }
 
@@ -873,6 +893,7 @@
       if (!btn) return;
       if (btn.dataset.action === "confirm") await handleConfirm(btn.dataset.id, btn);
       if (btn.dataset.action === "delete")  await handleDelete(btn.dataset.id, btn);
+      if (btn.dataset.action === "details") showOrderModal(btn.dataset.id);
     });
 
     /* Event delegation — المودال */
