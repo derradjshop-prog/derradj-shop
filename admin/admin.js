@@ -1,7 +1,9 @@
 /* ==========================================================
    admin.js — Derradj Shop | Admin Dashboard
    is_confirmed: NULL = قيد المعالجة | true = تم التأكيد
+   BUILD: 2026-05-22-v2 (BOOKS_META includes 43-56)
    ========================================================== */
+console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes catalogId 43-56');
 
 (function () {
   "use strict";
@@ -692,6 +694,21 @@
     { catalogId: 40, price: 1400, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/full-of-emptiness/main.png' },
     { catalogId: 41, price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/father-i-hate/main.png' },
     { catalogId: 42, price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/crystallizing-public-opinion/main.png' },
+    /* ── الكتب الجديدة (43-56) ── */
+    { catalogId: 43, price:  950, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/bawabatuka-liltaghyir/main.png' },
+    { catalogId: 44, price:  950, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/richest-man-in-babylon/main.png' },
+    { catalogId: 45, price:  850, category: 'الروايات والأدب',    image: 'https://www.derradjshop.com/books/urid-an-anam/main.png' },
+    { catalogId: 46, price: 1300, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/how-not-to-die-alone/main.png' },
+    { catalogId: 47, price: 1400, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/stronger-than-your-emotions/main.png' },
+    { catalogId: 48, price:  950, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/act-like-a-lady-think-like-a-man/main.png' },
+    { catalogId: 49, price:  950, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/kabber-dmaghak/main.png' },
+    { catalogId: 50, price:  900, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/qawanin-al-najah-al-mustadam/main.png' },
+    { catalogId: 51, price:  850, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/happiness-and-depression/main.png' },
+    { catalogId: 52, price: 2400, category: 'العلوم والمعرفة',    image: 'https://www.derradjshop.com/books/will-my-cat-eat-my-eyeballs/main.png' },
+    { catalogId: 53, price: 1400, category: 'الفلسفة والفكر',     image: 'https://www.derradjshop.com/books/the-monster-inside-you-can-be-kind/main.png' },
+    { catalogId: 54, price:  950, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/burn-after-writing/main.png' },
+    { catalogId: 55, price: 1300, category: 'الفلسفة والفكر',     image: 'https://www.derradjshop.com/books/the-eye-of-the-i/main.png' },
+    { catalogId: 56, price: 1300, category: 'الروايات والأدب',    image: 'https://www.derradjshop.com/books/the-sun-does-shine/main.png' },
   ];
 
   /* جلب حالة التوفر من Supabase */
@@ -701,7 +718,39 @@
       .select("catalog_id, name, available")
       .order("catalog_id");
     if (error) throw error;
-    return (data || []).map(row => {
+
+    /* ── تشخيص: يظهر في Console المتصفح ─────────────────────── */
+    const rows = data || [];
+    console.group('[Admin Diag] fetchProducts — total rows from Supabase:', rows.length);
+    console.log('[Admin Diag] BOOKS_META entries count:', BOOKS_META.length);
+    console.log('[Admin Diag] BOOKS_META max catalogId:', Math.max(...BOOKS_META.map(m => m.catalogId)));
+
+    const newRows = rows.filter(r => r.catalog_id >= 43);
+    if (newRows.length === 0) {
+      console.warn('[Admin Diag] ⚠ NO rows with catalog_id >= 43 returned from Supabase. ' +
+        'Run supabase-add-new-books.sql in the Supabase SQL Editor.');
+    } else {
+      console.log('[Admin Diag] New-book rows from Supabase (43-56):', newRows.length);
+      newRows.forEach(row => {
+        const idType  = typeof row.catalog_id;
+        const matched = BOOKS_META.find(m => m.catalogId === row.catalog_id);
+        const strictEq = BOOKS_META.find(m => m.catalogId === row.catalog_id)   !== undefined;
+        const looseEq  = BOOKS_META.find(m => m.catalogId == row.catalog_id)    !== undefined;  // eslint-disable-line eqeqeq
+        if (matched) {
+          console.log(`[Admin Diag] ✅ catalogId ${row.catalog_id} (${idType}) → matched: image=${matched.image}, price=${matched.price}`);
+        } else {
+          console.error(
+            `[Admin Diag] ❌ catalogId ${row.catalog_id} (type=${idType}) NOT matched in BOOKS_META. ` +
+            `strictEq=${strictEq}, looseEq=${looseEq}. ` +
+            `Closest BOOKS_META entry: ${JSON.stringify(BOOKS_META.find(m => String(m.catalogId) === String(row.catalog_id)))}`
+          );
+        }
+      });
+    }
+    console.groupEnd();
+    /* ── نهاية التشخيص ─────────────────────────────────────────── */
+
+    return rows.map(row => {
       const meta = BOOKS_META.find(m => m.catalogId === row.catalog_id) || {};
       return {
         catalogId: row.catalog_id,

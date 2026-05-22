@@ -65,7 +65,21 @@
     { catalogId: 39, name: 'طاقة الأنوثة',                           shortName: 'طاقة الأنوثة',                    price:  900, available: true, image: BASE + '/books/feminine-energy/main.png' },
     { catalogId: 40, name: 'ممتلئ بالفراغ',                          shortName: 'ممتلئ بالفراغ',                   price: 1400, available: true, image: BASE + '/books/full-of-emptiness/main.png' },
     { catalogId: 41, name: 'أبي الذي أكره',                          shortName: 'أبي الذي أكره',                   price: 1100, available: true, image: BASE + '/books/father-i-hate/main.png' },
-    { catalogId: 42, name: 'بلورة الرأي العام',                      shortName: 'بلورة الرأي العام',               price: 1100, available: true, image: BASE + '/books/crystallizing-public-opinion/main.png' },
+    { catalogId: 42, name: 'بلورة الرأي العام',                                           shortName: 'بلورة الرأي العام',                          price: 1100, available: true, image: BASE + '/books/crystallizing-public-opinion/main.png' },
+    { catalogId: 43, name: 'بوابتك للتغيير',                                              shortName: 'بوابتك للتغيير',                             price:  950, available: true, image: BASE + '/books/bawabatuka-liltaghyir/main.png' },
+    { catalogId: 44, name: 'أغنى رجل في بابل',                                            shortName: 'أغنى رجل في بابل',                          price:  950, available: true, image: BASE + '/books/richest-man-in-babylon/main.png' },
+    { catalogId: 45, name: 'أريد أن أنام',                                                shortName: 'أريد أن أنام',                               price:  850, available: true, image: BASE + '/books/urid-an-anam/main.png' },
+    { catalogId: 46, name: 'كيف لا تموت وحيدًا',                                          shortName: 'كيف لا تموت وحيدًا',                        price: 1300, available: true, image: BASE + '/books/how-not-to-die-alone/main.png' },
+    { catalogId: 47, name: 'كن أقوى من مشاعرك',                                           shortName: 'كن أقوى من مشاعرك',                         price: 1400, available: true, image: BASE + '/books/stronger-than-your-emotions/main.png' },
+    { catalogId: 48, name: 'تصرفي كسيدة وفكري كرجل',                                     shortName: 'تصرفي كسيدة وفكري كرجل',                   price:  950, available: true, image: BASE + '/books/act-like-a-lady-think-like-a-man/main.png' },
+    { catalogId: 49, name: 'كبر دماغك',                                                   shortName: 'كبر دماغك',                                  price:  950, available: true, image: BASE + '/books/kabber-dmaghak/main.png' },
+    { catalogId: 50, name: 'قوانين النجاح المستدام: كيف تستمر في النجاح',                 shortName: 'قوانين النجاح المستدام',                     price:  900, available: true, image: BASE + '/books/qawanin-al-najah-al-mustadam/main.png' },
+    { catalogId: 51, name: 'كيف نحصل على السعادة ونبتعد عن الكآبة',                       shortName: 'كيف نحصل على السعادة',                      price:  850, available: true, image: BASE + '/books/happiness-and-depression/main.png' },
+    { catalogId: 52, name: 'هل ستأكل قطتي مقلتي؟',                                       shortName: 'هل ستأكل قطتي مقلتي؟',                      price: 2400, available: true, image: BASE + '/books/will-my-cat-eat-my-eyeballs/main.png' },
+    { catalogId: 53, name: 'الوحش الذي يسكنك يمكن أن يكون لطيفًا',                       shortName: 'الوحش الذي يسكنك',                          price: 1400, available: true, image: BASE + '/books/the-monster-inside-you-can-be-kind/main.png' },
+    { catalogId: 54, name: 'احرق بعد الكتابة',                                            shortName: 'احرق بعد الكتابة',                          price:  950, available: true, image: BASE + '/books/burn-after-writing/main.png' },
+    { catalogId: 55, name: 'عين الأنا: الذي لا يُخفى عنه شيء',                           shortName: 'عين الأنا',                                  price: 1300, available: true, image: BASE + '/books/the-eye-of-the-i/main.png' },
+    { catalogId: 56, name: 'وأشرقت الشمس من جديد',                                        shortName: 'وأشرقت الشمس من جديد',                      price: 1300, available: true, image: BASE + '/books/the-sun-does-shine/main.png' },
   ];
 
   /* ══════════════════════════════════════════════════════════
