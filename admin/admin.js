@@ -718,39 +718,7 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
       .select("catalog_id, name, available")
       .order("catalog_id");
     if (error) throw error;
-
-    /* ── تشخيص: يظهر في Console المتصفح ─────────────────────── */
-    const rows = data || [];
-    console.group('[Admin Diag] fetchProducts — total rows from Supabase:', rows.length);
-    console.log('[Admin Diag] BOOKS_META entries count:', BOOKS_META.length);
-    console.log('[Admin Diag] BOOKS_META max catalogId:', Math.max(...BOOKS_META.map(m => m.catalogId)));
-
-    const newRows = rows.filter(r => r.catalog_id >= 43);
-    if (newRows.length === 0) {
-      console.warn('[Admin Diag] ⚠ NO rows with catalog_id >= 43 returned from Supabase. ' +
-        'Run supabase-add-new-books.sql in the Supabase SQL Editor.');
-    } else {
-      console.log('[Admin Diag] New-book rows from Supabase (43-56):', newRows.length);
-      newRows.forEach(row => {
-        const idType  = typeof row.catalog_id;
-        const matched = BOOKS_META.find(m => m.catalogId === row.catalog_id);
-        const strictEq = BOOKS_META.find(m => m.catalogId === row.catalog_id)   !== undefined;
-        const looseEq  = BOOKS_META.find(m => m.catalogId == row.catalog_id)    !== undefined;  // eslint-disable-line eqeqeq
-        if (matched) {
-          console.log(`[Admin Diag] ✅ catalogId ${row.catalog_id} (${idType}) → matched: image=${matched.image}, price=${matched.price}`);
-        } else {
-          console.error(
-            `[Admin Diag] ❌ catalogId ${row.catalog_id} (type=${idType}) NOT matched in BOOKS_META. ` +
-            `strictEq=${strictEq}, looseEq=${looseEq}. ` +
-            `Closest BOOKS_META entry: ${JSON.stringify(BOOKS_META.find(m => String(m.catalogId) === String(row.catalog_id)))}`
-          );
-        }
-      });
-    }
-    console.groupEnd();
-    /* ── نهاية التشخيص ─────────────────────────────────────────── */
-
-    return rows.map(row => {
+    return (data || []).map(row => {
       const meta = BOOKS_META.find(m => m.catalogId === row.catalog_id) || {};
       return {
         catalogId: row.catalog_id,
