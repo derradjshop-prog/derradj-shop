@@ -321,6 +321,13 @@
       overscroll-behavior: contain;
       touch-action: pan-y;
     }
+
+    /* الفتح للأعلى (سطح المكتب: JS يضيف هذا الصف عند نقص الفراغ تحت الزر) */
+    .cs-panel.cs-flip-up { animation: csDropInUp .15s ease; }
+    @keyframes csDropInUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
     .cs-item {
       padding: 10px 16px;
       cursor: pointer;
@@ -2824,9 +2831,57 @@ class CustomSelect {
       }
       /* على الجوال: لا تفتح لوحة المفاتيح تلقائياً — المستخدم يمسّ حقل البحث إذا أراد */
     } else {
-      /* على الحاسوب: ركّز على البحث فوراً */
+      /* على الحاسوب: موضع ذكي (أعلى/أسفل) ثم تركيز البحث */
+      this._positionPanelDesktop();
+      this._desktopReposHandler = (e) => {
+        /* تجاهل التمرير الداخلي داخل لوحة الاختيار — فقط أغلق عند تمرير الصفحة */
+        if (e && e.target && this.panel.contains(e.target)) return;
+        this._closePanel();
+      };
+      window.addEventListener('scroll', this._desktopReposHandler, { passive: true, capture: true });
+      window.addEventListener('resize', this._desktopReposHandler, { passive: true });
       if (this._searchEl) this._searchEl.focus();
     }
+  }
+
+  /* وضع اللوحة على سطح المكتب: position:fixed يهرب من overflow:hidden للأب،
+     ويفتح للأعلى إذا كان الفراغ تحت الزر غير كاف. */
+  _positionPanelDesktop() {
+    const panel   = this.panel;
+    const trigger = this.trigger;
+    const rect    = trigger.getBoundingClientRect();
+    const vh      = window.innerHeight;
+    const gap     = 6;
+    const margin  = 12; /* هامش أمان من حافة الشاشة */
+    const searchH = panel.querySelector('.cs-search-bar')?.offsetHeight || 44;
+    const minListH = 140;
+    const idealListH = 230;
+
+    const spaceBelow = vh - rect.bottom - gap - margin;
+    const spaceAbove = rect.top - gap - margin;
+
+    /* position:fixed يتجاوز overflow:hidden على الحاويات الآباء */
+    panel.style.position = 'fixed';
+    panel.style.left     = rect.left + 'px';
+    panel.style.width    = rect.width + 'px';
+    panel.style.right    = 'auto';
+
+    let listMax;
+    const needed = idealListH + searchH + 8;
+    if (spaceBelow >= needed || spaceBelow >= spaceAbove) {
+      /* فتح للأسفل */
+      panel.classList.remove('cs-flip-up');
+      panel.style.top    = (rect.bottom + gap) + 'px';
+      panel.style.bottom = 'auto';
+      listMax = Math.max(minListH, Math.min(idealListH, spaceBelow - searchH - 8));
+    } else {
+      /* فتح للأعلى */
+      panel.classList.add('cs-flip-up');
+      panel.style.bottom = (vh - rect.top + gap) + 'px';
+      panel.style.top    = 'auto';
+      listMax = Math.max(minListH, Math.min(idealListH, spaceAbove - searchH - 8));
+    }
+    this._listEl.style.maxHeight = listMax + 'px';
   }
 
   /* يضبط موضع وارتفاع اللوحة فوق لوحة المفاتيح عند ظهورها */
@@ -2863,9 +2918,23 @@ class CustomSelect {
       this._vvHandler = null;
     }
 
-    /* إعادة ضبط الموضع المُضمَّن */
-    this.panel.style.bottom    = '';
+    /* إزالة مستمعي إعادة الموضع على سطح المكتب */
+    if (this._desktopReposHandler) {
+      window.removeEventListener('scroll', this._desktopReposHandler, { capture: true });
+      window.removeEventListener('resize', this._desktopReposHandler);
+      this._desktopReposHandler = null;
+    }
+
+    /* إعادة ضبط الموضع المُضمَّن (يشمل وضع سطح المكتب المحسوب بـ JS) */
+    this.panel.style.position = '';
+    this.panel.style.top      = '';
+    this.panel.style.bottom   = '';
+    this.panel.style.left     = '';
+    this.panel.style.right    = '';
+    this.panel.style.width    = '';
     this.panel.style.maxHeight = '';
+    this.panel.classList.remove('cs-flip-up');
+    if (this._listEl) this._listEl.style.maxHeight = '';
   }
 }
 
