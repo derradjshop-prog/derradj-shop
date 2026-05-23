@@ -789,7 +789,7 @@
     try { items = Array.isArray(r.purchased_items) ? r.purchased_items : JSON.parse(r.purchased_items || "[]"); }
     catch (e) { items = []; }
 
-    var bookTitles = items.map(function (it) { return esc(it.title || ""); }).filter(Boolean).join("، ");
+    var bookTitles = items.map(function (it) { return esc(it.name || it.title || ""); }).filter(Boolean).join("، ");
     var bookDisplay = r.package_name
       ? (bookTitles ? bookTitles + " — " + esc(r.package_name) : esc(r.package_name))
       : bookTitles;
@@ -829,9 +829,12 @@
     var grid = document.getElementById("reviews-grid");
     if (!grid) return;
 
+    var TABLE = "customer_reviews";
+    console.log("[reviews] fetching from table:", TABLE, "| filter: is_approved=true");
+
     try {
       var res = await fetch(
-        SUPABASE_URL + "/rest/v1/customer_reviews" +
+        SUPABASE_URL + "/rest/v1/" + TABLE +
         "?is_approved=eq.true" +
         "&order=created_at.desc" +
         "&limit=9" +
@@ -844,12 +847,15 @@
         }
       );
 
+      console.log("[reviews] HTTP status:", res.status);
       if (!res.ok) throw new Error("HTTP " + res.status);
 
       var reviews = await res.json();
+      console.log("[reviews] rows returned:", reviews ? reviews.length : 0);
       showSkeleton(false);
 
       if (!reviews || !reviews.length) {
+        console.log("[reviews] no approved reviews found — showing empty state");
         grid.innerHTML = '<p class="reviews-empty">لا توجد آراء منشورة حاليًا.</p>';
         return;
       }
