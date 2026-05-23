@@ -20,6 +20,8 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
   let ACTIVE_ORDER = null;
   let ALL_MESSAGES = [];
   let ALL_PRODUCTS = [];
+  let ALL_REVIEWS  = [];
+  let EDIT_REVIEW_ID = null;
 
   /* ── Constants ─────────────────────────────────────────── */
   const PM_LABELS = {
@@ -832,6 +834,422 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
     checkbox.disabled = false;
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     ⭐ REVIEWS MANAGEMENT
+  ═══════════════════════════════════════════════════════════ */
+
+  /* ── Fetch all reviews (staff sees all, not just approved) ── */
+  async function fetchReviews() {
+    const { data, error } = await supabase
+      .from("customer_reviews")
+      .select("id, first_name, last_name, display_name, wilaya, rating, comment, purchased_items, package_name, total_price, order_id, is_verified_purchase, is_approved, source, admin_note, created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    return data || [];
+  }
+
+  /* ── Approve / hide toggle ─────────────────────────────── */
+  async function setReviewApproval(id, approved) {
+    const { error } = await supabase
+      .from("customer_reviews")
+      .update({ is_approved: approved })
+      .eq("id", id);
+    if (error) throw error;
+  }
+
+  /* ── Delete ────────────────────────────────────────────── */
+  async function deleteReview(id) {
+    const { error } = await supabase
+      .from("customer_reviews")
+      .delete()
+      .eq("id", id);
+    if (error) throw error;
+  }
+
+  /* ── Upsert (insert or update) ─────────────────────────── */
+  async function saveReview(payload) {
+    if (payload.id) {
+      const { id, ...fields } = payload;
+      const { error } = await supabase
+        .from("customer_reviews")
+        .update(fields)
+        .eq("id", id);
+      if (error) throw error;
+    } else {
+      const { error } = await supabase
+        .from("customer_reviews")
+        .insert(payload);
+      if (error) throw error;
+    }
+  }
+
+  /* ── Filter ────────────────────────────────────────────── */
+  function getFilteredReviews() {
+    const q      = (document.getElementById("rvSearchInput")?.value || "").trim().toLowerCase();
+    const status = document.getElementById("rvStatusFilter")?.value || "";
+
+    return ALL_REVIEWS.filter(r => {
+      if (status === "approved" && !r.is_approved)  return false;
+      if (status === "pending"  &&  r.is_approved)  return false;
+      if (!q) return true;
+      const items = rvItemTitles(r);
+      return (r.display_name || "").toLowerCase().includes(q) ||
+             (r.first_name   || "").toLowerCase().includes(q) ||
+             (r.last_name    || "").toLowerCase().includes(q) ||
+             (r.wilaya       || "").toLowerCase().includes(q) ||
+             (r.comment      || "").toLowerCase().includes(q) ||
+             items.toLowerCase().includes(q);
+    });
+  }
+
+  /* ── Helper: purchased items as display string ─────────── */
+  function rvItemTitles(r) {
+    try {
+      const arr = Array.isArray(r.purchased_items)
+        ? r.purchased_items
+        : JSON.parse(r.purchased_items || "[]");
+      const titles = arr.map(it => it.title || "").filter(Boolean).join("، ");
+      return r.package_name ? (titles ? titles + " — " + r.package_name : r.package_name) : titles;
+    } catch (e) { return r.package_name || ""; }
+  }
+
+  /* ── Stars HTML ────────────────────────────────────────── */
+  function rvStars(n) {
+    return "★".repeat(Math.max(1, Math.min(5, n || 0))) +
+           "☆".repeat(5 - Math.max(1, Math.min(5, n || 0)));
+  }
+
+  /* ── Render reviews stats ──────────────────────────────── */
+  function renderReviewsStats(reviews) {
+    const approved = reviews.filter(r => r.is_approved).length;
+    const pending  = reviews.length - approved;
+    document.getElementById("rv-stat-total").textContent    = reviews.length;
+    document.getElementById("rv-stat-pending").textContent  = pending;
+    document.getElementById("rv-stat-approved").textContent = approved;
+    document.getElementById("tab-badge-reviews").textContent = reviews.length;
+  }
+
+  /* ── Render desktop table ──────────────────────────────── */
+  function renderReviewsTable(reviews) {
+    renderReviewsMobileCards(reviews);
+
+    const tbody = document.getElementById("rvTbody");
+    const cnt   = reviews.length;
+
+    document.getElementById("rvCount").textContent =
+      cnt + " تقييم" + (cnt !== ALL_REVIEWS.length ? ` (من ${ALL_REVIEWS.length})` : "");
+    renderReviewsStats(ALL_REVIEWS);
+
+    if (!cnt) {
+      tbody.innerHTML = `<tr><td colspan="10" class="empty">لا توجد تقييمات مطابقة</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = reviews.map((r, i) => {
+      const items    = esc(rvItemTitles(r));
+      const price    = r.total_price ? Number(r.total_price).toLocaleString("fr-DZ") + " دج" : "—";
+      const approved = r.is_approved;
+
+      return `
+      <tr data-rv-id="${esc(r.id)}">
+        <td class="nowrap" style="color:var(--text-muted);font-size:12px;">${i + 1}</td>
+        <td>
+          <div style="font-weight:800;font-size:13px;">${esc(r.display_name || r.first_name + " " + r.last_name)}</div>
+          ${r.is_verified_purchase ? '<span class="badge-verified">✔ شراء موثق</span>' : ''}
+        </td>
+        <td class="nowrap"><span class="pm-tag">${esc(r.wilaya)}</span></td>
+        <td class="nowrap"><span class="rv-stars" title="${r.rating}/5">${rvStars(r.rating)}</span></td>
+        <td><div class="rv-comment" title="${esc(r.comment)}">${esc(r.comment)}</div></td>
+        <td><div class="rv-books" title="${items}">${items || '—'}</div></td>
+        <td class="nowrap" style="color:var(--primary);font-weight:800;">${price}</td>
+        <td class="nowrap">
+          <span class="badge ${approved ? 'badge-approved' : 'badge-pending'}">
+            ${approved ? '✅ منشور' : '⏳ بانتظار'}
+          </span>
+        </td>
+        <td class="nowrap" style="font-size:12px;color:var(--text-light);">${esc(fmtDate(r.created_at))}</td>
+        <td class="nowrap">
+          <div class="actions-col">
+            <button class="btn-confirm" data-action="${approved ? 'rv-hide' : 'rv-approve'}"
+                    data-rv-id="${esc(r.id)}"
+                    style="background:${approved ? '#d97706' : '#059669'};border-color:${approved ? '#b45309' : '#047857'};">
+              ${approved ? '🙈 إخفاء' : '✅ نشر'}
+            </button>
+            <button class="btn-receipt" data-action="rv-edit" data-rv-id="${esc(r.id)}">✏️ تعديل</button>
+            <button class="btn-delete"  data-action="rv-delete" data-rv-id="${esc(r.id)}">🗑 حذف</button>
+          </div>
+        </td>
+      </tr>`;
+    }).join("");
+  }
+
+  /* ── Render mobile cards ───────────────────────────────── */
+  function renderReviewsMobileCards(reviews) {
+    const container = document.getElementById("rvMobileCards");
+    if (!container) return;
+
+    if (!reviews.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);">لا توجد تقييمات مطابقة</div>`;
+      return;
+    }
+
+    container.innerHTML = reviews.map(r => {
+      const approved = r.is_approved;
+      return `
+      <div class="m-rv-card" data-rv-id="${esc(r.id)}">
+        <div class="m-rv-top">
+          <div class="m-rv-name">${esc(r.display_name || r.first_name)}</div>
+          <span class="badge ${approved ? 'badge-approved' : 'badge-pending'}">${approved ? '✅ منشور' : '⏳ بانتظار'}</span>
+        </div>
+        <div class="m-rv-meta">${esc(r.wilaya)} · <span class="m-rv-stars">${rvStars(r.rating)}</span></div>
+        <div class="m-rv-comment">${esc(r.comment)}</div>
+        <div class="m-rv-actions">
+          <button class="btn-confirm" data-action="${approved ? 'rv-hide' : 'rv-approve'}"
+                  data-rv-id="${esc(r.id)}"
+                  style="background:${approved ? '#d97706' : '#059669'};border-color:${approved ? '#b45309' : '#047857'};">
+            ${approved ? '🙈 إخفاء' : '✅ نشر'}
+          </button>
+          <button class="btn-receipt" data-action="rv-edit" data-rv-id="${esc(r.id)}">✏️ تعديل</button>
+          <button class="btn-delete"  data-action="rv-delete" data-rv-id="${esc(r.id)}">🗑 حذف</button>
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  /* ── Handle approve / hide ─────────────────────────────── */
+  async function handleReviewApproval(id, approve, btn) {
+    btn.disabled = true;
+    const prev = btn.textContent;
+    btn.textContent = "⏳...";
+    try {
+      await setReviewApproval(id, approve);
+      const r = ALL_REVIEWS.find(x => x.id === id);
+      if (r) r.is_approved = approve;
+      renderReviewsTable(getFilteredReviews());
+    } catch (err) {
+      console.error("Review approval error:", err);
+      alert("❌ فشل التحديث: " + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = prev;
+    }
+  }
+
+  /* ── Handle delete ─────────────────────────────────────── */
+  async function handleReviewDelete(id, btn) {
+    if (!confirm("هل أنت متأكد من حذف هذا التقييم نهائياً؟")) return;
+    btn.disabled = true;
+    btn.textContent = "⏳...";
+    try {
+      await deleteReview(id);
+      ALL_REVIEWS = ALL_REVIEWS.filter(r => r.id !== id);
+      renderReviewsTable(getFilteredReviews());
+      if (document.getElementById("modal").classList.contains("open")) closeModal();
+    } catch (err) {
+      console.error("Delete review error:", err);
+      alert("❌ خطأ في الحذف: " + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = "🗑 حذف";
+    }
+  }
+
+  /* ── Build the add/edit modal form ────────────────────────── */
+  function buildReviewForm(r) {
+    EDIT_REVIEW_ID = r ? r.id : null;
+
+    /* Parse purchased_items for the textarea */
+    let itemsJson = "";
+    try {
+      const arr = r?.purchased_items
+        ? (Array.isArray(r.purchased_items) ? r.purchased_items : JSON.parse(r.purchased_items))
+        : [];
+      itemsJson = arr.length ? JSON.stringify(arr, null, 2) : "";
+    } catch (e) { itemsJson = ""; }
+
+    const rating = r?.rating || 5;
+
+    document.getElementById("modalTitle").textContent =
+      r ? "تعديل التقييم — " + esc(r.display_name || r.first_name) : "إضافة تقييم جديد";
+
+    document.getElementById("modalBody").innerHTML = `
+      <div class="rv-form-grid">
+
+        <div class="rv-field">
+          <label>الاسم الأول *</label>
+          <input type="text" id="rv-first-name" value="${esc(r?.first_name || "")}" placeholder="مثال: أمين">
+        </div>
+        <div class="rv-field">
+          <label>اللقب *</label>
+          <input type="text" id="rv-last-name" value="${esc(r?.last_name || "")}" placeholder="مثال: بن علي">
+        </div>
+
+        <div class="rv-field">
+          <label>اسم العرض (اختياري)</label>
+          <input type="text" id="rv-display-name" value="${esc(r?.display_name || "")}" placeholder="مثال: أمين ب. (يُملأ تلقائياً إذا تُرك فارغاً)">
+        </div>
+        <div class="rv-field">
+          <label>الولاية *</label>
+          <input type="text" id="rv-wilaya" value="${esc(r?.wilaya || "")}" placeholder="مثال: الجزائر العاصمة">
+        </div>
+
+        <div class="rv-field full-col">
+          <label>التقييم *</label>
+          <div class="rv-star-row" id="rv-star-row">
+            ${[1,2,3,4,5].map(n =>
+              `<button type="button" class="rv-star-btn ${n <= rating ? 'active' : ''}"
+               data-star="${n}" title="${n} نجوم">★</button>`
+            ).join("")}
+          </div>
+          <input type="hidden" id="rv-rating" value="${rating}">
+        </div>
+
+        <div class="rv-field full-col">
+          <label>التعليق *</label>
+          <textarea id="rv-comment" rows="3" placeholder="اكتب تعليق الزبون هنا...">${esc(r?.comment || "")}</textarea>
+        </div>
+
+        <div class="rv-field full-col">
+          <label>الكتب المشتراة (JSON)</label>
+          <textarea id="rv-items" rows="3"
+            placeholder='[{"title":"اسم الكتاب","price":900}]'>${esc(itemsJson)}</textarea>
+          <small style="color:var(--text-muted);font-size:11px;">
+            صيغة: [{\"title\":\"اسم الكتاب\",\"price\":900}] — يمكن إضافة أكثر من كتاب
+          </small>
+        </div>
+
+        <div class="rv-field">
+          <label>اسم الباقة (اختياري)</label>
+          <input type="text" id="rv-package" value="${esc(r?.package_name || "")}" placeholder="مثال: باقة تطوير الذات">
+        </div>
+        <div class="rv-field">
+          <label>المبلغ الإجمالي (دج)</label>
+          <input type="number" id="rv-price" value="${r?.total_price || ""}" placeholder="مثال: 1750" min="0">
+        </div>
+
+        <div class="rv-field">
+          <label>المصدر</label>
+          <select id="rv-source">
+            <option value="manual"   ${(r?.source||"manual")==="manual"   ? "selected" : ""}>يدوي (Admin)</option>
+            <option value="whatsapp" ${r?.source==="whatsapp" ? "selected" : ""}>واتساب</option>
+            <option value="website"  ${r?.source==="website"  ? "selected" : ""}>الموقع</option>
+            <option value="import"   ${r?.source==="import"   ? "selected" : ""}>استيراد</option>
+          </select>
+        </div>
+        <div class="rv-field" style="justify-content:flex-end;flex-direction:row;align-items:center;gap:10px;">
+          <label style="cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="rv-verified"  ${r?.is_verified_purchase ? "checked" : ""} style="width:18px;height:18px;">
+            شراء موثق
+          </label>
+          <label style="cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <input type="checkbox" id="rv-approved"  ${r?.is_approved ? "checked" : ""} style="width:18px;height:18px;">
+            نشر فوراً
+          </label>
+        </div>
+
+        <div class="rv-field full-col">
+          <label>ملاحظات داخلية (للأدمن فقط)</label>
+          <textarea id="rv-notes" rows="2" placeholder="ملاحظة داخلية...">${esc(r?.admin_note || "")}</textarea>
+        </div>
+
+      </div>
+
+      <button class="rv-save-btn" id="rvSaveBtn">
+        ${r ? "💾 حفظ التعديلات" : "✅ إضافة التقييم"}
+      </button>
+      <p id="rvFormStatus" style="text-align:center;margin-top:10px;font-size:14px;"></p>
+    `;
+
+    /* Star rating interactive */
+    document.getElementById("rv-star-row").addEventListener("click", e => {
+      const btn = e.target.closest(".rv-star-btn");
+      if (!btn) return;
+      const val = parseInt(btn.dataset.star);
+      document.getElementById("rv-rating").value = val;
+      document.querySelectorAll(".rv-star-btn").forEach((b, i) => {
+        b.classList.toggle("active", i < val);
+      });
+    });
+
+    /* Save handler */
+    document.getElementById("rvSaveBtn").addEventListener("click", handleReviewSave);
+
+    openModal();
+  }
+
+  /* ── Handle save (insert / update) ────────────────────────── */
+  async function handleReviewSave() {
+    const saveBtn  = document.getElementById("rvSaveBtn");
+    const statusEl = document.getElementById("rvFormStatus");
+
+    const firstName  = document.getElementById("rv-first-name").value.trim();
+    const lastName   = document.getElementById("rv-last-name").value.trim();
+    const displayName = document.getElementById("rv-display-name").value.trim();
+    const wilaya     = document.getElementById("rv-wilaya").value.trim();
+    const rating     = parseInt(document.getElementById("rv-rating").value) || 5;
+    const comment    = document.getElementById("rv-comment").value.trim();
+    const itemsRaw   = document.getElementById("rv-items").value.trim();
+    const pkgName    = document.getElementById("rv-package").value.trim();
+    const totalPrice = document.getElementById("rv-price").value.trim();
+    const source     = document.getElementById("rv-source").value;
+    const verified   = document.getElementById("rv-verified").checked;
+    const approved   = document.getElementById("rv-approved").checked;
+    const notes      = document.getElementById("rv-notes").value.trim();
+
+    if (!firstName || !lastName || !wilaya || !comment) {
+      statusEl.style.color = "red";
+      statusEl.textContent = "❌ يرجى ملء الحقول الإلزامية: الاسم الأول، اللقب، الولاية، التعليق.";
+      return;
+    }
+
+    let purchasedItems = [];
+    if (itemsRaw) {
+      try { purchasedItems = JSON.parse(itemsRaw); }
+      catch (e) {
+        statusEl.style.color = "red";
+        statusEl.textContent = "❌ صيغة JSON للكتب غير صحيحة. مثال: [{\"title\":\"الكتاب\",\"price\":900}]";
+        return;
+      }
+    }
+
+    const payload = {
+      first_name:           firstName,
+      last_name:            lastName,
+      display_name:         displayName || null,
+      wilaya,
+      rating,
+      comment,
+      purchased_items:      purchasedItems,
+      package_name:         pkgName  || null,
+      total_price:          totalPrice ? parseFloat(totalPrice) : null,
+      source,
+      is_verified_purchase: verified,
+      is_approved:          approved,
+      admin_note:           notes || null,
+    };
+
+    if (EDIT_REVIEW_ID) payload.id = EDIT_REVIEW_ID;
+
+    saveBtn.disabled = true;
+    saveBtn.textContent = "⏳ جاري الحفظ...";
+    statusEl.textContent = "";
+
+    try {
+      await saveReview(payload);
+      statusEl.style.color = "green";
+      statusEl.textContent = "✅ تم الحفظ بنجاح!";
+      /* Reload all reviews to get fresh data (including triggers like display_name) */
+      ALL_REVIEWS = await fetchReviews();
+      renderReviewsTable(getFilteredReviews());
+      setTimeout(() => closeModal(), 900);
+    } catch (err) {
+      console.error("Save review error:", err);
+      statusEl.style.color = "red";
+      statusEl.textContent = "❌ خطأ: " + (err.message || "");
+      saveBtn.disabled = false;
+      saveBtn.textContent = EDIT_REVIEW_ID ? "💾 حفظ التعديلات" : "✅ إضافة التقييم";
+    }
+  }
+
   /* ─────────────────────────────────────────────────────────
      EVENTS
   ───────────────────────────────────────────────────────── */
@@ -853,6 +1271,7 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
         document.getElementById("pageTitle").textContent =
           tab === "orders"   ? "📦 إدارة الطلبات"
         : tab === "messages" ? "✉️ الرسائل الواردة"
+        : tab === "reviews"  ? "⭐ إدارة التقييمات"
         : "📚 إدارة المنتجات";
       });
     });
@@ -963,6 +1382,56 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
       } catch (err) { alert("❌ فشل تحديث المنتجات: " + (err.message || "")); }
       btn.disabled = false; btn.textContent = "↻ تحديث";
     });
+
+    /* ── Reviews: search & filter ───────────────────────────── */
+    document.getElementById("rvSearchInput")?.addEventListener("input",
+      () => renderReviewsTable(getFilteredReviews()));
+    document.getElementById("rvStatusFilter")?.addEventListener("change",
+      () => renderReviewsTable(getFilteredReviews()));
+
+    /* ── Reviews: refresh ───────────────────────────────────── */
+    document.getElementById("rvRefreshBtn")?.addEventListener("click", async () => {
+      const btn = document.getElementById("rvRefreshBtn");
+      btn.disabled = true; btn.textContent = "⏳ جاري التحديث...";
+      try {
+        ALL_REVIEWS = await fetchReviews();
+        renderReviewsTable(getFilteredReviews());
+      } catch (err) { alert("❌ فشل التحديث: " + (err.message || "")); }
+      btn.disabled = false; btn.textContent = "↻ تحديث";
+    });
+
+    /* ── Reviews: add button ────────────────────────────────── */
+    document.getElementById("rvAddBtn")?.addEventListener("click", () => buildReviewForm(null));
+
+    /* ── Reviews: table event delegation ────────────────────── */
+    document.getElementById("rvTbody")?.addEventListener("click", async e => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const id = btn.dataset.rvId;
+      if (!id) return;
+      if (btn.dataset.action === "rv-approve") await handleReviewApproval(id, true,  btn);
+      if (btn.dataset.action === "rv-hide")    await handleReviewApproval(id, false, btn);
+      if (btn.dataset.action === "rv-delete")  await handleReviewDelete(id, btn);
+      if (btn.dataset.action === "rv-edit") {
+        const r = ALL_REVIEWS.find(x => x.id === id);
+        if (r) buildReviewForm(r);
+      }
+    });
+
+    /* ── Reviews: mobile cards delegation ───────────────────── */
+    document.getElementById("rvMobileCards")?.addEventListener("click", async e => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const id = btn.dataset.rvId;
+      if (!id) return;
+      if (btn.dataset.action === "rv-approve") await handleReviewApproval(id, true,  btn);
+      if (btn.dataset.action === "rv-hide")    await handleReviewApproval(id, false, btn);
+      if (btn.dataset.action === "rv-delete")  await handleReviewDelete(id, btn);
+      if (btn.dataset.action === "rv-edit") {
+        const r = ALL_REVIEWS.find(x => x.id === id);
+        if (r) buildReviewForm(r);
+      }
+    });
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -977,13 +1446,16 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
         (staff.role === "admin" ? "👑 Admin" : "👤 Staff") +
         (staff.full_name ? " — " + staff.full_name : "");
 
-      [ALL_ORDERS, ALL_MESSAGES, ALL_PRODUCTS] = await Promise.all([
-        fetchOrders(), fetchMessages(), fetchProducts().catch(() => []),
+      [ALL_ORDERS, ALL_MESSAGES, ALL_PRODUCTS, ALL_REVIEWS] = await Promise.all([
+        fetchOrders(), fetchMessages(),
+        fetchProducts().catch(() => []),
+        fetchReviews().catch(() => []),
       ]);
       renderStats(ALL_ORDERS);
       renderTable(ALL_ORDERS);
       renderMessagesTable(ALL_MESSAGES);
       renderProductsTable(ALL_PRODUCTS);
+      renderReviewsTable(ALL_REVIEWS);
       bindEvents();
 
     } catch (err) {

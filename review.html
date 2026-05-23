@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N4NME3KN9N');
+  </script>
+
+  <!-- Private page — do not index -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>شاركنا رأيك — Derradj Shop</title>
+
+  <link rel="icon" type="image/png" href="Logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Reset ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Variables (matches main site) ─────────────────────── */
+    :root {
+      --font:         'Cairo', sans-serif;
+      --primary:      #1d4ed8;
+      --primary-h:    #1e40af;
+      --primary-bg:   #eff6ff;
+      --gold:         #f59e0b;
+      --green:        #059669;
+      --green-bg:     #d1fae5;
+      --red:          #dc2626;
+      --red-bg:       #fee2e2;
+      --text:         #1e293b;
+      --text-light:   #64748b;
+      --text-muted:   #94a3b8;
+      --bg:           #f8fafc;
+      --white:        #ffffff;
+      --border:       #e2e8f0;
+      --radius:       10px;
+      --radius-lg:    16px;
+      --radius-xl:    20px;
+      --shadow:       0 4px 24px rgba(0,0,0,.08);
+      --shadow-lg:    0 8px 48px rgba(0,0,0,.14);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════════════════ */
+    .rv-header {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 1px 6px rgba(0,0,0,.05);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .rv-logo {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -.3px;
+    }
+    .rv-logo span { color: var(--primary); }
+    .rv-back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-light);
+      text-decoration: none;
+      padding: 7px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      transition: all .2s;
+    }
+    .rv-back-link:hover {
+      color: var(--primary);
+      border-color: var(--primary);
+      background: var(--primary-bg);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       HERO
+    ═══════════════════════════════════════════════════════ */
+    .rv-hero {
+      background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #f0fdf4 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 52px 24px 44px;
+      text-align: center;
+    }
+    .rv-hero-icon { font-size: 52px; line-height: 1; margin-bottom: 18px; }
+    .rv-hero h1 {
+      font-size: clamp(22px, 5vw, 32px);
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.3;
+    }
+    .rv-hero p {
+      font-size: 15px;
+      color: var(--text-light);
+      line-height: 1.8;
+      max-width: 540px;
+      margin: 0 auto 22px;
+    }
+    .rv-hero-badges {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rv-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-light);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       MAIN
+    ═══════════════════════════════════════════════════════ */
+    .rv-main {
+      flex: 1;
+      max-width: 680px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 32px 16px 72px;
+    }
+
+    /* ── Order info box ─────────────────────────────────── */
+    .order-info-box {
+      display: none;
+      align-items: center;
+      gap: 14px;
+      background: var(--primary-bg);
+      border: 1.5px solid #bfdbfe;
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .order-info-box.visible { display: flex; }
+    .oi-icon { font-size: 28px; flex-shrink: 0; }
+    .oi-body { flex: 1; }
+    .oi-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary);
+      margin-bottom: 2px;
+    }
+    .oi-sub { font-size: 12px; color: var(--text-light); }
+    .oi-badge {
+      background: var(--green-bg);
+      color: var(--green);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 99px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ── Form card ──────────────────────────────────────── */
+    .rv-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 36px 32px;
+      box-shadow: var(--shadow);
+    }
+
+    /* ── Form section ───────────────────────────────────── */
+    .form-section { margin-bottom: 32px; }
+    .form-section:last-child { margin-bottom: 0; }
+
+    .section-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--text-light);
+      text-transform: uppercase;
+      letter-spacing: .6px;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1.5px solid var(--border);
+    }
+
+    /* ── Field ──────────────────────────────────────────── */
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .field-row + .field-row { margin-top: 16px; }
+    .field-row.one-col { grid-template-columns: 1fr; }
+
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    .field + .field.solo { margin-top: 16px; }
+
+    .field > label {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .field > label .req { color: var(--red); }
+    .field > label .opt {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-right: 5px;
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--white);
+      transition: border-color .18s, box-shadow .18s;
+    }
+    .field input::placeholder,
+    .field textarea::placeholder { color: var(--text-muted); }
+    .field input:focus,
+    .field select:focus,
+    .field textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+    }
+    .field input.is-error,
+    .field select.is-error,
+    .field textarea.is-error {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(220,38,38,.09);
+    }
+    .field textarea { resize: vertical; min-height: 110px; line-height: 1.75; }
+    .field select {
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: left 14px center;
+      padding-left: 38px;
+    }
+
+    .field-err {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--red);
+      display: none;
+    }
+    .field-err.on { display: block; }
+
+    .char-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: left;
+      direction: ltr;
+    }
+    .char-count.warn { color: var(--red); font-weight: 700; }
+    .char-count.ok   { color: var(--green); font-weight: 700; }
+
+    /* ── Star rating (JS-driven) ─────────────────────── */
+    .star-row {
+      display: flex;
+      gap: 4px;
+      direction: ltr;
+      margin-bottom: 6px;
+    }
+    .star-btn {
+      font-size: 38px;
+      line-height: 1;
+      cursor: pointer;
+      color: #cbd5e1;
+      background: none;
+      border: none;
+      padding: 2px;
+      transition: color .12s, transform .1s;
+      font-family: inherit;
+    }
+    .star-btn:hover    { transform: scale(1.2); }
+    .star-btn.lit      { color: var(--gold); }
+    .star-btn.lit:hover { color: #d97706; }
+
+    .star-hint-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      direction: rtl;
+      margin-top: 4px;
+    }
+    .star-hint-row .hint-edge {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .star-hint-row .hint-sel {
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--gold);
+      min-height: 18px;
+    }
+
+    /* ── Books grid ──────────────────────────────────── */
+    .books-filter {
+      position: relative;
+      margin-bottom: 10px;
+    }
+    .books-filter input {
+      width: 100%;
+      padding: 10px 16px 10px 38px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: var(--font);
+      color: var(--text);
+      transition: border-color .18s;
+    }
+    .books-filter input:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+    .books-filter-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 15px;
+      pointer-events: none;
+    }
+
+    .books-scroll {
+      max-height: 230px;
+      overflow-y: auto;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 8px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .books-scroll::-webkit-scrollbar { width: 5px; }
+    .books-scroll::-webkit-scrollbar-track { background: transparent; }
+    .books-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+    .book-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 9px 11px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: border-color .15s, background .15s;
+      user-select: none;
+    }
+    .book-label:hover {
+      border-color: #93c5fd;
+      background: #f0f9ff;
+    }
+    .book-label.selected {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+    }
+    .book-label input {
+      width: 16px;
+      height: 16px;
+      margin-top: 1px;
+      flex-shrink: 0;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+    .book-label span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .books-empty {
+      display: none;
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ── Submit ─────────────────────────────────────── */
+    .submit-wrap { margin-top: 28px; }
+
+    .submit-btn {
+      width: 100%;
+      padding: 16px 24px;
+      background: var(--primary);
+      color: var(--white);
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 17px;
+      font-weight: 900;
+      font-family: var(--font);
+      cursor: pointer;
+      transition: background .2s, transform .1s, box-shadow .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: 0 4px 14px rgba(29,78,216,.3);
+    }
+    .submit-btn:hover:not(:disabled) {
+      background: var(--primary-h);
+      box-shadow: 0 6px 20px rgba(29,78,216,.4);
+      transform: translateY(-1px);
+    }
+    .submit-btn:active:not(:disabled) { transform: translateY(0); }
+    .submit-btn:disabled {
+      background: var(--text-muted);
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .spin {
+      width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .65s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .form-msg {
+      margin-top: 14px;
+      padding: 13px 18px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+      line-height: 1.6;
+    }
+    .form-msg.err  { background: var(--red-bg);   color: var(--red);   display: block; }
+    .form-msg.ok   { background: var(--green-bg);  color: var(--green); display: block; }
+
+    /* ═══════════════════════════════════════════════════════
+       SUCCESS SCREEN
+    ═══════════════════════════════════════════════════════ */
+    .success-screen {
+      display: none;
+      text-align: center;
+      padding: 56px 24px 40px;
+      animation: fadeIn .35s ease;
+    }
+    .success-screen.show { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
+
+    .success-icon {
+      font-size: 80px;
+      line-height: 1;
+      margin-bottom: 24px;
+      display: block;
+      animation: pop .4s cubic-bezier(.175,.885,.32,1.275);
+    }
+    @keyframes pop {
+      0%   { transform: scale(0);   opacity: 0; }
+      70%  { transform: scale(1.1); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    .success-screen h2 {
+      font-size: clamp(22px, 5vw, 28px);
+      font-weight: 900;
+      color: var(--green);
+      margin-bottom: 14px;
+    }
+    .success-screen p {
+      font-size: 15px;
+      color: var(--text-light);
+      line-height: 1.8;
+      max-width: 420px;
+      margin: 0 auto 32px;
+    }
+    .success-screen p strong { color: var(--text); }
+    .btn-home {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 36px;
+      background: var(--primary);
+      color: var(--white);
+      border-radius: var(--radius-lg);
+      font-size: 15px;
+      font-weight: 800;
+      font-family: var(--font);
+      text-decoration: none;
+      transition: background .2s;
+      box-shadow: 0 4px 14px rgba(29,78,216,.28);
+    }
+    .btn-home:hover { background: var(--primary-h); }
+
+    /* ═══════════════════════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════════════════════ */
+    .rv-footer {
+      text-align: center;
+      padding: 22px 16px;
+      border-top: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: auto;
+    }
+    .rv-footer a { color: var(--text-muted); text-decoration: none; }
+    .rv-footer a:hover { color: var(--primary); }
+
+    /* ═══════════════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════════════ */
+    @media (max-width: 560px) {
+      .rv-card            { padding: 24px 18px; }
+      .field-row          { grid-template-columns: 1fr; }
+      .books-scroll       { grid-template-columns: 1fr; max-height: 190px; }
+      .star-btn           { font-size: 34px; }
+      .rv-hero            { padding: 36px 16px 30px; }
+      .rv-back-link span  { display: none; }
+    }
+    @media (max-width: 380px) {
+      .star-btn { font-size: 30px; gap: 2px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="rv-header">
+  <a href="/" class="rv-logo">Derradj <span>Shop</span></a>
+  <a href="/" class="rv-back-link">
+    <span>←</span>
+    <span>العودة إلى المتجر</span>
+  </a>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="rv-hero">
+  <div class="rv-hero-icon">⭐</div>
+  <h1>شاركنا رأيك في تجربتك</h1>
+  <p>رأيك يساعدنا على تحسين الخدمة ويساعد القراء الآخرين على اختيار كتبهم بثقة.</p>
+  <div class="rv-hero-badges">
+    <span class="rv-badge">🔒 بياناتك آمنة</span>
+    <span class="rv-badge">👁 يظهر رأيك بعد المراجعة</span>
+    <span class="rv-badge">⏱ يستغرق دقيقتين فقط</span>
+  </div>
+</div>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="rv-main">
+
+  <!-- Order info (shown when ?order_id= in URL) -->
+  <div class="order-info-box" id="orderBox">
+    <div class="oi-icon">📦</div>
+    <div class="oi-body">
+      <div class="oi-title" id="orderTitle">طلبك المرتبط بهذا التقييم</div>
+      <div class="oi-sub"  id="orderSub">سيتم ربط تقييمك بطلبك تلقائياً</div>
+    </div>
+    <span class="oi-badge">✅ شراء موثق</span>
+  </div>
+
+  <!-- Form card -->
+  <div class="rv-card" id="formCard">
+    <form id="reviewForm" novalidate autocomplete="off">
+
+      <!-- ══ SECTION 1: معلوماتك ══════════════════════════ -->
+      <div class="form-section">
+        <div class="section-title">👤 معلوماتك</div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="fName">الاسم الأول <span class="req">*</span></label>
+            <input type="text" id="fName" placeholder="مثال: أمين"
+                   autocomplete="given-name" inputmode="text">
+            <span class="field-err" id="e-fName">الاسم الأول مطلوب</span>
+          </div>
+          <div class="field">
+            <label for="lName">اللقب <span class="opt">(اختياري)</span></label>
+            <input type="text" id="lName" placeholder="مثال: بن علي"
+                   autocomplete="family-name">
+          </div>
+        </div>
+
+        <div class="field-row one-col" style="margin-top:16px;">
+          <div class="field">
+            <label for="wilaya">الولاية <span class="req">*</span></label>
+            <select id="wilaya">
+              <option value="">— اختر ولايتك —</option>
+            </select>
+            <span class="field-err" id="e-wilaya">يرجى اختيار ولايتك</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 2: تقييمك ═══════════════════════════ -->
+      <div class="form-section">
+        <div class="section-title">⭐ تقييمك للتجربة</div>
+
+        <div class="field">
+          <label>كيف تقيّم تجربتك الكاملة؟ <span class="req">*</span></label>
+          <div class="star-row" id="starRow" role="group" aria-label="التقييم من 1 إلى 5 نجوم">
+            <!-- stars injected by JS -->
+          </div>
+          <div class="star-hint-row">
+            <span class="hint-edge">★ ضعيف</span>
+            <span class="hint-sel" id="ratingLabel"></span>
+            <span class="hint-edge">ممتاز ★★★★★</span>
+          </div>
+          <span class="field-err" id="e-rating">يرجى اختيار تقييم من 1 إلى 5 نجوم</span>
+        </div>
+
+        <div class="field" style="margin-top:18px;">
+          <label for="comment">رأيك في الكتاب أو الخدمة <span class="req">*</span></label>
+          <textarea id="comment" rows="4"
+            placeholder="أخبرنا عن تجربتك... كيف كانت سرعة التوصيل؟ هل أعجبك الكتاب؟ هل ستطلب مرة أخرى؟ كل كلمة مفيدة لنا ولقرّاء آخرين 🙏"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:5px;">
+            <span class="field-err" id="e-comment" style="display:none;">
+              التعليق مطلوب ولا يقل عن 10 أحرف
+            </span>
+            <span class="char-count" id="charCount" style="margin-right:auto;">0 حرف</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 3: الكتب المشتراة ═══════════════════ -->
+      <div class="form-section">
+        <div class="section-title">
+          📚 الكتب أو المنتجات التي اشتريتها
+          <span style="font-size:10px;font-weight:600;color:var(--text-muted);margin-right:4px;">(اختياري)</span>
+        </div>
+
+        <div class="books-filter">
+          <span class="books-filter-icon">🔍</span>
+          <input type="text" id="booksSearch"
+                 placeholder="ابحث عن اسم الكتاب للتصفية السريعة...">
+        </div>
+
+        <div class="books-scroll" id="booksScroll">
+          <!-- injected by JS -->
+          <div class="books-empty" id="booksEmpty">لا توجد نتائج</div>
+        </div>
+
+        <div class="field" style="margin-top:12px;">
+          <label for="otherBook">كتاب آخر غير موجود في القائمة <span class="opt">(اختياري)</span></label>
+          <input type="text" id="otherBook"
+            placeholder="مثال: اسم الكتاب، اسم كتاب آخر (افصل بفاصلة)">
+        </div>
+      </div>
+
+      <!-- ══ SECTION 4: تفاصيل الطلب ══════════════════════ -->
+      <div class="form-section">
+        <div class="section-title">
+          💰 تفاصيل الطلب
+          <span style="font-size:10px;font-weight:600;color:var(--text-muted);margin-right:4px;">(اختياري)</span>
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label for="pkgName">اسم الباقة</label>
+            <input type="text" id="pkgName"
+              placeholder="مثال: باقة تطوير الذات">
+          </div>
+          <div class="field">
+            <label for="totalPrice">المبلغ الإجمالي (دج)</label>
+            <input type="number" id="totalPrice"
+              placeholder="مثال: 1750" min="0" max="999999" inputmode="numeric">
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SUBMIT ════════════════════════════════════════ -->
+      <div class="submit-wrap">
+        <button type="submit" class="submit-btn" id="submitBtn">
+          <div class="spin" id="spin"></div>
+          <span id="submitTxt">إرسال التقييم ✦</span>
+        </button>
+
+        <div class="form-msg" id="formMsg"></div>
+      </div>
+
+    </form>
+  </div><!-- /formCard -->
+
+  <!-- Success screen (hidden until submit succeeds) -->
+  <div class="success-screen" id="successScreen">
+    <span class="success-icon">🎉</span>
+    <h2>شكرًا جزيلاً لك!</h2>
+    <p>
+      تم إرسال رأيك بنجاح.<br>
+      <strong>سيظهر في قسم "ماذا قال قراؤنا؟"</strong> بعد مراجعته من قِبَل فريقنا.
+    </p>
+    <a href="/" class="btn-home">← العودة إلى المتجر</a>
+  </div>
+
+</main>
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="rv-footer">
+  <a href="/">© 2025 Derradj Shop</a> — جميع الحقوق محفوظة
+</footer>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     JAVASCRIPT
+═══════════════════════════════════════════════════════ -->
+<script>
+"use strict";
+
+/* ── Supabase ───────────────────────────────────────────── */
+const SB_URL = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
+
+/* ── Algerian wilayas (58) ──────────────────────────────── */
+const WILAYAS = [
+  "أدرار","الشلف","الأغواط","أم البواقي","باتنة","بجاية",
+  "بسكرة","بشار","البليدة","البويرة","تمنراست","تبسة",
+  "تلمسان","تيارت","تيزي وزو","الجزائر العاصمة","الجلفة","جيجل",
+  "سطيف","سعيدة","سكيكدة","سيدي بلعباس","عنابة","قالمة",
+  "قسنطينة","المدية","مستغانم","المسيلة","معسكر","ورقلة",
+  "وهران","البيض","إليزي","برج بوعريريج","بومرداس","الطارف",
+  "تندوف","تيسمسيلت","الوادي","خنشلة","سوق أهراس","تيبازة",
+  "ميلة","عين الدفلى","النعامة","عين تيموشنت","غرداية","غليزان",
+  "تيميمون","برج باجي مختار","أولاد جلال","بني عباس","عين صالح",
+  "عين قزام","تقرت","جانت","المغير","المنيعة"
+];
+
+/* ── Books available in store ───────────────────────────── */
+const BOOKS = [
+  // تطوير الذات
+  "العادات الذرية",
+  "العادات السبع للناس الأكثر فعالية",
+  "قوة الآن",
+  "قوة العادة",
+  "فن الإتقان",
+  "أيقظ قوتك الداخلية",
+  "كبّر دماغك",
+  "قوانين النجاح المستدام",
+  "أقوى من مشاعرك",
+  "اكتب وأحرق",
+  // علم النفس
+  "الذكاء العاطفي",
+  "علم نفس المال",
+  "التفكير السريع والبطيء",
+  "تأثير — سيكولوجية الإقناع",
+  "السعادة والاكتئاب",
+  // الفلسفة والفكر
+  "الإنسان يبحث عن معنى",
+  "الأمير",
+  "اقرأ",
+  "قواعد العقل",
+  "لا تحزن",
+  "عين الأنا",
+  "الوحش فيك قادر على الطيبة",
+  // الإدارة والمال
+  "مبادئ",
+  "ما تتمناه وول ستريت",
+  // العلاقات والحياة
+  "كيف تكسب الأصدقاء وتؤثر في الناس",
+  "تصرف كسيدة وفكر كرجل",
+  "كيف لا تموت وحيداً",
+  "التحدث مع الغرباء",
+  // الروايات والأدب
+  "بروباغندا",
+  "أريد أن أنام",
+  "الشمس تشرق دائماً",
+  // العلوم والمعرفة
+  "هل ستأكل قطتي عيني؟",
+];
+
+/* ── Rating labels ──────────────────────────────────────── */
+const STAR_LABELS = {
+  1: "ضعيف 😕",
+  2: "متوسط 🙂",
+  3: "جيد 😊",
+  4: "جيد جداً 😃",
+  5: "ممتاز 🤩",
+};
+
+/* ── App state ──────────────────────────────────────────── */
+let selectedRating = 0;
+let urlOrderId     = null;
+let isVerified     = false;
+
+/* ═════════════════════════════════════════════════════════
+   BOOT
+═════════════════════════════════════════════════════════ */
+(function boot() {
+  fillWilayas();
+  buildStars();
+  buildBooks();
+  readUrlParams();
+  bindEvents();
+})();
+
+/* ── Fill wilaya dropdown ───────────────────────────────── */
+function fillWilayas() {
+  const sel = document.getElementById("wilaya");
+  WILAYAS.forEach(w => {
+    const o = document.createElement("option");
+    o.value = o.textContent = w;
+    sel.appendChild(o);
+  });
+}
+
+/* ── Build star buttons ─────────────────────────────────── */
+function buildStars() {
+  const row = document.getElementById("starRow");
+  row.innerHTML = "";
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "star-btn";
+    btn.dataset.v = i;
+    btn.title = STAR_LABELS[i];
+    btn.setAttribute("aria-label", i + " نجوم — " + STAR_LABELS[i]);
+    btn.textContent = "★";
+    row.appendChild(btn);
+  }
+}
+
+/* ── Build books grid ───────────────────────────────────── */
+function buildBooks(filter) {
+  const container = document.getElementById("booksScroll");
+  const emptyEl   = document.getElementById("booksEmpty");
+  const q = (filter || "").trim().toLowerCase();
+
+  // Keep existing selections
+  const alreadyChecked = new Set(
+    Array.from(container.querySelectorAll("input:checked")).map(cb => cb.value)
+  );
+
+  const filtered = q
+    ? BOOKS.filter(b => b.toLowerCase().includes(q))
+    : BOOKS;
+
+  // Remove old items (not the empty message)
+  container.querySelectorAll(".book-label").forEach(el => el.remove());
+
+  if (!filtered.length) {
+    emptyEl.style.display = "block";
+    return;
+  }
+  emptyEl.style.display = "none";
+
+  filtered.forEach((title, i) => {
+    const uid  = "bk-" + title.replace(/\s+/g, "-");
+    const lbl  = document.createElement("label");
+    const isSelected = alreadyChecked.has(title);
+    lbl.className = "book-label" + (isSelected ? " selected" : "");
+    lbl.htmlFor = uid;
+    lbl.innerHTML =
+      `<input type="checkbox" id="${uid}" value="${esc(title)}"${isSelected ? " checked" : ""}>` +
+      `<span>${esc(title)}</span>`;
+    container.insertBefore(lbl, emptyEl);
+  });
+}
+
+/* ── Read ?order_id from URL ────────────────────────────── */
+function readUrlParams() {
+  const p   = new URLSearchParams(window.location.search);
+  const oid = p.get("order_id") || p.get("orderid") || p.get("order") || p.get("id");
+
+  if (oid && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(oid)) {
+    urlOrderId = oid;
+    isVerified = true;
+
+    const box = document.getElementById("orderBox");
+    box.classList.add("visible");
+    document.getElementById("orderTitle").textContent =
+      "طلبك رقم: " + oid.slice(0, 8).toUpperCase() + "...";
+    document.getElementById("orderSub").textContent =
+      "سيتم ربط تقييمك بطلبك تلقائياً وسيُعلَّم كـ \"شراء موثق\".";
+  }
+}
+
+/* ── Bind all events ────────────────────────────────────── */
+function bindEvents() {
+
+  /* Stars: hover + click */
+  const starRow = document.getElementById("starRow");
+  starRow.addEventListener("mouseover", e => {
+    const btn = e.target.closest(".star-btn");
+    if (btn) lightStars(parseInt(btn.dataset.v), true);
+  });
+  starRow.addEventListener("mouseleave", () => lightStars(selectedRating));
+  starRow.addEventListener("click", e => {
+    const btn = e.target.closest(".star-btn");
+    if (!btn) return;
+    selectedRating = parseInt(btn.dataset.v);
+    lightStars(selectedRating);
+    document.getElementById("ratingLabel").textContent = STAR_LABELS[selectedRating] || "";
+    clearErr("rating");
+  });
+
+  /* Comment: char counter */
+  document.getElementById("comment").addEventListener("input", function () {
+    const len = this.value.trim().length;
+    const el  = document.getElementById("charCount");
+    el.textContent = len + " حرف";
+    el.className = len === 0 ? "char-count"
+                 : len < 10 ? "char-count warn"
+                 : "char-count ok";
+    if (len >= 10) {
+      clearErr("comment");
+      document.getElementById("e-comment").style.display = "none";
+    }
+  });
+
+  /* Books search */
+  document.getElementById("booksSearch").addEventListener("input", function () {
+    buildBooks(this.value);
+  });
+
+  /* Book checkbox toggle style */
+  document.getElementById("booksScroll").addEventListener("change", e => {
+    const cb = e.target.closest("input[type=checkbox]");
+    if (cb) cb.closest(".book-label").classList.toggle("selected", cb.checked);
+  });
+
+  /* Inline clear on input */
+  document.getElementById("fName").addEventListener("input", () => clearErr("fName"));
+  document.getElementById("wilaya").addEventListener("change", () => clearErr("wilaya"));
+
+  /* Submit */
+  document.getElementById("reviewForm").addEventListener("submit", onSubmit);
+}
+
+/* ── Light stars up to n ────────────────────────────────── */
+function lightStars(n, isHover) {
+  document.querySelectorAll(".star-btn").forEach((btn, i) => {
+    btn.classList.toggle("lit", i < n);
+  });
+  if (isHover && n) {
+    document.getElementById("ratingLabel").textContent = STAR_LABELS[n] || "";
+  } else if (!isHover && !n) {
+    document.getElementById("ratingLabel").textContent = "";
+  }
+}
+
+/* ── Build purchased_items array ────────────────────────── */
+function buildPurchasedItems() {
+  const items = [];
+
+  /* From checkboxes */
+  document.querySelectorAll("#booksScroll input:checked").forEach(cb => {
+    items.push({ name: cb.value, quantity: 1 });
+  });
+
+  /* From free-text "other" field */
+  const other = document.getElementById("otherBook").value.trim();
+  if (other) {
+    other.split(/[,،\n]+/).forEach(t => {
+      const name = t.trim();
+      if (name) items.push({ name, quantity: 1 });
+    });
+  }
+
+  return items;
+}
+
+/* ── Validate form ──────────────────────────────────────── */
+function validate() {
+  let ok = true;
+
+  if (!document.getElementById("fName").value.trim()) {
+    showErr("fName"); ok = false;
+  }
+  if (!document.getElementById("wilaya").value) {
+    showErr("wilaya"); ok = false;
+  }
+  if (!selectedRating) {
+    showErr("rating"); ok = false;
+  }
+  const commentLen = document.getElementById("comment").value.trim().length;
+  if (commentLen < 10) {
+    showErr("comment");
+    document.getElementById("e-comment").style.display = "block";
+    ok = false;
+  }
+
+  return ok;
+}
+
+/* ── Submit handler ─────────────────────────────────────── */
+async function onSubmit(e) {
+  e.preventDefault();
+  hideMsg();
+
+  if (!validate()) {
+    /* Scroll to first visible error */
+    const firstErr = document.querySelector(".field-err.on, .field-err[style*='block']");
+    if (firstErr) {
+      firstErr.closest(".field, .form-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    return;
+  }
+
+  setLoading(true);
+
+  const firstName = document.getElementById("fName").value.trim();
+  const lastName  = document.getElementById("lName").value.trim();
+  const wilaya    = document.getElementById("wilaya").value;
+  const comment   = document.getElementById("comment").value.trim();
+  const pkgName   = document.getElementById("pkgName").value.trim();
+  const rawPrice  = document.getElementById("totalPrice").value.trim();
+
+  /* Build public display_name: "أمين ب." or just "أمين" */
+  const displayName = lastName
+    ? firstName + " " + lastName.charAt(0) + "."
+    : firstName;
+
+  const payload = {
+    first_name:           firstName,
+    last_name:            lastName || firstName,   /* fallback satisfies NOT NULL */
+    display_name:         displayName,
+    wilaya,
+    rating:               selectedRating,
+    comment,
+    purchased_items:      buildPurchasedItems(),
+    package_name:         pkgName   || null,
+    total_price:          rawPrice  ? parseFloat(rawPrice) : null,
+    order_id:             urlOrderId || null,
+    is_verified_purchase: isVerified,
+    is_approved:          false,      /* always false — admin must approve */
+    is_featured:          false,
+    source:               "website",
+  };
+
+  try {
+    const res = await fetch(SB_URL + "/rest/v1/customer_reviews", {
+      method:  "POST",
+      headers: {
+        "Content-Type":  "application/json",
+        "apikey":        SB_KEY,
+        "Authorization": "Bearer " + SB_KEY,
+        "Prefer":        "return=minimal",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error("[review] Supabase error:", res.status, errBody);
+      throw new Error("HTTP " + res.status);
+    }
+
+    /* Success */
+    document.getElementById("formCard").style.display    = "none";
+    document.getElementById("successScreen").classList.add("show");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+  } catch (err) {
+    console.error("[review] submit error:", err);
+    showMsg(
+      "حدث خطأ أثناء إرسال رأيك، يرجى المحاولة مرة أخرى. إذا استمرت المشكلة تواصل معنا.",
+      "err"
+    );
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ── UI helpers ─────────────────────────────────────────── */
+function setLoading(on) {
+  const btn  = document.getElementById("submitBtn");
+  const spin = document.getElementById("spin");
+  const txt  = document.getElementById("submitTxt");
+  btn.disabled      = on;
+  spin.style.display = on ? "block" : "none";
+  txt.textContent   = on ? "جاري الإرسال..." : "إرسال التقييم ✦";
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById("formMsg");
+  el.className   = "form-msg " + type;
+  el.textContent = (type === "err" ? "❌ " : "✅ ") + text;
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function hideMsg() {
+  const el = document.getElementById("formMsg");
+  el.className = "form-msg";
+  el.textContent = "";
+}
+
+function showErr(field) {
+  document.getElementById("e-" + field)?.classList.add("on");
+  const input = document.getElementById(
+    field === "rating" ? "starRow" : field
+  );
+  input?.classList.add("is-error");
+}
+
+function clearErr(field) {
+  document.getElementById("e-" + field)?.classList.remove("on");
+  const input = document.getElementById(
+    field === "rating" ? "starRow" : field
+  );
+  input?.classList.remove("is-error");
+}
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;");
+}
+</script>
+
+</body>
+</html>

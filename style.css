@@ -979,6 +979,106 @@ input, select, textarea { font-family: inherit; }
 .reviewer-info strong { display: block; font-size: 14px; font-weight: 800; color: var(--text); }
 .reviewer-info span   { font-size: 12px; color: var(--text-muted); }
 
+/* === 13b. REVIEWS — Dynamic enhancements === */
+.review-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  gap: 10px;
+}
+.review-card-top .review-stars { margin-bottom: 0; }
+
+.review-verified {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: #d1fae5;
+  color: #065f46;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 99px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.review-books {
+  font-size: 12px;
+  color: var(--text-light);
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+
+.reviewer { flex: 1; }
+.review-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 16px;
+}
+.review-date {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Loading skeleton */
+.reviews-loading-wrap {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+@media (max-width: 900px) { .reviews-loading-wrap { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 600px) { .reviews-loading-wrap { grid-template-columns: 1fr; } }
+
+.review-skel {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  overflow: hidden;
+}
+.skel-line {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+  height: 14px;
+  margin-bottom: 10px;
+}
+.skel-line.w-60 { width: 60%; }
+.skel-line.w-80 { width: 80%; }
+.skel-line.w-100 { width: 100%; }
+.skel-line.h-20 { height: 20px; }
+.skel-circle {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.4s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes skel-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Empty / error state */
+.reviews-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--text-muted);
+  font-size: 16px;
+  grid-column: 1 / -1;
+}
+
 /* === 14. CONTACT SECTION === */
 .contact-section { padding: 80px 0; background: var(--bg-alt); }
 

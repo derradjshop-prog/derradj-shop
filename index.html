@@ -432,45 +432,48 @@
   <div class="container">
     <div class="section-header">
       <h2 class="section-title">ماذا قال قراؤنا؟</h2>
-      <p class="section-subtitle">آراء حقيقية من قرّاء من مختلف ولايات الجزائر</p>
+      <p class="section-subtitle">آراء  من قرّاء من مختلف ولايات الجزائر</p>
     </div>
-    <div class="reviews-grid">
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p class="review-text">"طلبت كتاب العادات الذرية وكتاب قوة الآن. وصلا خلال يومين بتغليف ممتاز. الأسعار معقولة جداً ومش لقيتها بهالسعر في أي مكان ثاني. شكراً Derradj Shop!"</p>
-        <div class="reviewer">
-          <div class="reviewer-avatar">أ.ب</div>
-          <div class="reviewer-info">
-            <strong>أمين ب.</strong>
-            <span>الجزائر العاصمة</span>
-          </div>
-        </div>
-      </div>
 
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p class="review-text">"طلبت كتاب الذكاء العاطفي وكتاب بروباغندا. جاوا بسرعة وبحالة ممتازة. الخدمة محترفة والتواصل سريع. أنصح بيه كل من يحب القراءة!"</p>
-        <div class="reviewer">
-          <div class="reviewer-avatar">س.م</div>
-          <div class="reviewer-info">
-            <strong>سارة م.</strong>
-            <span>وهران</span>
+    <!-- Dynamic reviews grid — populated by JS below -->
+    <div id="reviews-container">
+      <!-- Skeleton loading state -->
+      <div class="reviews-loading-wrap" id="reviews-skeleton">
+        <div class="review-skel">
+          <div class="skel-line w-60 h-20" style="margin-bottom:16px;"></div>
+          <div class="skel-line w-100"></div>
+          <div class="skel-line w-80"></div>
+          <div class="skel-line w-100" style="margin-bottom:20px;"></div>
+          <div style="display:flex;gap:12px;align-items:center;">
+            <div class="skel-circle"></div>
+            <div style="flex:1;"><div class="skel-line w-60"></div><div class="skel-line w-80"></div></div>
+          </div>
+        </div>
+        <div class="review-skel">
+          <div class="skel-line w-60 h-20" style="margin-bottom:16px;"></div>
+          <div class="skel-line w-100"></div>
+          <div class="skel-line w-80"></div>
+          <div class="skel-line w-100" style="margin-bottom:20px;"></div>
+          <div style="display:flex;gap:12px;align-items:center;">
+            <div class="skel-circle"></div>
+            <div style="flex:1;"><div class="skel-line w-60"></div><div class="skel-line w-80"></div></div>
+          </div>
+        </div>
+        <div class="review-skel">
+          <div class="skel-line w-60 h-20" style="margin-bottom:16px;"></div>
+          <div class="skel-line w-100"></div>
+          <div class="skel-line w-80"></div>
+          <div class="skel-line w-100" style="margin-bottom:20px;"></div>
+          <div style="display:flex;gap:12px;align-items:center;">
+            <div class="skel-circle"></div>
+            <div style="flex:1;"><div class="skel-line w-60"></div><div class="skel-line w-80"></div></div>
           </div>
         </div>
       </div>
-
-      <div class="review-card">
-        <div class="review-stars">★★★★★</div>
-        <p class="review-text">"اشتريت ثلاثة كتب في تطوير الذات. الجودة فاقت توقعاتي والأسعار أرخص من أي مكتبة في قسنطينة. متجر موثوق وأنا هنشري منو دائماً!"</p>
-        <div class="reviewer">
-          <div class="reviewer-avatar">ك.ر</div>
-          <div class="reviewer-info">
-            <strong>كريم ر.</strong>
-            <span>قسنطينة</span>
-          </div>
-        </div>
-      </div>
+      <!-- Real reviews injected here by JS -->
+      <div class="reviews-grid" id="reviews-grid" style="display:none;"></div>
     </div>
+
   </div>
 </section>
 
@@ -743,5 +746,126 @@
 <script src="cart.js"></script>
 <!-- whatsapp-float -->
 <script src="whatsapp-float.js" defer></script>
+
+<!-- ===================== REVIEWS DYNAMIC LOADER ===================== -->
+<script>
+(function () {
+  "use strict";
+
+  var SUPABASE_URL = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
+  var SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
+
+  function stars(n) {
+    return "★".repeat(Math.max(1, Math.min(5, n))) +
+           "☆".repeat(5 - Math.max(1, Math.min(5, n)));
+  }
+
+  function initials(name) {
+    if (!name) return "—";
+    return name.trim().split(/\s+/).slice(0, 2).map(function (w) {
+      return w.charAt(0);
+    }).join(".");
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return "";
+    try {
+      return new Date(iso).toLocaleDateString("ar-DZ", {
+        year: "numeric", month: "long", day: "numeric"
+      });
+    } catch (e) { return ""; }
+  }
+
+  function esc(v) {
+    return String(v || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function buildCard(r) {
+    var items = [];
+    try { items = Array.isArray(r.purchased_items) ? r.purchased_items : JSON.parse(r.purchased_items || "[]"); }
+    catch (e) { items = []; }
+
+    var bookTitles = items.map(function (it) { return esc(it.title || ""); }).filter(Boolean).join("، ");
+    var bookDisplay = r.package_name
+      ? (bookTitles ? bookTitles + " — " + esc(r.package_name) : esc(r.package_name))
+      : bookTitles;
+
+    var dateStr   = fmtDate(r.created_at);
+    var avgColor  = r.rating >= 4 ? "#059669" : r.rating === 3 ? "#d97706" : "#dc2626";
+
+    return '<div class="review-card">' +
+      '<div class="review-card-top">' +
+        '<div class="review-stars">' + stars(r.rating) + '</div>' +
+        (r.is_verified_purchase ? '<span class="review-verified">✔ شراء موثق</span>' : '') +
+      '</div>' +
+      '<p class="review-text">"' + esc(r.comment) + '"</p>' +
+      (bookDisplay ? '<div class="review-books">📚 ' + bookDisplay + '</div>' : '') +
+      '<div class="review-footer">' +
+        '<div class="reviewer">' +
+          '<div class="reviewer-avatar">' + esc(initials(r.display_name)) + '</div>' +
+          '<div class="reviewer-info">' +
+            '<strong>' + esc(r.display_name || "—") + '</strong>' +
+            '<span>' + esc(r.wilaya) + '</span>' +
+          '</div>' +
+        '</div>' +
+        (dateStr ? '<span class="review-date">' + esc(dateStr) + '</span>' : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  function showSkeleton(show) {
+    var skel = document.getElementById("reviews-skeleton");
+    var grid = document.getElementById("reviews-grid");
+    if (!skel || !grid) return;
+    skel.style.display = show ? "" : "none";
+    grid.style.display = show ? "none" : "";
+  }
+
+  async function loadReviews() {
+    var grid = document.getElementById("reviews-grid");
+    if (!grid) return;
+
+    try {
+      var res = await fetch(
+        SUPABASE_URL + "/rest/v1/customer_reviews" +
+        "?is_approved=eq.true" +
+        "&order=created_at.desc" +
+        "&limit=9" +
+        "&select=display_name,wilaya,rating,comment,purchased_items,package_name,total_price,is_verified_purchase,created_at",
+        {
+          headers: {
+            "apikey": SUPABASE_KEY,
+            "Authorization": "Bearer " + SUPABASE_KEY
+          }
+        }
+      );
+
+      if (!res.ok) throw new Error("HTTP " + res.status);
+
+      var reviews = await res.json();
+      showSkeleton(false);
+
+      if (!reviews || !reviews.length) {
+        grid.innerHTML = '<p class="reviews-empty">لا توجد آراء منشورة حاليًا.</p>';
+        return;
+      }
+
+      grid.innerHTML = reviews.map(buildCard).join("");
+
+    } catch (err) {
+      console.error("[reviews] load error:", err);
+      showSkeleton(false);
+      var grid2 = document.getElementById("reviews-grid");
+      if (grid2) grid2.innerHTML = '<p class="reviews-empty">تعذّر تحميل التقييمات.</p>';
+    }
+  }
+
+  loadReviews();
+})();
+</script>
 </body>
 </html>

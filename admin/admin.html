@@ -837,6 +837,10 @@
       📚 المنتجات
       <span class="tab-badge" id="tab-badge-products">—</span>
     </button>
+    <button class="tab-btn" data-tab="reviews">
+      ⭐ التقييمات
+      <span class="tab-badge" id="tab-badge-reviews">—</span>
+    </button>
   </div>
 
   <!-- Tab: Orders -->
@@ -1037,6 +1041,156 @@
     </style>
 
   </div><!-- /tab-products -->
+
+  <!-- ══ Tab: Reviews ════════════════════════════════════════ -->
+  <div class="tab-content" id="tab-reviews">
+
+    <!-- Stats -->
+    <div class="stats-grid" style="margin-bottom:20px;">
+      <div class="stat-card" style="border-right-color:#6366f1;">
+        <span class="stat-num" id="rv-stat-total">—</span>
+        <span class="stat-label">إجمالي التقييمات</span>
+      </div>
+      <div class="stat-card" style="border-right-color:#f59e0b;">
+        <span class="stat-num" id="rv-stat-pending">—</span>
+        <span class="stat-label">⏳ بانتظار الموافقة</span>
+      </div>
+      <div class="stat-card" style="border-right-color:#10b981;">
+        <span class="stat-num" id="rv-stat-approved">—</span>
+        <span class="stat-label">✅ منشور</span>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+      <input type="text" class="search-input" id="rvSearchInput"
+             placeholder="🔍 بحث بالاسم، الولاية، أو محتوى التعليق...">
+      <select class="filter-select" id="rvStatusFilter">
+        <option value="">كل التقييمات</option>
+        <option value="pending">بانتظار الموافقة</option>
+        <option value="approved">منشور فقط</option>
+      </select>
+      <button class="btn-refresh" id="rvRefreshBtn">↻ تحديث</button>
+      <button class="btn-confirm" id="rvAddBtn" style="background:#6366f1;border-color:#4f46e5;">
+        ＋ إضافة تقييم
+      </button>
+      <span class="orders-count" id="rvCount"></span>
+    </div>
+
+    <!-- Table (desktop) -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>الاسم</th>
+            <th>الولاية</th>
+            <th>التقييم</th>
+            <th>التعليق</th>
+            <th>الكتب / الباقة</th>
+            <th>الإجمالي</th>
+            <th>الحالة</th>
+            <th>التاريخ</th>
+            <th>الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="rvTbody">
+          <tr><td colspan="10" class="empty">⏳ جاري التحميل...</td></tr>
+        </tbody>
+      </table>
+      <div class="table-scroll-hint">← اسحب لرؤية المزيد →</div>
+    </div>
+
+    <!-- Cards (mobile) -->
+    <div id="rvMobileCards" class="mobile-cards-list"></div>
+
+    <style>
+      /* ── Reviews-specific styles ─────────────────────────── */
+      .rv-stars      { color: #f59e0b; font-size: 15px; letter-spacing: 1px; }
+      .rv-comment    { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .rv-books      { font-size: 12px; color: var(--text-light); max-width: 180px;
+                       white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+      .badge-approved { background: #d1fae5; color: #065f46; }
+      .badge-pending  { background: #fef3c7; color: #92400e; }
+      .badge-verified { background: #eff6ff; color: #1d4ed8; font-size: 11px;
+                        padding: 3px 8px; border-radius: 99px; font-weight: 700;
+                        margin-top: 4px; display: inline-block; }
+
+      /* Review form modal fields */
+      .rv-form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .rv-form-grid .full-col { grid-column: 1 / -1; }
+      .rv-field { display: flex; flex-direction: column; gap: 5px; }
+      .rv-field label { font-size: 13px; font-weight: 700; color: var(--text-light); }
+      .rv-field input,
+      .rv-field select,
+      .rv-field textarea {
+        padding: 9px 12px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--radius);
+        font-size: 14px;
+        font-family: var(--font);
+        color: var(--text);
+        background: var(--white);
+        resize: vertical;
+      }
+      .rv-field input:focus,
+      .rv-field select:focus,
+      .rv-field textarea:focus { outline: none; border-color: #6366f1; }
+
+      .rv-star-row { display: flex; gap: 6px; }
+      .rv-star-btn {
+        font-size: 24px; cursor: pointer; color: #cbd5e1;
+        border: none; background: none; padding: 0; line-height: 1;
+        transition: color .15s;
+      }
+      .rv-star-btn.active { color: #f59e0b; }
+
+      .rv-save-btn {
+        width: 100%; padding: 12px;
+        background: #6366f1; color: #fff;
+        border: none; border-radius: var(--radius);
+        font-size: 15px; font-weight: 800;
+        cursor: pointer; font-family: var(--font);
+        margin-top: 4px; transition: background .2s;
+      }
+      .rv-save-btn:hover { background: #4f46e5; }
+      .rv-save-btn:disabled { background: var(--text-muted); cursor: default; }
+
+      @media (max-width: 640px) {
+        .rv-form-grid { grid-template-columns: 1fr; }
+        .rv-form-grid .full-col { grid-column: 1; }
+      }
+
+      /* Mobile review card */
+      .m-rv-card {
+        background: var(--white); border: 1px solid var(--border);
+        border-radius: var(--radius-lg); padding: 14px;
+        box-shadow: var(--shadow-sm); margin-bottom: 10px;
+      }
+      .m-rv-top {
+        display: flex; justify-content: space-between;
+        align-items: flex-start; gap: 8px; margin-bottom: 4px;
+      }
+      .m-rv-name  { font-size: 15px; font-weight: 800; }
+      .m-rv-stars { font-size: 14px; color: #f59e0b; }
+      .m-rv-meta  { font-size: 12px; color: var(--text-light); margin-bottom: 6px; }
+      .m-rv-comment {
+        font-size: 13px; color: var(--text); margin-bottom: 10px;
+        overflow: hidden; text-overflow: ellipsis; display: -webkit-box;
+        -webkit-line-clamp: 2; line-clamp: 2; -webkit-box-orient: vertical;
+      }
+      .m-rv-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+      .m-rv-actions button { flex: 1; justify-content: center;
+        padding: 8px 10px; font-size: 12px; }
+    </style>
+
+  </div><!-- /tab-reviews -->
 
 </main>
 
