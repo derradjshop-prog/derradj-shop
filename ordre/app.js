@@ -368,6 +368,7 @@
 
       /* ── 4. نجاح — مسح السلة ثم التوجيه لصفحة النجاح ─────── */
       localStorage.removeItem('derradj_cart');
+      localStorage.removeItem('derradj_cart_ts');
       window.location.href = "success.html";
 
     } catch (err) {

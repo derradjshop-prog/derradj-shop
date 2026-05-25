@@ -166,8 +166,10 @@
     save (items) {
       if (!Array.isArray(items) || items.length === 0) {
         localStorage.removeItem(CART_KEY);
+        localStorage.removeItem(CART_KEY + '_ts');
       } else {
         localStorage.setItem(CART_KEY, JSON.stringify(items));
+        localStorage.setItem(CART_KEY + '_ts', String(Date.now())); /* طابع زمني */
       }
     },
     /* Remove hidden or unknown items from localStorage */
@@ -190,8 +192,10 @@
         if (valid.length !== parsed.length) {
           if (valid.length === 0) {
             localStorage.removeItem(CART_KEY);
+            localStorage.removeItem(CART_KEY + '_ts');
           } else {
             localStorage.setItem(CART_KEY, JSON.stringify(valid));
+            /* نحتفظ بالطابع الزمني كما هو — المستخدم أضاف المنتجات فعلاً */
           }
         }
       } catch {
@@ -235,7 +239,7 @@
     remove (catalogId) {
       this.save(this.get().filter(i => i.catalogId !== catalogId));
     },
-    clear ()  { localStorage.removeItem(CART_KEY); },
+    clear ()  { localStorage.removeItem(CART_KEY); localStorage.removeItem(CART_KEY + '_ts'); },
     /* Only count visible (non-hidden, valid catalog) items */
     count () {
       const catalog = window.SHOP_CATALOG || [];
@@ -496,6 +500,38 @@
         });
         showToast('✅ تمت إضافة المنتج إلى السلة');
       }
+    });
+
+    /* ══════════════════════════════════════════════════════════
+       "اطلب الكتاب الآن" (btn-buy-now) — يمسح السلة القديمة،
+       يضيف هذا الكتاب فقط، ثم يوجّه المستخدم لصفحة الطلب.
+       هذا يمنع ظهور كتب قديمة من جلسة سابقة.
+    ══════════════════════════════════════════════════════════ */
+    document.addEventListener('click', function (e) {
+      const link = e.target.closest('.btn-buy-now');
+      if (!link) return;
+      e.preventDefault();
+      e.stopPropagation();
+
+      /* البحث عن catalogId من زر "أضف إلى السلة" في نفس مقطع الأزرار */
+      const container = link.closest('.product-cta-buttons') || link.parentElement;
+      const addBtn    = container ? container.querySelector('[data-add-to-cart]') : null;
+      const cid       = addBtn ? parseInt(addBtn.dataset.addToCart) : NaN;
+
+      if (!isNaN(cid)) {
+        const p = (window.SHOP_CATALOG || []).find(c => c.catalogId === cid);
+        if (p && !p.hidden) {
+          if (p.available === false) {
+            showToast('عذرًا، هذا الكتاب غير متوفر حاليا.', 'warn');
+            return;
+          }
+          /* مسح السلة القديمة وإضافة هذا الكتاب فقط (Cart.save يُحدّث الطابع الزمني) */
+          Cart.clear();
+          Cart.add(cid);
+        }
+      }
+      /* الانتقال لصفحة الطلب سواء أُضيف الكتاب أم لا */
+      window.location.href = BASE + '/ordre/';
     });
 
     Cart.sanitize();

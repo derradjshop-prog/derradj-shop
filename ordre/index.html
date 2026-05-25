@@ -1523,8 +1523,8 @@
               <small>CCP / BaridiMob</small>
             </label>
 
-            <label class="pm-card" id="card_cod" for="pay_cod">
-              <input type="radio" name="payment_method" id="pay_cod" value="cash_on_delivery">
+            <label class="pm-card selected" id="card_cod" for="pay_cod">
+              <input type="radio" name="payment_method" id="pay_cod" value="cash_on_delivery" checked>
               <span class="pm-check">✓</span>
               <span class="pm-icon">🏠</span>
               <span class="pm-name">الدفع عند الاستلام</span>
@@ -1594,7 +1594,7 @@
           </div>
 
           <!-- ── تفاصيل: الدفع عند الاستلام ── -->
-          <div id="detail_cod" class="pm-detail-box pm-detail-cod" style="display:none">
+          <div id="detail_cod" class="pm-detail-box pm-detail-cod" style="display:block">
             <div class="cod-info-box">
               <span class="cod-icon">🏠</span>
               <div>
@@ -2174,6 +2174,7 @@ function createProductRow() {
   `;
 
   const sel   = row.querySelector('.pr-select');
+  sel.value = '';  /* ضمان عدم الاختيار التلقائي في جميع المتصفحات */
   initPrCustomSelect(row, sel);
   const qty   = row.querySelector('.pr-qty-input');
   const prEl  = row.querySelector('#price_' + id);
@@ -2273,10 +2274,30 @@ window._refreshProductRowsAvailability = function () {
 
 /* تحميل المنتجات من السلة، أو إضافة صف فارغ إذا كانت السلة فارغة */
 (function initProductRows() {
+
+  /* ── الحد الأقصى لعمر بيانات السلة: 48 ساعة ──────────────
+     إذا كانت البيانات أقدم من ذلك نعتبرها "قديمة" ونتجاهلها
+     حتى لا تظهر كتب من جلسات سابقة دون علم المستخدم.
+  ─────────────────────────────────────────────────────────── */
+  var CART_MAX_AGE_MS = 48 * 60 * 60 * 1000; /* 48 ساعة */
+
   var rawItems = (function () {
     try {
       var raw = localStorage.getItem('derradj_cart');
       if (!raw) return [];
+
+      /* التحقق من الطابع الزمني — هل السلة حديثة؟ */
+      var tsRaw = localStorage.getItem('derradj_cart_ts');
+      var ts    = tsRaw ? parseInt(tsRaw, 10) : 0;
+      var age   = ts > 0 ? (Date.now() - ts) : Infinity;
+
+      if (age > CART_MAX_AGE_MS) {
+        /* السلة قديمة (أكثر من 48 ساعة) — نحذفها ونعرض نموذجاً فارغاً */
+        localStorage.removeItem('derradj_cart');
+        localStorage.removeItem('derradj_cart_ts');
+        return [];
+      }
+
       var parsed = JSON.parse(raw);
       return Array.isArray(parsed) ? parsed : [];
     } catch { return []; }
@@ -2293,8 +2314,10 @@ window._refreshProductRowsAvailability = function () {
   if (rawItems.length > 0 && cartItems.length !== rawItems.length) {
     if (cartItems.length === 0) {
       localStorage.removeItem('derradj_cart');
+      localStorage.removeItem('derradj_cart_ts');
     } else {
       localStorage.setItem('derradj_cart', JSON.stringify(cartItems));
+      /* نُبقي الطابع الزمني كما هو — المستخدم أضاف المنتجات فعلاً */
     }
   }
 
@@ -2518,109 +2541,162 @@ pmRadios.forEach(r => {
   });
 });
 
+/* ── تفعيل الحالة الافتراضية عند التحميل: الدفع عند الاستلام ─── */
+(function () {
+  /* نجد الراديو المحدد مسبقاً في HTML ونطلق change لمزامنة حالة JS */
+  var defaultPm = document.querySelector('input[name="payment_method"]:checked');
+  if (defaultPm) {
+    defaultPm.dispatchEvent(new Event('change'));
+  }
+}());
+
 /* ── إخفاء خطأ الولاية / البلدية عند الاختيار (يتم داخل CustomSelect onSelect) ── */
 
 /* ── التحقق قبل الإرسال ─────────────────────────────────────── */
 window.validateCheckout = function () {
   let valid = true;
+  let firstErrorEl = null;  /* أول عنصر فيه خطأ — سنتمرر إليه */
   const alertEl = document.getElementById('formAlert');
   alertEl.classList.remove('show');
 
-  function showAlert(msg) {
-    if (!alertEl.classList.contains('show')) {
+  /* دالة مساعدة: تسجّل الخطأ وتحتفظ بأول عنصر مشكلة */
+  function markError(el, msg) {
+    if (!firstErrorEl) firstErrorEl = el;
+    if (msg && !alertEl.classList.contains('show')) {
       alertEl.textContent = msg;
       alertEl.classList.add('show');
     }
   }
 
-  /* الاسم */
+  /* ── الاسم ─────────────────────────────────────────── */
   const nameEl   = document.getElementById('full_name');
   const nameWrap = nameEl.closest('.field-wrap');
   if (!nameEl.value.trim()) {
-    nameWrap.classList.add('has-error'); valid = false;
+    nameWrap.classList.add('has-error');
+    markError(nameEl, '❌ يرجى إدخال الاسم الكامل.');
+    valid = false;
   } else { nameWrap.classList.remove('has-error'); }
 
-  /* الهاتف */
+  /* ── الهاتف ─────────────────────────────────────────── */
   const phoneVal  = phoneInputEl.value.replace(/\D/g, '');
   const phoneWrap = phoneInputEl.closest('.field-wrap');
   if (!/^0[5-7]\d{8}$/.test(phoneVal)) {
     phoneWrap.classList.add('has-error');
     phoneErrEl.style.display = 'block';
     phoneRowEl.classList.add('phone-error');
+    markError(phoneInputEl, '❌ رقم الهاتف غير صحيح — يجب أن يبدأ بـ 05 أو 06 أو 07 ويكون 10 أرقام.');
     valid = false;
   } else {
     phoneWrap.classList.remove('has-error');
     phoneErrEl.style.display = 'none';
   }
 
-  /* العنوان — إجباري فقط عند التوصيل للمنزل */
-  const addrEl       = document.getElementById('addressInput');
-  const addrWrap     = addrEl.closest('.field-wrap');
+  /* ── العنوان — إجباري فقط عند التوصيل للمنزل ────────── */
+  const addrEl         = document.getElementById('addressInput');
+  const addrWrap       = addrEl.closest('.field-wrap');
   const isHomeDelivery = document.querySelector('input[name="delivery_type"]:checked')?.value === 'home';
   if (isHomeDelivery && !addrEl.value.trim()) {
-    addrWrap.classList.add('has-error'); valid = false;
+    addrWrap.classList.add('has-error');
+    markError(addrEl, '❌ يرجى إدخال العنوان الكامل (الشارع، رقم المبنى، الحي...).');
+    valid = false;
   } else { addrWrap.classList.remove('has-error'); }
 
-  /* الولاية */
+  /* ── الولاية ─────────────────────────────────────────── */
   const wilayaVal  = document.getElementById('wilayaHidden').value;
   const wilayaWrap = document.getElementById('wilayaWrap').closest('.field-wrap');
   if (!wilayaVal) {
     wilayaWrap.classList.add('has-error');
     document.getElementById('wilayaError').style.display = 'block';
+    markError(document.getElementById('wilayaInput'), '❌ يرجى اختيار الولاية من القائمة.');
     valid = false;
   } else {
     wilayaWrap.classList.remove('has-error');
     document.getElementById('wilayaError').style.display = 'none';
   }
 
-  /* المنتجات */
+  /* ── المنتجات ─────────────────────────────────────────── */
   const rows = document.querySelectorAll('.product-row');
   if (!rows.length) {
-    showAlert('❌ يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.');
+    if (!alertEl.classList.contains('show')) {
+      alertEl.textContent = '❌ يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.';
+      alertEl.classList.add('show');
+    }
+    if (!firstErrorEl) firstErrorEl = document.getElementById('addProductBtn');
     valid = false;
   } else {
     let ok = true;
     let hasUnavail = false;
+    let firstBadRow = null;
     rows.forEach(row => {
       const idx = parseInt(row.querySelector('.pr-select')?.value);
       const qty = parseInt(row.querySelector('.pr-qty-input')?.value);
-      if (isNaN(idx) || !window.PRODUCTS_CATALOG[idx] || isNaN(qty) || qty < 1) { ok = false; return; }
-      if (window.PRODUCTS_CATALOG[idx].available === false) hasUnavail = true;
+      if (isNaN(idx) || !window.PRODUCTS_CATALOG[idx] || isNaN(qty) || qty < 1) {
+        ok = false;
+        if (!firstBadRow) firstBadRow = row;
+        return;
+      }
+      if (window.PRODUCTS_CATALOG[idx].available === false) {
+        hasUnavail = true;
+        if (!firstBadRow) firstBadRow = row;
+      }
     });
     if (!ok) {
-      showAlert('❌ يرجى اختيار منتج وكمية صحيحة (≥ 1) لكل سطر.');
+      if (!alertEl.classList.contains('show')) {
+        alertEl.textContent = '❌ يرجى اختيار منتج وكمية صحيحة (≥ 1) لكل سطر.';
+        alertEl.classList.add('show');
+      }
+      if (!firstErrorEl && firstBadRow) firstErrorEl = firstBadRow;
       valid = false;
     }
     if (hasUnavail) {
-      showAlert('❌ بعض المنتجات التي اخترتها غير متوفرة حاليا. يرجى إزالتها والمحاولة مرة أخرى.');
+      if (!alertEl.classList.contains('show')) {
+        alertEl.textContent = '❌ بعض المنتجات التي اخترتها غير متوفرة حاليا. يرجى إزالتها والمحاولة مرة أخرى.';
+        alertEl.classList.add('show');
+      }
+      if (!firstErrorEl && firstBadRow) firstErrorEl = firstBadRow;
       valid = false;
     }
   }
 
-  /* طريقة الدفع */
+  /* ── طريقة الدفع ─────────────────────────────────────── */
   const pm = document.querySelector('input[name="payment_method"]:checked');
   if (!pm) {
     document.getElementById('paymentMethodError').style.display = 'block';
-    showAlert('❌ يرجى اختيار طريقة الدفع.');
+    if (!alertEl.classList.contains('show')) {
+      alertEl.textContent = '❌ يرجى اختيار طريقة الدفع.';
+      alertEl.classList.add('show');
+    }
+    if (!firstErrorEl) firstErrorEl = document.querySelector('.pm-grid');
     valid = false;
   } else {
     document.getElementById('paymentMethodError').style.display = 'none';
   }
 
-  /* وصل الدفع — إجباري للدفع المسبق فقط */
+  /* ── وصل الدفع — إجباري للدفع المسبق فقط ───────────── */
   if (pm && pm.value === 'prepaid') {
     const receipt = document.getElementById('paymentReceipt');
     if (!receipt?.files?.length) {
       document.getElementById('receiptError').style.display = 'block';
-      showAlert('❌ يرجى رفع صورة وصل الدفع (BaridiMob أو CCP) لإتمام الطلب.');
+      if (!alertEl.classList.contains('show')) {
+        alertEl.textContent = '❌ يرجى رفع صورة وصل الدفع (BaridiMob أو CCP) لإتمام الطلب.';
+        alertEl.classList.add('show');
+      }
+      if (!firstErrorEl) firstErrorEl = document.getElementById('receiptSection');
       valid = false;
     } else {
       document.getElementById('receiptError').style.display = 'none';
     }
   }
 
-  if (!valid) {
-    document.querySelector('.form-alert.show')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  /* ── التمرير الذكي إلى أول حقل فيه مشكلة ───────────── */
+  if (!valid && firstErrorEl) {
+    firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    /* تركيز الحقل بعد اكتمال التمرير (400ms) */
+    if (typeof firstErrorEl.focus === 'function') {
+      setTimeout(function () {
+        try { firstErrorEl.focus(); } catch (e) {}
+      }, 450);
+    }
   }
   return valid;
 };
