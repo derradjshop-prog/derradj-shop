@@ -1361,7 +1361,7 @@
       <!-- رسالة خطأ عامة -->
       <div class="form-alert" id="formAlert"></div>
 
-      <form id="orderForm" novalidate>
+      <form id="orderForm" novalidate method="post" action="javascript:void(0)">
 
         <!-- ══════════════ 1 · معلومات التسليم ══════════════ -->
         <div class="ch-section">
@@ -1756,6 +1756,23 @@
 /* ================================================================
    UI — Page de commande Derradj Shop
 ================================================================ */
+
+/* ── تنظيف الـ URL فور تحميل الصفحة ──────────────────────────────
+   يزيل أي معاملات GET (query parameters) قد تكون علقت في الرابط
+   من نقرة سابقة، ويُبقي الرابط نظيفاً:
+   https://derradjshop.com/ordre/
+   دون أي: ?full_name=…&phone=…&address=…
+──────────────────────────────────────────────────────────────── */
+(function cleanURL() {
+  if (window.location.search || window.location.hash) {
+    /* نستبدل السجل الحالي بنفس المسار بدون أي params أو hash */
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+  }
+}());
 
 /* ── كتالوج المنتجات ─────────────────────────────────────────
    عدّل هذه القائمة بحرية لإضافة / تعديل / حذف المنتجات.
