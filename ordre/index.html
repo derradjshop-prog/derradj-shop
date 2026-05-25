@@ -955,7 +955,8 @@
       display: none;
     }
     .has-error input,
-    .has-error .cs-input { border-color: var(--accent) !important; }
+    .has-error .cs-input,
+    .has-error .cs-trigger { border-color: var(--accent) !important; }
     .has-error .field-error-msg { display: block !important; }
 
     .form-alert {
@@ -1482,6 +1483,12 @@
 
           <!-- قائمة المنتجات (ديناميكية) -->
           <div id="productsList"></div>
+
+          <!-- رسالة خطأ المنتجات -->
+          <span class="field-error-msg" id="productsError"
+                style="display:none;font-size:14px;font-weight:600;margin-top:8px;">
+            ❌ يرجى اختيار الكتب
+          </span>
 
           <!-- زر إضافة منتج -->
           <button type="button" class="btn-add-product" id="addProductBtn">
@@ -2534,6 +2541,18 @@ function updateSummary() {
 
 document.getElementById('productsList').addEventListener('input', updateSummary);
 
+/* ── إخفاء رسالة "يرجى اختيار الكتب" فور اختيار كتاب صحيح ─── */
+document.getElementById('productsList').addEventListener('change', function () {
+  const anyValid = [...document.querySelectorAll('.product-row')].some(function (row) {
+    const idx = parseInt(row.querySelector('.pr-select')?.value);
+    return !isNaN(idx) && window.PRODUCTS_CATALOG[idx];
+  });
+  if (anyValid) {
+    var errEl = document.getElementById('productsError');
+    if (errEl) errEl.style.display = 'none';
+  }
+});
+
 /* ── إخفاء خطأ طريقة الدفع عند الاختيار ─────────────────────── */
 pmRadios.forEach(r => {
   r.addEventListener('change', () => {
@@ -2614,14 +2633,34 @@ window.validateCheckout = function () {
     document.getElementById('wilayaError').style.display = 'none';
   }
 
+  /* ── البلدية ─────────────────────────────────────────── */
+  const communeVal  = (document.getElementById('communeHidden')?.value || '').trim();
+  const communeWrap = document.getElementById('communeWrap')?.closest('.field-wrap');
+  if (!communeVal) {
+    if (communeWrap) communeWrap.classList.add('has-error');
+    document.getElementById('communeError').style.display = 'block';
+    /* نُمرر للبلدية فقط إذا كانت الولاية مختارة؛ وإلا تبقى الولاية أولوية */
+    if (wilayaVal) {
+      markError(document.getElementById('communeInput'), '❌ يرجى اختيار البلدية / المنطقة من القائمة.');
+    } else if (communeWrap && !firstErrorEl) {
+      firstErrorEl = communeWrap;
+    }
+    valid = false;
+  } else {
+    if (communeWrap) communeWrap.classList.remove('has-error');
+    document.getElementById('communeError').style.display = 'none';
+  }
+
   /* ── المنتجات ─────────────────────────────────────────── */
   const rows = document.querySelectorAll('.product-row');
+  const productsErrEl = document.getElementById('productsError');
   if (!rows.length) {
     if (!alertEl.classList.contains('show')) {
       alertEl.textContent = '❌ يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.';
       alertEl.classList.add('show');
     }
-    if (!firstErrorEl) firstErrorEl = document.getElementById('addProductBtn');
+    productsErrEl.style.display = 'block';
+    if (!firstErrorEl) firstErrorEl = document.getElementById('productsList');
     valid = false;
   } else {
     let ok = true;
@@ -2645,6 +2684,7 @@ window.validateCheckout = function () {
         alertEl.textContent = '❌ يرجى اختيار منتج وكمية صحيحة (≥ 1) لكل سطر.';
         alertEl.classList.add('show');
       }
+      productsErrEl.style.display = 'block';
       if (!firstErrorEl && firstBadRow) firstErrorEl = firstBadRow;
       valid = false;
     }
@@ -2656,6 +2696,8 @@ window.validateCheckout = function () {
       if (!firstErrorEl && firstBadRow) firstErrorEl = firstBadRow;
       valid = false;
     }
+    /* إخفاء رسالة الخطأ إذا كانت المنتجات صحيحة */
+    if (ok && !hasUnavail) productsErrEl.style.display = 'none';
   }
 
   /* ── طريقة الدفع ─────────────────────────────────────── */
