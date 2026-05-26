@@ -848,14 +848,17 @@
 
   <!-- Stats (3 cards) -->
   <div class="stats-grid">
-    <div class="stat-card s-all">
-      <span class="stat-num" id="stat-all">—</span>
-      <span class="stat-label">إجمالي الطلبات</span>
-    </div>
+
     <div class="stat-card s-pending">
       <span class="stat-num" id="stat-pending">—</span>
       <span class="stat-label">⏳ قيد المعالجة</span>
     </div>
+
+    <div class="stat-card s-all">
+      <span class="stat-num" id="stat-all">—</span>
+      <span class="stat-label">إجمالي الطلبات</span>
+    </div>
+
     <div class="stat-card s-confirmed">
       <span class="stat-num" id="stat-confirmed">—</span>
       <span class="stat-label">✅ تم التأكيد</span>
@@ -867,9 +870,9 @@
     <input type="text" class="search-input" id="searchInput"
            placeholder="🔍 بحث بالاسم، الهاتف، الولاية، أو المنتج...">
     <select class="filter-select" id="statusFilter">
-      <option value="">كل الطلبات</option>
-      <option value="pending">قيد المعالجة فقط</option>
-      <option value="confirmed">تم التأكيد فقط</option>
+      <option value="">📋 كل الطلبات</option>
+      <option value="pending" selected>⏳ قيد المعالجة / غير مؤكدة</option>
+      <option value="confirmed">✅ تم التأكيد</option>
     </select>
     <button class="btn-refresh" id="refreshBtn">↻ تحديث</button>
     <span class="orders-count" id="ordersCount"></span>

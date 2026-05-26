@@ -272,7 +272,8 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
     document.getElementById("stat-all").textContent       = orders.length;
     document.getElementById("stat-pending").textContent   = pending;
     document.getElementById("stat-confirmed").textContent = confirmed;
-    document.getElementById("tab-badge-orders").textContent = orders.length;
+    /* الشارة تُظهر الطلبات غير المؤكدة فقط — يعني ما يحتاج متابعة */
+    document.getElementById("tab-badge-orders").textContent = pending;
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -475,16 +476,19 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
       const order = ALL_ORDERS.find(o => o.id === orderId);
       if (order) order.is_confirmed = true;
 
-      /* تحديث الصف مباشرة */
-      const row = document.querySelector(`#ordersTbody tr[data-id="${orderId}"]`);
-      if (row) {
-        row.cells[9].innerHTML = confirmBadge(true);           /* حالة التأكيد */
-        btn.textContent = "✔ تم التأكيد";                     /* زر التأكيد */
-        btn.removeAttribute("data-action");
-      }
-
+      /* تحديث الإحصائيات (الشارة تنقص واحدة) */
       renderStats(ALL_ORDERS);
-      if (ACTIVE_ORDER?.id === orderId) { ACTIVE_ORDER.is_confirmed = true; }
+
+      /* إعادة عرض الجدول حسب الفلتر الحالي:
+         - إذا كان الفلتر "pending" → الطلب يختفي من القائمة تلقائياً
+         - إذا كان "confirmed" أو "كل الطلبات" → يبقى ظاهراً بحالته الجديدة */
+      renderTable(getFiltered());
+
+      /* تحديث المودال إذا كان مفتوحاً لنفس الطلب */
+      if (ACTIVE_ORDER?.id === orderId) {
+        ACTIVE_ORDER.is_confirmed = true;
+        document.getElementById("modalBody").innerHTML = buildModalHTML(ACTIVE_ORDER);
+      }
 
     } catch (err) {
       console.error("Confirm error:", err);
@@ -509,21 +513,12 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
     try {
       await deleteOrder(orderId);
 
-      /* إزالة من الكاش والجدول والبطاقات المحمولة */
+      /* إزالة من الكاش */
       ALL_ORDERS = ALL_ORDERS.filter(o => o.id !== orderId);
-      document.querySelector(`#ordersTbody tr[data-id="${orderId}"]`)?.remove();
-      document.querySelector(`#ordersMobileCards [data-id="${orderId}"]`)?.remove();
 
-      /* تحديث العداد والإحصائيات */
-      const filtered = getFiltered();
-      document.getElementById("ordersCount").textContent =
-        filtered.length + " طلب" + (filtered.length !== ALL_ORDERS.length ? ` (من ${ALL_ORDERS.length})` : "");
+      /* تحديث الإحصائيات والجدول حسب الفلتر الحالي */
       renderStats(ALL_ORDERS);
-
-      if (!ALL_ORDERS.length) {
-        document.getElementById("ordersTbody").innerHTML =
-          `<tr><td colspan="11" class="empty">لا توجد طلبات</td></tr>`;
-      }
+      renderTable(getFiltered());
 
       if (ACTIVE_ORDER?.id === orderId) closeModal();
 
@@ -1452,7 +1447,7 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
         fetchReviews().catch(() => []),
       ]);
       renderStats(ALL_ORDERS);
-      renderTable(ALL_ORDERS);
+      renderTable(getFiltered());   /* يعرض الطلبات غير المؤكدة فقط بشكل افتراضي */
       renderMessagesTable(ALL_MESSAGES);
       renderProductsTable(ALL_PRODUCTS);
       renderReviewsTable(ALL_REVIEWS);
