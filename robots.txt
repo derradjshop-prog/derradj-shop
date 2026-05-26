@@ -5,4 +5,7 @@ Allow: /
 Disallow: /admin/
 Disallow: /ordre/Essai/
 
+# Exclude old electronics product pages (no longer relevant)
+Disallow: /products/
+
 Sitemap: https://www.derradjshop.com/sitemap.xml
