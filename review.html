@@ -26,28 +26,30 @@
     /* ── Reset ──────────────────────────────────────────────── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Variables (matches main site) ─────────────────────── */
+    /* ── Variables ──────────────────────────────────────────── */
     :root {
-      --font:         'Cairo', sans-serif;
-      --primary:      #1d4ed8;
-      --primary-h:    #1e40af;
-      --primary-bg:   #eff6ff;
-      --gold:         #f59e0b;
-      --green:        #059669;
-      --green-bg:     #d1fae5;
-      --red:          #dc2626;
-      --red-bg:       #fee2e2;
-      --text:         #1e293b;
-      --text-light:   #64748b;
-      --text-muted:   #94a3b8;
-      --bg:           #f8fafc;
-      --white:        #ffffff;
-      --border:       #e2e8f0;
-      --radius:       10px;
-      --radius-lg:    16px;
-      --radius-xl:    20px;
-      --shadow:       0 4px 24px rgba(0,0,0,.08);
-      --shadow-lg:    0 8px 48px rgba(0,0,0,.14);
+      --font:           'Cairo', sans-serif;
+      --primary:        #1d4ed8;
+      --primary-bg:     #eff6ff;
+      --primary-border: #bfdbfe;
+      --gold:           #f59e0b;
+      --gold-dark:      #d97706;
+      --green:          #059669;
+      --green-bg:       #d1fae5;
+      --green-border:   #6ee7b7;
+      --red:            #dc2626;
+      --red-bg:         #fee2e2;
+      --red-border:     #fca5a5;
+      --text:           #1e293b;
+      --text-light:     #64748b;
+      --text-muted:     #94a3b8;
+      --bg:             #f1f5f9;
+      --white:          #ffffff;
+      --border:         #e2e8f0;
+      --radius:         10px;
+      --radius-lg:      16px;
+      --radius-xl:      20px;
+      --shadow-md:      0 4px 24px rgba(0,0,0,.09);
     }
 
     html { scroll-behavior: smooth; }
@@ -68,14 +70,14 @@
       background: var(--white);
       border-bottom: 1px solid var(--border);
       padding: 0 24px;
-      height: 62px;
+      height: 64px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      box-shadow: 0 1px 6px rgba(0,0,0,.05);
+      box-shadow: 0 1px 8px rgba(0,0,0,.06);
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 20;
     }
     .rv-logo {
       font-size: 20px;
@@ -83,8 +85,16 @@
       color: var(--text);
       text-decoration: none;
       letter-spacing: -.3px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .rv-logo span { color: var(--primary); }
+    .rv-logo-dot {
+      width: 8px; height: 8px;
+      background: var(--primary);
+      border-radius: 50%;
+    }
     .rv-back-link {
       display: inline-flex;
       align-items: center;
@@ -93,7 +103,7 @@
       font-weight: 700;
       color: var(--text-light);
       text-decoration: none;
-      padding: 7px 14px;
+      padding: 8px 16px;
       border: 1.5px solid var(--border);
       border-radius: var(--radius);
       transition: all .2s;
@@ -108,25 +118,54 @@
        HERO
     ═══════════════════════════════════════════════════════ */
     .rv-hero {
-      background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 60%, #f0fdf4 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 52px 24px 44px;
+      background: linear-gradient(150deg, #1e40af 0%, #1d4ed8 35%, #2563eb 65%, #3b82f6 100%);
+      padding: 52px 24px 48px;
       text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-    .rv-hero-icon { font-size: 52px; line-height: 1; margin-bottom: 18px; }
+    .rv-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .rv-hero-inner { position: relative; z-index: 1; }
+    .rv-hero-stars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      margin-bottom: 20px;
+    }
+    .rv-hero-star {
+      font-size: 28px;
+      animation: starPop .4s ease both;
+    }
+    .rv-hero-star:nth-child(1) { animation-delay: .00s; }
+    .rv-hero-star:nth-child(2) { animation-delay: .08s; }
+    .rv-hero-star:nth-child(3) { animation-delay: .16s; }
+    .rv-hero-star:nth-child(4) { animation-delay: .24s; }
+    .rv-hero-star:nth-child(5) { animation-delay: .32s; }
+    @keyframes starPop {
+      from { opacity: 0; transform: scale(.5) translateY(6px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
     .rv-hero h1 {
-      font-size: clamp(22px, 5vw, 32px);
+      font-size: clamp(22px, 5vw, 34px);
       font-weight: 900;
-      color: var(--text);
-      margin-bottom: 12px;
+      color: var(--white);
+      margin-bottom: 14px;
       line-height: 1.3;
+      text-shadow: 0 2px 8px rgba(0,0,0,.15);
     }
     .rv-hero p {
       font-size: 15px;
-      color: var(--text-light);
-      line-height: 1.8;
-      max-width: 540px;
-      margin: 0 auto 22px;
+      color: rgba(255,255,255,.88);
+      line-height: 1.85;
+      max-width: 500px;
+      margin: 0 auto 26px;
     }
     .rv-hero-badges {
       display: flex;
@@ -138,14 +177,16 @@
     .rv-badge {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      background: var(--white);
-      border: 1px solid var(--border);
+      gap: 6px;
+      background: rgba(255,255,255,.14);
+      border: 1px solid rgba(255,255,255,.28);
       border-radius: 99px;
-      padding: 6px 14px;
-      font-size: 12px;
+      padding: 7px 15px;
+      font-size: 12.5px;
       font-weight: 700;
-      color: var(--text-light);
+      color: rgba(255,255,255,.95);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
     }
 
     /* ═══════════════════════════════════════════════════════
@@ -153,42 +194,10 @@
     ═══════════════════════════════════════════════════════ */
     .rv-main {
       flex: 1;
-      max-width: 680px;
+      max-width: 620px;
       width: 100%;
       margin: 0 auto;
-      padding: 32px 16px 72px;
-    }
-
-    /* ── Order info box ─────────────────────────────────── */
-    .order-info-box {
-      display: none;
-      align-items: center;
-      gap: 14px;
-      background: var(--primary-bg);
-      border: 1.5px solid #bfdbfe;
-      border-radius: var(--radius-lg);
-      padding: 16px 20px;
-      margin-bottom: 24px;
-    }
-    .order-info-box.visible { display: flex; }
-    .oi-icon { font-size: 28px; flex-shrink: 0; }
-    .oi-body { flex: 1; }
-    .oi-title {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--primary);
-      margin-bottom: 2px;
-    }
-    .oi-sub { font-size: 12px; color: var(--text-light); }
-    .oi-badge {
-      background: var(--green-bg);
-      color: var(--green);
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 99px;
-      white-space: nowrap;
-      flex-shrink: 0;
+      padding: 32px 16px 80px;
     }
 
     /* ── Form card ──────────────────────────────────────── */
@@ -196,26 +205,48 @@
       background: var(--white);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
-      padding: 36px 32px;
-      box-shadow: var(--shadow);
+      padding: 40px 36px;
+      box-shadow: var(--shadow-md);
     }
 
     /* ── Form section ───────────────────────────────────── */
-    .form-section { margin-bottom: 32px; }
-    .form-section:last-child { margin-bottom: 0; }
+    .form-section {
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 1.5px solid var(--border);
+    }
+    .form-section:last-of-type {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
 
-    .section-title {
+    .section-header {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 12px;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .section-icon {
+      width: 36px; height: 36px;
+      background: var(--primary-bg);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .section-title {
+      font-size: 15px;
       font-weight: 800;
-      color: var(--text-light);
-      text-transform: uppercase;
-      letter-spacing: .6px;
-      margin-bottom: 18px;
-      padding-bottom: 12px;
-      border-bottom: 1.5px solid var(--border);
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .section-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
     }
 
     /* ── Field ──────────────────────────────────────────── */
@@ -224,24 +255,19 @@
       grid-template-columns: 1fr 1fr;
       gap: 16px;
     }
-    .field-row + .field-row { margin-top: 16px; }
-    .field-row.one-col { grid-template-columns: 1fr; }
 
     .field { display: flex; flex-direction: column; gap: 6px; }
-    .field + .field.solo { margin-top: 16px; }
+    .field + .field { margin-top: 16px; }
 
     .field > label {
-      font-size: 14px;
+      font-size: 13.5px;
       font-weight: 700;
       color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 4px;
     }
-    .field > label .req { color: var(--red); }
-    .field > label .opt {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-right: 5px;
-    }
+    .field > label .req { color: var(--red); font-size: 15px; line-height: 1; }
 
     .field input,
     .field select,
@@ -254,9 +280,10 @@
       color: var(--text);
       background: var(--white);
       transition: border-color .18s, box-shadow .18s;
+      width: 100%;
     }
     .field input::placeholder,
-    .field textarea::placeholder { color: var(--text-muted); }
+    .field textarea::placeholder { color: var(--text-muted); font-weight: 400; }
     .field input:focus,
     .field select:focus,
     .field textarea:focus {
@@ -286,8 +313,16 @@
       font-weight: 700;
       color: var(--red);
       display: none;
+      align-items: center;
+      gap: 4px;
     }
-    .field-err.on { display: block; }
+    .field-err.on { display: flex; }
+
+    .field-hint {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
 
     .char-count {
       font-size: 11px;
@@ -298,162 +333,112 @@
     .char-count.warn { color: var(--red); font-weight: 700; }
     .char-count.ok   { color: var(--green); font-weight: 700; }
 
-    /* ── Star rating (JS-driven) ─────────────────────── */
+    /* ── Star rating ──────────────────────────────────── */
     .star-row {
       display: flex;
-      gap: 4px;
+      gap: 6px;
       direction: ltr;
-      margin-bottom: 6px;
+      padding: 10px 0 4px;
     }
+    .star-row.is-error .star-btn:not(.lit) { color: #fca5a5; }
     .star-btn {
-      font-size: 38px;
+      font-size: 42px;
       line-height: 1;
       cursor: pointer;
-      color: #cbd5e1;
+      color: #e2e8f0;
       background: none;
       border: none;
-      padding: 2px;
-      transition: color .12s, transform .1s;
+      padding: 2px 3px;
+      transition: color .12s, transform .15s;
       font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
     }
-    .star-btn:hover    { transform: scale(1.2); }
-    .star-btn.lit      { color: var(--gold); }
-    .star-btn.lit:hover { color: #d97706; }
+    .star-btn:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+    .star-btn:hover   { transform: scale(1.2); }
+    .star-btn.hover   { color: #fbbf24; }
+    .star-btn.lit     { color: var(--gold); }
 
-    .star-hint-row {
+    .star-meta {
       display: flex;
       align-items: center;
       justify-content: space-between;
       direction: rtl;
       margin-top: 4px;
+      padding: 0 2px;
     }
-    .star-hint-row .hint-edge {
+    .star-edge {
       font-size: 11px;
       color: var(--text-muted);
+      font-weight: 600;
     }
-    .star-hint-row .hint-sel {
-      font-size: 13px;
+    .star-sel-label {
+      font-size: 14px;
       font-weight: 800;
-      color: var(--gold);
-      min-height: 18px;
+      color: var(--gold-dark);
+      min-height: 20px;
     }
+    .star-err-msg {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--red);
+      display: none;
+      align-items: center;
+      gap: 4px;
+      margin-top: 4px;
+    }
+    .star-err-msg.on { display: flex; }
 
-    /* ── Books grid ──────────────────────────────────── */
-    .books-filter {
-      position: relative;
-      margin-bottom: 10px;
-    }
-    .books-filter input {
-      width: 100%;
-      padding: 10px 16px 10px 38px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      font-size: 13px;
-      font-family: var(--font);
-      color: var(--text);
-      transition: border-color .18s;
-    }
-    .books-filter input:focus {
-      outline: none;
-      border-color: var(--primary);
-    }
-    .books-filter-icon {
-      position: absolute;
-      left: 13px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 15px;
-      pointer-events: none;
-    }
-
-    .books-scroll {
-      max-height: 230px;
-      overflow-y: auto;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      padding: 8px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 6px;
-      scrollbar-width: thin;
-      scrollbar-color: var(--border) transparent;
-    }
-    .books-scroll::-webkit-scrollbar { width: 5px; }
-    .books-scroll::-webkit-scrollbar-track { background: transparent; }
-    .books-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
-
-    .book-label {
+    /* ── Privacy note ───────────────────────────────── */
+    .privacy-note {
       display: flex;
       align-items: flex-start;
-      gap: 8px;
-      padding: 9px 11px;
-      border: 1.5px solid var(--border);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: border-color .15s, background .15s;
-      user-select: none;
+      gap: 10px;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 20px;
     }
-    .book-label:hover {
-      border-color: #93c5fd;
-      background: #f0f9ff;
-    }
-    .book-label.selected {
-      border-color: var(--primary);
-      background: var(--primary-bg);
-    }
-    .book-label input {
-      width: 16px;
-      height: 16px;
-      margin-top: 1px;
-      flex-shrink: 0;
-      accent-color: var(--primary);
-      cursor: pointer;
-    }
-    .book-label span {
+    .privacy-note-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
+    .privacy-note-text {
       font-size: 12px;
-      font-weight: 600;
-      color: var(--text);
-      line-height: 1.4;
+      color: var(--text-light);
+      line-height: 1.6;
     }
+    .privacy-note-text strong { color: var(--text); }
 
-    .books-empty {
-      display: none;
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 20px;
-      color: var(--text-muted);
-      font-size: 13px;
-    }
-
-    /* ── Submit ─────────────────────────────────────── */
-    .submit-wrap { margin-top: 28px; }
-
+    /* ── Submit button ──────────────────────────────── */
     .submit-btn {
       width: 100%;
-      padding: 16px 24px;
-      background: var(--primary);
+      padding: 17px 24px;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
       color: var(--white);
       border: none;
       border-radius: var(--radius-lg);
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 900;
       font-family: var(--font);
       cursor: pointer;
-      transition: background .2s, transform .1s, box-shadow .2s;
+      transition: opacity .2s, transform .1s, box-shadow .2s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 4px 14px rgba(29,78,216,.3);
+      box-shadow: 0 4px 18px rgba(29,78,216,.35);
     }
     .submit-btn:hover:not(:disabled) {
-      background: var(--primary-h);
-      box-shadow: 0 6px 20px rgba(29,78,216,.4);
+      opacity: .92;
+      box-shadow: 0 6px 24px rgba(29,78,216,.45);
       transform: translateY(-1px);
     }
     .submit-btn:active:not(:disabled) { transform: translateY(0); }
     .submit-btn:disabled {
-      background: var(--text-muted);
+      background: #94a3b8;
       cursor: not-allowed;
       box-shadow: none;
       transform: none;
@@ -472,81 +457,104 @@
 
     .form-msg {
       margin-top: 14px;
-      padding: 13px 18px;
+      padding: 14px 18px;
       border-radius: var(--radius);
       font-size: 14px;
       font-weight: 700;
       display: none;
+      align-items: flex-start;
+      gap: 10px;
       line-height: 1.6;
     }
-    .form-msg.err  { background: var(--red-bg);   color: var(--red);   display: block; }
-    .form-msg.ok   { background: var(--green-bg);  color: var(--green); display: block; }
+    .form-msg.err {
+      background: var(--red-bg);
+      color: var(--red);
+      border: 1px solid var(--red-border);
+      display: flex;
+    }
+    .form-msg.ok {
+      background: var(--green-bg);
+      color: var(--green);
+      border: 1px solid var(--green-border);
+      display: flex;
+    }
+    .form-msg-icon { font-size: 18px; flex-shrink: 0; }
 
     /* ═══════════════════════════════════════════════════════
        SUCCESS SCREEN
     ═══════════════════════════════════════════════════════ */
     .success-screen {
       display: none;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 60px 32px 52px;
       text-align: center;
-      padding: 56px 24px 40px;
-      animation: fadeIn .35s ease;
+      box-shadow: var(--shadow-md);
+      animation: fadeInUp .4s ease;
     }
     .success-screen.show { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
-
-    .success-icon {
-      font-size: 80px;
-      line-height: 1;
-      margin-bottom: 24px;
-      display: block;
-      animation: pop .4s cubic-bezier(.175,.885,.32,1.275);
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
     }
-    @keyframes pop {
-      0%   { transform: scale(0);   opacity: 0; }
-      70%  { transform: scale(1.1); opacity: 1; }
-      100% { transform: scale(1); }
+    .success-icon-wrap {
+      width: 90px; height: 90px;
+      background: var(--green-bg);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+      font-size: 44px;
+      animation: popIn .45s cubic-bezier(.175,.885,.32,1.275) both;
+    }
+    @keyframes popIn {
+      0%  { transform: scale(.3); opacity: 0; }
+      70% { transform: scale(1.1); opacity: 1; }
+      100%{ transform: scale(1); }
     }
     .success-screen h2 {
       font-size: clamp(22px, 5vw, 28px);
       font-weight: 900;
-      color: var(--green);
-      margin-bottom: 14px;
+      color: var(--text);
+      margin-bottom: 12px;
     }
-    .success-screen p {
+    .success-sub {
       font-size: 15px;
       color: var(--text-light);
-      line-height: 1.8;
-      max-width: 420px;
-      margin: 0 auto 32px;
+      line-height: 1.85;
+      max-width: 380px;
+      margin: 0 auto 28px;
     }
-    .success-screen p strong { color: var(--text); }
     .btn-home {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 14px 36px;
-      background: var(--primary);
+      padding: 14px 40px;
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
       color: var(--white);
       border-radius: var(--radius-lg);
       font-size: 15px;
       font-weight: 800;
       font-family: var(--font);
       text-decoration: none;
-      transition: background .2s;
-      box-shadow: 0 4px 14px rgba(29,78,216,.28);
+      transition: opacity .2s;
+      box-shadow: 0 4px 16px rgba(29,78,216,.3);
     }
-    .btn-home:hover { background: var(--primary-h); }
+    .btn-home:hover { opacity: .88; }
 
     /* ═══════════════════════════════════════════════════════
        FOOTER
     ═══════════════════════════════════════════════════════ */
     .rv-footer {
       text-align: center;
-      padding: 22px 16px;
+      padding: 24px 16px;
       border-top: 1px solid var(--border);
-      font-size: 12px;
+      font-size: 12.5px;
       color: var(--text-muted);
       margin-top: auto;
+      background: var(--white);
     }
     .rv-footer a { color: var(--text-muted); text-decoration: none; }
     .rv-footer a:hover { color: var(--primary); }
@@ -554,16 +562,24 @@
     /* ═══════════════════════════════════════════════════════
        RESPONSIVE
     ═══════════════════════════════════════════════════════ */
-    @media (max-width: 560px) {
-      .rv-card            { padding: 24px 18px; }
-      .field-row          { grid-template-columns: 1fr; }
-      .books-scroll       { grid-template-columns: 1fr; max-height: 190px; }
-      .star-btn           { font-size: 34px; }
-      .rv-hero            { padding: 36px 16px 30px; }
-      .rv-back-link span  { display: none; }
+    @media (max-width: 600px) {
+      .rv-card      { padding: 28px 20px; }
+      .field-row    { grid-template-columns: 1fr; }
+      .star-btn     { font-size: 38px; }
+      .rv-hero      { padding: 40px 16px 36px; }
+      .back-label   { display: none; }
+      .rv-main      { padding: 24px 12px 64px; }
     }
-    @media (max-width: 380px) {
-      .star-btn { font-size: 30px; gap: 2px; }
+    @media (max-width: 420px) {
+      .rv-card      { padding: 22px 16px; }
+      .star-btn     { font-size: 34px; padding: 1px 2px; }
+      .rv-hero h1   { font-size: 20px; }
+      .rv-hero p    { font-size: 13.5px; }
+      .submit-btn   { font-size: 15px; padding: 15px 20px; }
+    }
+    @media (max-width: 360px) {
+      .rv-card    { padding: 18px 14px; }
+      .star-btn   { font-size: 30px; }
     }
   </style>
 </head>
@@ -571,167 +587,155 @@
 
 <!-- ═══════════ HEADER ═══════════ -->
 <header class="rv-header">
-  <a href="/" class="rv-logo">Derradj <span>Shop</span></a>
+  <a href="/" class="rv-logo">
+    Derradj&nbsp;<span>Shop</span>
+    <span class="rv-logo-dot"></span>
+  </a>
   <a href="/" class="rv-back-link">
     <span>←</span>
-    <span>العودة إلى المتجر</span>
+    <span class="back-label">العودة إلى المتجر</span>
   </a>
 </header>
 
 <!-- ═══════════ HERO ═══════════ -->
 <div class="rv-hero">
-  <div class="rv-hero-icon">⭐</div>
-  <h1>شاركنا رأيك في تجربتك</h1>
-  <p>رأيك يساعدنا على تحسين الخدمة ويساعد القراء الآخرين على اختيار كتبهم بثقة.</p>
-  <div class="rv-hero-badges">
-    <span class="rv-badge">🔒 بياناتك آمنة</span>
-    <span class="rv-badge">👁 يظهر رأيك بعد المراجعة</span>
-    <span class="rv-badge">⏱ يستغرق دقيقتين فقط</span>
+  <div class="rv-hero-inner">
+    <div class="rv-hero-stars">
+      <span class="rv-hero-star">⭐</span>
+      <span class="rv-hero-star">⭐</span>
+      <span class="rv-hero-star">⭐</span>
+      <span class="rv-hero-star">⭐</span>
+      <span class="rv-hero-star">⭐</span>
+    </div>
+    <h1>شاركنا رأيك في تجربتك</h1>
+    <p>رأيك يساعدنا على تحسين الخدمة ويساعد القراء الآخرين على اختيار كتبهم بثقة.</p>
+    <div class="rv-hero-badges">
+      <span class="rv-badge">🔒 بياناتك آمنة</span>
+      <span class="rv-badge">👁 يظهر رأيك بعد المراجعة</span>
+      <span class="rv-badge">⏱ دقيقتان فقط</span>
+    </div>
   </div>
 </div>
 
 <!-- ═══════════ MAIN ═══════════ -->
 <main class="rv-main">
 
-  <!-- Order info (shown when ?order_id= in URL) -->
-  <div class="order-info-box" id="orderBox">
-    <div class="oi-icon">📦</div>
-    <div class="oi-body">
-      <div class="oi-title" id="orderTitle">طلبك المرتبط بهذا التقييم</div>
-      <div class="oi-sub"  id="orderSub">سيتم ربط تقييمك بطلبك تلقائياً</div>
-    </div>
-    <span class="oi-badge">✅ شراء موثق</span>
-  </div>
-
   <!-- Form card -->
   <div class="rv-card" id="formCard">
     <form id="reviewForm" novalidate autocomplete="off">
 
-      <!-- ══ SECTION 1: معلوماتك ══════════════════════════ -->
+      <!-- ══ SECTION 1: الاسم ══════════════════════════════ -->
       <div class="form-section">
-        <div class="section-title">👤 معلوماتك</div>
-
-        <div class="field-row">
-          <div class="field">
-            <label for="fName">الاسم الأول <span class="req">*</span></label>
-            <input type="text" id="fName" placeholder="مثال: أمين"
-                   autocomplete="given-name" inputmode="text">
-            <span class="field-err" id="e-fName">الاسم الأول مطلوب</span>
-          </div>
-          <div class="field">
-            <label for="lName">اللقب <span class="opt">(اختياري)</span></label>
-            <input type="text" id="lName" placeholder="مثال: بن علي"
-                   autocomplete="family-name">
+        <div class="section-header">
+          <div class="section-icon">👤</div>
+          <div>
+            <div class="section-title">معلوماتك</div>
+            <div class="section-desc">سيظهر اسمك المختصر فقط مع رأيك — مثال: أمين ب.</div>
           </div>
         </div>
 
-        <div class="field-row one-col" style="margin-top:16px;">
+        <div class="field-row">
           <div class="field">
-            <label for="wilaya">الولاية <span class="req">*</span></label>
-            <select id="wilaya">
-              <option value="">— اختر ولايتك —</option>
-            </select>
-            <span class="field-err" id="e-wilaya">يرجى اختيار ولايتك</span>
+            <label for="fName">الاسم <span class="req">*</span></label>
+            <input type="text" id="fName" placeholder="مثال: أمين"
+                   autocomplete="given-name" maxlength="60">
+            <span class="field-err" id="e-fName">⚠ الاسم مطلوب</span>
+          </div>
+          <div class="field">
+            <label for="lName">اللقب <span class="req">*</span></label>
+            <input type="text" id="lName" placeholder="مثال: بوقرة"
+                   autocomplete="family-name" maxlength="60">
+            <span class="field-err" id="e-lName">⚠ اللقب مطلوب</span>
           </div>
         </div>
       </div>
 
-      <!-- ══ SECTION 2: تقييمك ═══════════════════════════ -->
+      <!-- ══ SECTION 2: الكتاب ═════════════════════════════ -->
       <div class="form-section">
-        <div class="section-title">⭐ تقييمك للتجربة</div>
+        <div class="section-header">
+          <div class="section-icon">📚</div>
+          <div>
+            <div class="section-title">الكتاب الذي اشتريته</div>
+            <div class="section-desc">اختر الكتاب من القائمة</div>
+          </div>
+        </div>
 
         <div class="field">
-          <label>كيف تقيّم تجربتك الكاملة؟ <span class="req">*</span></label>
-          <div class="star-row" id="starRow" role="group" aria-label="التقييم من 1 إلى 5 نجوم">
-            <!-- stars injected by JS -->
+          <label for="bookSelect">الكتاب <span class="req">*</span></label>
+          <select id="bookSelect">
+            <option value="">— اختر الكتاب —</option>
+          </select>
+          <span class="field-err" id="e-book">⚠ يرجى اختيار الكتاب الذي اشتريته</span>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 3: التقييم ════════════════════════════ -->
+      <div class="form-section">
+        <div class="section-header">
+          <div class="section-icon">⭐</div>
+          <div>
+            <div class="section-title">تقييمك</div>
+            <div class="section-desc">كيف تقيّم تجربتك الكاملة معنا؟</div>
           </div>
-          <div class="star-hint-row">
-            <span class="hint-edge">★ ضعيف</span>
-            <span class="hint-sel" id="ratingLabel"></span>
-            <span class="hint-edge">ممتاز ★★★★★</span>
-          </div>
-          <span class="field-err" id="e-rating">يرجى اختيار تقييم من 1 إلى 5 نجوم</span>
         </div>
 
-        <div class="field" style="margin-top:18px;">
-          <label for="comment">رأيك في الكتاب أو الخدمة <span class="req">*</span></label>
+        <!-- Stars -->
+        <div class="field">
+          <label>التقييم بالنجوم <span class="req">*</span></label>
+          <div class="star-row" id="starRow"
+               role="group" aria-label="التقييم من 1 إلى 5 نجوم">
+            <!-- injected by JS -->
+          </div>
+          <div class="star-meta">
+            <span class="star-edge">ضعيف ★</span>
+            <span class="star-sel-label" id="ratingLabel" aria-live="polite"></span>
+            <span class="star-edge">★★★★★ ممتاز</span>
+          </div>
+          <span class="star-err-msg" id="e-rating">⚠ يرجى اختيار تقييم من 1 إلى 5 نجوم</span>
+        </div>
+
+        <!-- Comment -->
+        <div class="field">
+          <label for="comment">تعليقك <span class="req">*</span></label>
           <textarea id="comment" rows="4"
-            placeholder="أخبرنا عن تجربتك... كيف كانت سرعة التوصيل؟ هل أعجبك الكتاب؟ هل ستطلب مرة أخرى؟ كل كلمة مفيدة لنا ولقرّاء آخرين 🙏"></textarea>
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-top:5px;">
-            <span class="field-err" id="e-comment" style="display:none;">
-              التعليق مطلوب ولا يقل عن 10 أحرف
-            </span>
-            <span class="char-count" id="charCount" style="margin-right:auto;">0 حرف</span>
+            placeholder="شاركنا رأيك... هل أعجبك الكتاب؟ كيف كانت سرعة التوصيل؟ كلماتك تساعد قرّاء آخرين 🙏"
+            maxlength="1500"></textarea>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
+            <span class="field-err" id="e-comment">⚠ التعليق مطلوب ولا يقل عن 3 أحرف</span>
+            <span class="char-count" id="charCount" style="margin-right:auto;">0 / 1500</span>
           </div>
         </div>
       </div>
 
-      <!-- ══ SECTION 3: الكتب المشتراة ═══════════════════ -->
-      <div class="form-section">
-        <div class="section-title">
-          📚 الكتب أو المنتجات التي اشتريتها
-          <span style="font-size:10px;font-weight:600;color:var(--text-muted);margin-right:4px;">(اختياري)</span>
-        </div>
-
-        <div class="books-filter">
-          <span class="books-filter-icon">🔍</span>
-          <input type="text" id="booksSearch"
-                 placeholder="ابحث عن اسم الكتاب للتصفية السريعة...">
-        </div>
-
-        <div class="books-scroll" id="booksScroll">
-          <!-- injected by JS -->
-          <div class="books-empty" id="booksEmpty">لا توجد نتائج</div>
-        </div>
-
-        <div class="field" style="margin-top:12px;">
-          <label for="otherBook">كتاب آخر غير موجود في القائمة <span class="opt">(اختياري)</span></label>
-          <input type="text" id="otherBook"
-            placeholder="مثال: اسم الكتاب، اسم كتاب آخر (افصل بفاصلة)">
-        </div>
+      <!-- ══ PRIVACY + SUBMIT ════════════════════════════════ -->
+      <div class="privacy-note">
+        <span class="privacy-note-icon">🔒</span>
+        <span class="privacy-note-text">
+          <strong>خصوصيتك مهمة:</strong>
+          يظهر اسمك المختصر وتقييمك وتعليقك فقط للعموم.
+          رأيك لن يُنشر قبل مراجعته من فريقنا.
+        </span>
       </div>
 
-      <!-- ══ SECTION 4: تفاصيل الطلب ══════════════════════ -->
-      <div class="form-section">
-        <div class="section-title">
-          💰 تفاصيل الطلب
-          <span style="font-size:10px;font-weight:600;color:var(--text-muted);margin-right:4px;">(اختياري)</span>
-        </div>
+      <button type="submit" class="submit-btn" id="submitBtn">
+        <div class="spin" id="spin"></div>
+        <span id="submitTxt">إرسال التقييم ✦</span>
+      </button>
 
-        <div class="field-row">
-          <div class="field">
-            <label for="pkgName">اسم الباقة</label>
-            <input type="text" id="pkgName"
-              placeholder="مثال: باقة تطوير الذات">
-          </div>
-          <div class="field">
-            <label for="totalPrice">المبلغ الإجمالي (دج)</label>
-            <input type="number" id="totalPrice"
-              placeholder="مثال: 1750" min="0" max="999999" inputmode="numeric">
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ SUBMIT ════════════════════════════════════════ -->
-      <div class="submit-wrap">
-        <button type="submit" class="submit-btn" id="submitBtn">
-          <div class="spin" id="spin"></div>
-          <span id="submitTxt">إرسال التقييم ✦</span>
-        </button>
-
-        <div class="form-msg" id="formMsg"></div>
+      <div class="form-msg" id="formMsg">
+        <span class="form-msg-icon" id="formMsgIcon"></span>
+        <span id="formMsgText"></span>
       </div>
 
     </form>
   </div><!-- /formCard -->
 
-  <!-- Success screen (hidden until submit succeeds) -->
+  <!-- ══ SUCCESS ═══════════════════════════════════════════ -->
   <div class="success-screen" id="successScreen">
-    <span class="success-icon">🎉</span>
-    <h2>شكرًا جزيلاً لك!</h2>
-    <p>
-      تم إرسال رأيك بنجاح.<br>
-      <strong>سيظهر في قسم "ماذا قال قراؤنا؟"</strong> بعد مراجعته من قِبَل فريقنا.
+    <div class="success-icon-wrap">🎉</div>
+    <h2>شكرًا لك!</h2>
+    <p class="success-sub">
+      تم إرسال رأيك بنجاح وسيظهر بعد المراجعة.
     </p>
     <a href="/" class="btn-home">← العودة إلى المتجر</a>
   </div>
@@ -740,13 +744,14 @@
 
 <!-- ═══════════ FOOTER ═══════════ -->
 <footer class="rv-footer">
-  <a href="/">© 2025 Derradj Shop</a> — جميع الحقوق محفوظة
+  <a href="/">© 2026 Derradj Shop</a> — جميع الحقوق محفوظة
 </footer>
 
 
-<!-- ═══════════════════════════════════════════════════════
-     JAVASCRIPT
-═══════════════════════════════════════════════════════ -->
+<!-- Books catalog -->
+<script src="books-data.js"></script>
+
+<!-- Main script -->
 <script>
 "use strict";
 
@@ -754,64 +759,7 @@
 const SB_URL = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
 
-/* ── Algerian wilayas (58) ──────────────────────────────── */
-const WILAYAS = [
-  "أدرار","الشلف","الأغواط","أم البواقي","باتنة","بجاية",
-  "بسكرة","بشار","البليدة","البويرة","تمنراست","تبسة",
-  "تلمسان","تيارت","تيزي وزو","الجزائر العاصمة","الجلفة","جيجل",
-  "سطيف","سعيدة","سكيكدة","سيدي بلعباس","عنابة","قالمة",
-  "قسنطينة","المدية","مستغانم","المسيلة","معسكر","ورقلة",
-  "وهران","البيض","إليزي","برج بوعريريج","بومرداس","الطارف",
-  "تندوف","تيسمسيلت","الوادي","خنشلة","سوق أهراس","تيبازة",
-  "ميلة","عين الدفلى","النعامة","عين تيموشنت","غرداية","غليزان",
-  "تيميمون","برج باجي مختار","أولاد جلال","بني عباس","عين صالح",
-  "عين قزام","تقرت","جانت","المغير","المنيعة"
-];
-
-/* ── Books available in store ───────────────────────────── */
-const BOOKS = [
-  // تطوير الذات
-  "العادات الذرية",
-  "العادات السبع للناس الأكثر فعالية",
-  "قوة الآن",
-  "قوة العادة",
-  "فن الإتقان",
-  "أيقظ قوتك الداخلية",
-  "كبّر دماغك",
-  "قوانين النجاح المستدام",
-  "أقوى من مشاعرك",
-  "اكتب وأحرق",
-  // علم النفس
-  "الذكاء العاطفي",
-  "علم نفس المال",
-  "التفكير السريع والبطيء",
-  "تأثير — سيكولوجية الإقناع",
-  "السعادة والاكتئاب",
-  // الفلسفة والفكر
-  "الإنسان يبحث عن معنى",
-  "الأمير",
-  "اقرأ",
-  "قواعد العقل",
-  "لا تحزن",
-  "عين الأنا",
-  "الوحش فيك قادر على الطيبة",
-  // الإدارة والمال
-  "مبادئ",
-  "ما تتمناه وول ستريت",
-  // العلاقات والحياة
-  "كيف تكسب الأصدقاء وتؤثر في الناس",
-  "تصرف كسيدة وفكر كرجل",
-  "كيف لا تموت وحيداً",
-  "التحدث مع الغرباء",
-  // الروايات والأدب
-  "بروباغندا",
-  "أريد أن أنام",
-  "الشمس تشرق دائماً",
-  // العلوم والمعرفة
-  "هل ستأكل قطتي عيني؟",
-];
-
-/* ── Rating labels ──────────────────────────────────────── */
+/* ── Star labels ────────────────────────────────────────── */
 const STAR_LABELS = {
   1: "ضعيف 😕",
   2: "متوسط 🙂",
@@ -822,34 +770,60 @@ const STAR_LABELS = {
 
 /* ── App state ──────────────────────────────────────────── */
 let selectedRating = 0;
-let urlOrderId     = null;
-let isVerified     = false;
 
 /* ═════════════════════════════════════════════════════════
    BOOT
 ═════════════════════════════════════════════════════════ */
 (function boot() {
-  fillWilayas();
+  fillBookSelect();
   buildStars();
-  buildBooks();
-  readUrlParams();
   bindEvents();
 })();
 
-/* ── Fill wilaya dropdown ───────────────────────────────── */
-function fillWilayas() {
-  const sel = document.getElementById("wilaya");
-  WILAYAS.forEach(w => {
-    const o = document.createElement("option");
-    o.value = o.textContent = w;
-    sel.appendChild(o);
+/* ── Fill book <select> from catalog ───────────────────── */
+function fillBookSelect() {
+  const sel = document.getElementById("bookSelect");
+
+  /* Use window.BOOKS_DATA if available, else minimal fallback */
+  const books = (window.BOOKS_DATA && Array.isArray(window.BOOKS_DATA))
+    ? window.BOOKS_DATA
+    : [
+        { title: "العادات الذرية",                    category: "تطوير الذات",        price: 950  },
+        { title: "العادات السبع للناس الأكثر فعالية", category: "تطوير الذات",        price: 1400 },
+        { title: "سيكولوجية المال",                   category: "الإدارة والأعمال",   price: 1600 },
+        { title: "الذكاء العاطفي",                    category: "علم النفس والمجتمع", price: 1600 },
+        { title: "فن اللامبالاة",                     category: "تطوير الذات",        price: 900  },
+        { title: "قوة الآن",                          category: "الفلسفة والفكر",     price: 1100 },
+        { title: "بروباغندا",                         category: "علم النفس والمجتمع", price: 1100 },
+      ];
+
+  /* Group by category */
+  const byCategory = {};
+  books.forEach(b => {
+    const cat = b.category || "أخرى";
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(b);
   });
+
+  /* Build <optgroup> per category */
+  for (const [cat, items] of Object.entries(byCategory)) {
+    const grp = document.createElement("optgroup");
+    grp.label = cat;
+    items.forEach(b => {
+      const opt = document.createElement("option");
+      opt.value = b.title;
+      opt.textContent = b.price && b.price > 0
+        ? b.title + " — " + b.price.toLocaleString("ar-DZ") + " دج"
+        : b.title;
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  }
 }
 
 /* ── Build star buttons ─────────────────────────────────── */
 function buildStars() {
   const row = document.getElementById("starRow");
-  row.innerHTML = "";
   for (let i = 1; i <= 5; i++) {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -862,218 +836,151 @@ function buildStars() {
   }
 }
 
-/* ── Build books grid ───────────────────────────────────── */
-function buildBooks(filter) {
-  const container = document.getElementById("booksScroll");
-  const emptyEl   = document.getElementById("booksEmpty");
-  const q = (filter || "").trim().toLowerCase();
-
-  // Keep existing selections
-  const alreadyChecked = new Set(
-    Array.from(container.querySelectorAll("input:checked")).map(cb => cb.value)
-  );
-
-  const filtered = q
-    ? BOOKS.filter(b => b.toLowerCase().includes(q))
-    : BOOKS;
-
-  // Remove old items (not the empty message)
-  container.querySelectorAll(".book-label").forEach(el => el.remove());
-
-  if (!filtered.length) {
-    emptyEl.style.display = "block";
-    return;
-  }
-  emptyEl.style.display = "none";
-
-  filtered.forEach((title, i) => {
-    const uid  = "bk-" + title.replace(/\s+/g, "-");
-    const lbl  = document.createElement("label");
-    const isSelected = alreadyChecked.has(title);
-    lbl.className = "book-label" + (isSelected ? " selected" : "");
-    lbl.htmlFor = uid;
-    lbl.innerHTML =
-      `<input type="checkbox" id="${uid}" value="${esc(title)}"${isSelected ? " checked" : ""}>` +
-      `<span>${esc(title)}</span>`;
-    container.insertBefore(lbl, emptyEl);
-  });
-}
-
-/* ── Read ?order_id from URL ────────────────────────────── */
-function readUrlParams() {
-  const p   = new URLSearchParams(window.location.search);
-  const oid = p.get("order_id") || p.get("orderid") || p.get("order") || p.get("id");
-
-  if (oid && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(oid)) {
-    urlOrderId = oid;
-    isVerified = true;
-
-    const box = document.getElementById("orderBox");
-    box.classList.add("visible");
-    document.getElementById("orderTitle").textContent =
-      "طلبك رقم: " + oid.slice(0, 8).toUpperCase() + "...";
-    document.getElementById("orderSub").textContent =
-      "سيتم ربط تقييمك بطلبك تلقائياً وسيُعلَّم كـ \"شراء موثق\".";
-  }
-}
-
-/* ── Bind all events ────────────────────────────────────── */
+/* ── Bind events ────────────────────────────────────────── */
 function bindEvents() {
-
-  /* Stars: hover + click */
   const starRow = document.getElementById("starRow");
+
+  /* Stars hover */
   starRow.addEventListener("mouseover", e => {
     const btn = e.target.closest(".star-btn");
-    if (btn) lightStars(parseInt(btn.dataset.v), true);
+    if (!btn) return;
+    const v = +btn.dataset.v;
+    document.querySelectorAll(".star-btn").forEach((b, i) => {
+      b.classList.toggle("hover", i < v);
+      b.classList.remove("lit");
+    });
+    document.getElementById("ratingLabel").textContent = STAR_LABELS[v] || "";
   });
-  starRow.addEventListener("mouseleave", () => lightStars(selectedRating));
+
+  starRow.addEventListener("mouseleave", () => {
+    document.querySelectorAll(".star-btn").forEach(b => b.classList.remove("hover"));
+    lightStars(selectedRating);
+    document.getElementById("ratingLabel").textContent =
+      selectedRating ? STAR_LABELS[selectedRating] : "";
+  });
+
+  /* Stars click */
   starRow.addEventListener("click", e => {
     const btn = e.target.closest(".star-btn");
     if (!btn) return;
-    selectedRating = parseInt(btn.dataset.v);
+    selectedRating = +btn.dataset.v;
     lightStars(selectedRating);
-    document.getElementById("ratingLabel").textContent = STAR_LABELS[selectedRating] || "";
+    document.getElementById("ratingLabel").textContent = STAR_LABELS[selectedRating];
     clearErr("rating");
   });
 
-  /* Comment: char counter */
-  document.getElementById("comment").addEventListener("input", function () {
-    const len = this.value.trim().length;
-    const el  = document.getElementById("charCount");
-    el.textContent = len + " حرف";
-    el.className = len === 0 ? "char-count"
-                 : len < 10 ? "char-count warn"
-                 : "char-count ok";
-    if (len >= 10) {
-      clearErr("comment");
-      document.getElementById("e-comment").style.display = "none";
+  /* Stars keyboard */
+  starRow.addEventListener("keydown", e => {
+    const btn = e.target.closest(".star-btn");
+    if (!btn) return;
+    const cur = +btn.dataset.v;
+    if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   { e.preventDefault(); focusStar(Math.min(5, cur + 1)); }
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); focusStar(Math.max(1, cur - 1)); }
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      selectedRating = cur;
+      lightStars(selectedRating);
+      document.getElementById("ratingLabel").textContent = STAR_LABELS[selectedRating];
+      clearErr("rating");
     }
   });
 
-  /* Books search */
-  document.getElementById("booksSearch").addEventListener("input", function () {
-    buildBooks(this.value);
+  /* Comment char counter */
+  document.getElementById("comment").addEventListener("input", function () {
+    const len = this.value.trim().length;
+    const el  = document.getElementById("charCount");
+    el.textContent = len + " / 1500";
+    el.className = len === 0 ? "char-count"
+                 : len < 3  ? "char-count warn"
+                 : "char-count ok";
+    if (len >= 3) clearErr("comment");
   });
 
-  /* Book checkbox toggle style */
-  document.getElementById("booksScroll").addEventListener("change", e => {
-    const cb = e.target.closest("input[type=checkbox]");
-    if (cb) cb.closest(".book-label").classList.toggle("selected", cb.checked);
-  });
-
-  /* Inline clear on input */
-  document.getElementById("fName").addEventListener("input", () => clearErr("fName"));
-  document.getElementById("wilaya").addEventListener("change", () => clearErr("wilaya"));
+  /* Inline clear errors */
+  document.getElementById("fName").addEventListener("input",    () => clearErr("fName"));
+  document.getElementById("lName").addEventListener("input",    () => clearErr("lName"));
+  document.getElementById("bookSelect").addEventListener("change", () => clearErr("book"));
 
   /* Submit */
   document.getElementById("reviewForm").addEventListener("submit", onSubmit);
 }
 
 /* ── Light stars up to n ────────────────────────────────── */
-function lightStars(n, isHover) {
+function lightStars(n) {
   document.querySelectorAll(".star-btn").forEach((btn, i) => {
     btn.classList.toggle("lit", i < n);
+    btn.classList.remove("hover");
   });
-  if (isHover && n) {
-    document.getElementById("ratingLabel").textContent = STAR_LABELS[n] || "";
-  } else if (!isHover && !n) {
-    document.getElementById("ratingLabel").textContent = "";
-  }
 }
 
-/* ── Build purchased_items array ────────────────────────── */
-function buildPurchasedItems() {
-  const items = [];
-
-  /* From checkboxes */
-  document.querySelectorAll("#booksScroll input:checked").forEach(cb => {
-    items.push({ name: cb.value, quantity: 1 });
-  });
-
-  /* From free-text "other" field */
-  const other = document.getElementById("otherBook").value.trim();
-  if (other) {
-    other.split(/[,،\n]+/).forEach(t => {
-      const name = t.trim();
-      if (name) items.push({ name, quantity: 1 });
-    });
-  }
-
-  return items;
+function focusStar(n) {
+  document.querySelector(`.star-btn[data-v="${n}"]`)?.focus();
 }
 
-/* ── Validate form ──────────────────────────────────────── */
+/* ── Validate ───────────────────────────────────────────── */
 function validate() {
   let ok = true;
 
-  if (!document.getElementById("fName").value.trim()) {
-    showErr("fName"); ok = false;
-  }
-  if (!document.getElementById("wilaya").value) {
-    showErr("wilaya"); ok = false;
-  }
-  if (!selectedRating) {
-    showErr("rating"); ok = false;
-  }
-  const commentLen = document.getElementById("comment").value.trim().length;
-  if (commentLen < 10) {
-    showErr("comment");
-    document.getElementById("e-comment").style.display = "block";
-    ok = false;
-  }
+  if (!document.getElementById("fName").value.trim())
+    { showErr("fName"); ok = false; }
+
+  if (!document.getElementById("lName").value.trim())
+    { showErr("lName"); ok = false; }
+
+  if (!document.getElementById("bookSelect").value)
+    { showErr("book"); ok = false; }
+
+  if (!selectedRating)
+    { showErr("rating"); ok = false; }
+
+  if (document.getElementById("comment").value.trim().length < 3)
+    { showErr("comment"); ok = false; }
 
   return ok;
 }
 
-/* ── Submit handler ─────────────────────────────────────── */
+/* ── Submit ─────────────────────────────────────────────── */
 async function onSubmit(e) {
   e.preventDefault();
   hideMsg();
 
   if (!validate()) {
-    /* Scroll to first visible error */
-    const firstErr = document.querySelector(".field-err.on, .field-err[style*='block']");
-    if (firstErr) {
-      firstErr.closest(".field, .form-section")
-        ?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
+    /* Scroll to first error */
+    const first = document.querySelector(".field-err.on, .star-err-msg.on");
+    if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
 
   setLoading(true);
 
-  const firstName = document.getElementById("fName").value.trim();
-  const lastName  = document.getElementById("lName").value.trim();
-  const wilaya    = document.getElementById("wilaya").value;
-  const comment   = document.getElementById("comment").value.trim();
-  const pkgName   = document.getElementById("pkgName").value.trim();
-  const rawPrice  = document.getElementById("totalPrice").value.trim();
+  const firstName   = document.getElementById("fName").value.trim().slice(0, 60);
+  const lastName    = document.getElementById("lName").value.trim().slice(0, 60);
+  const selectedBook= document.getElementById("bookSelect").value;
+  const comment     = document.getElementById("comment").value.trim().slice(0, 1500);
 
-  /* Build public display_name: "أمين ب." or just "أمين" */
-  const displayName = lastName
-    ? firstName + " " + lastName.charAt(0) + "."
-    : firstName;
+  /* display_name: "أمين ب." */
+  const displayName = firstName + " " + lastName.charAt(0) + ".";
 
   const payload = {
     first_name:           firstName,
-    last_name:            lastName || firstName,   /* fallback satisfies NOT NULL */
+    last_name:            lastName,
     display_name:         displayName,
-    wilaya,
+    wilaya:               "غير محدد",   /* hidden field — default value */
     rating:               selectedRating,
     comment,
-    purchased_items:      buildPurchasedItems(),
-    package_name:         pkgName   || null,
-    total_price:          rawPrice  ? parseFloat(rawPrice) : null,
-    order_id:             urlOrderId || null,
-    is_verified_purchase: isVerified,
-    is_approved:          false,      /* always false — admin must approve */
+    purchased_items:      [{ name: selectedBook, quantity: 1 }],
+    package_name:         null,
+    total_price:          null,
+    order_id:             null,
+    is_verified_purchase: false,
+    is_approved:          false,
     is_featured:          false,
     source:               "website",
   };
 
   try {
     const res = await fetch(SB_URL + "/rest/v1/customer_reviews", {
-      method:  "POST",
+      method: "POST",
       headers: {
         "Content-Type":  "application/json",
         "apikey":        SB_KEY,
@@ -1089,17 +996,14 @@ async function onSubmit(e) {
       throw new Error("HTTP " + res.status);
     }
 
-    /* Success */
-    document.getElementById("formCard").style.display    = "none";
+    /* ✅ Success */
+    document.getElementById("formCard").style.display = "none";
     document.getElementById("successScreen").classList.add("show");
     window.scrollTo({ top: 0, behavior: "smooth" });
 
   } catch (err) {
     console.error("[review] submit error:", err);
-    showMsg(
-      "حدث خطأ أثناء إرسال رأيك، يرجى المحاولة مرة أخرى. إذا استمرت المشكلة تواصل معنا.",
-      "err"
-    );
+    showMsg("حدث خطأ أثناء إرسال رأيك، يرجى المحاولة مرة أخرى.", "err");
   } finally {
     setLoading(false);
   }
@@ -1107,49 +1011,65 @@ async function onSubmit(e) {
 
 /* ── UI helpers ─────────────────────────────────────────── */
 function setLoading(on) {
-  const btn  = document.getElementById("submitBtn");
-  const spin = document.getElementById("spin");
-  const txt  = document.getElementById("submitTxt");
-  btn.disabled      = on;
-  spin.style.display = on ? "block" : "none";
-  txt.textContent   = on ? "جاري الإرسال..." : "إرسال التقييم ✦";
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = on;
+  document.getElementById("spin").style.display    = on ? "inline-block" : "none";
+  document.getElementById("submitTxt").textContent = on ? "جاري الإرسال..." : "إرسال التقييم ✦";
 }
 
 function showMsg(text, type) {
   const el = document.getElementById("formMsg");
-  el.className   = "form-msg " + type;
-  el.textContent = (type === "err" ? "❌ " : "✅ ") + text;
+  el.className = "form-msg " + type;
+  document.getElementById("formMsgIcon").textContent = type === "err" ? "❌" : "✅";
+  document.getElementById("formMsgText").textContent = text;
   el.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function hideMsg() {
   const el = document.getElementById("formMsg");
   el.className = "form-msg";
-  el.textContent = "";
+  document.getElementById("formMsgIcon").textContent = "";
+  document.getElementById("formMsgText").textContent = "";
 }
 
 function showErr(field) {
+  if (field === "rating") {
+    document.getElementById("e-rating")?.classList.add("on");
+    document.getElementById("starRow")?.classList.add("is-error");
+    return;
+  }
+  if (field === "comment") {
+    document.getElementById("e-comment")?.classList.add("on");
+    document.getElementById("comment")?.classList.add("is-error");
+    return;
+  }
+  if (field === "book") {
+    document.getElementById("e-book")?.classList.add("on");
+    document.getElementById("bookSelect")?.classList.add("is-error");
+    return;
+  }
   document.getElementById("e-" + field)?.classList.add("on");
-  const input = document.getElementById(
-    field === "rating" ? "starRow" : field
-  );
-  input?.classList.add("is-error");
+  document.getElementById(field)?.classList.add("is-error");
 }
 
 function clearErr(field) {
+  if (field === "rating") {
+    document.getElementById("e-rating")?.classList.remove("on");
+    document.getElementById("starRow")?.classList.remove("is-error");
+    return;
+  }
+  if (field === "comment") {
+    document.getElementById("e-comment")?.classList.remove("on");
+    document.getElementById("comment")?.classList.remove("is-error");
+    return;
+  }
+  if (field === "book") {
+    document.getElementById("e-book")?.classList.remove("on");
+    document.getElementById("bookSelect")?.classList.remove("is-error");
+    return;
+  }
   document.getElementById("e-" + field)?.classList.remove("on");
-  const input = document.getElementById(
-    field === "rating" ? "starRow" : field
-  );
-  input?.classList.remove("is-error");
-}
-
-function esc(s) {
-  return String(s)
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;");
+  document.getElementById(field)?.classList.remove("is-error");
 }
 </script>
 
