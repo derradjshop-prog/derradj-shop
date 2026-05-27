@@ -80,6 +80,33 @@
     { catalogId: 54, name: 'احرق بعد الكتابة',                                            shortName: 'احرق بعد الكتابة',                          price:  950, available: true, image: BASE + '/books/burn-after-writing/main.png' },
     { catalogId: 55, name: 'عين الأنا: الذي لا يُخفى عنه شيء',                           shortName: 'عين الأنا',                                  price: 1300, available: true, image: BASE + '/books/the-eye-of-the-i/main.png' },
     { catalogId: 56, name: 'وأشرقت الشمس من جديد',                                        shortName: 'وأشرقت الشمس من جديد',                      price: 1300, available: true, image: BASE + '/books/the-sun-does-shine/main.png' },
+    /* ── كتب جديدة (IDs 57–82) ── */
+    { catalogId: 57, name: 'كتاب المليونير',                                               shortName: 'كتاب المليونير',                             price: 1200, available: true, image: BASE + '/books/kitab-al-millionaire/main.png' },
+    { catalogId: 58, name: 'السنارة: كل شيء عن ريادة الأعمال الابتكارية',                 shortName: 'السنارة',                                    price: 1300, available: true, image: BASE + '/books/al-sannara/main.png' },
+    { catalogId: 59, name: 'تجاوز مستويات الوعي: الطريق إلى التنوير',                     shortName: 'تجاوز مستويات الوعي',                        price: 1300, available: true, image: BASE + '/books/tajawoz-mostawayat-al-waai/main.png' },
+    { catalogId: 60, name: 'هذا الكتاب سيؤلمك: يوميات سرية لطبيب مبتدئ',                 shortName: 'هذا الكتاب سيؤلمك',                          price:  950, available: true, image: BASE + '/books/hatha-alkitab-sayuulimuk/main.png' },
+    { catalogId: 61, name: 'الخطابات السرية للراهب الذي باع سيارته الفيراري',             shortName: 'الخطابات السرية للراهب',                     price:  950, available: true, image: BASE + '/books/al-khitabat-al-sirriya/main.png' },
+    { catalogId: 62, name: 'الراهب الذي باع سيارته الفيراري',                              shortName: 'الراهب الذي باع سيارته الفيراري',            price:  950, available: true, image: BASE + '/books/al-rahib-allathi-baa/main.png' },
+    { catalogId: 63, name: 'القوانين اليومية',                                              shortName: 'القوانين اليومية',                           price: 1900, available: true, image: BASE + '/books/daily-laws/main.png' },
+    { catalogId: 64, name: 'فن الإغواء',                                                   shortName: 'فن الإغواء',                                 price: 3200, available: true, image: BASE + '/books/art-of-seduction/main.png' },
+    { catalogId: 65, name: 'فن التعامل مع الناس',                                          shortName: 'فن التعامل مع الناس',                        price:  650, available: true, image: BASE + '/books/fan-altaamal-maa-alnas/main.png' },
+    { catalogId: 66, name: 'فن الإدارة والقيادة',                                          shortName: 'فن الإدارة والقيادة',                        price:  700, available: true, image: BASE + '/books/fan-alidara-walqiyada/main.png' },
+    { catalogId: 67, name: 'دع القلق وابدأ الحياة',                                        shortName: 'دع القلق وابدأ الحياة',                      price:  650, available: true, image: BASE + '/books/daa-alqalaq-wabda-alhayat/main.png' },
+    { catalogId: 68, name: 'خطة تسويق في صفحة واحدة',                                     shortName: 'خطة تسويق في صفحة واحدة',                   price: 1200, available: true, image: BASE + '/books/one-page-marketing-plan/main.png' },
+    { catalogId: 69, name: 'فوضى التسويق',                                                 shortName: 'فوضى التسويق',                               price: 1750, available: true, image: BASE + '/books/fowda-altasweq/main.png' },
+    { catalogId: 70, name: 'معجزة الصباح',                                                 shortName: 'معجزة الصباح',                               price: 1100, available: true, image: BASE + '/books/miracle-morning/main.png' },
+    { catalogId: 71, name: 'معسكر التدريب',                                                shortName: 'معسكر التدريب',                              price:  950, available: true, image: BASE + '/books/training-camp/main.png' },
+    { catalogId: 72, name: 'متلازمة تيك توك',                                              shortName: 'متلازمة تيك توك',                            price: 1400, available: true, image: BASE + '/books/tiktok-syndrome/main.png' },
+    { catalogId: 73, name: 'قوة الحب المذهلة',                                             shortName: 'قوة الحب المذهلة',                           price: 1700, available: true, image: BASE + '/books/quwwat-alhub-almudhila/main.png' },
+    { catalogId: 74, name: 'مميز بالأصفر',                                                 shortName: 'مميز بالأصفر',                               price:  950, available: true, image: BASE + '/books/mumayaz-bil-asfar/main.png' },
+    { catalogId: 75, name: 'ملول وعبقري',                                                  shortName: 'ملول وعبقري',                                price:  950, available: true, image: BASE + '/books/bored-and-brilliant/main.png' },
+    { catalogId: 76, name: 'الحياة تخطيط',                                                 shortName: 'الحياة تخطيط',                               price: 1200, available: true, image: BASE + '/books/alhayat-takhtit/main.png' },
+    { catalogId: 77, name: 'الرجال من المريخ والنساء من الزهرة',                           shortName: 'الرجال من المريخ والنساء من الزهرة',         price: 1100, available: true, image: BASE + '/books/men-mars-women-venus/main.png' },
+    { catalogId: 78, name: 'كل لتعيش',                                                    shortName: 'كل لتعيش',                                   price: 2500, available: true, image: BASE + '/books/eat-to-live/main.png' },
+    { catalogId: 79, name: 'الجانب الإيجابي من اللاعقلانية',                              shortName: 'الجانب الإيجابي من اللاعقلانية',             price: 2900, available: true, image: BASE + '/books/upside-of-irrationality/main.png' },
+    { catalogId: 80, name: 'الإنسان ذلك المجهول',                                         shortName: 'الإنسان ذلك المجهول',                        price: 2000, available: true, image: BASE + '/books/man-unknown/main.png' },
+    { catalogId: 81, name: 'وتظن أنك نجوت',                                               shortName: 'وتظن أنك نجوت',                              price: 1400, available: true, image: BASE + '/books/wa-tazun-annaka-najawt/main.png' },
+    { catalogId: 82, name: 'كوتلر يتحدث عن التسويق',                                      shortName: 'كوتلر يتحدث عن التسويق',                     price:  990, available: true, image: BASE + '/books/kotler-marketing/main.png' },
   ];
 
   /* ══════════════════════════════════════════════════════════
@@ -338,9 +365,12 @@
       return `
       <div class="cart-item${isUnavail ? ' cart-item--unavailable' : ''}" data-cid="${item.catalogId}">
         <div class="cart-item-img-wrap">
-          <img src="${item.image}" alt="${item.shortName || item.name}"
-               class="cart-item-img" loading="lazy"
-               onerror="this.parentElement.innerHTML='📦'">
+          <picture>
+            <source srcset="${item.image.replace(/\.png$/, '.webp')}" type="image/webp" />
+            <img src="${item.image}" alt="${item.shortName || item.name}"
+                 class="cart-item-img" loading="lazy"
+                 onerror="this.closest('.cart-item-img-wrap').innerHTML='📦'">
+          </picture>
         </div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.shortName || item.name}</div>

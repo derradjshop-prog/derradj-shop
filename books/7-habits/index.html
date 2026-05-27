@@ -111,15 +111,18 @@
       <div class="product-img-gallery">
         <div class="product-main-image-box">
           <!-- ضع صورة غلاف الكتاب باسم main.png في نفس هذا المجلد -->
-          <img
-            src="main.png"
-            alt="غلاف كتاب العادات السبع للناس الأكثر فعالية لستيفن آر. كوفي"
-            class="product-main-image"
-            fetchpriority="high"
-            width="260"
-            height="347"
-            onerror="this.src='../../Logo.jpg'"
-          />
+          <picture>
+            <source srcset="main.webp" type="image/webp" />
+            <img
+              src="main.png"
+              alt="غلاف كتاب العادات السبع للناس الأكثر فعالية لستيفن آر. كوفي"
+              class="product-main-image"
+              fetchpriority="high"
+              width="260"
+              height="347"
+              onerror="this.src='../../Logo.jpg'"
+            />
+          </picture>
         </div>
       </div>
 

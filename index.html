@@ -54,7 +54,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Preload the first visible book cover so it renders before JS injects the <img> -->
-  <link rel="preload" as="image" href="books/7-habits/main.png" fetchpriority="high">
+  <link rel="preload" as="image" href="books/7-habits/main.webp" fetchpriority="high" type="image/webp">
 
   <link rel="stylesheet" href="style.css" />
 
@@ -714,9 +714,12 @@
     return '<div class="product-card">' +
       '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
       '<a href="' + bookUrl + '" class="product-img-area" style="display:block;text-decoration:none;">' +
-        '<img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
-             ' class="product-image" ' + imgAttrs + ' width="400" height="400"' +
-             ' onerror="this.src=\'Logo.jpg\'">' +
+        '<picture>' +
+          '<source srcset="books/' + book.image.replace('.png', '.webp') + '" type="image/webp" />' +
+          '<img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
+               ' class="product-image" ' + imgAttrs + ' width="400" height="400"' +
+               ' onerror="this.src=\'Logo.jpg\'">' +
+        '</picture>' +
       '</a>' +
       '<div class="product-info">' +
         '<div class="product-cat-label">' + book.category + '</div>' +
