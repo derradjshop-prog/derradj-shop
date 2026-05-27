@@ -15,7 +15,7 @@
 
   <title>كتب تطوير الذات والفلسفة وعلم النفس في الجزائر | Derradj Shop</title>
 
-  <meta name="description" content="اشتري أفضل كتب تطوير الذات، الفلسفة، علم النفس والإدارة في الجزائر من Derradj Shop — 77 كتاباً مختاراً بعناية مع التوصيل السريع لجميع ولايات الجزائر بأسعار منافسة." />
+  <meta name="description" id="metaDesc" content="اشتري أفضل كتب تطوير الذات، الفلسفة، علم النفس والإدارة في الجزائر من Derradj Shop — كتب مختارة بعناية مع التوصيل السريع لجميع ولايات الجزائر بأسعار منافسة." />
 
   <meta property="og:title" content="كتب تطوير الذات والفلسفة وعلم النفس — Derradj Shop الجزائر">
   <meta property="og:description" content="كتب مختارة في تطوير الذات، الفلسفة، علم النفس والإدارة. توصيل سريع لجميع ولايات الجزائر.">
@@ -574,6 +574,33 @@
 
 <!-- بيانات الكتب — يجب تحميله قبل سكريبت العرض -->
 <script src="../books-data.js"></script>
+
+<script>
+/* تحديث العدد الديناميكي في meta description وJSON-LD بعد تحميل books-data.js */
+(function () {
+  if (!window.BOOKS_DATA) return;
+  var n = window.BOOKS_DATA.length;
+  /* meta description */
+  var meta = document.getElementById('metaDesc');
+  if (meta) {
+    meta.content = 'اشتري أفضل كتب تطوير الذات، الفلسفة، علم النفس والإدارة في الجزائر من Derradj Shop — ' + n + ' كتاباً مختاراً بعناية مع التوصيل السريع لجميع ولايات الجزائر بأسعار منافسة.';
+  }
+  /* JSON-LD numberOfItems */
+  document.querySelectorAll('script[type="application/ld+json"]').forEach(function (el) {
+    try {
+      var obj = JSON.parse(el.textContent);
+      var updated = false;
+      (obj['@graph'] || [obj]).forEach(function (node) {
+        if (node.mainEntity && node.mainEntity.numberOfItems !== undefined) {
+          node.mainEntity.numberOfItems = n;
+          updated = true;
+        }
+      });
+      if (updated) el.textContent = JSON.stringify(obj);
+    } catch (e) {}
+  });
+})();
+</script>
 
 <script>
 /* ============================================================

@@ -742,24 +742,29 @@ console.log('[admin.js] loaded — BUILD 2026-05-27-v3 — BOOKS_META includes c
     { catalogId: 82, price:  990, category: 'الإدارة والأعمال',   image: '../books/kotler-marketing/main.webp' },
   ];
 
-  /* جلب حالة التوفر من Supabase */
+  /* مجموعة سريعة من catalogId المرئية — لا تشمل الكتب المخفية */
+  const VISIBLE_IDS = new Set(BOOKS_META.map(m => m.catalogId));
+
+  /* جلب حالة التوفر من Supabase — يُعاد فقط الكتب الموجودة في BOOKS_META */
   async function fetchProducts() {
     const { data, error } = await supabase
       .from("product_availability")
       .select("catalog_id, name, available")
       .order("catalog_id");
     if (error) throw error;
-    return (data || []).map(row => {
-      const meta = BOOKS_META.find(m => m.catalogId === row.catalog_id) || {};
-      return {
-        catalogId: row.catalog_id,
-        name:      row.name,
-        available: row.available,
-        category:  meta.category || '—',
-        price:     meta.price    || null,
-        image:     meta.image    || '',
-      };
-    });
+    return (data || [])
+      .filter(row => VISIBLE_IDS.has(row.catalog_id))   /* يستبعد الكتب المخفية */
+      .map(row => {
+        const meta = BOOKS_META.find(m => m.catalogId === row.catalog_id);
+        return {
+          catalogId: row.catalog_id,
+          name:      row.name,
+          available: row.available,
+          category:  meta.category || '—',
+          price:     meta.price    || null,
+          image:     meta.image    || '',
+        };
+      });
   }
 
   /* تحديث حالة التوفر في Supabase */
