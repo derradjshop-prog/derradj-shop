@@ -53,6 +53,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
+  <!-- Preload the first visible book cover so it renders before JS injects the <img> -->
+  <link rel="preload" as="image" href="books/7-habits/main.png" fetchpriority="high">
+
   <link rel="stylesheet" href="style.css" />
 
   <!-- Schema.org Structured Data -->
@@ -686,7 +689,7 @@
 (function () {
   'use strict';
 
-  function buildHomeCard(book) {
+  function buildHomeCard(book, idx) {
     var isAvail    = book.available !== false;
     var bookUrl    = 'books/' + (book.url || '');
     var priceLabel = book.priceDisplay
@@ -699,11 +702,20 @@
       ? '<button class="btn-add-cart" data-add-to-cart="' + book.id + '">🛒 أضف للسلة</button>'
       : '<button class="btn-add-cart" disabled style="opacity:.6;cursor:not-allowed;">غير متوفر حاليا</button>';
 
+    /* idx 0 = first card (top-left, always visible): eager + highest priority
+       idx 1-2 = first desktop row (3 columns): eager, no lazy delay
+       idx 3-5 = second row (below the fold on most screens): lazy load */
+    var imgAttrs = idx === 0
+      ? 'loading="eager" fetchpriority="high" decoding="async"'
+      : idx < 3
+        ? 'loading="eager" decoding="async"'
+        : 'loading="lazy" decoding="async"';
+
     return '<div class="product-card">' +
       '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
       '<a href="' + bookUrl + '" class="product-img-area" style="display:block;text-decoration:none;">' +
         '<img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
-             ' class="product-image" loading="lazy" width="400" height="400"' +
+             ' class="product-image" ' + imgAttrs + ' width="400" height="400"' +
              ' onerror="this.src=\'Logo.jpg\'">' +
       '</a>' +
       '<div class="product-info">' +

@@ -36,6 +36,9 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
+  <!-- Preload the first visible book cover so it renders before JS injects the <img> -->
+  <link rel="preload" as="image" href="7-habits/main.png" fetchpriority="high">
+
   <link rel="stylesheet" href="../style.css" />
 
   <script type="application/ld+json">
@@ -557,7 +560,7 @@
   let currentSearch   = '';
 
   /* ── بناء HTML كارت كتاب واحد ──────────────────────── */
-  function buildCard(book) {
+  function buildCard(book, idx) {
     const isAvail    = book.available !== false;
     const badgeText  = isAvail ? 'متوفر' : 'غير متوفر حاليا';
     const badgeCls   = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
@@ -567,6 +570,15 @@
 
     const cartBtnText  = isAvail ? '🛒 أضف للسلة' : 'غير متوفر حاليا';
     const cartBtnExtra = isAvail ? '' : ' disabled style="opacity:.6;cursor:not-allowed;"';
+
+    /* idx 0 = first visible card: eager + highest priority
+       idx 1-2 = first desktop row visible on arrival: eager, no lazy delay
+       idx 3+ = below the fold: lazy load to save bandwidth */
+    const loadAttr = idx === 0
+      ? 'loading="eager" fetchpriority="high" decoding="async"'
+      : idx < 3
+        ? 'loading="eager" decoding="async"'
+        : 'loading="lazy" decoding="async"';
 
     return `
       <div class="product-card"
@@ -580,7 +592,7 @@
               src="${book.image}"
               alt="غلاف كتاب ${book.title}"
               class="product-image"
-              loading="lazy"
+              ${loadAttr}
               width="400"
               height="400"
               onerror="this.src='../Logo.jpg'"
