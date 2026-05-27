@@ -1,0 +1,57 @@
+# ============================================================
+# Netlify Cache Headers — Derradj Shop
+# Rules are applied top-to-bottom; last match wins.
+# ============================================================
+
+# ── 1. Default for all pages (HTML): no cache, revalidate every request ──
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+
+# ── 2. Book cover images — 1 year (never change, so immutable) ──
+/books/*/*.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/books/*/*.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+/books/*/*.jfif
+  Cache-Control: public, max-age=31536000, immutable
+
+/books/*/*.webp
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── 3. Root images — 1 year ──
+/Logo.png
+  Cache-Control: public, max-age=31536000, immutable
+
+/Logo.jpg
+  Cache-Control: public, max-age=31536000, immutable
+
+/social.png
+  Cache-Control: public, max-age=31536000, immutable
+
+# ── 4. JavaScript files — 1 week with background revalidation ──
+/books-data.js
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/cart.js
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/whatsapp-float.js
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# ── 5. CSS files — 1 week with background revalidation ──
+/style.css
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/css/styles.css
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+/css/styles-new.css
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
+
+# ── 6. Manifest & favicon — 1 week ──
+/manifest.json
+  Cache-Control: public, max-age=604800, stale-while-revalidate=86400
