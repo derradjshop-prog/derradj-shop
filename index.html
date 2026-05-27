@@ -49,18 +49,9 @@
   <link rel="icon" type="image/png" href="Logo.png">
   <link rel="manifest" href="manifest.json">
 
-  <!-- Preload LCP image (first book cover) — tells browser to fetch it immediately -->
-  <link rel="preload" as="image" href="books/7-habits/main.png" fetchpriority="high">
-
-  <!-- Preconnect to critical third-party origins -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="preconnect" href="https://jbmcbjzcedqpvnhbmrhk.supabase.co" crossorigin>
-  <link rel="dns-prefetch" href="https://www.googletagmanager.com">
-
-  <!-- Google Fonts — async (non-render-blocking) -->
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap"></noscript>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="style.css" />
 
@@ -243,31 +234,8 @@
       <p class="section-subtitle">كتب مختارة بعناية في تطوير الذات، الفلسفة، علم النفس، الإدارة والأعمال، والعلوم — تصفح واطلب مع التوصيل لكل الجزائر</p>
     </div>
 
-    <!--
-      ⚠️ هذا القسم مُصيَّر مسبقاً (pre-rendered) لتقليل CLS وتحسين LCP.
-      إذا غيّرت أول 6 كتب في books-data.js، قم بتحديث هذا القسم يدوياً.
-      JavaScript (books-data.js) سيُحدّث العدد وحالة التوفر تلقائياً.
-    -->
     <div class="products-grid" id="homeBooksGrid">
-
-      <!-- كتاب 1 — LCP: fetchpriority="high" بدون lazy -->
-      <div class="product-card"><div class="product-badge new" data-avail-badge="2">متوفر</div><a href="books/7-habits/" class="product-img-area" style="display:block;text-decoration:none;"><img src="books/7-habits/main.png" alt="غلاف كتاب العادات السبع للناس الأكثر فعالية" class="product-image" fetchpriority="high" decoding="async" width="400" height="400" onerror="this.src='Logo.jpg'"></a><div class="product-info"><div class="product-cat-label">تطوير الذات</div><a href="books/7-habits/" style="text-decoration:none;color:inherit;"><h3 class="product-name">العادات السبع للناس الأكثر فعالية</h3></a><div class="product-rating"><span class="product-stars">📖</span><span class="product-rating-count">ستيفن آر. كوفي</span></div><div class="product-prices"><span class="price-current">1,400 دج</span></div><div class="product-card-btns"><a href="books/7-habits/" class="btn-order-card">📖 تفاصيل الكتاب</a><button class="btn-add-cart" data-add-to-cart="2">🛒 أضف للسلة</button></div></div></div>
-
-      <!-- كتاب 2 — eager, decoding async -->
-      <div class="product-card"><div class="product-badge new" data-avail-badge="3">متوفر</div><a href="books/atomic-habits/" class="product-img-area" style="display:block;text-decoration:none;"><img src="books/atomic-habits/main.png" alt="غلاف كتاب العادات الذرية" class="product-image" decoding="async" width="400" height="400" onerror="this.src='Logo.jpg'"></a><div class="product-info"><div class="product-cat-label">تطوير الذات</div><a href="books/atomic-habits/" style="text-decoration:none;color:inherit;"><h3 class="product-name">العادات الذرية</h3></a><div class="product-rating"><span class="product-stars">📖</span><span class="product-rating-count">جيمس كلير</span></div><div class="product-prices"><span class="price-current">950 دج</span></div><div class="product-card-btns"><a href="books/atomic-habits/" class="btn-order-card">📖 تفاصيل الكتاب</a><button class="btn-add-cart" data-add-to-cart="3">🛒 أضف للسلة</button></div></div></div>
-
-      <!-- كتاب 3 — eager, decoding async -->
-      <div class="product-card"><div class="product-badge new" data-avail-badge="4">متوفر</div><a href="books/rule-333/" class="product-img-area" style="display:block;text-decoration:none;"><img src="books/rule-333/main.png" alt="غلاف كتاب قاعدة الـ 333" class="product-image" decoding="async" width="400" height="400" onerror="this.src='Logo.jpg'"></a><div class="product-info"><div class="product-cat-label">تطوير الذات</div><a href="books/rule-333/" style="text-decoration:none;color:inherit;"><h3 class="product-name">قاعدة الـ 333</h3></a><div class="product-rating"><span class="product-stars">📖</span><span class="product-rating-count">شهاب الهاشمي</span></div><div class="product-prices"><span class="price-current">1,350 دج</span></div><div class="product-card-btns"><a href="books/rule-333/" class="btn-order-card">📖 تفاصيل الكتاب</a><button class="btn-add-cart" data-add-to-cart="4">🛒 أضف للسلة</button></div></div></div>
-
-      <!-- كتاب 4 — eager, decoding async -->
-      <div class="product-card"><div class="product-badge new" data-avail-badge="6">متوفر</div><a href="books/joy-of-imperfection/" class="product-img-area" style="display:block;text-decoration:none;"><img src="books/joy-of-imperfection/main.png" alt="غلاف كتاب متعة عدم الكمال" class="product-image" decoding="async" width="400" height="400" onerror="this.src='Logo.jpg'"></a><div class="product-info"><div class="product-cat-label">تطوير الذات</div><a href="books/joy-of-imperfection/" style="text-decoration:none;color:inherit;"><h3 class="product-name">متعة عدم الكمال</h3></a><div class="product-rating"><span class="product-stars">📖</span><span class="product-rating-count">ديمون زهاريادس</span></div><div class="product-prices"><span class="price-current">1,800 دج</span></div><div class="product-card-btns"><a href="books/joy-of-imperfection/" class="btn-order-card">📖 تفاصيل الكتاب</a><button class="btn-add-cart" data-add-to-cart="6">🛒 أضف للسلة</button></div></div></div>
-
-      <!-- كتاب 5 — lazy (likely below fold on mobile) -->
-      <div class="product-card"><div class="product-badge new" data-avail-badge="7">متوفر</div><a href="books/courage-is-calling/" class="product-img-area" style="display:block;text-decoration:none;"><img src="books/courage-is-calling/main.png" alt="غلاف كتاب الشجاعة تنادي" class="product-image" loading="lazy" decoding="async" width="400" height="400" onerror="this.src='Logo.jpg'"></a><div class="product-info"><div class="product-cat-label">الفلسفة والفكر</div><a href="books/courage-is-calling/" style="text-decoration:none;color:inherit;"><h3 class="product-name">الشجاعة تنادي</h3></a><div class="product-rating"><span class="product-stars">📖</span><span class="product-rating-count">ريان هوليداي</span></div><div class="product-prices"><span class="price-current">1,300 دج</span></div><div class="product-card-btns"><a href="books/courage-is-calling/" class="btn-order-card">📖 تفاصيل الكتاب</a><button class="btn-add-cart" data-add-to-cart="7">🛒 أضف للسلة</button></div></div></div>
-
-      <!-- كتاب 6 — lazy -->
-      <div class="product-card"><div class="product-badge new" data-avail-badge="8">متوفر</div><a href="books/power-of-now/" class="product-img-area" style="display:block;text-decoration:none;"><img src="books/power-of-now/main.png" alt="غلاف كتاب قوة الآن" class="product-image" loading="lazy" decoding="async" width="400" height="400" onerror="this.src='Logo.jpg'"></a><div class="product-info"><div class="product-cat-label">الفلسفة والفكر</div><a href="books/power-of-now/" style="text-decoration:none;color:inherit;"><h3 class="product-name">قوة الآن</h3></a><div class="product-rating"><span class="product-stars">📖</span><span class="product-rating-count">إيكهارت تول</span></div><div class="product-prices"><span class="price-current">1,100 دج</span></div><div class="product-card-btns"><a href="books/power-of-now/" class="btn-order-card">📖 تفاصيل الكتاب</a><button class="btn-add-cart" data-add-to-cart="8">🛒 أضف للسلة</button></div></div></div>
-
+      <!-- تُعرض تلقائياً من books-data.js -->
     </div>
 
     <div class="products-cta-row">
@@ -714,15 +682,11 @@
 
 <script src="books-data.js"></script>
 <script>
-/* عرض أول 6 كتب في الصفحة الرئيسية
-   ملاحظة: الكتب مُصيَّرة مسبقاً في HTML لتقليل CLS وتحسين LCP.
-   هذا الكود يُحدّث عدد الكتب في الزر، ويُعيد الرسم فقط عند تحديث حالة التوفر.
-*/
+/* عرض أول 6 كتب في الصفحة الرئيسية */
 (function () {
   'use strict';
 
-  /* بناء بطاقة كتاب واحدة — idx يُحدد سلوك تحميل الصورة */
-  function buildHomeCard(book, idx) {
+  function buildHomeCard(book) {
     var isAvail    = book.available !== false;
     var bookUrl    = 'books/' + (book.url || '');
     var priceLabel = book.priceDisplay
@@ -735,19 +699,11 @@
       ? '<button class="btn-add-cart" data-add-to-cart="' + book.id + '">🛒 أضف للسلة</button>'
       : '<button class="btn-add-cart" disabled style="opacity:.6;cursor:not-allowed;">غير متوفر حاليا</button>';
 
-    /* استراتيجية تحميل الصور حسب الموضع:
-       0 = LCP → fetchpriority high, بدون lazy
-       1-3 = فوق الشاشة → بدون lazy
-       4+ = تحت الشاشة → lazy */
-    var imgExtra = ' decoding="async"';
-    if (idx === 0) imgExtra += ' fetchpriority="high"';
-    if (idx >= 4)  imgExtra += ' loading="lazy"';
-
     return '<div class="product-card">' +
       '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
       '<a href="' + bookUrl + '" class="product-img-area" style="display:block;text-decoration:none;">' +
         '<img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
-             ' class="product-image"' + imgExtra + ' width="400" height="400"' +
+             ' class="product-image" loading="lazy" width="400" height="400"' +
              ' onerror="this.src=\'Logo.jpg\'">' +
       '</a>' +
       '<div class="product-info">' +
@@ -768,29 +724,19 @@
     '</div>';
   }
 
-  function renderHomeBooks(fromAvailEvent) {
+  function renderHomeBooks() {
     var grid = document.getElementById('homeBooksGrid');
     if (!grid || !window.BOOKS_DATA) return;
-
-    /* إذا كانت الكتب مُصيَّرة مسبقاً في HTML وهذه ليست إعادة رسم لحالة التوفر،
-       فقط حدّث نص الزر وتجنب إعادة حقن الـ DOM (يمنع CLS) */
-    if (!fromAvailEvent && grid.children.length > 0) {
-      var btn = document.getElementById('allBooksBtn');
-      if (btn) btn.textContent = '📚 تصفح كل الكتب الـ ' + window.BOOKS_DATA.length;
-      return;
-    }
-
     grid.innerHTML = window.BOOKS_DATA.slice(0, 6).map(buildHomeCard).join('');
+    /* تحديث نص زر "تصفح الكتب" بالعدد الحقيقي من المصدر */
     var btn = document.getElementById('allBooksBtn');
     if (btn) btn.textContent = '📚 تصفح كل الكتب الـ ' + window.BOOKS_DATA.length;
   }
 
-  renderHomeBooks(false);
+  renderHomeBooks();
 
   /* إعادة العرض بعد تحميل حالة التوفر من Supabase (يُطلقه cart.js) */
-  document.addEventListener('derradj:availability-loaded', function () {
-    renderHomeBooks(true);
-  });
+  document.addEventListener('derradj:availability-loaded', renderHomeBooks);
 })();
 </script>
 <style>
@@ -798,7 +744,7 @@
   .product-badge--unavail { background: #f59e0b !important; color: #fff !important; font-size: 10px !important; }
 </style>
 
-<script src="cart.js" defer></script>
+<script src="cart.js"></script>
 <!-- whatsapp-float -->
 <script src="whatsapp-float.js" defer></script>
 
