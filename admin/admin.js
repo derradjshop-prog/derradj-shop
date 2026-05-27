@@ -1,9 +1,9 @@
 /* ==========================================================
    admin.js — Derradj Shop | Admin Dashboard
    is_confirmed: NULL = قيد المعالجة | true = تم التأكيد
-   BUILD: 2026-05-22-v2 (BOOKS_META includes 43-56)
+   BUILD: 2026-05-27-v3 (BOOKS_META includes 2-82 + main.webp)
    ========================================================== */
-console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes catalogId 43-56');
+console.log('[admin.js] loaded — BUILD 2026-05-27-v3 — BOOKS_META includes catalogId 2-82, main.webp');
 
 (function () {
   "use strict";
@@ -349,7 +349,9 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
     container.innerHTML = products.map(p => `
       <div class="m-product-card" data-catalog-id="${p.catalogId}">
         ${p.image
-          ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="m-prod-img" onerror="this.style.display='none'">`
+          ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="m-prod-img"
+                 loading="lazy" decoding="async"
+                 onerror="if(!this.dataset.f){this.dataset.f='1';this.src=this.src.replace('main.webp','main.png')}else{this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:32px;flex-shrink:0;line-height:1;\\'>📚</span>')}">`
           : '<span style="font-size:32px;flex-shrink:0;line-height:1;">📚</span>'
         }
         <div class="m-prod-body">
@@ -652,60 +654,92 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
      PRODUCTS — قائمة الكتب من SHOP_CATALOG المدمجة مع Supabase
   ───────────────────────────────────────────────────────── */
 
-  /* بيانات المنتجات الثابتة (للصورة والتصنيف) */
+  /* ─────────────────────────────────────────────────────────
+     بيانات المنتجات الثابتة (للصورة والتصنيف)
+     المسار النسبي: ../books/{folder}/main.webp
+     (يعمل من /admin/ سواء محلياً أو على الخادم المباشر)
+  ───────────────────────────────────────────────────────── */
   const BOOKS_META = [
-    { catalogId: 2,  price: 1400, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/7-habits/main.png' },
-    { catalogId: 3,  price: 950,  category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/atomic-habits/main.png' },
-    { catalogId: 4,  price: 1350, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/rule-333/main.png' },
-    { catalogId: 6,  price: 1800, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/joy-of-imperfection/main.png' },
-    { catalogId: 7,  price: 1300, category: 'الفلسفة والفكر',     image: 'https://www.derradjshop.com/books/courage-is-calling/main.png' },
-    { catalogId: 8,  price: 1100, category: 'الفلسفة والفكر',     image: 'https://www.derradjshop.com/books/power-of-now/main.png' },
-    { catalogId: 9,  price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/propaganda/main.png' },
-    { catalogId: 10, price: 1600, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/management-mess/main.png' },
-    { catalogId: 11, price: 1600, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/myths-of-happiness/main.png' },
-    { catalogId: 12, price: 1300, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/happy-ever-after/main.png' },
-    { catalogId: 13, price: 1800, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/hungry-ghosts/main.png' },
-    { catalogId: 14, price: 1200, category: 'العلوم والمعرفة',    image: 'https://www.derradjshop.com/books/brief-history-of-time/main.png' },
-    { catalogId: 16, price: 950,  category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/joy-of-thirties/main.png' },
-    { catalogId: 17, price: 1200, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/be-happy-with-someone/main.png' },
-    { catalogId: 20, price: 1600, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/emotional-intelligence/main.png' },
-    { catalogId: 21, price: 1100, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/sell-anything/main.png' },
-    { catalogId: 22, price: 1700, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/sell-yourself/main.png' },
-    { catalogId: 23, price: 1500, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/mastering-deals/main.png' },
-    { catalogId: 24, price: 1600, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/psychology-of-money/main.png' },
-    { catalogId: 25, price: 950,  category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/subconscious-mind/main.png' },
-    { catalogId: 26, price: 900,  category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/subtle-art/main.png' },
-    { catalogId: 27, price: 750,  category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/crowd-psychology/main.png' },
-    { catalogId: 28, price: 1300, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/psychological-laws/main.png' },
-    { catalogId: 29, price: 1550, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/opinions-beliefs/main.png' },
-    { catalogId: 30, price: 2100, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/rational-male/main.png' },
-    { catalogId: 31, price: 1400, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/6-sales-skills/main.png' },
-    { catalogId: 32, price: 1800, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/small-habits-effect/main.png' },
-    { catalogId: 33, price: 1100, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/7-habits-teens/main.png' },
-    { catalogId: 34, price: 1300, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/leader-in-me/main.png' },
-    { catalogId: 35, price:  800, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/dark-feminine-power/main.png' },
-    { catalogId: 36, price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/why-sheep-dont-go-to-doctor/main.png' },
-    { catalogId: 37, price:  850, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/zero-to-one/main.png' },
-    { catalogId: 38, price:  950, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/kindness-side-effects/main.png' },
-    { catalogId: 39, price:  900, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/feminine-energy/main.png' },
-    { catalogId: 40, price: 1400, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/full-of-emptiness/main.png' },
-    { catalogId: 41, price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/father-i-hate/main.png' },
-    { catalogId: 42, price: 1100, category: 'علم النفس والمجتمع', image: 'https://www.derradjshop.com/books/crystallizing-public-opinion/main.png' },
-    /* ── الكتب الجديدة (43-56) ── */
-    { catalogId: 43, price:  950, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/bawabatuka-liltaghyir/main.png' },
-    { catalogId: 44, price:  950, category: 'الإدارة والأعمال',   image: 'https://www.derradjshop.com/books/richest-man-in-babylon/main.png' },
-    { catalogId: 45, price:  850, category: 'الروايات والأدب',    image: 'https://www.derradjshop.com/books/urid-an-anam/main.png' },
-    { catalogId: 46, price: 1300, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/how-not-to-die-alone/main.png' },
-    { catalogId: 47, price: 1400, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/stronger-than-your-emotions/main.png' },
-    { catalogId: 48, price:  950, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/act-like-a-lady-think-like-a-man/main.png' },
-    { catalogId: 49, price:  950, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/kabber-dmaghak/main.png' },
-    { catalogId: 50, price:  900, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/qawanin-al-najah-al-mustadam/main.png' },
-    { catalogId: 51, price:  850, category: 'العلاقات والحياة',   image: 'https://www.derradjshop.com/books/happiness-and-depression/main.png' },
-    { catalogId: 52, price: 2400, category: 'العلوم والمعرفة',    image: 'https://www.derradjshop.com/books/will-my-cat-eat-my-eyeballs/main.png' },
-    { catalogId: 53, price: 1400, category: 'الفلسفة والفكر',     image: 'https://www.derradjshop.com/books/the-monster-inside-you-can-be-kind/main.png' },
-    { catalogId: 54, price:  950, category: 'تطوير الذات',        image: 'https://www.derradjshop.com/books/burn-after-writing/main.png' },
-    { catalogId: 55, price: 1300, category: 'الفلسفة والفكر',     image: 'https://www.derradjshop.com/books/the-eye-of-the-i/main.png' },
-    { catalogId: 56, price: 1300, category: 'الروايات والأدب',    image: 'https://www.derradjshop.com/books/the-sun-does-shine/main.png' },
+    /* ── IDs 2–42 ── */
+    { catalogId: 2,  price: 1400, category: 'تطوير الذات',        image: '../books/7-habits/main.webp' },
+    { catalogId: 3,  price: 950,  category: 'تطوير الذات',        image: '../books/atomic-habits/main.webp' },
+    { catalogId: 4,  price: 1350, category: 'تطوير الذات',        image: '../books/rule-333/main.webp' },
+    { catalogId: 6,  price: 1800, category: 'تطوير الذات',        image: '../books/joy-of-imperfection/main.webp' },
+    { catalogId: 7,  price: 1300, category: 'الفلسفة والفكر',     image: '../books/courage-is-calling/main.webp' },
+    { catalogId: 8,  price: 1100, category: 'الفلسفة والفكر',     image: '../books/power-of-now/main.webp' },
+    { catalogId: 9,  price: 1100, category: 'علم النفس والمجتمع', image: '../books/propaganda/main.webp' },
+    { catalogId: 10, price: 1600, category: 'الإدارة والأعمال',   image: '../books/management-mess/main.webp' },
+    { catalogId: 11, price: 1600, category: 'علم النفس والمجتمع', image: '../books/myths-of-happiness/main.webp' },
+    { catalogId: 12, price: 1300, category: 'علم النفس والمجتمع', image: '../books/happy-ever-after/main.webp' },
+    { catalogId: 13, price: 1800, category: 'علم النفس والمجتمع', image: '../books/hungry-ghosts/main.webp' },
+    { catalogId: 14, price: 1200, category: 'العلوم والمعرفة',    image: '../books/brief-history-of-time/main.webp' },
+    { catalogId: 16, price: 950,  category: 'تطوير الذات',        image: '../books/joy-of-thirties/main.webp' },
+    { catalogId: 17, price: 1200, category: 'العلاقات والحياة',   image: '../books/be-happy-with-someone/main.webp' },
+    { catalogId: 20, price: 1600, category: 'علم النفس والمجتمع', image: '../books/emotional-intelligence/main.webp' },
+    { catalogId: 21, price: 1100, category: 'الإدارة والأعمال',   image: '../books/sell-anything/main.webp' },
+    { catalogId: 22, price: 1700, category: 'الإدارة والأعمال',   image: '../books/sell-yourself/main.webp' },
+    { catalogId: 23, price: 1500, category: 'الإدارة والأعمال',   image: '../books/mastering-deals/main.webp' },
+    { catalogId: 24, price: 1600, category: 'الإدارة والأعمال',   image: '../books/psychology-of-money/main.webp' },
+    { catalogId: 25, price: 950,  category: 'علم النفس والمجتمع', image: '../books/subconscious-mind/main.webp' },
+    { catalogId: 26, price: 900,  category: 'تطوير الذات',        image: '../books/subtle-art/main.webp' },
+    { catalogId: 27, price: 750,  category: 'علم النفس والمجتمع', image: '../books/crowd-psychology/main.webp' },
+    { catalogId: 28, price: 1300, category: 'علم النفس والمجتمع', image: '../books/psychological-laws/main.webp' },
+    { catalogId: 29, price: 1550, category: 'علم النفس والمجتمع', image: '../books/opinions-beliefs/main.webp' },
+    { catalogId: 30, price: 2100, category: 'تطوير الذات',        image: '../books/rational-male/main.webp' },
+    { catalogId: 31, price: 1400, category: 'الإدارة والأعمال',   image: '../books/6-sales-skills/main.webp' },
+    { catalogId: 32, price: 1800, category: 'تطوير الذات',        image: '../books/small-habits-effect/main.webp' },
+    { catalogId: 33, price: 1100, category: 'تطوير الذات',        image: '../books/7-habits-teens/main.webp' },
+    { catalogId: 34, price: 1300, category: 'تطوير الذات',        image: '../books/leader-in-me/main.webp' },
+    { catalogId: 35, price:  800, category: 'تطوير الذات',        image: '../books/dark-feminine-power/main.webp' },
+    { catalogId: 36, price: 1100, category: 'علم النفس والمجتمع', image: '../books/why-sheep-dont-go-to-doctor/main.webp' },
+    { catalogId: 37, price:  850, category: 'الإدارة والأعمال',   image: '../books/zero-to-one/main.webp' },
+    { catalogId: 38, price:  950, category: 'علم النفس والمجتمع', image: '../books/kindness-side-effects/main.webp' },
+    { catalogId: 39, price:  900, category: 'تطوير الذات',        image: '../books/feminine-energy/main.webp' },
+    { catalogId: 40, price: 1400, category: 'علم النفس والمجتمع', image: '../books/full-of-emptiness/main.webp' },
+    { catalogId: 41, price: 1100, category: 'علم النفس والمجتمع', image: '../books/father-i-hate/main.webp' },
+    { catalogId: 42, price: 1100, category: 'علم النفس والمجتمع', image: '../books/crystallizing-public-opinion/main.webp' },
+    /* ── IDs 43–56 ── */
+    { catalogId: 43, price:  950, category: 'تطوير الذات',        image: '../books/bawabatuka-liltaghyir/main.webp' },
+    { catalogId: 44, price:  950, category: 'الإدارة والأعمال',   image: '../books/richest-man-in-babylon/main.webp' },
+    { catalogId: 45, price:  850, category: 'الروايات والأدب',    image: '../books/urid-an-anam/main.webp' },
+    { catalogId: 46, price: 1300, category: 'العلاقات والحياة',   image: '../books/how-not-to-die-alone/main.webp' },
+    { catalogId: 47, price: 1400, category: 'تطوير الذات',        image: '../books/stronger-than-your-emotions/main.webp' },
+    { catalogId: 48, price:  950, category: 'العلاقات والحياة',   image: '../books/act-like-a-lady-think-like-a-man/main.webp' },
+    { catalogId: 49, price:  950, category: 'تطوير الذات',        image: '../books/kabber-dmaghak/main.webp' },
+    { catalogId: 50, price:  900, category: 'تطوير الذات',        image: '../books/qawanin-al-najah-al-mustadam/main.webp' },
+    { catalogId: 51, price:  850, category: 'العلاقات والحياة',   image: '../books/happiness-and-depression/main.webp' },
+    { catalogId: 52, price: 2400, category: 'العلوم والمعرفة',    image: '../books/will-my-cat-eat-my-eyeballs/main.webp' },
+    { catalogId: 53, price: 1400, category: 'الفلسفة والفكر',     image: '../books/the-monster-inside-you-can-be-kind/main.webp' },
+    { catalogId: 54, price:  950, category: 'تطوير الذات',        image: '../books/burn-after-writing/main.webp' },
+    { catalogId: 55, price: 1300, category: 'الفلسفة والفكر',     image: '../books/the-eye-of-the-i/main.webp' },
+    { catalogId: 56, price: 1300, category: 'الروايات والأدب',    image: '../books/the-sun-does-shine/main.webp' },
+    /* ── IDs 57–82 (الكتب الجديدة) ── */
+    { catalogId: 57, price: 1200, category: 'تطوير الذات',        image: '../books/kitab-al-millionaire/main.webp' },
+    { catalogId: 58, price: 1300, category: 'الإدارة والأعمال',   image: '../books/al-sannara/main.webp' },
+    { catalogId: 59, price: 1300, category: 'الفلسفة والفكر',     image: '../books/tajawoz-mostawayat-al-waai/main.webp' },
+    { catalogId: 60, price:  950, category: 'الروايات والأدب',    image: '../books/hatha-alkitab-sayuulimuk/main.webp' },
+    { catalogId: 61, price:  950, category: 'تطوير الذات',        image: '../books/al-khitabat-al-sirriya/main.webp' },
+    { catalogId: 62, price:  950, category: 'تطوير الذات',        image: '../books/al-rahib-allathi-baa/main.webp' },
+    { catalogId: 63, price: 1900, category: 'تطوير الذات',        image: '../books/daily-laws/main.webp' },
+    { catalogId: 64, price: 3200, category: 'علم النفس والمجتمع', image: '../books/art-of-seduction/main.webp' },
+    { catalogId: 65, price:  650, category: 'تطوير الذات',        image: '../books/fan-altaamal-maa-alnas/main.webp' },
+    { catalogId: 66, price:  700, category: 'الإدارة والأعمال',   image: '../books/fan-alidara-walqiyada/main.webp' },
+    { catalogId: 67, price:  650, category: 'تطوير الذات',        image: '../books/daa-alqalaq-wabda-alhayat/main.webp' },
+    { catalogId: 68, price: 1200, category: 'الإدارة والأعمال',   image: '../books/one-page-marketing-plan/main.webp' },
+    { catalogId: 69, price: 1750, category: 'الإدارة والأعمال',   image: '../books/fowda-altasweq/main.webp' },
+    { catalogId: 70, price: 1100, category: 'تطوير الذات',        image: '../books/miracle-morning/main.webp' },
+    { catalogId: 71, price:  950, category: 'تطوير الذات',        image: '../books/training-camp/main.webp' },
+    { catalogId: 72, price: 1400, category: 'علم النفس والمجتمع', image: '../books/tiktok-syndrome/main.webp' },
+    { catalogId: 73, price: 1700, category: 'العلاقات والحياة',   image: '../books/quwwat-alhub-almudhila/main.webp' },
+    { catalogId: 74, price:  950, category: 'تطوير الذات',        image: '../books/mumayaz-bil-asfar/main.webp' },
+    { catalogId: 75, price:  950, category: 'تطوير الذات',        image: '../books/bored-and-brilliant/main.webp' },
+    { catalogId: 76, price: 1200, category: 'تطوير الذات',        image: '../books/alhayat-takhtit/main.webp' },
+    { catalogId: 77, price: 1100, category: 'العلاقات والحياة',   image: '../books/men-mars-women-venus/main.webp' },
+    { catalogId: 78, price: 2500, category: 'العلوم والمعرفة',    image: '../books/eat-to-live/main.webp' },
+    { catalogId: 79, price: 2900, category: 'علم النفس والمجتمع', image: '../books/upside-of-irrationality/main.webp' },
+    { catalogId: 80, price: 2000, category: 'الفلسفة والفكر',     image: '../books/man-unknown/main.webp' },
+    { catalogId: 81, price: 1400, category: 'الروايات والأدب',    image: '../books/wa-tazun-annaka-najawt/main.webp' },
+    { catalogId: 82, price:  990, category: 'الإدارة والأعمال',   image: '../books/kotler-marketing/main.webp' },
   ];
 
   /* جلب حالة التوفر من Supabase */
@@ -755,7 +789,8 @@ console.log('[admin.js] loaded — BUILD 2026-05-22-v2 — BOOKS_META includes c
         <td>
           ${p.image
             ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="prod-thumb"
-                   onerror="this.style.display='none'">`
+                   loading="lazy" decoding="async"
+                   onerror="if(!this.dataset.f){this.dataset.f='1';this.src=this.src.replace('main.webp','main.png')}else{this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:24px;\\'>📚</span>')}">`
             : '<span style="font-size:24px;">📚</span>'
           }
         </td>
