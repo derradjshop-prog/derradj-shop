@@ -4,6 +4,8 @@ Allow: /
 # Exclude admin and test pages
 Disallow: /admin/
 Disallow: /ordre/Essai/
+Disallow: /ordre/js/
+Disallow: /ordre/success.html
 
 # Exclude old electronics product pages (no longer relevant)
 Disallow: /products/
