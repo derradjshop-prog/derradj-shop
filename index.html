@@ -166,6 +166,7 @@
 
     <nav class="main-nav">
       <a href="books/" class="nav-link">📚 الكتب</a>
+      <a href="Electronique/" class="nav-link">💻 إلكترونيات</a>
       <a href="#categories"      class="nav-link">التصنيفات</a>
       <a href="about.html"       class="nav-link">من نحن</a>
       <a href="faq.html"         class="nav-link">الأسئلة الشائعة</a>
@@ -188,6 +189,7 @@
 <!-- Mobile Menu -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="books/">📚 الكتب</a>
+  <a href="Electronique/">💻 إلكترونيات</a>
   <a href="#categories">التصنيفات</a>
   <a href="about.html">من نحن</a>
   <a href="faq.html">الأسئلة الشائعة</a>
@@ -229,7 +231,7 @@
 
 
 <!-- ===================== ELECTRONICS PRODUCTS ===================== -->
-<section class="products-section section-wrap product-slider-section" id="electronics" style="background:#f8fafc;">
+<section class="products-section section-wrap product-slider-section" id="electronics" style="background:#fff;">
   <div class="container">
     <div class="section-header product-slider-header">
       <div class="section-label">💻 منتجات إلكترونية مختارة</div>
@@ -237,10 +239,10 @@
       <p class="section-subtitle">إكسسوارات وأدوات إلكترونية مختارة لتحسين إنتاجيتك وراحتك أثناء العمل والدراسة</p>
     </div>
     <div class="product-slider-row" id="homeElectronicsGrid">
-      <div class="product-card">
+      <div class="product-card" data-product-url="/Electronique/laptop/adjustable-laptop-stand.html">
         <div class="product-badge new" data-avail-badge="83">متوفر</div>
-        <a href="Electronique/laptop/adjustable-laptop-stand.html" class="product-img-area" style="display:block;text-decoration:none;">
-          <img src="Electronique/laptop/main1.png"
+        <a href="/Electronique/laptop/adjustable-laptop-stand.html" target="_blank" rel="noopener noreferrer" class="product-img-area" style="display:block;text-decoration:none;">
+          <img src="/Electronique/laptop/main1.png"
                alt="حامل اللابتوب القابل للتعديل"
                loading="lazy"
                decoding="async"
@@ -249,7 +251,7 @@
         </a>
         <div class="product-info">
           <div class="product-cat-label">Electronique / Laptop</div>
-          <a href="Electronique/laptop/adjustable-laptop-stand.html" style="text-decoration:none;color:inherit;">
+          <a href="/Electronique/laptop/adjustable-laptop-stand.html" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;">
             <h3 class="product-name">حامل اللابتوب القابل للتعديل</h3>
           </a>
           <div class="product-rating">
@@ -257,10 +259,10 @@
             <span class="product-rating-count">Adjustable Laptop Stand</span>
           </div>
           <div class="product-prices">
-            <span class="price-current">1,500 دج</span>
+<span class="price-current"><span class="price-value"><span class="price-currency">دج</span><span class="price-amount">1,500</span></span></span>
           </div>
           <div class="product-card-btns">
-            <a href="Electronique/laptop/adjustable-laptop-stand.html" class="btn-order-card">💻 تفاصيل المنتج</a>
+            <a href="/Electronique/laptop/adjustable-laptop-stand.html" target="_blank" rel="noopener noreferrer" class="btn-order-card">💻 تفاصيل المنتج</a>
             <button class="btn-add-cart" data-add-to-cart="83">🛒 أضف للسلة</button>
           </div>
         </div>
@@ -270,7 +272,7 @@
 </section>
 
 <!-- ===================== BOOKS PREVIEW ===================== -->
-<section class="products-section section-wrap product-slider-section" id="books" style="background:#fff;">
+<section class="products-section section-wrap product-slider-section" id="books" style="background:#f8fafc;">
   <div class="container">
     <div class="section-header product-slider-header">
       <div class="section-label">📚 كتب مختارة</div>
@@ -599,7 +601,7 @@
       </ul>
       <h4 style="margin-top:16px;">إلكترونيات</h4>
       <ul>
-        <li><a href="Electronique/laptop/adjustable-laptop-stand.html">💻 حامل اللابتوب — 1,500 دج</a></li>
+        <li><a href="/Electronique/laptop/adjustable-laptop-stand.html" target="_blank" rel="noopener noreferrer">💻 حامل اللابتوب — 1,500 دج</a></li>
       </ul>
     </div>
 
@@ -721,6 +723,15 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   });
+
+  document.addEventListener('click', function (e) {
+    const card = e.target.closest('#homeElectronicsGrid .product-card[data-product-url]');
+    if (!card) return;
+    if (e.target.closest('a, button, [data-add-to-cart]')) return;
+    if (card.closest('.product-slider-row')?.dataset.suppressProductClick === 'true') return;
+
+    window.open(card.dataset.productUrl, '_blank', 'noopener,noreferrer');
+  });
 </script>
 
 
@@ -730,13 +741,22 @@
 (function () {
   'use strict';
 
+  function formatPriceHTML(price) {
+    var formatted = Number(price).toLocaleString('en-US');
+    return '<span class="price-value">' +
+      '<span class="price-currency">دج</span>' +
+      '<span class="price-amount">' + formatted + '</span>' +
+    '</span>';
+  }
+
   function buildHomeCard(book, idx) {
     var isAvail    = book.available !== false;
     var bookUrl    = 'books/' + (book.url || '');
-    var priceLabel = book.priceDisplay
-      ? '<span class="price-current" style="color:#64748b;font-size:15px;">' + book.priceDisplay + '</span>'
-      : '<span class="price-current">' + book.price.toLocaleString('en-US') + ' دج</span>';
-
+    var oldPrice   = book.oldPrice || book.originalPrice || book.compareAtPrice;
+    var discount   = book.discount || book.discountPercent;
+    var priceLabel = '<span class="price-current">' + formatPriceHTML(book.price) + '</span>' +
+      (oldPrice ? '<span class="price-old">' + formatPriceHTML(oldPrice) + '</span>' : '') +
+      (discount ? '<span class="discount-tag">' + discount + '</span>' : '');
     var badgeCls  = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
     var badgeText = isAvail ? 'متوفر' : 'غير متوفر حاليا';
     var cartBtn   = isAvail
@@ -752,7 +772,7 @@
 
     return '<div class="product-card">' +
       '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
-      '<a href="' + bookUrl + '" class="product-img-area" style="display:block;text-decoration:none;">' +
+      '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" class="product-img-area" style="display:block;text-decoration:none;">' +
         '<picture>' +
           '<source srcset="books/' + book.image.replace('.png', '.webp') + '" type="image/webp" />' +
           '<img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
@@ -762,7 +782,7 @@
       '</a>' +
       '<div class="product-info">' +
         '<div class="product-cat-label">' + book.category + '</div>' +
-        '<a href="' + bookUrl + '" style="text-decoration:none;color:inherit;">' +
+        '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;">' +
           '<h3 class="product-name">' + book.title + '</h3>' +
         '</a>' +
         '<div class="product-rating">' +
@@ -771,7 +791,7 @@
         '</div>' +
         '<div class="product-prices">' + priceLabel + '</div>' +
         '<div class="product-card-btns">' +
-          '<a href="' + bookUrl + '" class="btn-order-card">📖 تفاصيل الكتاب</a>' +
+          '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" class="btn-order-card">📖 تفاصيل الكتاب</a>' +
           cartBtn +
         '</div>' +
       '</div>' +
@@ -794,6 +814,23 @@
 <style>
   /* شارة غير متوفر حاليا في الصفحة الرئيسية */
   .product-badge--unavail { background: #f59e0b !important; color: #fff !important; font-size: 10px !important; }
+
+  .price-value {
+    display: inline-flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    direction: ltr;
+    unicode-bidi: isolate;
+  }
+
+  .price-currency {
+    order: 1;
+  }
+
+  .price-amount {
+    order: 2;
+  }
 
   /* بطاقات الإلكترونيات — نفس تماماً مع بطاقات الكتب */
   #homeElectronicsGrid .product-img-area {
@@ -819,6 +856,7 @@
 
     var timer        = null;
     var isDragging   = false;
+    var didDrag      = false;
     var dragStartX   = 0;
     var scrollStart  = 0;
     var userActive   = false;
@@ -874,8 +912,10 @@
     /* Mouse drag to scroll */
     rowEl.addEventListener('mousedown', function (e) {
       isDragging  = true;
+      didDrag     = false;
       dragStartX  = e.pageX;
       scrollStart = rowEl.scrollLeft;
+      rowEl.dataset.suppressProductClick = 'false';
       rowEl.style.userSelect = 'none';
       pause();
       e.preventDefault();
@@ -883,6 +923,10 @@
 
     document.addEventListener('mousemove', function (e) {
       if (!isDragging) return;
+      if (Math.abs(e.pageX - dragStartX) > 6) {
+        didDrag = true;
+        rowEl.dataset.suppressProductClick = 'true';
+      }
       rowEl.scrollLeft = scrollStart - (e.pageX - dragStartX);
     });
 
@@ -890,6 +934,11 @@
       if (!isDragging) return;
       isDragging = false;
       rowEl.style.userSelect = '';
+      if (didDrag) {
+        setTimeout(function () {
+          rowEl.dataset.suppressProductClick = 'false';
+        }, 0);
+      }
       setTimeout(resume, 1500);
     });
 

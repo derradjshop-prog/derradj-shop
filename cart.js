@@ -523,6 +523,7 @@
       const btn = e.target.closest('[data-add-to-cart]');
       if (!btn || btn.disabled) return;
       e.preventDefault();
+      e.stopPropagation();
       const cid = parseInt(btn.dataset.addToCart);
       if (isNaN(cid)) return;
       if (Cart.add(cid)) {

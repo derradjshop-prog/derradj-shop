@@ -391,7 +391,8 @@
     <nav class="main-nav">
       <a href="../" class="nav-link">الرئيسية</a>
       <a href="../#categories" class="nav-link">التصنيفات</a>
-      <a href="./"               class="nav-link" style="color:#2563eb;font-weight:700;">الكتب</a>
+      <a href="./"               class="nav-link" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
+      <a href="../Electronique/"         class="nav-link">💻 إلكترونيات</a>
       <a href="../about.html"            class="nav-link">من نحن</a>
       <a href="../faq.html"              class="nav-link">الأسئلة الشائعة</a>
       <a href="../contact.html"          class="nav-link">تواصل معنا</a>
@@ -415,6 +416,7 @@
   <a href="../">الرئيسية</a>
   <a href="../#categories">التصنيفات</a>
   <a href="./" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
+  <a href="../Electronique/">💻 إلكترونيات</a>
   <a href="../about.html">من نحن</a>
   <a href="../faq.html">الأسئلة الشائعة</a>
   <a href="../contact.html">تواصل معنا</a>
@@ -640,7 +642,7 @@
            role="article"
            aria-label="${book.title}">
         ${badge}
-        <a href="${bookUrl}" class="product-img-area" style="display:block;text-decoration:none;">
+        <a href="${bookUrl}" target="_blank" rel="noopener noreferrer" class="product-img-area" style="display:block;text-decoration:none;">
           <picture>
             <source srcset="${book.image.replace(/\.png$/, '.webp')}" type="image/webp" />
             <img
@@ -656,7 +658,7 @@
         </a>
         <div class="product-info">
           <div class="product-cat-label">${book.category}</div>
-          <a href="${bookUrl}" style="text-decoration:none;color:inherit;">
+          <a href="${bookUrl}" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;">
             <h3 class="product-name">${book.title}</h3>
           </a>
           <div class="product-rating">
@@ -665,7 +667,7 @@
           </div>
           <div class="product-prices">${priceLabel}</div>
           <div class="product-card-btns">
-            <a href="${bookUrl}" class="btn-order-card">📖 التفاصيل</a>
+            <a href="${bookUrl}" target="_blank" rel="noopener noreferrer" class="btn-order-card">📖 التفاصيل</a>
             <button class="btn-add-cart" data-add-to-cart="${book.id}"${cartBtnExtra}>${cartBtnText}</button>
           </div>
         </div>
