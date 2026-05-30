@@ -325,6 +325,17 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     تنسيق السعر: دج على اليسار، الرقم على اليمين
+     مثال: دج 1,500  (اتجاه LTR معزول داخل سياق RTL)
+  ══════════════════════════════════════════════════════════ */
+  function formatCartPrice (value) {
+    return '<span class="cart-price-fixed">' +
+             '<span class="cart-price-currency">دج</span>' +
+             '<span class="cart-price-number">' + Number(value).toLocaleString('en-US') + '</span>' +
+           '</span>';
+  }
+
+  /* ══════════════════════════════════════════════════════════
      عرض محتوى السلة
   ══════════════════════════════════════════════════════════ */
   function renderCart () {
@@ -380,8 +391,8 @@
           <div class="cart-item-name">${item.shortName || item.name}</div>
           ${isUnavail
             ? `<div class="cart-item-unavail-badge">⚠️ غير متوفر حاليا</div>`
-            : `<div class="cart-item-price">${item.priceDisplay ? item.priceDisplay : item.price.toLocaleString('en-US') + ' دج'} / وحدة</div>
-               <div class="cart-item-sub">${item.priceDisplay ? '—' : (item.price * item.qty).toLocaleString('en-US') + ' دج'}</div>`
+            : `<div class="cart-item-price">${item.priceDisplay ? item.priceDisplay : formatCartPrice(item.price)} / وحدة</div>
+               <div class="cart-item-sub">${item.priceDisplay ? '—' : formatCartPrice(item.price * item.qty)}</div>`
           }
         </div>
         <div class="cart-item-actions">
@@ -407,7 +418,7 @@
         </div>
         <div class="cart-total-row">
           <span>مجموع المنتجات المتوفرة</span>
-          <strong>${total.toLocaleString('en-US')} دج</strong>
+          <strong>${formatCartPrice(total)}</strong>
         </div>
         <div class="cart-free-ship">🚚 سعر التوصيل يُحسب حسب الولاية عند إتمام الطلب</div>
         <button class="cart-checkout-btn" disabled style="background:#94a3b8;cursor:not-allowed;">
@@ -417,7 +428,7 @@
       footer.innerHTML = `
         <div class="cart-total-row">
           <span>المجموع الكلي</span>
-          <strong>${total.toLocaleString('en-US')} دج</strong>
+          <strong>${formatCartPrice(total)}</strong>
         </div>
         <div class="cart-free-ship">🚚 سعر التوصيل يُحسب حسب الولاية عند إتمام الطلب</div>
         <button class="cart-checkout-btn" id="cartCheckoutBtn">✅ إتمام الطلب</button>`;
@@ -504,6 +515,18 @@
       .cart-unavail-warning { background:#fef3c7; border:1px solid #fde68a; border-radius:10px; padding:10px 14px; font-size:13px; color:#78350f; font-weight:700; margin-bottom:10px; line-height:1.5; }
       .cart-toast--warn { background:#d97706 !important; }
       [data-add-to-cart].btn-unavailable, button.btn-unavailable { opacity:.65 !important; cursor:not-allowed !important; }
+
+      /* ── Cart price layout: دج [LEFT] · number [RIGHT] ── */
+      .cart-price-fixed {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        direction: ltr;        /* isolates from page RTL so order is always LTR */
+        unicode-bidi: isolate;
+        white-space: nowrap;
+      }
+      .cart-price-currency { order: 1; }   /* دج  — appears LEFT  */
+      .cart-price-number   { order: 2; }   /* 1,500 — appears RIGHT */
     `;
     document.head.appendChild(style);
 

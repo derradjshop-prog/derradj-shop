@@ -620,6 +620,18 @@
     .pf-total > strong { font-size: 16px; font-weight: 900; color: var(--primary); direction: ltr; }
     .pf-sep { border: none; border-top: 1px solid rgba(29,78,216,.2); margin: 3px 0; }
 
+    /* ── Currency layout: دج LEFT · number RIGHT ────────── */
+    .checkout-price-fixed {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      direction: ltr;
+      unicode-bidi: isolate;
+      white-space: nowrap;
+    }
+    .checkout-price-currency { order: 1; }
+    .checkout-price-number   { order: 2; }
+
     /* === بطاقات طريقة الدفع === */
     .pm-grid {
       display: grid;
@@ -2064,13 +2076,19 @@ document.getElementById('paymentReceipt')?.addEventListener('change', function (
 ══════════════════════════════════════════════════════════════ */
 let productCounter = 0;
 
-/* تنسيق المبلغ: 7,000 دج — بدون مشاكل wrap أو BiDi */
+/* تنسيق المبلغ: دج [يسار] · الرقم [يمين] — بدون مشاكل BiDi */
 function formatDZD(n) {
-  return Number(n || 0).toLocaleString('en-US') + ' دج';
+  return '<span class="checkout-price-fixed">' +
+           '<span class="checkout-price-currency">دج</span>' +
+           '<span class="checkout-price-number">' + Number(n || 0).toLocaleString('en-US') + '</span>' +
+         '</span>';
 }
 
 function formatDZDSummary(n) {
-  return Number(n || 0).toLocaleString('en-US') + ' دج';
+  return '<span class="checkout-price-fixed">' +
+           '<span class="checkout-price-currency">دج</span>' +
+           '<span class="checkout-price-number">' + Number(n || 0).toLocaleString('en-US') + '</span>' +
+         '</span>';
 }
 
 /* خيارات القائمة المنسدلة — تتجاهل المخفية وغير المتوفرة */
@@ -2255,10 +2273,10 @@ function createProductRow() {
     const q = Math.max(1, parseInt(qty.value) || 1);
     qty.value = q;
 
-    prEl.textContent = formatDZD(cat.price);
+    prEl.innerHTML = formatDZD(cat.price);
     prEl.classList.add('loaded');
 
-    subEl.textContent = formatDZD(cat.price * q);
+    subEl.innerHTML = formatDZD(cat.price * q);
     subEl.classList.add('loaded');
 
     sel.classList.add('has-value');
@@ -2495,7 +2513,7 @@ function recalcAll() {
   const hasWilaya = !!document.getElementById('wilayaHidden')?.value?.trim();
   const grandTotal = subtotal + (hasWilaya ? shipping : 0);
 
-  document.getElementById('productsSubtotal').textContent = formatDZD(subtotal);
+  document.getElementById('productsSubtotal').innerHTML = formatDZD(subtotal);
   document.getElementById('productsTotalHidden').value    = String(subtotal);
   document.getElementById('shippingFeeInput').value       = hasWilaya ? String(shipping) : '0';
   document.getElementById('grandTotalInput').value        = String(grandTotal);
@@ -2507,10 +2525,10 @@ function recalcAll() {
   const grandTotalDisp  = document.getElementById('grandTotalDisplay');
 
   if (hasWilaya && subtotal > 0) {
-    shippingDisplay.textContent = formatDZD(shipping) + (officeUnavailable ? ' (منزلي فقط)' : '');
+    shippingDisplay.innerHTML = formatDZD(shipping) + (officeUnavailable ? ' <span style="font-size:11px;opacity:.7;">(منزلي فقط)</span>' : '');
     shippingLine.style.display   = 'flex';
     totalSep.style.display       = 'block';
-    grandTotalDisp.textContent   = formatDZD(grandTotal);
+    grandTotalDisp.innerHTML     = formatDZD(grandTotal);
     grandTotalLine.style.display = 'flex';
   } else {
     shippingLine.style.display   = 'none';
