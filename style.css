@@ -705,16 +705,23 @@ input, select, textarea { font-family: inherit; }
   text-align: center;
 }
 
+/* Title anchor wrapper — must be full-width so ellipsis works */
+.product-info > a {
+  width: 100%;
+  display: block;
+}
+
 .product-name {
   font-size: 14px;
   font-weight: 800;
   color: #1e293b;
   line-height: 1.5;
   text-align: center;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  white-space: nowrap;      /* keep to single line */
   overflow: hidden;
+  text-overflow: ellipsis;  /* cut with … when title is too long */
+  width: 100%;
+  display: block;
 }
 
 .product-rating {
@@ -722,6 +729,7 @@ input, select, textarea { font-family: inherit; }
   align-items: center;
   justify-content: center;
   gap: 4px;
+  /* no min-height — subtitle is always single-line via white-space:nowrap below */
 }
 .product-stars       { display: none; }
 .product-rating-count {
@@ -772,7 +780,7 @@ input, select, textarea { font-family: inherit; }
   display: flex;
   flex-direction: row;
   gap: 8px;
-  margin-top: 10px;
+  margin-top: 10px; /* fixed compact gap — no artificial empty space */
   align-items: stretch;
   width: 100%;
   box-sizing: border-box;
