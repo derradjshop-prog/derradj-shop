@@ -296,15 +296,7 @@
       background: #f8fafc;
     }
 
-    /* Book grid — full cover, uniform card height, no cropping */
-    #booksGrid .product-img-area {
-      height: 220px;
-      background: #f8fafc;
-    }
-
-    #booksGrid .product-img-area img {
-      object-fit: contain;
-    }
+    /* #booksGrid image-area — handled by shared .product-img-area base in style.css */
 
     .modal-book-category {
       display: inline-block;
@@ -616,19 +608,24 @@
 
   /* ── بناء HTML كارت كتاب واحد ──────────────────────── */
   function buildCard(book, idx) {
-    const isAvail    = book.available !== false;
-    const badgeText  = isAvail ? 'متوفر' : 'غير متوفر حاليا';
-    const badgeCls   = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
-    const badge      = `<div class="${badgeCls}" data-avail-badge="${book.id}">${badgeText}</div>`;
-    const bookUrl    = book.url || '#';
-    const priceLabel = `<span class="price-current">${book.price.toLocaleString('en-US')} دج</span>`;
+    const isAvail   = book.available !== false;
+    const badgeText = isAvail ? 'متوفر' : 'غير متوفر حاليا';
+    const badgeCls  = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
+    const bookUrl   = book.url || '#';
 
-    const cartBtnText  = isAvail ? '🛒 أضف للسلة' : 'غير متوفر حاليا';
-    const cartBtnExtra = isAvail ? '' : ' disabled style="opacity:.6;cursor:not-allowed;"';
+    /* Price: "دج 1,500" — matches home-page format */
+    const formatted  = book.price.toLocaleString('en-US');
+    const priceLabel = `<span class="price-current"><span class="price-value"><span class="price-currency">دج</span><span class="price-amount">${formatted}</span></span></span>`;
 
-    /* idx 0 = first visible card: eager + highest priority
-       idx 1-2 = first desktop row visible on arrival: eager, no lazy delay
-       idx 3+ = below the fold: lazy load to save bandwidth */
+    /* Old price + discount badge when available */
+    const oldPrice = book.oldPrice || book.originalPrice || book.compareAtPrice;
+    const discount = book.discount || book.discountPercent;
+    const extraPrice = (oldPrice ? `<span class="price-old"><span class="price-value"><span class="price-currency">دج</span><span class="price-amount">${oldPrice.toLocaleString('en-US')}</span></span></span>` : '')
+                     + (discount ? `<span class="discount-tag">${discount}</span>` : '');
+
+    /* English subtitle — prefer titleEn, fallback to author */
+    const subtitle = book.titleEn || book.author || '';
+
     const loadAttr = idx === 0
       ? 'loading="eager" fetchpriority="high" decoding="async"'
       : idx < 3
@@ -641,8 +638,8 @@
            data-title="${book.title.toLowerCase()}"
            role="article"
            aria-label="${book.title}">
-        ${badge}
-        <a href="${bookUrl}" target="_blank" rel="noopener noreferrer" class="product-img-area" style="display:block;text-decoration:none;">
+        <div class="${badgeCls}" data-avail-badge="${book.id}">${badgeText}</div>
+        <a href="${bookUrl}" target="_blank" rel="noopener noreferrer" class="product-img-area" style="text-decoration:none;">
           <picture>
             <source srcset="${book.image.replace(/\.png$/, '.webp')}" type="image/webp" />
             <img
@@ -663,12 +660,12 @@
           </a>
           <div class="product-rating">
             <span class="product-stars">📖</span>
-            <span class="product-rating-count">${book.author}</span>
+            <span class="product-rating-count">${subtitle}</span>
           </div>
-          <div class="product-prices">${priceLabel}</div>
+          <div class="product-prices">${priceLabel}${extraPrice}</div>
           <div class="product-card-btns">
-            <a href="${bookUrl}" target="_blank" rel="noopener noreferrer" class="btn-order-card">📖 التفاصيل</a>
-            <button class="btn-add-cart" data-add-to-cart="${book.id}"${cartBtnExtra}>${cartBtnText}</button>
+            <a href="${bookUrl}" target="_blank" rel="noopener noreferrer" class="btn-order-card">📖 تفاصيل</a>
+            <button class="btn-add-cart" data-add-to-cart="${book.id}"${isAvail ? '' : ' disabled'}>${isAvail ? '🛒 أضف للسلة' : 'غير متوفر'}</button>
           </div>
         </div>
       </div>`;
@@ -813,14 +810,7 @@
 })();
 </script>
 
-<style>
-  /* شارة غير متوفر حاليا */
-  .product-badge--unavail {
-    background: #f59e0b !important;
-    color: #fff !important;
-    font-size: 10px !important;
-  }
-</style>
+<!-- .product-badge--unavail style now in shared style.css -->
 
 <!-- نظام السلة — يجب تحميله آخراً ليلتقط data-add-to-cart -->
 <script src="../cart.js"></script>

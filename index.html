@@ -233,15 +233,15 @@
 <!-- ===================== ELECTRONICS PRODUCTS ===================== -->
 <section class="products-section section-wrap product-slider-section" id="electronics" style="background:#fff;">
   <div class="container">
-    <div class="section-header product-slider-header">
-      <div class="section-label">💻 منتجات إلكترونية مختارة</div>
+    <div class="section-header product-slider-header centered">
+      <div class="section-label">💻 منتجات إلكترونية</div>
       <h2 class="section-title">منتجات إلكترونية مختارة</h2>
       <p class="section-subtitle">إكسسوارات وأدوات إلكترونية مختارة لتحسين إنتاجيتك وراحتك أثناء العمل والدراسة</p>
     </div>
-    <div class="product-slider-row" id="homeElectronicsGrid">
+    <div class="product-carousel" id="homeElectronicsGrid">
       <div class="product-card" data-product-url="/Electronique/laptop/adjustable-laptop-stand.html">
         <div class="product-badge new" data-avail-badge="83">متوفر</div>
-        <a href="/Electronique/laptop/adjustable-laptop-stand.html" target="_blank" rel="noopener noreferrer" class="product-img-area" style="display:block;text-decoration:none;">
+        <a href="/Electronique/laptop/adjustable-laptop-stand.html" target="_blank" rel="noopener noreferrer" class="product-img-area" style="text-decoration:none;">
           <img src="/Electronique/laptop/main1.png"
                alt="حامل اللابتوب القابل للتعديل"
                loading="lazy"
@@ -262,7 +262,7 @@
 <span class="price-current"><span class="price-value"><span class="price-currency">دج</span><span class="price-amount">1,500</span></span></span>
           </div>
           <div class="product-card-btns">
-            <a href="/Electronique/laptop/adjustable-laptop-stand.html" target="_blank" rel="noopener noreferrer" class="btn-order-card">💻 تفاصيل المنتج</a>
+            <a href="/Electronique/laptop/adjustable-laptop-stand.html" target="_blank" rel="noopener noreferrer" class="btn-order-card">💻 تفاصيل</a>
             <button class="btn-add-cart" data-add-to-cart="83">🛒 أضف للسلة</button>
           </div>
         </div>
@@ -274,13 +274,13 @@
 <!-- ===================== BOOKS PREVIEW ===================== -->
 <section class="products-section section-wrap product-slider-section" id="books" style="background:#f8fafc;">
   <div class="container">
-    <div class="section-header product-slider-header">
+    <div class="section-header product-slider-header centered">
       <div class="section-label">📚 كتب مختارة</div>
       <h1 class="section-title">متجر جزائري أونلاين — تسوّق براحتك</h1>
       <p class="section-subtitle">اكتشف مجموعة من الكتب المختارة في تطوير الذات، الفلسفة، علم النفس، الإدارة والعلوم</p>
     </div>
 
-    <div class="product-slider-row" id="homeBooksGrid">
+    <div class="product-carousel" id="homeBooksGrid">
       <!-- تُعرض تلقائياً من books-data.js -->
     </div>
   </div>
@@ -728,7 +728,7 @@
     const card = e.target.closest('#homeElectronicsGrid .product-card[data-product-url]');
     if (!card) return;
     if (e.target.closest('a, button, [data-add-to-cart]')) return;
-    if (card.closest('.product-slider-row')?.dataset.suppressProductClick === 'true') return;
+    if (card.closest('.product-carousel')?.dataset.suppressProductClick === 'true') return;
 
     window.open(card.dataset.productUrl, '_blank', 'noopener,noreferrer');
   });
@@ -761,18 +761,20 @@
     var badgeText = isAvail ? 'متوفر' : 'غير متوفر حاليا';
     var cartBtn   = isAvail
       ? '<button class="btn-add-cart" data-add-to-cart="' + book.id + '">🛒 أضف للسلة</button>'
-      : '<button class="btn-add-cart" disabled style="opacity:.6;cursor:not-allowed;">غير متوفر حاليا</button>';
+      : '<button class="btn-add-cart" disabled>غير متوفر</button>';
 
-    /* First card: highest-priority eager. Next 2: eager. All others: lazy (offscreen in slider). */
+    /* First card: highest-priority eager. Next 2: eager. All others: lazy. */
     var imgAttrs = idx === 0
       ? 'loading="eager" fetchpriority="high" decoding="async"'
       : idx < 3
         ? 'loading="eager" decoding="async"'
         : 'loading="lazy" decoding="async"';
 
+    var englishSub = book.titleEn || book.author || '';
+
     return '<div class="product-card">' +
       '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
-      '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" class="product-img-area" style="display:block;text-decoration:none;">' +
+      '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" class="product-img-area" style="text-decoration:none;">' +
         '<picture>' +
           '<source srcset="books/' + book.image.replace('.png', '.webp') + '" type="image/webp" />' +
           '<img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
@@ -787,11 +789,11 @@
         '</a>' +
         '<div class="product-rating">' +
           '<span class="product-stars">📖</span>' +
-          '<span class="product-rating-count">' + book.author + '</span>' +
+          '<span class="product-rating-count">' + englishSub + '</span>' +
         '</div>' +
         '<div class="product-prices">' + priceLabel + '</div>' +
         '<div class="product-card-btns">' +
-          '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" class="btn-order-card">📖 تفاصيل الكتاب</a>' +
+          '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" class="btn-order-card">📖 تفاصيل</a>' +
           cartBtn +
         '</div>' +
       '</div>' +
@@ -811,95 +813,56 @@
   document.addEventListener('derradj:availability-loaded', renderHomeBooks);
 })();
 </script>
-<style>
-  /* شارة غير متوفر حاليا في الصفحة الرئيسية */
-  .product-badge--unavail { background: #f59e0b !important; color: #fff !important; font-size: 10px !important; }
-
-  .price-value {
-    display: inline-flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 4px;
-    direction: ltr;
-    unicode-bidi: isolate;
-  }
-
-  .price-currency {
-    order: 1;
-  }
-
-  .price-amount {
-    order: 2;
-  }
-
-  /* بطاقات الإلكترونيات — نفس تماماً مع بطاقات الكتب */
-  #homeElectronicsGrid .product-img-area {
-    height: 220px;
-    background: #f8fafc;
-  }
-  #homeElectronicsGrid .product-img-area img {
-    object-fit: contain;
-  }
-</style>
+<!-- card styles and price-value layout now fully in style.css -->
 
 <script src="cart.js"></script>
 <!-- whatsapp-float -->
 <script src="whatsapp-float.js" defer></script>
 
-<!-- ===================== PRODUCT SLIDER — Auto-scroll & Drag ===================== -->
+<!-- ===================== PRODUCT CAROUSEL — Auto-scroll, Drag & Loop ===================== -->
 <script>
 (function () {
   'use strict';
 
-  function initSlider(rowEl) {
+  /* ── Initialise one carousel track element ───────────────────────────── */
+  function initCarousel(rowEl) {
     if (!rowEl) return;
 
-    var timer        = null;
-    var isDragging   = false;
-    var didDrag      = false;
-    var dragStartX   = 0;
-    var scrollStart  = 0;
-    var userActive   = false;
+    var timer       = null;
+    var isDragging  = false;
+    var didDrag     = false;
+    var dragStartX  = 0;
+    var scrollStart = 0;
+    var userActive  = false;
+    var touchTimer  = null;
 
-    function getCardStep() {
+    /* Measure one card + gap at runtime — works with any card width (px or %) */
+    function cardStep() {
       var card = rowEl.querySelector('.product-card');
-      if (!card) return 276;
-      var gap = parseFloat(window.getComputedStyle(rowEl).gap) || 16;
+      if (!card) return 280;
+      var style = window.getComputedStyle(rowEl);
+      var gap   = parseFloat(style.columnGap || style.gap) || 16;
       return card.offsetWidth + gap;
     }
 
+    /* Advance one card; loop smoothly back to start when at end */
     function step() {
       if (userActive) return;
-      var maxScroll = rowEl.scrollWidth - rowEl.clientWidth;
-      if (maxScroll <= 0) return;
-      if (rowEl.scrollLeft + getCardStep() >= maxScroll - 4) {
-        rowEl.scrollTo({ left: 0, behavior: 'smooth' });
-      } else {
-        rowEl.scrollBy({ left: getCardStep(), behavior: 'smooth' });
-      }
+      var max  = rowEl.scrollWidth - rowEl.clientWidth;
+      if (max <= 0) return;
+      var next = rowEl.scrollLeft + cardStep();
+      rowEl.scrollTo({ left: next >= max - 4 ? 0 : next, behavior: 'smooth' });
     }
 
-    function startTimer() {
-      clearInterval(timer);
-      timer = setInterval(step, 4000);
-    }
+    function startTimer() { clearInterval(timer); timer = setInterval(step, 4000); }
+    function pause()      { userActive = true;  clearInterval(timer); }
+    function resume()     { userActive = false; startTimer(); }
 
-    function pause() {
-      userActive = true;
-      clearInterval(timer);
-    }
-
-    function resume() {
-      userActive = false;
-      startTimer();
-    }
-
-    /* Hover pause/resume */
+    /* Hover — pause while cursor is over the carousel */
     rowEl.addEventListener('mouseenter', pause);
     rowEl.addEventListener('mouseleave', resume);
 
-    /* Touch pause — resume 2.5 s after last touch */
-    var touchTimer = null;
+    /* Touch — pause immediately; resume 2.5 s after last finger-lift */
     rowEl.addEventListener('touchstart', function () {
       pause();
       clearTimeout(touchTimer);
@@ -909,7 +872,7 @@
       touchTimer = setTimeout(resume, 2500);
     }, { passive: true });
 
-    /* Mouse drag to scroll */
+    /* Mouse drag — scroll while dragging; suppress card-click if user dragged */
     rowEl.addEventListener('mousedown', function (e) {
       isDragging  = true;
       didDrag     = false;
@@ -920,50 +883,47 @@
       pause();
       e.preventDefault();
     });
-
     document.addEventListener('mousemove', function (e) {
       if (!isDragging) return;
-      if (Math.abs(e.pageX - dragStartX) > 6) {
-        didDrag = true;
-        rowEl.dataset.suppressProductClick = 'true';
-      }
-      rowEl.scrollLeft = scrollStart - (e.pageX - dragStartX);
+      var dx = e.pageX - dragStartX;
+      if (Math.abs(dx) > 6) { didDrag = true; rowEl.dataset.suppressProductClick = 'true'; }
+      rowEl.scrollLeft = scrollStart - dx;
     });
-
     document.addEventListener('mouseup', function () {
       if (!isDragging) return;
       isDragging = false;
       rowEl.style.userSelect = '';
-      if (didDrag) {
-        setTimeout(function () {
-          rowEl.dataset.suppressProductClick = 'false';
-        }, 0);
-      }
+      if (didDrag) setTimeout(function () { rowEl.dataset.suppressProductClick = 'false'; }, 0);
       setTimeout(resume, 1500);
     });
 
     startTimer();
   }
 
-  /* Poll until the grid has at least one card rendered, then init */
-  function waitAndInit(id) {
-    var row = document.getElementById(id);
-    if (!row) return;
-    if (row.querySelector('.product-card')) {
-      initSlider(row);
-    } else {
-      setTimeout(function () { waitAndInit(id); }, 150);
-    }
+  /* ── Auto-discover every .product-carousel on the page ──────────────── */
+  /* To add a new carousel section in the future:
+       1. Wrap the product cards in a <div class="product-carousel">
+       2. No JS changes needed — this function picks it up automatically. */
+  function initAll() {
+    document.querySelectorAll('.product-carousel').forEach(function (el) {
+      if (el.querySelector('.product-card')) {
+        initCarousel(el);
+      } else {
+        /* Dynamic content (e.g. books rendered by books-data.js) — poll until ready */
+        var poll = setInterval(function () {
+          if (el.querySelector('.product-card')) {
+            clearInterval(poll);
+            initCarousel(el);
+          }
+        }, 100);
+      }
+    });
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-      waitAndInit('homeBooksGrid');
-      waitAndInit('homeElectronicsGrid');
-    });
+    document.addEventListener('DOMContentLoaded', initAll);
   } else {
-    waitAndInit('homeBooksGrid');
-    waitAndInit('homeElectronicsGrid');
+    initAll();
   }
 })();
 </script>
