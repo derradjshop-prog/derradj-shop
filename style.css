@@ -2934,3 +2934,205 @@ img { max-width: 100%; height: auto; }
   .product-faq-question { font-size: 14px; padding: 16px 18px; }
   .product-faq-answer   { padding: 0 18px 16px; }
 }
+
+/* ══════════════════════════════════════════════════════════
+   PRODUCT PAGE — 3-COLUMN REDESIGN
+   Class .has-purchase-box is added by book-page-enhancements.js
+   Layout: [image gallery] [product info] [purchase sidebar]
+   ══════════════════════════════════════════════════════════ */
+
+/* ─── 3-column hero grid ─────────────────────────────────── */
+.product-hero-grid.has-purchase-box {
+  grid-template-columns: 300px 1fr 300px;
+  gap: 28px;
+  align-items: start;
+}
+
+/* Override per-page inline max-width on the gallery */
+.product-hero-grid.has-purchase-box .product-img-gallery {
+  max-width: none !important;
+  width: 100%;
+  position: sticky;
+  top: 88px;
+}
+
+/* Styled main image frame */
+.product-hero-grid.has-purchase-box .product-main-image-box {
+  border-radius: 18px;
+  border: 1.5px solid #e8edf5;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+/* ─── Info column improvements ───────────────────────────── */
+.product-hero-grid.has-purchase-box .product-details .product-cat-label {
+  color: #7c3aed;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.product-hero-grid.has-purchase-box .product-details h1 {
+  font-size: clamp(22px, 3.2vw, 34px);
+  margin-bottom: 8px;
+}
+.product-hero-grid.has-purchase-box .product-details .product-features {
+  margin-bottom: 0;
+}
+
+/* ─── Purchase Sidebar ───────────────────────────────────── */
+.product-purchase-box {
+  background: #ffffff;
+  border: 1.5px solid #e8edf5;
+  border-radius: 20px;
+  padding: 22px 20px;
+  position: sticky;
+  top: 88px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+}
+
+/* Availability pill */
+.purchase-avail-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: #dcfce7;
+  color: #15803d;
+  padding: 7px 14px;
+  border-radius: 99px;
+  font-size: 13px;
+  font-weight: 700;
+  width: fit-content;
+}
+
+/* Thin separator */
+.purchase-divider {
+  height: 1px;
+  background: #f1f5f9;
+  margin: 0;
+}
+
+/* Strip the green card background from price box when inside sidebar */
+.product-purchase-box .product-price-box {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  margin-bottom: 0 !important;
+  border-radius: 0 !important;
+}
+
+/* Full-width stacked CTA buttons inside sidebar */
+.product-purchase-box .product-cta-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 0;
+}
+.product-purchase-box .btn-buy-now {
+  flex: none;
+  width: 100%;
+  min-width: unset;
+  margin-top: 0;
+}
+.product-purchase-box .btn-order-product {
+  flex-basis: auto;
+  width: 100%;
+  margin-top: 0;
+}
+.product-purchase-box .product-cta-buttons .btn-add-cart {
+  flex: none;
+  width: 100%;
+  min-width: unset;
+  margin-top: 0;
+}
+.product-purchase-box .btn-whatsapp-product {
+  width: 100%;
+  margin-top: 0;
+}
+
+/* Trust badges in single column inside sidebar */
+.product-purchase-box .trust-badges {
+  grid-template-columns: 1fr !important;
+  gap: 6px;
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 12px 14px;
+  border: 1px solid #f1f5f9;
+  margin-top: 0;
+}
+.product-purchase-box .trust-badge {
+  padding: 5px 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  text-align: right;
+}
+
+/* Delivery highlights row */
+.purchase-delivery-info {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 14px;
+}
+.delivery-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: #475569;
+  line-height: 1.5;
+  direction: rtl;
+}
+.delivery-info-item .di-icon {
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+/* ─── Responsive breakpoints ─────────────────────────────── */
+
+/* Tablet — image left spans both rows; info + purchase stacked right */
+@media (max-width: 1000px) {
+  .product-hero-grid.has-purchase-box {
+    grid-template-columns: 220px 1fr;
+    grid-template-rows: auto auto;
+  }
+  .product-hero-grid.has-purchase-box .product-img-gallery {
+    grid-row: 1 / span 2;
+    position: sticky;
+    top: 88px;
+  }
+  .product-hero-grid.has-purchase-box .product-details {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .product-hero-grid.has-purchase-box .product-purchase-box {
+    grid-column: 2;
+    grid-row: 2;
+    position: static;
+  }
+}
+
+/* Mobile — single column, natural reading order */
+@media (max-width: 640px) {
+  .product-hero-grid.has-purchase-box {
+    grid-template-columns: 1fr;
+  }
+  .product-hero-grid.has-purchase-box .product-img-gallery {
+    grid-row: auto !important;
+    grid-column: 1 !important;
+    max-width: 220px !important;
+    margin: 0 auto;
+    position: static !important;
+  }
+  .product-hero-grid.has-purchase-box .product-details,
+  .product-hero-grid.has-purchase-box .product-purchase-box {
+    grid-column: 1;
+    grid-row: auto;
+    position: static;
+  }
+}

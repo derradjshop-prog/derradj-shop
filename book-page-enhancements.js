@@ -57,6 +57,59 @@
   var ROOT = rootPath();
 
   /* ═══════════════════════════════════════════════════════
+     0. 3-Column Product Layout Restructure
+     Extracts price + CTA buttons + trust badges from the
+     info column and moves them into a sticky purchase sidebar.
+     CSS class .has-purchase-box switches .product-hero-grid
+     from 2-column to 3-column layout.
+     ═══════════════════════════════════════════════════════ */
+  function restructureProductLayout() {
+    var heroGrid = document.querySelector('.product-hero-grid');
+    if (!heroGrid || document.querySelector('.product-purchase-box')) return;
+
+    var details = heroGrid.querySelector('.product-details');
+    if (!details) return;
+
+    var priceBox   = details.querySelector('.product-price-box');
+    var ctaBtns    = details.querySelector('.product-cta-buttons');
+    var trustBadge = details.querySelector('.trust-badges');
+
+    /* Need at least the action buttons to build the sidebar */
+    if (!ctaBtns) return;
+
+    var box = document.createElement('div');
+    box.className = 'product-purchase-box';
+
+    /* 1. Availability indicator */
+    box.insertAdjacentHTML('beforeend',
+      '<div class="purchase-avail-badge">✅ متوفر — يمكن الطلب الآن</div>'
+    );
+    box.insertAdjacentHTML('beforeend', '<div class="purchase-divider"></div>');
+
+    /* 2. Move price box (appendChild moves, not clones, so no duplicate) */
+    if (priceBox) box.appendChild(priceBox);
+
+    /* 3. Move CTA buttons (WhatsApp btn already injected by step 1 above) */
+    box.appendChild(ctaBtns);
+
+    /* 4. Move trust badges */
+    if (trustBadge) box.appendChild(trustBadge);
+
+    /* 5. Delivery highlights (new static HTML) */
+    box.insertAdjacentHTML('beforeend',
+      '<div class="purchase-delivery-info">' +
+        '<div class="delivery-info-item"><span class="di-icon">🚚</span><span>توصيل 24–72 ساعة لجميع ولايات الجزائر</span></div>' +
+        '<div class="delivery-info-item"><span class="di-icon">💳</span><span>الدفع مسبق أو عند الاستلام</span></div>' +
+        '<div class="delivery-info-item"><span class="di-icon">🛡️</span><span>ضمان واستبدال حسب الحالة</span></div>' +
+      '</div>'
+    );
+
+    /* Append sidebar as 3rd grid column */
+    heroGrid.appendChild(box);
+    heroGrid.classList.add('has-purchase-box');
+  }
+
+  /* ═══════════════════════════════════════════════════════
      1. WhatsApp Contact Button
      ═══════════════════════════════════════════════════════ */
   function getPageTitle() {
@@ -324,9 +377,10 @@
      Init
      ═══════════════════════════════════════════════════════ */
   function init() {
-    injectWhatsAppBtn();
-    loadRelatedProducts();
-    injectFAQ();
+    injectWhatsAppBtn();        /* step 1: add WA btn into .product-cta-buttons */
+    restructureProductLayout(); /* step 2: move price+buttons+trust into sidebar */
+    loadRelatedProducts();      /* step 3: related products carousel below main */
+    injectFAQ();                /* step 4: FAQ accordion at the bottom */
   }
 
   if (document.readyState === 'loading') {
