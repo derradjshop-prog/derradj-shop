@@ -2534,6 +2534,80 @@ img { max-width: 100%; height: auto; }
 }
 
 /* ══════════════════════════════════════════════════════════
+   PRODUCT SLIDER — شريط منتجات أفقي بتمرير تلقائي
+   ══════════════════════════════════════════════════════════ */
+
+/* Section wrapper — no clip, keeps hover shadows visible */
+.product-slider-section { overflow: visible; }
+
+/* Offset for fixed 68 px header so anchor links don't get hidden behind it */
+#books,
+#electronics,
+#categories,
+#support {
+  scroll-margin-top: 80px;
+}
+
+/* Hide the old CTA row if it ever reappears */
+.products-cta-row { display: none; }
+
+/* Compact section header for slider sections */
+.product-slider-header {
+  text-align: right;
+  margin-bottom: 20px;
+}
+.product-slider-header .section-label {
+  margin-bottom: 6px;
+}
+.product-slider-header .section-title {
+  font-size: clamp(18px, 2.6vw, 26px);
+  margin-bottom: 6px;
+}
+.product-slider-header .section-subtitle {
+  font-size: 14px;
+  max-width: 680px;
+  margin: 0;
+  text-align: right;
+}
+
+/* Horizontal scrolling track */
+.product-slider-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 4px 18px;
+  direction: ltr;            /* Normalises scrollLeft to 0→max across all browsers */
+  cursor: grab;
+  -ms-overflow-style: none;  /* IE/Edge — hide scrollbar */
+}
+.product-slider-row:active { cursor: grabbing; }
+
+/* Thin styled scrollbar on desktop */
+.product-slider-row::-webkit-scrollbar       { height: 5px; }
+.product-slider-row::-webkit-scrollbar-track { background: var(--bg-alt); border-radius: 4px; }
+.product-slider-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.product-slider-row::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* Fixed card width — keeps existing card design intact */
+.product-slider-row .product-card {
+  flex: 0 0 260px;
+  width: 260px;
+  scroll-snap-align: start;
+}
+
+/* On mobile, slightly narrower cards so 1.5–2 show at once */
+@media (max-width: 480px) {
+  .product-slider-row .product-card {
+    flex: 0 0 220px;
+    width: 220px;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════
    GLOBAL MOBILE OVERFLOW FIX
    يمنع أي تمرير أفقي أو فراغ جانبي على الهواتف
    ══════════════════════════════════════════════════════════ */

@@ -1,7 +1,7 @@
 {
-  "name": "Derradj Shop — كتب تطوير الذات والفلسفة وعلم النفس في الجزائر",
+  "name": "Derradj Shop - متجر جزائري أونلاين | منتجات متنوعة",
   "short_name": "Derradj Shop",
-  "description": "متجر كتب جزائري متخصص في تطوير الذات، الفلسفة، علم النفس والإدارة. كتب مختارة بعناية مع توصيل سريع لجميع ولايات الجزائر.",
+  "description": "Derradj Shop هو متجر جزائري أونلاين يوفر منتجات متنوعة مع توصيل سريع إلى جميع ولايات الجزائر.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -10,7 +10,7 @@
   "lang": "ar",
   "dir": "rtl",
   "orientation": "portrait",
-  "categories": ["shopping", "books", "education"],
+  "categories": ["shopping", "books", "education", "electronics"],
   "icons": [
     {
       "src": "/Logo.png",

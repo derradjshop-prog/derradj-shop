@@ -3,7 +3,14 @@
     "allow": [
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\pc\\\\Desktop\\\\Derradj-shop\" -Force)",
       "Bash(Select-Object Name, PSIsContainer)",
-      "Bash(python -c ' *)"
+      "Bash(python -c ' *)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Social Media\\\\Desktop\\\\derradj-shop\" -Recurse -Force)",
+      "Bash(Select-Object FullName)",
+      "PowerShell(head -100)",
+      "PowerShell(New-Item -ItemType Directory -Force -Path \"C:\\\\Users\\\\Social Media\\\\Desktop\\\\derradj-shop\\\\Electronique\\\\laptop\")",
+      "PowerShell(Remove-Item -Recurse -Force \"c:\\\\Users\\\\Social Media\\\\Desktop\\\\derradj-shop\\\\products\\\\arduino-uno-r3-super-learning-kit\" -Confirm:$false)",
+      "PowerShell(Remove-Item -Recurse -Force \"c:\\\\Users\\\\Social Media\\\\Desktop\\\\derradj-shop\\\\products\\\\electronics-components-starter-kit\" -Confirm:$false)",
+      "Bash(grep -E \"\\\\.html$|\\\\.json$\")"
     ]
   }
 }

@@ -107,6 +107,8 @@
     { catalogId: 80, name: 'الإنسان ذلك المجهول',                                         shortName: 'الإنسان ذلك المجهول',                        price: 2000, available: true, image: BASE + '/books/man-unknown/main.png' },
     { catalogId: 81, name: 'وتظن أنك نجوت',                                               shortName: 'وتظن أنك نجوت',                              price: 1400, available: true, image: BASE + '/books/wa-tazun-annaka-najawt/main.png' },
     { catalogId: 82, name: 'كوتلر يتحدث عن التسويق',                                      shortName: 'كوتلر يتحدث عن التسويق',                     price:  990, available: true, image: BASE + '/books/kotler-marketing/main.png' },
+    /* ── إلكترونيات ── */
+    { catalogId: 83, name: 'حامل اللابتوب القابل للتعديل', shortName: 'حامل اللابتوب', price: 1500, available: true, image: '/Electronique/laptop/main1.png' },
   ];
 
   /* ══════════════════════════════════════════════════════════
@@ -361,16 +363,18 @@
     body.innerHTML = items.map(item => {
       const p         = catalog.find(c => c.catalogId === item.catalogId);
       const isUnavail = p && p.available === false;
+      /* Always prefer the live catalog image — guards against stale localStorage paths */
+      const imgSrc = (p && p.image) ? p.image : (item.image || '');
 
       return `
       <div class="cart-item${isUnavail ? ' cart-item--unavailable' : ''}" data-cid="${item.catalogId}">
         <div class="cart-item-img-wrap">
-          <picture>
-            <source srcset="${item.image.replace(/\.png$/, '.webp')}" type="image/webp" />
-            <img src="${item.image}" alt="${item.shortName || item.name}"
+          ${imgSrc
+            ? `<img src="${imgSrc}" alt="${item.shortName || item.name}"
                  class="cart-item-img" loading="lazy"
-                 onerror="this.closest('.cart-item-img-wrap').innerHTML='📦'">
-          </picture>
+                 onerror="this.closest('.cart-item-img-wrap').innerHTML='📦'">`
+            : '📦'
+          }
         </div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.shortName || item.name}</div>
