@@ -1,6 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-N4NME3KN9N');</script>
   <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -29,7 +30,20 @@
 </head>
 <body>
 <header class="main-header" id="mainHeader"><div class="header-inner"><a href="../../" class="logo"><span>Derradj <span class="logo-accent">Shop</span></span></a><nav class="main-nav"><a href="../../" class="nav-link">الرئيسية</a><a href="../../#categories" class="nav-link">التصنيفات</a><a href="../../books/" class="nav-link" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
-      <a href="../../Electronique/" class="nav-link">💻 إلكترونيات</a><a href="../../about.html" class="nav-link">من نحن</a><a href="../../faq.html" class="nav-link">الأسئلة الشائعة</a><a href="../../contact.html" class="nav-link">تواصل معنا</a></nav><div style="display:flex;align-items:center;gap:10px;"><a href="../../ordre/" class="btn-header-cta">🛒 اطلب الآن</a><button class="cart-btn" aria-label="فتح السلة">🛒<span class="cart-badge" aria-live="polite"></span></button><button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة"><span></span><span></span><span></span></button></div></div></header>
+      <a href="../../Electronique/" class="nav-link">💻 إلكترونيات</a><a href="../../about.html" class="nav-link">من نحن</a><a href="../../faq.html" class="nav-link">الأسئلة الشائعة</a><a href="../../contact.html" class="nav-link">تواصل معنا</a></nav><div style="display:flex;align-items:center;gap:10px;"><button class="gs-btn" id="gsBtn" aria-label="بحث عن منتج" title="بحث" aria-expanded="false"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button><a href="../../ordre/" class="btn-header-cta">🛒 اطلب الآن</a><button class="cart-btn" aria-label="فتح السلة">🛒<span class="cart-badge" aria-live="polite"></span></button><button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة"><span></span><span></span><span></span></button></div></div></header>
+<!-- Search Overlay -->
+<div class="gs-overlay" id="gsOverlay" role="search" aria-label="بحث في المنتجات">
+  <div class="gs-inner">
+    <div class="gs-field">
+      <svg class="gs-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="gsInput" class="gs-input" placeholder="ابحث عن كتاب، منتج، حامل حاسوب..." autocomplete="off" autocorrect="off" spellcheck="false" dir="rtl" aria-label="حقل البحث">
+      <button class="gs-x" id="gsX" aria-label="إغلاق البحث">&#x2715;</button>
+    </div>
+    <div class="gs-results" id="gsResults" role="listbox" aria-live="polite"></div>
+  </div>
+</div>
+<div class="gs-backdrop" id="gsBackdrop"></div>
+
 <div class="mobile-menu" id="mobileMenu"><a href="../../">الرئيسية</a><a href="../../#categories">التصنيفات</a><a href="../../books/" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
   <a href="../../Electronique/">💻 إلكترونيات</a><a href="../../about.html">من نحن</a><a href="../../faq.html">الأسئلة الشائعة</a><a href="../../contact.html">تواصل معنا</a><a href="../../ordre/" class="mobile-cta-link">🛒 اطلب الآن</a></div>
 <main class="product-page"><div class="container">
@@ -70,5 +84,9 @@
 
 <!-- product page enhancements: WhatsApp btn / related products / FAQ -->
 <script src="../../book-page-enhancements.js" defer></script>
+
+<script src="../../books-data.js"></script>
+<script src="../../js/search-products.js"></script>
+<script src="../../js/search.js" defer></script>
 </body>
 </html>
