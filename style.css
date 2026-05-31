@@ -1701,7 +1701,7 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* === 19. PRODUCT DETAIL PAGE === */
-.product-page { padding: 40px 0 80px; background: var(--bg); }
+.product-page { padding: 40px 0 24px; background: var(--bg); }
 
 .breadcrumb {
   font-size: 13px;
@@ -2862,14 +2862,19 @@ img { max-width: 100%; height: auto; }
 
 /* ── Related products section ── */
 .related-products-section {
-  padding: 56px 0 40px;
+  padding: 36px 0 28px;
   background: #f8fafc;
 }
 
 /* ── Product FAQ section ── */
 .product-faq-section {
-  padding: 56px 0 60px;
+  padding: 36px 0 44px;
   background: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .related-products-section { padding: 24px 0 20px; }
+  .product-faq-section      { padding: 24px 0 32px; }
 }
 
 .product-faq-list {

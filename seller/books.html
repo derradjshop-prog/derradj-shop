@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>إدارة توفر الكتب — Derradj Shop</title>
+  <meta name="robots" content="noindex, nofollow"/>
+  <link rel="icon" type="image/png" href="../Logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font:       'Cairo', sans-serif;
+      --bg:         #f1f5f9;
+      --white:      #ffffff;
+      --border:     #e2e8f0;
+      --text:       #1e293b;
+      --text-light: #64748b;
+      --text-muted: #94a3b8;
+      --primary:    #1d4ed8;
+      --primary-bg: #eff6ff;
+      --green:      #059669;
+      --green-light:#d1fae5;
+      --radius:     10px;
+      --radius-lg:  16px;
+      --shadow-sm:  0 1px 3px rgba(0,0,0,.08);
+    }
+
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ━━ HEADER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .seller-header {
+      background: #0f172a;
+      color: #fff;
+      padding: 0 28px;
+      height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,.4);
+    }
+    .header-logo { font-size: 18px; font-weight: 900; }
+    .header-logo span { color: #60a5fa; }
+    .header-right { display: flex; align-items: center; gap: 14px; }
+
+    .seller-badge {
+      background: #1e3a8a;
+      color: #93c5fd;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 14px;
+      border-radius: 99px;
+    }
+
+    .btn-logout {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #fff;
+      padding: 7px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,.18); }
+
+    /* ━━ MAIN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .seller-main { padding: 28px 24px; max-width: 1200px; margin: 0 auto; }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+    .page-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+    .page-desc {
+      font-size: 13px;
+      color: var(--text-light);
+      font-weight: 600;
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-right: 4px solid #1d4ed8;
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      display: inline-block;
+    }
+
+    /* ━━ STAT CARD ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .stats-row {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: var(--shadow-sm);
+      border-right: 5px solid;
+      flex: 1;
+      min-width: 140px;
+    }
+    .stat-card.s-total   { border-right-color: #1d4ed8; }
+    .stat-card.s-avail   { border-right-color: #10b981; }
+    .stat-card.s-unavail { border-right-color: #f59e0b; }
+    .stat-num   { font-size: 30px; font-weight: 900; line-height: 1; }
+    .stat-label { font-size: 12px; color: var(--text-light); font-weight: 700; }
+
+    /* ━━ CONTROLS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .controls-bar {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 220px;
+      padding: 10px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+    }
+    .search-input:focus { outline: none; border-color: var(--primary); }
+
+    .filter-select {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--white);
+      cursor: pointer;
+    }
+
+    .btn-refresh {
+      padding: 10px 22px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .btn-refresh:hover:not(:disabled) { background: #1e40af; }
+    .btn-refresh:disabled { background: var(--text-muted); cursor: default; }
+
+    .items-count { font-size: 13px; color: var(--text-muted); margin-right: auto; }
+
+    /* ━━ TABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .table-wrap {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm);
+      overflow-x: auto;
+    }
+
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #f8fafc; border-bottom: 2px solid var(--border); }
+    th {
+      padding: 12px 16px;
+      text-align: right;
+      font-weight: 800;
+      color: var(--text-light);
+      font-size: 11px;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background .12s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    td { padding: 12px 16px; vertical-align: middle; }
+    td.empty { text-align: center; padding: 52px; color: var(--text-muted); font-size: 15px; }
+
+    .prod-thumb {
+      width: 48px;
+      height: 64px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: #f8fafc;
+      display: block;
+    }
+
+    .cat-tag {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      background: #f1f5f9;
+      color: var(--text-light);
+    }
+
+    .avail-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .avail-status.is-avail   { background: #d1fae5; color: #065f46; }
+    .avail-status.not-avail  { background: #fef3c7; color: #92400e; }
+
+    /* ━━ TOGGLE SWITCH ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .avail-toggle {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .avail-toggle input { opacity: 0; width: 0; height: 0; }
+    .avail-slider {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background: #cbd5e1;
+      border-radius: 28px;
+      transition: background .25s;
+    }
+    .avail-slider::before {
+      content: '';
+      position: absolute;
+      height: 20px; width: 20px;
+      left: 4px; top: 4px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .25s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.18);
+    }
+    .avail-toggle input:checked + .avail-slider { background: #10b981; }
+    .avail-toggle input:checked + .avail-slider::before { transform: translateX(24px); }
+    .avail-toggle input:disabled + .avail-slider { opacity: .55; cursor: wait; }
+
+    .table-scroll-hint {
+      display: none;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      padding: 6px;
+      background: #f8fafc;
+      border-top: 1px solid var(--border);
+      border-radius: 0 0 12px 12px;
+    }
+
+    /* ━━ MOBILE CARDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .mobile-cards { display: none; flex-direction: column; gap: 10px; }
+
+    .m-book-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      display: flex;
+      gap: 14px;
+      align-items: flex-start;
+      box-shadow: var(--shadow-sm);
+    }
+    .m-book-img {
+      width: 52px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      flex-shrink: 0;
+      background: #f8fafc;
+    }
+    .m-book-emoji {
+      font-size: 32px;
+      flex-shrink: 0;
+      line-height: 1;
+      width: 52px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .m-book-body { flex: 1; min-width: 0; }
+    .m-book-name { font-size: 14px; font-weight: 800; margin-bottom: 4px; line-height: 1.3; }
+    .m-book-cat  { font-size: 12px; color: var(--text-light); margin-bottom: 10px; }
+    .m-book-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* ━━ PERMISSION NOTICE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .perm-notice {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radius);
+      padding: 10px 16px;
+      font-size: 12px;
+      color: #1d4ed8;
+      font-weight: 600;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* ━━ RESPONSIVE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    @media (max-width: 768px) {
+      .seller-main { padding: 16px 12px; }
+      .seller-header { padding: 0 16px; }
+      .header-logo { font-size: 15px; }
+      .seller-badge { display: none; }
+      .btn-logout { padding: 6px 12px; font-size: 12px; }
+      .page-title { font-size: 18px; }
+      .stats-row { gap: 10px; }
+      .stat-num  { font-size: 24px; }
+
+      .table-wrap   { display: none; }
+      .mobile-cards { display: flex; }
+
+      .controls-bar { flex-direction: column; align-items: stretch; gap: 8px; }
+      .search-input { min-width: unset; }
+      .items-count  { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .seller-main { padding: 10px 8px; }
+      .stat-card   { padding: 12px 14px; }
+      .controls-bar { padding: 10px 12px; }
+    }
+
+    @media (max-width: 700px) {
+      .table-scroll-hint { display: block; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════ -->
+<header class="seller-header">
+  <div class="header-logo">Derradj <span>Shop</span></div>
+  <div class="header-right">
+    <span class="seller-badge" id="sellerBadge">🛒 بائع</span>
+    <button class="btn-logout" id="logoutBtn">خروج</button>
+  </div>
+</header>
+
+<!-- ══ MAIN ════════════════════════════════════════════════ -->
+<main class="seller-main">
+
+  <div class="page-header">
+    <h1 class="page-title">📚 إدارة توفر الكتب</h1>
+    <p class="page-desc">
+      يمكن للبائع تغيير حالة توفر الكتب فقط بدون رؤية الأسعار أو الطلبات.
+    </p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat-card s-total">
+      <span class="stat-num" id="stat-total">—</span>
+      <span class="stat-label">إجمالي الكتب</span>
+    </div>
+    <div class="stat-card s-avail">
+      <span class="stat-num" id="stat-avail">—</span>
+      <span class="stat-label">✅ متوفر</span>
+    </div>
+    <div class="stat-card s-unavail">
+      <span class="stat-num" id="stat-unavail">—</span>
+      <span class="stat-label">⚠️ نفذت الكمية</span>
+    </div>
+  </div>
+
+  <!-- Permission notice -->
+  <div class="perm-notice">
+    🔒 صلاحية البائع محدودة — يمكنك فقط تغيير حالة توفر الكتب. الأسعار والطلبات والبيانات الأخرى غير مرئية.
+  </div>
+
+  <!-- Controls -->
+  <div class="controls-bar">
+    <input type="text" class="search-input" id="searchInput"
+           placeholder="🔍 بحث باسم الكتاب أو التصنيف..."/>
+    <select class="filter-select" id="availFilter">
+      <option value="">📋 كل الكتب</option>
+      <option value="avail">✅ متوفر فقط</option>
+      <option value="unavail">⚠️ نفذت الكمية فقط</option>
+    </select>
+    <button class="btn-refresh" id="refreshBtn">↻ تحديث</button>
+    <span class="items-count" id="itemsCount"></span>
+  </div>
+
+  <!-- Table — desktop -->
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>الصورة</th>
+          <th>اسم الكتاب</th>
+          <th>التصنيف</th>
+          <th>الحالة</th>
+          <th>تغيير التوفر</th>
+        </tr>
+      </thead>
+      <tbody id="booksTbody">
+        <tr><td colspan="5" class="empty">⏳ جاري التحميل...</td></tr>
+      </tbody>
+    </table>
+    <div class="table-scroll-hint">← اسحب لرؤية المزيد →</div>
+  </div>
+
+  <!-- Cards — mobile -->
+  <div class="mobile-cards" id="mobileCards"></div>
+
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── Supabase ──────────────────────────────────────────── */
+  if (!window.supabase?.createClient) { alert("❌ Supabase غير محمّل."); return; }
+
+  const SUPABASE_URL      = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  /* ── State ─────────────────────────────────────────────── */
+  let ALL_BOOKS = [];
+
+  /* ── Book catalog metadata (no prices) ────────────────── */
+  const BOOKS_META = [
+    { catalogId: 2,  category: 'تطوير الذات',        image: '../books/7-habits/main.webp' },
+    { catalogId: 3,  category: 'تطوير الذات',        image: '../books/atomic-habits/main.webp' },
+    { catalogId: 4,  category: 'تطوير الذات',        image: '../books/rule-333/main.webp' },
+    { catalogId: 6,  category: 'تطوير الذات',        image: '../books/joy-of-imperfection/main.webp' },
+    { catalogId: 7,  category: 'الفلسفة والفكر',     image: '../books/courage-is-calling/main.webp' },
+    { catalogId: 8,  category: 'الفلسفة والفكر',     image: '../books/power-of-now/main.webp' },
+    { catalogId: 9,  category: 'علم النفس والمجتمع', image: '../books/propaganda/main.webp' },
+    { catalogId: 10, category: 'الإدارة والأعمال',   image: '../books/management-mess/main.webp' },
+    { catalogId: 11, category: 'علم النفس والمجتمع', image: '../books/myths-of-happiness/main.webp' },
+    { catalogId: 12, category: 'علم النفس والمجتمع', image: '../books/happy-ever-after/main.webp' },
+    { catalogId: 13, category: 'علم النفس والمجتمع', image: '../books/hungry-ghosts/main.webp' },
+    { catalogId: 14, category: 'العلوم والمعرفة',    image: '../books/brief-history-of-time/main.webp' },
+    { catalogId: 16, category: 'تطوير الذات',        image: '../books/joy-of-thirties/main.webp' },
+    { catalogId: 17, category: 'العلاقات والحياة',   image: '../books/be-happy-with-someone/main.webp' },
+    { catalogId: 20, category: 'علم النفس والمجتمع', image: '../books/emotional-intelligence/main.webp' },
+    { catalogId: 21, category: 'الإدارة والأعمال',   image: '../books/sell-anything/main.webp' },
+    { catalogId: 22, category: 'الإدارة والأعمال',   image: '../books/sell-yourself/main.webp' },
+    { catalogId: 23, category: 'الإدارة والأعمال',   image: '../books/mastering-deals/main.webp' },
+    { catalogId: 24, category: 'الإدارة والأعمال',   image: '../books/psychology-of-money/main.webp' },
+    { catalogId: 25, category: 'علم النفس والمجتمع', image: '../books/subconscious-mind/main.webp' },
+    { catalogId: 26, category: 'تطوير الذات',        image: '../books/subtle-art/main.webp' },
+    { catalogId: 27, category: 'علم النفس والمجتمع', image: '../books/crowd-psychology/main.webp' },
+    { catalogId: 28, category: 'علم النفس والمجتمع', image: '../books/psychological-laws/main.webp' },
+    { catalogId: 29, category: 'علم النفس والمجتمع', image: '../books/opinions-beliefs/main.webp' },
+    { catalogId: 30, category: 'تطوير الذات',        image: '../books/rational-male/main.webp' },
+    { catalogId: 31, category: 'الإدارة والأعمال',   image: '../books/6-sales-skills/main.webp' },
+    { catalogId: 32, category: 'تطوير الذات',        image: '../books/small-habits-effect/main.webp' },
+    { catalogId: 33, category: 'تطوير الذات',        image: '../books/7-habits-teens/main.webp' },
+    { catalogId: 34, category: 'تطوير الذات',        image: '../books/leader-in-me/main.webp' },
+    { catalogId: 35, category: 'تطوير الذات',        image: '../books/dark-feminine-power/main.webp' },
+    { catalogId: 36, category: 'علم النفس والمجتمع', image: '../books/why-sheep-dont-go-to-doctor/main.webp' },
+    { catalogId: 37, category: 'الإدارة والأعمال',   image: '../books/zero-to-one/main.webp' },
+    { catalogId: 38, category: 'علم النفس والمجتمع', image: '../books/kindness-side-effects/main.webp' },
+    { catalogId: 39, category: 'تطوير الذات',        image: '../books/feminine-energy/main.webp' },
+    { catalogId: 40, category: 'علم النفس والمجتمع', image: '../books/full-of-emptiness/main.webp' },
+    { catalogId: 41, category: 'علم النفس والمجتمع', image: '../books/father-i-hate/main.webp' },
+    { catalogId: 42, category: 'علم النفس والمجتمع', image: '../books/crystallizing-public-opinion/main.webp' },
+    { catalogId: 43, category: 'تطوير الذات',        image: '../books/bawabatuka-liltaghyir/main.webp' },
+    { catalogId: 44, category: 'الإدارة والأعمال',   image: '../books/richest-man-in-babylon/main.webp' },
+    { catalogId: 45, category: 'الروايات والأدب',    image: '../books/urid-an-anam/main.webp' },
+    { catalogId: 46, category: 'العلاقات والحياة',   image: '../books/how-not-to-die-alone/main.webp' },
+    { catalogId: 47, category: 'تطوير الذات',        image: '../books/stronger-than-your-emotions/main.webp' },
+    { catalogId: 48, category: 'العلاقات والحياة',   image: '../books/act-like-a-lady-think-like-a-man/main.webp' },
+    { catalogId: 49, category: 'تطوير الذات',        image: '../books/kabber-dmaghak/main.webp' },
+    { catalogId: 50, category: 'تطوير الذات',        image: '../books/qawanin-al-najah-al-mustadam/main.webp' },
+    { catalogId: 51, category: 'العلاقات والحياة',   image: '../books/happiness-and-depression/main.webp' },
+    { catalogId: 52, category: 'العلوم والمعرفة',    image: '../books/will-my-cat-eat-my-eyeballs/main.webp' },
+    { catalogId: 53, category: 'الفلسفة والفكر',     image: '../books/the-monster-inside-you-can-be-kind/main.webp' },
+    { catalogId: 54, category: 'تطوير الذات',        image: '../books/burn-after-writing/main.webp' },
+    { catalogId: 55, category: 'الفلسفة والفكر',     image: '../books/the-eye-of-the-i/main.webp' },
+    { catalogId: 56, category: 'الروايات والأدب',    image: '../books/the-sun-does-shine/main.webp' },
+    { catalogId: 57, category: 'تطوير الذات',        image: '../books/kitab-al-millionaire/main.webp' },
+    { catalogId: 58, category: 'الإدارة والأعمال',   image: '../books/al-sannara/main.webp' },
+    { catalogId: 59, category: 'الفلسفة والفكر',     image: '../books/tajawoz-mostawayat-al-waai/main.webp' },
+    { catalogId: 60, category: 'الروايات والأدب',    image: '../books/hatha-alkitab-sayuulimuk/main.webp' },
+    { catalogId: 61, category: 'تطوير الذات',        image: '../books/al-khitabat-al-sirriya/main.webp' },
+    { catalogId: 62, category: 'تطوير الذات',        image: '../books/al-rahib-allathi-baa/main.webp' },
+    { catalogId: 63, category: 'تطوير الذات',        image: '../books/daily-laws/main.webp' },
+    { catalogId: 64, category: 'علم النفس والمجتمع', image: '../books/art-of-seduction/main.webp' },
+    { catalogId: 65, category: 'تطوير الذات',        image: '../books/fan-altaamal-maa-alnas/main.webp' },
+    { catalogId: 66, category: 'الإدارة والأعمال',   image: '../books/fan-alidara-walqiyada/main.webp' },
+    { catalogId: 67, category: 'تطوير الذات',        image: '../books/daa-alqalaq-wabda-alhayat/main.webp' },
+    { catalogId: 68, category: 'الإدارة والأعمال',   image: '../books/one-page-marketing-plan/main.webp' },
+    { catalogId: 69, category: 'الإدارة والأعمال',   image: '../books/fowda-altasweq/main.webp' },
+    { catalogId: 70, category: 'تطوير الذات',        image: '../books/miracle-morning/main.webp' },
+    { catalogId: 71, category: 'تطوير الذات',        image: '../books/training-camp/main.webp' },
+    { catalogId: 72, category: 'علم النفس والمجتمع', image: '../books/tiktok-syndrome/main.webp' },
+    { catalogId: 73, category: 'العلاقات والحياة',   image: '../books/quwwat-alhub-al-mudhila/main.webp' },
+    { catalogId: 74, category: 'تطوير الذات',        image: '../books/mumayaz-bil-asfar/main.webp' },
+    { catalogId: 75, category: 'تطوير الذات',        image: '../books/bored-and-brilliant/main.webp' },
+    { catalogId: 76, category: 'تطوير الذات',        image: '../books/alhayat-takhtit/main.webp' },
+    { catalogId: 77, category: 'العلاقات والحياة',   image: '../books/men-mars-women-venus/main.webp' },
+    { catalogId: 78, category: 'العلوم والمعرفة',    image: '../books/eat-to-live/main.webp' },
+    { catalogId: 79, category: 'علم النفس والمجتمع', image: '../books/upside-of-irrationality/main.webp' },
+    { catalogId: 80, category: 'الفلسفة والفكر',     image: '../books/man-unknown/main.webp' },
+    { catalogId: 81, category: 'الروايات والأدب',    image: '../books/wa-tazun-annaka-najawt/main.webp' },
+    { catalogId: 82, category: 'الإدارة والأعمال',   image: '../books/kotler-marketing/main.webp' },
+  ];
+
+  const VISIBLE_IDS = new Set(BOOKS_META.map(m => m.catalogId));
+
+  /* ── Helpers ───────────────────────────────────────────── */
+  function esc(v) {
+    return String(v ?? "")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+  }
+
+  /* ── Auth guard — seller role only ────────────────────── */
+  async function authGuard() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { location.href = "login.html"; return null; }
+
+    const { data: staff, error } = await supabase
+      .from("staff_accounts")
+      .select("id, full_name, role, is_active")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (error || !staff || !staff.is_active || staff.role !== "seller") {
+      await supabase.auth.signOut();
+      location.href = "login.html";
+      return null;
+    }
+    return staff;
+  }
+
+  /* ── Fetch books from product_availability ─────────────── */
+  async function fetchBooks() {
+    const { data, error } = await supabase
+      .from("product_availability")
+      .select("catalog_id, name, available")
+      .order("catalog_id");
+    if (error) throw error;
+
+    return (data || [])
+      .filter(row => VISIBLE_IDS.has(row.catalog_id))
+      .map(row => {
+        const meta = BOOKS_META.find(m => m.catalogId === row.catalog_id);
+        return {
+          catalogId: row.catalog_id,
+          name:      row.name,
+          available: row.available,
+          category:  meta?.category || '—',
+          image:     meta?.image    || '',
+        };
+      });
+  }
+
+  /* ── Update only the available field ───────────────────── */
+  async function setAvailability(catalogId, available) {
+    const { error } = await supabase
+      .from("product_availability")
+      .update({ available, updated_at: new Date().toISOString() })
+      .eq("catalog_id", catalogId);
+    if (error) throw error;
+  }
+
+  /* ── Filter ────────────────────────────────────────────── */
+  function getFiltered() {
+    const q  = document.getElementById("searchInput").value.trim().toLowerCase();
+    const av = document.getElementById("availFilter").value;
+
+    return ALL_BOOKS.filter(b => {
+      if (av === "avail"   && !b.available) return false;
+      if (av === "unavail" &&  b.available) return false;
+      if (!q) return true;
+      return (b.name     || "").toLowerCase().includes(q) ||
+             (b.category || "").toLowerCase().includes(q);
+    });
+  }
+
+  /* ── Render stats ──────────────────────────────────────── */
+  function renderStats(books) {
+    const avail   = books.filter(b =>  b.available).length;
+    const unavail = books.filter(b => !b.available).length;
+    document.getElementById("stat-total").textContent   = books.length;
+    document.getElementById("stat-avail").textContent   = avail;
+    document.getElementById("stat-unavail").textContent = unavail;
+  }
+
+  /* ── Image HTML ────────────────────────────────────────── */
+  function imgHTML(p, tableMode) {
+    const cls   = tableMode ? "prod-thumb" : "m-book-img";
+    const error = `if(!this.dataset.f){this.dataset.f='1';this.src=this.src.replace('main.webp','main.png')}else{this.style.display='none';this.insertAdjacentHTML('afterend','<span style="font-size:28px;">📚</span>')}`;
+    if (p.image) {
+      return `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="${cls}"
+                   loading="lazy" decoding="async" onerror="${error}">`;
+    }
+    return tableMode
+      ? `<span style="font-size:28px;">📚</span>`
+      : `<div class="m-book-emoji">📚</div>`;
+  }
+
+  /* ── Render desktop table ──────────────────────────────── */
+  function renderTable(books) {
+    const tbody = document.getElementById("booksTbody");
+    const cnt   = books.length;
+    document.getElementById("itemsCount").textContent =
+      cnt + " كتاب" + (cnt !== ALL_BOOKS.length ? ` (من ${ALL_BOOKS.length})` : "");
+
+    if (!cnt) {
+      tbody.innerHTML = `<tr><td colspan="5" class="empty">لا توجد كتب مطابقة للبحث</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = books.map(p => `
+      <tr data-catalog-id="${p.catalogId}">
+        <td>${imgHTML(p, true)}</td>
+        <td><strong>${esc(p.name)}</strong></td>
+        <td><span class="cat-tag">${esc(p.category)}</span></td>
+        <td>
+          <span class="avail-status ${p.available ? 'is-avail' : 'not-avail'}">
+            ${p.available ? '✅ متوفر' : '⚠️ نفذت الكمية مؤقتًا'}
+          </span>
+        </td>
+        <td>
+          <label class="avail-toggle" title="${p.available ? 'إيقاف التوفر' : 'تفعيل التوفر'}">
+            <input type="checkbox" data-action="toggle" data-catalog-id="${p.catalogId}"
+                   ${p.available ? 'checked' : ''}>
+            <span class="avail-slider"></span>
+          </label>
+        </td>
+      </tr>`).join("");
+  }
+
+  /* ── Render mobile cards ───────────────────────────────── */
+  function renderMobileCards(books) {
+    const container = document.getElementById("mobileCards");
+    if (!books.length) {
+      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:15px;">لا توجد كتب مطابقة</div>`;
+      return;
+    }
+
+    container.innerHTML = books.map(p => `
+      <div class="m-book-card" data-catalog-id="${p.catalogId}">
+        ${imgHTML(p, false)}
+        <div class="m-book-body">
+          <div class="m-book-name">${esc(p.name)}</div>
+          <div class="m-book-cat">${esc(p.category)}</div>
+          <div class="m-book-bottom">
+            <span class="avail-status ${p.available ? 'is-avail' : 'not-avail'}">
+              ${p.available ? '✅ متوفر' : '⚠️ نفذت الكمية'}
+            </span>
+            <label class="avail-toggle" title="${p.available ? 'إيقاف التوفر' : 'تفعيل التوفر'}">
+              <input type="checkbox" data-action="toggle" data-catalog-id="${p.catalogId}"
+                     ${p.available ? 'checked' : ''}>
+              <span class="avail-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>`).join("");
+  }
+
+  /* ── Render both ───────────────────────────────────────── */
+  function render(books) {
+    renderTable(books);
+    renderMobileCards(books);
+  }
+
+  /* ── Update availability badge in DOM (optimistic) ─────── */
+  function applyAvailUI(catalogId, value) {
+    const label = value ? '✅ متوفر' : '⚠️ نفذت الكمية مؤقتًا';
+    const mLabel = value ? '✅ متوفر' : '⚠️ نفذت الكمية';
+    const cls   = value ? 'is-avail' : 'not-avail';
+
+    const row = document.querySelector(`#booksTbody tr[data-catalog-id="${catalogId}"]`);
+    if (row) {
+      const badge = row.querySelector(".avail-status");
+      if (badge) { badge.className = `avail-status ${cls}`; badge.textContent = label; }
+    }
+
+    const card = document.querySelector(`#mobileCards [data-catalog-id="${catalogId}"]`);
+    if (card) {
+      const badge = card.querySelector(".avail-status");
+      if (badge) { badge.className = `avail-status ${cls}`; badge.textContent = mLabel; }
+    }
+  }
+
+  /* ── Toggle handler (optimistic UI) ───────────────────── */
+  async function handleToggle(catalogId, newValue, checkbox) {
+    checkbox.disabled = true;
+
+    const book = ALL_BOOKS.find(b => b.catalogId === catalogId);
+    const prev = book ? book.available : !newValue;
+
+    if (book) book.available = newValue;
+    applyAvailUI(catalogId, newValue);
+    renderStats(ALL_BOOKS);
+
+    try {
+      await setAvailability(catalogId, newValue);
+    } catch (err) {
+      console.error("Toggle error:", err);
+      checkbox.checked = prev;
+      if (book) book.available = prev;
+      applyAvailUI(catalogId, prev);
+      renderStats(ALL_BOOKS);
+      alert("❌ فشل تحديث حالة التوفر:\n" + (err.message || "تحقق من صلاحيات قاعدة البيانات."));
+    }
+
+    checkbox.disabled = false;
+  }
+
+  /* ── Events ────────────────────────────────────────────── */
+  function bindEvents() {
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      location.href = "login.html";
+    });
+
+    document.getElementById("searchInput").addEventListener("input",
+      () => render(getFiltered()));
+
+    document.getElementById("availFilter").addEventListener("change",
+      () => render(getFiltered()));
+
+    document.getElementById("refreshBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("refreshBtn");
+      btn.disabled = true; btn.textContent = "⏳ جاري التحديث...";
+      try {
+        ALL_BOOKS = await fetchBooks();
+        renderStats(ALL_BOOKS);
+        render(getFiltered());
+      } catch (err) {
+        alert("❌ فشل التحديث: " + (err.message || ""));
+      }
+      btn.disabled = false; btn.textContent = "↻ تحديث";
+    });
+
+    /* Toggle — desktop table */
+    document.getElementById("booksTbody").addEventListener("change", async e => {
+      const cb = e.target.closest('input[data-action="toggle"]');
+      if (!cb) return;
+      await handleToggle(parseInt(cb.dataset.catalogId), cb.checked, cb);
+    });
+
+    /* Toggle — mobile cards */
+    document.getElementById("mobileCards").addEventListener("change", async e => {
+      const cb = e.target.closest('input[data-action="toggle"]');
+      if (!cb) return;
+      await handleToggle(parseInt(cb.dataset.catalogId), cb.checked, cb);
+    });
+  }
+
+  /* ── Boot ──────────────────────────────────────────────── */
+  async function boot() {
+    try {
+      const staff = await authGuard();
+      if (!staff) return;
+
+      document.getElementById("sellerBadge").textContent =
+        "🛒 بائع" + (staff.full_name ? " — " + staff.full_name : "");
+
+      ALL_BOOKS = await fetchBooks();
+      renderStats(ALL_BOOKS);
+      render(ALL_BOOKS);
+      bindEvents();
+
+    } catch (err) {
+      console.error("Boot error:", err);
+      alert("❌ خطأ في تحميل الصفحة:\n" + (err.message || JSON.stringify(err)));
+    }
+  }
+
+  boot();
+
+})();
+</script>
+</body>
+</html>
