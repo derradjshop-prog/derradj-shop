@@ -108,7 +108,8 @@
     { catalogId: 81, name: 'وتظن أنك نجوت',                                               shortName: 'وتظن أنك نجوت',                              price: 1400, available: true, image: BASE + '/books/wa-tazun-annaka-najawt/main.png' },
     { catalogId: 82, name: 'كوتلر يتحدث عن التسويق',                                      shortName: 'كوتلر يتحدث عن التسويق',                     price:  990, available: true, image: BASE + '/books/kotler-marketing/main.png' },
     /* ── إلكترونيات ── */
-    { catalogId: 83, name: 'حامل اللابتوب القابل للتعديل', shortName: 'حامل اللابتوب', price: 1500, available: true, image: '/Electronique/laptop/main1.png' },
+    { catalogId: 83, name: 'حامل اللابتوب القابل للتعديل', shortName: 'حامل اللابتوب', price: 1500, available: true, image: '/Electronique/laptop/main1.webp' },
+    { catalogId: 84, name: 'ساعة ذكية Modio ST11 مع 3 أزواج أساور', shortName: 'ساعة Modio ST11', price: 9800, available: true, image: '/Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
   ];
 
   /* ══════════════════════════════════════════════════════════

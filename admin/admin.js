@@ -1,9 +1,9 @@
 /* ==========================================================
    admin.js — Derradj Shop | Admin Dashboard
    is_confirmed: NULL = قيد المعالجة | true = تم التأكيد
-   BUILD: 2026-05-27-v3 (BOOKS_META includes 2-82 + main.webp)
+   BUILD: 2026-05-31-v4 (BOOKS_META includes 2-82 + electronics 83-84)
    ========================================================== */
-console.log('[admin.js] loaded — BUILD 2026-05-27-v3 — BOOKS_META includes catalogId 2-82, main.webp');
+console.log('[admin.js] loaded — BUILD 2026-05-31-v4 — BOOKS_META includes catalogId 2-84 (books + electronics)');
 
 (function () {
   "use strict";
@@ -740,6 +740,9 @@ console.log('[admin.js] loaded — BUILD 2026-05-27-v3 — BOOKS_META includes c
     { catalogId: 80, price: 2000, category: 'الفلسفة والفكر',     image: '../books/man-unknown/main.webp' },
     { catalogId: 81, price: 1400, category: 'الروايات والأدب',    image: '../books/wa-tazun-annaka-najawt/main.webp' },
     { catalogId: 82, price:  990, category: 'الإدارة والأعمال',   image: '../books/kotler-marketing/main.webp' },
+    /* ── إلكترونيات ── */
+    { catalogId: 83, price: 1500, category: 'إلكترونيات',        image: '../Electronique/laptop/main1.webp' },
+    { catalogId: 84, price: 9800, category: 'إلكترونيات',        image: '../Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
   ];
 
   /* مجموعة سريعة من catalogId المرئية — لا تشمل الكتب المخفية */
