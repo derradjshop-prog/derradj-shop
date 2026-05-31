@@ -57,6 +57,124 @@
   var ROOT = rootPath();
 
   /* ═══════════════════════════════════════════════════════
+     -1. Product Schema Injection (Google Merchant Center)
+     Adds a Product JSON-LD schema on every book product page.
+     All 77 book pages use @type:"Book" in their static HTML —
+     Google Merchant Center / Shopping requires @type:"Product".
+     This function injects a separate Product schema alongside
+     the existing Book schema without removing anything.
+     ═══════════════════════════════════════════════════════ */
+  function injectProductSchema() {
+    var bookMatch = path.match(/\/books\/([^/]+)/);
+    if (!bookMatch) return;
+    var slug = bookMatch[1];
+
+    function doInject(booksData) {
+      var book = null;
+      for (var i = 0; i < booksData.length; i++) {
+        if ((booksData[i].url || '').replace(/\/$/, '') === slug) {
+          book = booksData[i]; break;
+        }
+      }
+      if (!book) return;
+
+      /* Skip if a Product schema already exists */
+      var existingTags = document.querySelectorAll('script[type="application/ld+json"]');
+      for (var j = 0; j < existingTags.length; j++) {
+        try {
+          var d = JSON.parse(existingTags[j].textContent);
+          var t = [].concat(d['@type'] || []);
+          if (t.indexOf('Product') !== -1) return;
+          var g = d['@graph'] || [];
+          for (var k = 0; k < g.length; k++) {
+            if ([].concat(g[k]['@type'] || []).indexOf('Product') !== -1) return;
+          }
+        } catch (e) {}
+      }
+
+      var BASE = 'https://derradjshop.com';
+      var productUrl = BASE + '/books/' + slug + '/';
+
+      var script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.textContent = JSON.stringify({
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        '@id': productUrl + '#product',
+        'name': book.title,
+        'description': book.description || book.title,
+        'image': {
+          '@type': 'ImageObject',
+          'url': BASE + '/books/' + book.image,
+          'width': 800,
+          'height': 800
+        },
+        'url': productUrl,
+        'sku': 'BOOK-' + book.id + '-DZ',
+        'brand': { '@type': 'Brand', 'name': 'Derradj Shop' },
+        'offers': {
+          '@type': 'Offer',
+          'url': productUrl,
+          'price': String(book.price),
+          'priceCurrency': 'DZD',
+          'availability': book.available !== false
+            ? 'https://schema.org/InStock'
+            : 'https://schema.org/OutOfStock',
+          'itemCondition': 'https://schema.org/NewCondition',
+          'seller': { '@type': 'Organization', 'name': 'Derradj Shop', 'url': BASE },
+          'shippingDetails': {
+            '@type': 'OfferShippingDetails',
+            'shippingRate': {
+              '@type': 'MonetaryAmount',
+              'value': '500',
+              'currency': 'DZD'
+            },
+            'deliveryTime': {
+              '@type': 'ShippingDeliveryTime',
+              'handlingTime': {
+                '@type': 'QuantitativeValue',
+                'minValue': 1,
+                'maxValue': 1,
+                'unitCode': 'DAY'
+              },
+              'transitTime': {
+                '@type': 'QuantitativeValue',
+                'minValue': 1,
+                'maxValue': 3,
+                'unitCode': 'DAY'
+              }
+            },
+            'shippingDestination': {
+              '@type': 'DefinedRegion',
+              'addressCountry': 'DZ'
+            }
+          },
+          'returnPolicy': {
+            '@type': 'MerchantReturnPolicy',
+            'applicableCountry': 'DZ',
+            'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+            'merchantReturnDays': 7,
+            'returnMethod': 'https://schema.org/ReturnByMail',
+            'returnFees': 'https://schema.org/FreeReturn',
+            'returnPolicyLink': BASE + '/return-policy.html'
+          }
+        }
+      });
+      document.head.appendChild(script);
+    }
+
+    if (window.BOOKS_DATA) {
+      doInject(window.BOOKS_DATA);
+    } else {
+      /* Fallback: load books-data.js dynamically if not yet available */
+      var s = document.createElement('script');
+      s.src = ROOT + 'books-data.js';
+      s.onload = function () { if (window.BOOKS_DATA) doInject(window.BOOKS_DATA); };
+      document.head.appendChild(s);
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════
      0. 3-Column Product Layout Restructure
      Extracts price + CTA buttons + trust badges from the
      info column and moves them into a sticky purchase sidebar.
@@ -377,6 +495,7 @@
      Init
      ═══════════════════════════════════════════════════════ */
   function init() {
+    injectProductSchema();      /* step -1: Product JSON-LD for Google Merchant Center */
     injectWhatsAppBtn();        /* step 1: add WA btn into .product-cta-buttons */
     restructureProductLayout(); /* step 2: move price+buttons+trust into sidebar */
     loadRelatedProducts();      /* step 3: related products carousel below main */
