@@ -1,9 +1,9 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
   <!-- ══ الصفحة الرئيسية ══ -->
   <url>
-    <loc>https://www.derradjshop.com/</loc>
+    <loc>https://derradjshop.com/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
@@ -11,518 +11,526 @@
 
   <!-- ══ كتالوج الكتب ══ -->
   <url>
-    <loc>https://www.derradjshop.com/books/</loc>
+    <loc>https://derradjshop.com/books/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
 
+  <!-- ══ كتالوج الإلكترونيات ══ -->
+  <url>
+    <loc>https://derradjshop.com/Electronique/</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ══ منتجات إلكترونية ══ -->
+  <url>
+    <loc>https://derradjshop.com/Electronique/laptop/adjustable-laptop-stand.html</loc>
+    <lastmod>2026-05-31</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
   <!-- ══ صفحات الكتب (مرتبة أبجدياً حسب الرابط) ══ -->
   <url>
-    <loc>https://www.derradjshop.com/books/6-sales-skills/</loc>
+    <loc>https://derradjshop.com/books/6-sales-skills/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/7-habits/</loc>
+    <loc>https://derradjshop.com/books/7-habits/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/7-habits-teens/</loc>
+    <loc>https://derradjshop.com/books/7-habits-teens/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/act-like-a-lady-think-like-a-man/</loc>
+    <loc>https://derradjshop.com/books/act-like-a-lady-think-like-a-man/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/atomic-habits/</loc>
+    <loc>https://derradjshop.com/books/atomic-habits/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/bawabatuka-liltaghyir/</loc>
+    <loc>https://derradjshop.com/books/bawabatuka-liltaghyir/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/be-happy-with-someone/</loc>
+    <loc>https://derradjshop.com/books/be-happy-with-someone/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/brief-history-of-time/</loc>
+    <loc>https://derradjshop.com/books/brief-history-of-time/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/burn-after-writing/</loc>
+    <loc>https://derradjshop.com/books/burn-after-writing/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/courage-is-calling/</loc>
+    <loc>https://derradjshop.com/books/courage-is-calling/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/crowd-psychology/</loc>
+    <loc>https://derradjshop.com/books/crowd-psychology/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/crystallizing-public-opinion/</loc>
+    <loc>https://derradjshop.com/books/crystallizing-public-opinion/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/dark-feminine-power/</loc>
+    <loc>https://derradjshop.com/books/dark-feminine-power/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/emotional-intelligence/</loc>
+    <loc>https://derradjshop.com/books/emotional-intelligence/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/father-i-hate/</loc>
+    <loc>https://derradjshop.com/books/father-i-hate/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/feminine-energy/</loc>
+    <loc>https://derradjshop.com/books/feminine-energy/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/full-of-emptiness/</loc>
+    <loc>https://derradjshop.com/books/full-of-emptiness/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/happiness-and-depression/</loc>
+    <loc>https://derradjshop.com/books/happiness-and-depression/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/happy-ever-after/</loc>
+    <loc>https://derradjshop.com/books/happy-ever-after/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/how-not-to-die-alone/</loc>
+    <loc>https://derradjshop.com/books/how-not-to-die-alone/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/hungry-ghosts/</loc>
+    <loc>https://derradjshop.com/books/hungry-ghosts/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/joy-of-imperfection/</loc>
+    <loc>https://derradjshop.com/books/joy-of-imperfection/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/joy-of-thirties/</loc>
+    <loc>https://derradjshop.com/books/joy-of-thirties/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/kabber-dmaghak/</loc>
+    <loc>https://derradjshop.com/books/kabber-dmaghak/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/kindness-side-effects/</loc>
+    <loc>https://derradjshop.com/books/kindness-side-effects/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/leader-in-me/</loc>
+    <loc>https://derradjshop.com/books/leader-in-me/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/management-mess/</loc>
+    <loc>https://derradjshop.com/books/management-mess/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/mastering-deals/</loc>
+    <loc>https://derradjshop.com/books/mastering-deals/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/myths-of-happiness/</loc>
+    <loc>https://derradjshop.com/books/myths-of-happiness/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/opinions-beliefs/</loc>
+    <loc>https://derradjshop.com/books/opinions-beliefs/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/power-of-now/</loc>
+    <loc>https://derradjshop.com/books/power-of-now/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/propaganda/</loc>
+    <loc>https://derradjshop.com/books/propaganda/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/psychological-laws/</loc>
+    <loc>https://derradjshop.com/books/psychological-laws/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/psychology-of-money/</loc>
+    <loc>https://derradjshop.com/books/psychology-of-money/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/qawanin-al-najah-al-mustadam/</loc>
+    <loc>https://derradjshop.com/books/qawanin-al-najah-al-mustadam/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/rational-male/</loc>
+    <loc>https://derradjshop.com/books/rational-male/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/richest-man-in-babylon/</loc>
+    <loc>https://derradjshop.com/books/richest-man-in-babylon/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/rule-333/</loc>
+    <loc>https://derradjshop.com/books/rule-333/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/sell-anything/</loc>
+    <loc>https://derradjshop.com/books/sell-anything/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/sell-yourself/</loc>
+    <loc>https://derradjshop.com/books/sell-yourself/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/small-habits-effect/</loc>
+    <loc>https://derradjshop.com/books/small-habits-effect/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/stronger-than-your-emotions/</loc>
+    <loc>https://derradjshop.com/books/stronger-than-your-emotions/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/subconscious-mind/</loc>
+    <loc>https://derradjshop.com/books/subconscious-mind/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/subtle-art/</loc>
+    <loc>https://derradjshop.com/books/subtle-art/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/the-eye-of-the-i/</loc>
+    <loc>https://derradjshop.com/books/the-eye-of-the-i/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/the-monster-inside-you-can-be-kind/</loc>
+    <loc>https://derradjshop.com/books/the-monster-inside-you-can-be-kind/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/the-sun-does-shine/</loc>
+    <loc>https://derradjshop.com/books/the-sun-does-shine/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/urid-an-anam/</loc>
+    <loc>https://derradjshop.com/books/urid-an-anam/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/why-sheep-dont-go-to-doctor/</loc>
+    <loc>https://derradjshop.com/books/why-sheep-dont-go-to-doctor/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/will-my-cat-eat-my-eyeballs/</loc>
+    <loc>https://derradjshop.com/books/will-my-cat-eat-my-eyeballs/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/zero-to-one/</loc>
+    <loc>https://derradjshop.com/books/zero-to-one/</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <!-- ══ كتب جديدة (2026-05-27) ══ -->
   <url>
-    <loc>https://www.derradjshop.com/books/alhayat-takhtit/</loc>
+    <loc>https://derradjshop.com/books/alhayat-takhtit/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/al-khitabat-al-sirriya/</loc>
+    <loc>https://derradjshop.com/books/al-khitabat-al-sirriya/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/al-rahib-allathi-baa/</loc>
+    <loc>https://derradjshop.com/books/al-rahib-allathi-baa/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/al-sannara/</loc>
+    <loc>https://derradjshop.com/books/al-sannara/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/art-of-seduction/</loc>
+    <loc>https://derradjshop.com/books/art-of-seduction/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/bored-and-brilliant/</loc>
+    <loc>https://derradjshop.com/books/bored-and-brilliant/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/daa-alqalaq-wabda-alhayat/</loc>
+    <loc>https://derradjshop.com/books/daa-alqalaq-wabda-alhayat/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/daily-laws/</loc>
+    <loc>https://derradjshop.com/books/daily-laws/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/eat-to-live/</loc>
+    <loc>https://derradjshop.com/books/eat-to-live/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/fan-alidara-walqiyada/</loc>
+    <loc>https://derradjshop.com/books/fan-alidara-walqiyada/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/fan-altaamal-maa-alnas/</loc>
+    <loc>https://derradjshop.com/books/fan-altaamal-maa-alnas/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/fowda-altasweq/</loc>
+    <loc>https://derradjshop.com/books/fowda-altasweq/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/hatha-alkitab-sayuulimuk/</loc>
+    <loc>https://derradjshop.com/books/hatha-alkitab-sayuulimuk/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/kitab-al-millionaire/</loc>
+    <loc>https://derradjshop.com/books/kitab-al-millionaire/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/kotler-marketing/</loc>
+    <loc>https://derradjshop.com/books/kotler-marketing/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/man-unknown/</loc>
+    <loc>https://derradjshop.com/books/man-unknown/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/men-mars-women-venus/</loc>
+    <loc>https://derradjshop.com/books/men-mars-women-venus/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/miracle-morning/</loc>
+    <loc>https://derradjshop.com/books/miracle-morning/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/mumayaz-bil-asfar/</loc>
+    <loc>https://derradjshop.com/books/mumayaz-bil-asfar/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/one-page-marketing-plan/</loc>
+    <loc>https://derradjshop.com/books/one-page-marketing-plan/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/quwwat-alhub-almudhila/</loc>
+    <loc>https://derradjshop.com/books/quwwat-alhub-almudhila/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/tajawoz-mostawayat-al-waai/</loc>
+    <loc>https://derradjshop.com/books/tajawoz-mostawayat-al-waai/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/tiktok-syndrome/</loc>
+    <loc>https://derradjshop.com/books/tiktok-syndrome/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/training-camp/</loc>
+    <loc>https://derradjshop.com/books/training-camp/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/upside-of-irrationality/</loc>
+    <loc>https://derradjshop.com/books/upside-of-irrationality/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/books/wa-tazun-annaka-najawt/</loc>
+    <loc>https://derradjshop.com/books/wa-tazun-annaka-najawt/</loc>
     <lastmod>2026-05-27</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-  <!-- ══ صفحة الطلب ══ -->
-  <url>
-    <loc>https://www.derradjshop.com/ordre/</loc>
-    <lastmod>2026-05-29</lastmod>
-    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <!-- ══ صفحات معلومات المتجر ══ -->
   <url>
-    <loc>https://www.derradjshop.com/faq</loc>
+    <loc>https://derradjshop.com/faq</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/about</loc>
+    <loc>https://derradjshop.com/about</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/contact</loc>
+    <loc>https://derradjshop.com/contact</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/delivery</loc>
+    <loc>https://derradjshop.com/delivery</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/payment</loc>
+    <loc>https://derradjshop.com/payment</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://www.derradjshop.com/terms</loc>
+    <loc>https://derradjshop.com/terms</loc>
     <lastmod>2026-05-26</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.4</priority>

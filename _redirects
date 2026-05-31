@@ -1,4 +1,9 @@
 # Netlify Redirects — Derradj Shop
+
+# www → non-www canonical redirect (301 permanent)
+# Fixes "Alternate page with proper canonical tag" in Google Search Console
+https://www.derradjshop.com/*  https://derradjshop.com/:splat  301!
+
 # Redirect old .html URLs and /index.html to clean URLs (301 permanent)
 
 /index.html            /               301

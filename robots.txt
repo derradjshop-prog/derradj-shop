@@ -1,13 +1,15 @@
-User-agent: *
+﻿User-agent: *
 Allow: /
 
-# Exclude admin and test pages
+# Exclude admin, seller, and test pages
 Disallow: /admin/
+Disallow: /seller/
 Disallow: /ordre/Essai/
 Disallow: /ordre/js/
 Disallow: /ordre/success.html
+Disallow: /review.html
 
-# Exclude old electronics product pages (no longer relevant)
+# Exclude empty legacy directory
 Disallow: /products/
 
-Sitemap: https://www.derradjshop.com/sitemap.xml
+Sitemap: https://derradjshop.com/sitemap.xml
