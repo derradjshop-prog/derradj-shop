@@ -110,6 +110,8 @@
     /* ── إلكترونيات ── */
     { catalogId: 83, name: 'حامل اللابتوب القابل للتعديل', shortName: 'حامل اللابتوب', price: 1500, available: true, image: '/Electronique/laptop/main1.webp' },
     { catalogId: 84, name: 'ساعة ذكية Modio ST11 مع 3 أزواج أساور', shortName: 'ساعة Modio ST11', price: 9800, available: true, image: '/Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
+    { catalogId: 85, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Black)', shortName: 'Anker R50i VG – Black', price: 5300, available: true, image: '/Electronique/earbuds/anker-soundcore-r50i-vg/images/main.png' },
+    { catalogId: 86, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Blue)',  shortName: 'Anker R50i VG – Blue',  price: 5300, hidden: true, available: true, image: '' },
   ];
 
   /* ══════════════════════════════════════════════════════════

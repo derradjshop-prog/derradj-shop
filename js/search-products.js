@@ -70,6 +70,29 @@
       ]
     });
 
+    /* ── Anker SoundCore R50i VG Earbuds ── */
+    index.push({
+      id:          85,
+      type:        'electronics',
+      name:        'Anker SoundCore R50i VG – Bluetooth 5.3 Earbuds',
+      nameEn:      'Anker SoundCore R50i VG Original Bluetooth Earbuds',
+      nameFr:      'Écouteurs Bluetooth Anker SoundCore R50i VG',
+      category:    'إلكترونيات',
+      price:       5300,
+      image:       '/Electronique/earbuds/anker-soundcore-r50i-vg/images/main.png',
+      url:         '/Electronique/earbuds/anker-soundcore-r50i-vg/',
+      author:      '',
+      description: 'Anker SoundCore R50i VG Original Bluetooth 5.3 earbuds with 10 mm drivers, 30h total battery, 2 AI microphones, IPX5 water resistance, USB-C fast charging. Available in Black and Blue.',
+      keywords: [
+        'سماعات بلوتوث', 'سماعات أنكر', 'anker', 'soundcore', 'anker r50i',
+        'earbuds', 'bluetooth earbuds', 'écouteurs bluetooth',
+        'سماعات لاسلكية', 'سماعات الجزائر', 'écouteurs algérie',
+        'anker soundcore', 'r50i vg', 'سماعات داخل الأذن',
+        'إلكترونيات', 'الكترونيات', 'electronique',
+        'bluetooth 5.3', 'سماعة بلوتوث', 'سماعة رياضية'
+      ]
+    });
+
     window.SEARCH_PRODUCTS = index;
   }
 
