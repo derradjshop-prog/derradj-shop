@@ -960,8 +960,25 @@
   <!-- Tab: Products -->
   <div class="tab-content" id="tab-products">
 
+    <!-- شريط التصفية الفرعي: الكل / الكتب / إلكترونيات -->
+    <div class="prod-subfilter-bar" id="prodSubfilterBar">
+      <button class="prod-sf-btn active" data-pfilter="all">
+        🗂 الكل
+        <span class="prod-sf-badge" id="psb-all">—</span>
+      </button>
+      <button class="prod-sf-btn" data-pfilter="books">
+        📚 الكتب
+        <span class="prod-sf-badge" id="psb-books">—</span>
+      </button>
+      <button class="prod-sf-btn" data-pfilter="electronics">
+        💻 إلكترونيات
+        <span class="prod-sf-badge" id="psb-electronics">—</span>
+      </button>
+    </div>
+
     <div class="controls-bar">
-      <span style="font-size:14px;font-weight:700;color:var(--text);">إدارة توفر المنتجات — قم بتشغيل أو إيقاف كل كتاب</span>
+      <input type="text" class="search-input" id="prodSearchInput"
+             placeholder="🔍 بحث في المنتجات بالاسم أو التصنيف...">
       <button class="btn-refresh" id="productsRefreshBtn">↻ تحديث</button>
       <span class="orders-count" id="productsCount"></span>
     </div>
@@ -972,7 +989,7 @@
         <thead>
           <tr>
             <th>الصورة</th>
-            <th>اسم الكتاب</th>
+            <th>اسم المنتج</th>
             <th>السعر</th>
             <th>التصنيف</th>
             <th>الحالة</th>
@@ -1042,6 +1059,73 @@
         border-radius: 6px;
         border: 1px solid var(--border);
         background: #f8fafc;
+      }
+
+      /* ── شريط التصفية الفرعي ─────────────────────────────── */
+      .prod-subfilter-bar {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 14px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 6px;
+        box-shadow: var(--shadow-sm);
+      }
+      .prod-sf-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border: none;
+        border-radius: var(--radius);
+        font-family: var(--font);
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background .2s, color .2s;
+        background: transparent;
+        color: var(--text-light);
+      }
+      .prod-sf-btn.active { background: var(--primary); color: #fff; }
+      .prod-sf-btn:not(.active):hover { background: var(--primary-bg); color: var(--primary); }
+      .prod-sf-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 20px;
+        height: 20px;
+        padding: 0 5px;
+        border-radius: 99px;
+        font-size: 11px;
+        font-weight: 900;
+        background: rgba(255,255,255,.25);
+      }
+      .prod-sf-btn:not(.active) .prod-sf-badge { background: #e2e8f0; color: var(--text-light); }
+
+      /* ── صف رأس المجموعة في الجدول ─────────────────────── */
+      .prod-group-hdr td {
+        background: #1e293b !important;
+        color: #fff !important;
+        font-weight: 800;
+        font-size: 13px;
+        padding: 10px 16px !important;
+        letter-spacing: .3px;
+        border-bottom: none !important;
+      }
+      .prod-group-count {
+        font-size: 12px;
+        font-weight: 600;
+        opacity: .7;
+        margin-right: 10px;
+      }
+
+      /* ── Mobile responsive: 2-col sub-filter ────────────── */
+      @media (max-width: 480px) {
+        .prod-subfilter-bar { flex-wrap: wrap; }
+        .prod-sf-btn { padding: 8px 8px; font-size: 12px; }
       }
     </style>
 

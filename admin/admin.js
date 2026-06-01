@@ -1,9 +1,9 @@
 /* ==========================================================
    admin.js — Derradj Shop | Admin Dashboard
    is_confirmed: NULL = قيد المعالجة | true = تم التأكيد
-   BUILD: 2026-05-31-v4 (BOOKS_META includes 2-82 + electronics 83-84)
+   BUILD: 2026-06-01-v5 (BOOKS_META includes 2-82 books + electronics 83-85)
    ========================================================== */
-console.log('[admin.js] loaded — BUILD 2026-05-31-v4 — BOOKS_META includes catalogId 2-84 (books + electronics)');
+console.log('[admin.js] loaded — BUILD 2026-06-01-v5 — BOOKS_META includes catalogId 2-85 (books + electronics)');
 
 (function () {
   "use strict";
@@ -21,7 +21,9 @@ console.log('[admin.js] loaded — BUILD 2026-05-31-v4 — BOOKS_META includes c
   let ALL_MESSAGES = [];
   let ALL_PRODUCTS = [];
   let ALL_REVIEWS  = [];
-  let EDIT_REVIEW_ID = null;
+  let EDIT_REVIEW_ID    = null;
+  let prodFilterCurrent = 'all';   /* 'all' | 'books' | 'electronics' */
+  let PROD_SEARCH_QUERY = '';
 
   /* ── Constants ─────────────────────────────────────────── */
   const PM_LABELS = {
@@ -741,65 +743,144 @@ console.log('[admin.js] loaded — BUILD 2026-05-31-v4 — BOOKS_META includes c
     { catalogId: 81, price: 1400, category: 'الروايات والأدب',    image: '../books/wa-tazun-annaka-najawt/main.webp' },
     { catalogId: 82, price:  990, category: 'الإدارة والأعمال',   image: '../books/kotler-marketing/main.webp' },
     /* ── إلكترونيات ── */
-    { catalogId: 83, price: 1500, category: 'إلكترونيات',        image: '../Electronique/laptop/main1.webp' },
-    { catalogId: 84, price: 9800, category: 'إلكترونيات',        image: '../Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
+    { catalogId: 83, price: 1500, category: 'إلكترونيات', name: 'حامل اللابتوب القابل للتعديل',                          image: '../Electronique/laptop/main1.webp' },
+    { catalogId: 84, price: 9800, category: 'إلكترونيات', name: 'ساعة ذكية Modio ST11 مع 3 أزواج أساور',                image: '../Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
+    { catalogId: 85, price: 5300, category: 'إلكترونيات', name: 'Anker SoundCore R50i VG Original – Bluetooth 5.3 Earbuds', image: '../Electronique/earbuds/anker-soundcore-r50i-vg/images/main.png' },
   ];
 
   /* مجموعة سريعة من catalogId المرئية — لا تشمل الكتب المخفية */
   const VISIBLE_IDS = new Set(BOOKS_META.map(m => m.catalogId));
 
-  /* جلب حالة التوفر من Supabase — يُعاد فقط الكتب الموجودة في BOOKS_META */
+  /* ─────────────────────────────────────────────────────────
+     جلب المنتجات من Supabase ودمجها مع BOOKS_META
+
+     منطق العرض:
+     • الكتب    : تُعرض فقط إذا كانت موجودة في جدول Supabase
+     • الإلكترونيات : تُعرض دائماً من BOOKS_META بغض النظر عن Supabase
+                   (لأن Supabase قد لا يحتوي عليها بعد)
+  ───────────────────────────────────────────────────────── */
   async function fetchProducts() {
+    /* 1. جلب كل ما هو موجود في Supabase */
     const { data, error } = await supabase
       .from("product_availability")
       .select("catalog_id, name, available")
       .order("catalog_id");
+
     if (error) throw error;
-    return (data || [])
-      .filter(row => VISIBLE_IDS.has(row.catalog_id))   /* يستبعد الكتب المخفية */
-      .map(row => {
-        const meta = BOOKS_META.find(m => m.catalogId === row.catalog_id);
-        return {
-          catalogId: row.catalog_id,
-          name:      row.name,
-          available: row.available,
-          category:  meta.category || '—',
-          price:     meta.price    || null,
-          image:     meta.image    || '',
-        };
-      });
-  }
 
-  /* تحديث حالة التوفر في Supabase */
-  async function setProductAvailability(catalogId, available) {
-    const { error } = await supabase
-      .from("product_availability")
-      .update({ available, updated_at: new Date().toISOString() })
-      .eq("catalog_id", catalogId);
-    if (error) throw error;
-  }
+    /* خريطة catalog_id → row لمطابقة سريعة */
+    const sbMap = new Map((data || []).map(r => [r.catalog_id, r]));
 
-  /* عرض جدول المنتجات */
-  function renderProductsTable(products) {
-    renderProductsMobileCards(products);
-    const tbody = document.getElementById("productsTbody");
-    const cnt   = products.length;
-    document.getElementById("productsCount").textContent = cnt + " منتج";
-    document.getElementById("tab-badge-products").textContent = cnt;
+    /* 2. حاول upsert المنتجات الإلكترونية المفقودة في قاعدة البيانات
+          upsert (وليس insert) يتجنب الخطأ إن كان السجل موجوداً مسبقاً */
+    const elecMeta    = BOOKS_META.filter(m => m.category === 'إلكترونيات');
+    const missingElec = elecMeta.filter(m => !sbMap.has(m.catalogId));
 
-    if (!cnt) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty">لا توجد منتجات — تأكد من تشغيل supabase-setup-products.sql</td></tr>`;
-      return;
+    if (missingElec.length) {
+      try {
+        const payload = missingElec.map(m => ({
+          catalog_id: m.catalogId,
+          name:       m.name,
+          available:  true,
+        }));
+        const { data: upserted, error: upErr } = await supabase
+          .from("product_availability")
+          .upsert(payload, { onConflict: 'catalog_id' })
+          .select("catalog_id, name, available");
+
+        if (!upErr && upserted) {
+          upserted.forEach(r => sbMap.set(r.catalog_id, r));
+          console.log('[admin] upserted electronics into Supabase:', upserted.map(r => r.catalog_id));
+        } else if (upErr) {
+          console.warn('[admin] upsert electronics failed — will show from local meta:', upErr.message);
+        }
+      } catch (e) {
+        console.warn('[admin] upsert electronics error:', e.message);
+      }
     }
 
-    tbody.innerHTML = products.map(p => `
+    /* 3. بناء قائمة النتائج
+          - الكتب    : فقط من Supabase
+          - الإلكترونيات : دائماً من BOOKS_META (مع بيانات Supabase إن وُجدت) */
+    const booksMeta = BOOKS_META.filter(m => m.category !== 'إلكترونيات');
+
+    const bookRows = booksMeta
+      .filter(m => sbMap.has(m.catalogId))          /* فقط الكتب الموجودة في DB */
+      .map(m => buildProdObj(m, sbMap.get(m.catalogId)));
+
+    const elecRows = elecMeta
+      .map(m => buildProdObj(m, sbMap.get(m.catalogId))); /* دائماً — مع fallback */
+
+    return [...bookRows, ...elecRows];
+  }
+
+  /* بناء كائن منتج مدمج من BOOKS_META + صف Supabase */
+  function buildProdObj(meta, row) {
+    return {
+      catalogId: meta.catalogId,
+      name:      row  ? row.name      : meta.name,
+      available: row  ? row.available : true,       /* fallback: متوفر */
+      category:  meta.category,
+      price:     meta.price,
+      image:     meta.image,
+      inDB:      !!row,                             /* هل السجل محفوظ في قاعدة البيانات */
+    };
+  }
+
+  /* تحديث حالة التوفر في Supabase
+     يستخدم upsert بدلاً من update حتى يعمل حتى لو لم يكن السجل موجوداً بعد */
+  async function setProductAvailability(catalogId, available) {
+    const meta = BOOKS_META.find(m => m.catalogId === catalogId);
+    const { error } = await supabase
+      .from("product_availability")
+      .upsert(
+        {
+          catalog_id:  catalogId,
+          name:        meta?.name || String(catalogId),
+          available,
+          updated_at:  new Date().toISOString(),
+        },
+        { onConflict: 'catalog_id' }
+      );
+    if (error) throw error;
+  }
+
+  /* تحديث شارات التصفية الفرعية للمنتجات */
+  function updateProdSubfilterBadges() {
+    const books = ALL_PRODUCTS.filter(p => p.category !== 'إلكترونيات');
+    const elec  = ALL_PRODUCTS.filter(p => p.category === 'إلكترونيات');
+    const allEl = document.getElementById('psb-all');
+    const bEl   = document.getElementById('psb-books');
+    const eEl   = document.getElementById('psb-electronics');
+    if (allEl) allEl.textContent = ALL_PRODUCTS.length;
+    if (bEl)   bEl.textContent   = books.length;
+    if (eEl)   eEl.textContent   = elec.length;
+    /* شارة التبويب الرئيسي = إجمالي المنتجات */
+    document.getElementById("tab-badge-products").textContent = ALL_PRODUCTS.length;
+  }
+
+  /* فلترة المنتجات بحسب القسم النشط والبحث النصي */
+  function getProductsForView() {
+    const q = PROD_SEARCH_QUERY.toLowerCase();
+    return ALL_PRODUCTS.filter(p => {
+      if (prodFilterCurrent === 'books'       && p.category === 'إلكترونيات') return false;
+      if (prodFilterCurrent === 'electronics' && p.category !== 'إلكترونيات') return false;
+      if (q && !p.name.toLowerCase().includes(q) && !p.category.toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+
+  /* بناء HTML لصف منتج واحد */
+  function prodRow(p) {
+    const icon = p.category === 'إلكترونيات' ? '💻' : '📚';
+    return `
       <tr data-catalog-id="${p.catalogId}">
         <td>
           ${p.image
             ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="prod-thumb"
                    loading="lazy" decoding="async"
-                   onerror="if(!this.dataset.f){this.dataset.f='1';this.src=this.src.replace('main.webp','main.png')}else{this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:24px;\\'>📚</span>')}">`
-            : '<span style="font-size:24px;">📚</span>'
+                   onerror="if(!this.dataset.f){this.dataset.f='1';this.src=this.src.replace('main.webp','main.png')}else{this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:24px;\\'>${icon}</span>')}">`
+            : `<span style="font-size:24px;">${icon}</span>`
           }
         </td>
         <td><strong>${esc(p.name)}</strong></td>
@@ -821,7 +902,50 @@ console.log('[admin.js] loaded — BUILD 2026-05-31-v4 — BOOKS_META includes c
             <span class="avail-slider"></span>
           </label>
         </td>
-      </tr>`).join("");
+      </tr>`;
+  }
+
+  /* عرض جدول المنتجات — يدعم التجميع حسب الفئة في وضع "الكل" */
+  function renderProductsTable(products) {
+    renderProductsMobileCards(products);
+    const tbody = document.getElementById("productsTbody");
+    const cnt   = products.length;
+    const total = ALL_PRODUCTS.length;
+
+    document.getElementById("productsCount").textContent =
+      cnt + " منتج" + (cnt !== total ? ` (من ${total})` : "");
+    updateProdSubfilterBadges();
+
+    if (!cnt) {
+      tbody.innerHTML = `<tr><td colspan="6" class="empty">لا توجد منتجات مطابقة</td></tr>`;
+      return;
+    }
+
+    /* وضع "الكل" بدون بحث: نعرض الكتب ثم الإلكترونيات مع رؤوس المجموعات */
+    if (prodFilterCurrent === 'all' && !PROD_SEARCH_QUERY) {
+      const books = products.filter(p => p.category !== 'إلكترونيات');
+      const elec  = products.filter(p => p.category === 'إلكترونيات');
+      let html = '';
+
+      if (books.length) {
+        html += `<tr class="prod-group-hdr">
+          <td colspan="6">📚 الكتب <span class="prod-group-count">(${books.length} كتاب)</span></td>
+        </tr>`;
+        html += books.map(p => prodRow(p)).join('');
+      }
+
+      if (elec.length) {
+        html += `<tr class="prod-group-hdr">
+          <td colspan="6">💻 إلكترونيات <span class="prod-group-count">(${elec.length} منتج)</span></td>
+        </tr>`;
+        html += elec.map(p => prodRow(p)).join('');
+      }
+
+      tbody.innerHTML = html;
+    } else {
+      /* وضع الفلتر أو البحث: قائمة مسطحة بدون رؤوس مجموعات */
+      tbody.innerHTML = products.map(p => prodRow(p)).join('');
+    }
   }
 
   /* تحديث شارة التوفر في الجدول والبطاقات المحمولة */
@@ -855,9 +979,11 @@ console.log('[admin.js] loaded — BUILD 2026-05-31-v4 — BOOKS_META includes c
     if (p) p.available = newValue;
     applyAvailabilityUI(catalogId, newValue);
 
-    /* 2. إرسال التحديث لقاعدة البيانات في الخلفية */
+    /* 2. إرسال التحديث (upsert) لقاعدة البيانات */
     try {
       await setProductAvailability(catalogId, newValue);
+      /* بعد upsert ناجح: اعتبر السجل محفوظاً في DB */
+      if (p) p.inDB = true;
     } catch (err) {
       console.error("Toggle availability error:", err);
 
@@ -1416,9 +1542,25 @@ console.log('[admin.js] loaded — BUILD 2026-05-31-v4 — BOOKS_META includes c
       btn.disabled = true; btn.textContent = "⏳ جاري التحديث...";
       try {
         ALL_PRODUCTS = await fetchProducts();
-        renderProductsTable(ALL_PRODUCTS);
+        renderProductsTable(getProductsForView());
       } catch (err) { alert("❌ فشل تحديث المنتجات: " + (err.message || "")); }
       btn.disabled = false; btn.textContent = "↻ تحديث";
+    });
+
+    /* ── Product sub-filter buttons ────────────────────────── */
+    document.getElementById("prodSubfilterBar")?.addEventListener("click", e => {
+      const btn = e.target.closest(".prod-sf-btn");
+      if (!btn) return;
+      prodFilterCurrent = btn.dataset.pfilter || 'all';
+      document.querySelectorAll(".prod-sf-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      renderProductsTable(getProductsForView());
+    });
+
+    /* ── Product search ─────────────────────────────────────── */
+    document.getElementById("prodSearchInput")?.addEventListener("input", e => {
+      PROD_SEARCH_QUERY = e.target.value.trim();
+      renderProductsTable(getProductsForView());
     });
 
     /* ── Reviews: search & filter ───────────────────────────── */
@@ -1492,7 +1634,7 @@ console.log('[admin.js] loaded — BUILD 2026-05-31-v4 — BOOKS_META includes c
       renderStats(ALL_ORDERS);
       renderTable(getFiltered());   /* يعرض الطلبات غير المؤكدة فقط بشكل افتراضي */
       renderMessagesTable(ALL_MESSAGES);
-      renderProductsTable(ALL_PRODUCTS);
+      renderProductsTable(getProductsForView());
       renderReviewsTable(ALL_REVIEWS);
       bindEvents();
 
