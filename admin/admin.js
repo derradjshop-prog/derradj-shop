@@ -1,9 +1,12 @@
 /* ==========================================================
    admin.js — Derradj Shop | Admin Dashboard
    is_confirmed: NULL = قيد المعالجة | true = تم التأكيد
-   BUILD: 2026-06-01-v5 (BOOKS_META includes 2-82 books + electronics 83-85)
+   BUILD: 2026-06-01-v6
+   - Reads category + price FROM Supabase (after running SQL setup)
+   - Electronics always visible even before SQL is run (BOOKS_META fallback)
+   - upsert replaces update/insert everywhere to avoid silent failures
    ========================================================== */
-console.log('[admin.js] loaded — BUILD 2026-06-01-v5 — BOOKS_META includes catalogId 2-85 (books + electronics)');
+console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + price, upsert everywhere');
 
 (function () {
   "use strict";
@@ -755,24 +758,28 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v5 — BOOKS_META includes c
      جلب المنتجات من Supabase ودمجها مع BOOKS_META
 
      منطق العرض:
-     • الكتب    : تُعرض فقط إذا كانت موجودة في جدول Supabase
-     • الإلكترونيات : تُعرض دائماً من BOOKS_META بغض النظر عن Supabase
-                   (لأن Supabase قد لا يحتوي عليها بعد)
+     • الكتب        : تُعرض فقط إذا وُجدت في Supabase
+     • الإلكترونيات : تُعرض دائماً من BOOKS_META حتى لو لم تُضَف بعد
+       → إذا لم تكن في Supabase تُحاوَل إضافتها تلقائياً بـ upsert
+
+     مصدر category و price:
+       1. Supabase (بعد تشغيل supabase-electronics-setup.sql)
+       2. BOOKS_META كاحتياط إذا لم تُحدَّث Supabase بعد
   ───────────────────────────────────────────────────────── */
   async function fetchProducts() {
-    /* 1. جلب كل ما هو موجود في Supabase */
+
+    /* ── 1. جلب الجدول كاملاً بما فيه category و price ── */
     const { data, error } = await supabase
       .from("product_availability")
-      .select("catalog_id, name, available")
+      .select("catalog_id, name, available, category, price")
       .order("catalog_id");
 
     if (error) throw error;
 
-    /* خريطة catalog_id → row لمطابقة سريعة */
+    /* خريطة catalog_id → row لمطابقة O(1) */
     const sbMap = new Map((data || []).map(r => [r.catalog_id, r]));
 
-    /* 2. حاول upsert المنتجات الإلكترونية المفقودة في قاعدة البيانات
-          upsert (وليس insert) يتجنب الخطأ إن كان السجل موجوداً مسبقاً */
+    /* ── 2. upsert المنتجات الإلكترونية المفقودة ── */
     const elecMeta    = BOOKS_META.filter(m => m.category === 'إلكترونيات');
     const missingElec = elecMeta.filter(m => !sbMap.has(m.catalogId));
 
@@ -782,80 +789,104 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v5 — BOOKS_META includes c
           catalog_id: m.catalogId,
           name:       m.name,
           available:  true,
+          category:   'إلكترونيات',
+          price:      m.price,
         }));
-        const { data: upserted, error: upErr } = await supabase
+        const { data: ups, error: upErr } = await supabase
           .from("product_availability")
           .upsert(payload, { onConflict: 'catalog_id' })
-          .select("catalog_id, name, available");
+          .select("catalog_id, name, available, category, price");
 
-        if (!upErr && upserted) {
-          upserted.forEach(r => sbMap.set(r.catalog_id, r));
-          console.log('[admin] upserted electronics into Supabase:', upserted.map(r => r.catalog_id));
+        if (!upErr && ups) {
+          ups.forEach(r => sbMap.set(r.catalog_id, r));
+          console.log('[admin] upserted electronics:', ups.map(r => r.catalog_id));
         } else if (upErr) {
-          console.warn('[admin] upsert electronics failed — will show from local meta:', upErr.message);
+          /* upsert فشل (RLS أو عمود مفقود) — يظهر المنتج من BOOKS_META بدلاً من ذلك */
+          console.warn('[admin] upsert failed (run supabase-electronics-setup.sql):', upErr.message);
         }
       } catch (e) {
-        console.warn('[admin] upsert electronics error:', e.message);
+        console.warn('[admin] upsert error:', e.message);
       }
     }
 
-    /* 3. بناء قائمة النتائج
-          - الكتب    : فقط من Supabase
-          - الإلكترونيات : دائماً من BOOKS_META (مع بيانات Supabase إن وُجدت) */
+    /* ── 3. بناء قائمة الكتب (فقط الموجودة في Supabase) ── */
     const booksMeta = BOOKS_META.filter(m => m.category !== 'إلكترونيات');
-
-    const bookRows = booksMeta
-      .filter(m => sbMap.has(m.catalogId))          /* فقط الكتب الموجودة في DB */
+    const bookRows  = booksMeta
+      .filter(m => sbMap.has(m.catalogId))
       .map(m => buildProdObj(m, sbMap.get(m.catalogId)));
 
-    const elecRows = elecMeta
-      .map(m => buildProdObj(m, sbMap.get(m.catalogId))); /* دائماً — مع fallback */
+    /* ── 4. بناء قائمة الإلكترونيات (دائماً من BOOKS_META) ── */
+    const elecRows = elecMeta.map(m => buildProdObj(m, sbMap.get(m.catalogId)));
 
     return [...bookRows, ...elecRows];
   }
 
-  /* بناء كائن منتج مدمج من BOOKS_META + صف Supabase */
+  /* ─────────────────────────────────────────────────────────
+     دمج BOOKS_META مع صف Supabase في كائن منتج واحد.
+     الأولوية: Supabase → ثم BOOKS_META كاحتياط.
+  ───────────────────────────────────────────────────────── */
   function buildProdObj(meta, row) {
+    const dbCategory = row?.category || null;
+    const category   = dbCategory
+      ? dbCategory
+      : (meta.category === 'إلكترونيات' ? 'إلكترونيات' : 'كتب');
+
     return {
       catalogId: meta.catalogId,
-      name:      row  ? row.name      : meta.name,
-      available: row  ? row.available : true,       /* fallback: متوفر */
-      category:  meta.category,
-      price:     meta.price,
-      image:     meta.image,
-      inDB:      !!row,                             /* هل السجل محفوظ في قاعدة البيانات */
+      /* name: prefer DB → then BOOKS_META (electronics only) → then '—'
+         NEVER use String(catalogId) — that caused catalog_id = 2 to show as "2" */
+      name:      row?.name   || meta.name   || '—',
+      available: row         ? row.available : true,
+      category,
+      price:     row?.price  ?? meta.price  ?? null,
+      image:     meta.image  || '',
+      inDB:      !!row,
     };
   }
 
-  /* تحديث حالة التوفر في Supabase
-     يستخدم upsert بدلاً من update حتى يعمل حتى لو لم يكن السجل موجوداً بعد */
+  /* ─────────────────────────────────────────────────────────
+     حفظ حالة التوفر في Supabase — upsert آمن.
+
+     ⚠️  IMPORTANT: لا تُدرج حقل "name" للكتب.
+         BOOKS_META لا يحتوي على أسماء الكتب (فقط الإلكترونيات لها name).
+         إذا أُدرج "name" للكتاب بقيمة undefined → String(catalogId) = "2"
+         سيُكتَب فوق الاسم العربي الصحيح في Supabase.
+  ───────────────────────────────────────────────────────── */
   async function setProductAvailability(catalogId, available) {
-    const meta = BOOKS_META.find(m => m.catalogId === catalogId);
+    const meta   = BOOKS_META.find(m => m.catalogId === catalogId);
+    const isElec = meta?.category === 'إلكترونيات';
+
+    /* Build payload without "name" by default */
+    const payload = {
+      catalog_id: catalogId,
+      available,
+      category:   isElec ? 'إلكترونيات' : 'كتب',
+      price:      meta?.price ?? null,
+      updated_at: new Date().toISOString(),
+    };
+
+    /* Only include "name" when it is actually known (electronics in BOOKS_META) */
+    if (meta?.name) payload.name = meta.name;
+
     const { error } = await supabase
       .from("product_availability")
-      .upsert(
-        {
-          catalog_id:  catalogId,
-          name:        meta?.name || String(catalogId),
-          available,
-          updated_at:  new Date().toISOString(),
-        },
-        { onConflict: 'catalog_id' }
-      );
+      .upsert(payload, { onConflict: 'catalog_id' });
     if (error) throw error;
   }
 
-  /* تحديث شارات التصفية الفرعية للمنتجات */
+  /* تحديد ما إذا كان المنتج إلكترونياً */
+  function isElec(p) { return p.category === 'إلكترونيات'; }
+
+  /* تحديث شارات التصفية الفرعية (الكل / الكتب / إلكترونيات) */
   function updateProdSubfilterBadges() {
-    const books = ALL_PRODUCTS.filter(p => p.category !== 'إلكترونيات');
-    const elec  = ALL_PRODUCTS.filter(p => p.category === 'إلكترونيات');
+    const elecCount  = ALL_PRODUCTS.filter(isElec).length;
+    const booksCount = ALL_PRODUCTS.length - elecCount;
     const allEl = document.getElementById('psb-all');
     const bEl   = document.getElementById('psb-books');
     const eEl   = document.getElementById('psb-electronics');
     if (allEl) allEl.textContent = ALL_PRODUCTS.length;
-    if (bEl)   bEl.textContent   = books.length;
-    if (eEl)   eEl.textContent   = elec.length;
-    /* شارة التبويب الرئيسي = إجمالي المنتجات */
+    if (bEl)   bEl.textContent   = booksCount;
+    if (eEl)   eEl.textContent   = elecCount;
     document.getElementById("tab-badge-products").textContent = ALL_PRODUCTS.length;
   }
 
@@ -863,16 +894,17 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v5 — BOOKS_META includes c
   function getProductsForView() {
     const q = PROD_SEARCH_QUERY.toLowerCase();
     return ALL_PRODUCTS.filter(p => {
-      if (prodFilterCurrent === 'books'       && p.category === 'إلكترونيات') return false;
-      if (prodFilterCurrent === 'electronics' && p.category !== 'إلكترونيات') return false;
-      if (q && !p.name.toLowerCase().includes(q) && !p.category.toLowerCase().includes(q)) return false;
+      if (prodFilterCurrent === 'books'       &&  isElec(p)) return false;
+      if (prodFilterCurrent === 'electronics' && !isElec(p)) return false;
+      if (q && !p.name.toLowerCase().includes(q) &&
+               !(p.category || '').toLowerCase().includes(q)) return false;
       return true;
     });
   }
 
   /* بناء HTML لصف منتج واحد */
   function prodRow(p) {
-    const icon = p.category === 'إلكترونيات' ? '💻' : '📚';
+    const icon = isElec(p) ? '💻' : '📚';
     return `
       <tr data-catalog-id="${p.catalogId}">
         <td>
@@ -923,8 +955,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v5 — BOOKS_META includes c
 
     /* وضع "الكل" بدون بحث: نعرض الكتب ثم الإلكترونيات مع رؤوس المجموعات */
     if (prodFilterCurrent === 'all' && !PROD_SEARCH_QUERY) {
-      const books = products.filter(p => p.category !== 'إلكترونيات');
-      const elec  = products.filter(p => p.category === 'إلكترونيات');
+      const books = products.filter(p => !isElec(p));
+      const elec  = products.filter(p =>  isElec(p));
       let html = '';
 
       if (books.length) {

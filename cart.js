@@ -115,7 +115,51 @@
   ];
 
   /* ══════════════════════════════════════════════════════════
+     حالة تحميل آمنة — تُطبَّق فوراً قبل استعلام Supabase
+
+     تمنع الـ flash: الأزرار تُعطَّل والشارات تُخفى مؤقتاً
+     حتى يُعرف الوضع الحقيقي من قاعدة البيانات.
+     تعمل فقط على الأزرار والشارات الموجودة في HTML الثابت
+     (مثل صفحة الإلكترونيات وصفحات المنتجات الفردية).
+     الأزرار المُنشأة ديناميكيًا (قوائم الكتب) تُبنى بعد تحميل
+     البيانات فعلاً فلا تحتاج لهذه الخطوة.
+  ══════════════════════════════════════════════════════════ */
+  function setAvailabilityLoadingState () {
+    const catalog = window.SHOP_CATALOG || [];
+
+    /* تعطيل أزرار السلة الثابتة — تُحفظ النصوص الأصلية للاستعادة */
+    document.querySelectorAll('[data-add-to-cart]').forEach(btn => {
+      const cid = parseInt(btn.dataset.addToCart);
+      const p   = catalog.find(c => c.catalogId === cid);
+      if (!p || p.hidden) return;
+
+      /* حفظ النص قبل تغييره — updateAddToCartButtons ستعيده */
+      if (!btn.dataset._origText) btn.dataset._origText = btn.textContent.trim();
+      btn.disabled      = true;
+      btn.textContent   = '...';
+      btn.style.opacity = '0.5';
+      btn.style.cursor  = 'not-allowed';
+    });
+
+    /* شارات التوفر: حالة محايدة (لا "متوفر" ولا "غير متوفر") */
+    document.querySelectorAll('[data-avail-badge]').forEach(badge => {
+      const cid = parseInt(badge.dataset.availBadge);
+      const p   = catalog.find(c => c.catalogId === cid);
+      if (!p || p.hidden) return;
+
+      badge.classList.remove('new', 'product-badge--unavail');
+      badge.textContent = 'جاري التحقق...';
+    });
+  }
+
+  /* ══════════════════════════════════════════════════════════
      جلب حالة التوفر من Supabase وتطبيقها على SHOP_CATALOG
+
+     finally يضمن استدعاء updateAddToCartButtons دائماً:
+     - عند النجاح: تُطبَّق البيانات الحقيقية من Supabase
+     - عند الفشل (خطأ شبكة / Supabase متوقف): تبقى القيم
+       الافتراضية (available: true) وتُفعَّل الأزرار — أفضل من
+       إبقائها معطلة إلى الأبد
   ══════════════════════════════════════════════════════════ */
   async function fetchAndApplyAvailability () {
     try {
@@ -146,24 +190,29 @@
         });
       }
 
-      /* تحديث الأزرار والشارات في الصفحة الحالية */
-      updateAddToCartButtons();
-
       /* إطلاق حدث لإعلام الصفحات الأخرى (مثل books/index.html) */
       document.dispatchEvent(new CustomEvent('derradj:availability-loaded', {
         detail: { rows },
       }));
 
-    } catch (_) { /* نتجاهل الأخطاء — نستمر بالقيم الافتراضية */ }
+    } catch (_) { /* تجاهل الأخطاء — finally تُفعِّل الأزرار بالقيم الافتراضية */ }
+    finally {
+      /* يعمل دائماً — نجاح أو فشل — لا يبقى الزر معطلاً إلى الأبد */
+      updateAddToCartButtons();
+    }
   }
 
   /* ══════════════════════════════════════════════════════════
-     تحديث أزرار "أضف إلى السلة" بناءً على حالة التوفر
+     تحديث أزرار "أضف إلى السلة" وشارات التوفر بناءً على Supabase
+     يعمل على جميع الصفحات: الرئيسية، الإلكترونيات، الكتب...
   ══════════════════════════════════════════════════════════ */
   function updateAddToCartButtons () {
+    const catalog = window.SHOP_CATALOG || [];
+
+    /* ── تحديث أزرار السلة [data-add-to-cart] ── */
     document.querySelectorAll('[data-add-to-cart]').forEach(btn => {
       const cid = parseInt(btn.dataset.addToCart);
-      const p   = (window.SHOP_CATALOG || []).find(c => c.catalogId === cid);
+      const p   = catalog.find(c => c.catalogId === cid);
       if (!p || p.hidden) return;
 
       if (p.available === false) {
@@ -179,6 +228,25 @@
         btn.classList.remove('btn-unavailable');
         btn.style.cursor  = '';
         btn.style.opacity = '';
+      }
+    });
+
+    /* ── تحديث شارات التوفر [data-avail-badge] ──
+       متوفر  = class "new"               (أخضر)
+       غير متوفر = class "product-badge--unavail" (برتقالي) */
+    document.querySelectorAll('[data-avail-badge]').forEach(badge => {
+      const cid = parseInt(badge.dataset.availBadge);
+      const p   = catalog.find(c => c.catalogId === cid);
+      if (!p || p.hidden) return;
+
+      if (p.available === false) {
+        badge.textContent = 'غير متوفر';
+        badge.classList.remove('new');
+        badge.classList.add('product-badge--unavail');
+      } else {
+        badge.textContent = 'متوفر';
+        badge.classList.add('new');
+        badge.classList.remove('product-badge--unavail');
       }
     });
   }
@@ -598,7 +666,11 @@
     Cart.sanitize();
     updateBadge();
 
-    /* جلب حالة التوفر من Supabase */
+    /* حالة تحميل آمنة: تعطيل الأزرار وإخفاء الشارات قبل استعلام Supabase
+       يمنع الـ flash الذي يُظهر المنتج "متوفر" قبل معرفة الحقيقة */
+    setAvailabilityLoadingState();
+
+    /* جلب حالة التوفر من Supabase — يُحدِّث الأزرار والشارات في finally */
     fetchAndApplyAvailability();
   }
 
