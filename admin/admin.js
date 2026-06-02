@@ -749,6 +749,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     { catalogId: 83, price: 1500, category: 'إلكترونيات', name: 'حامل اللابتوب القابل للتعديل',                          image: '../Electronique/laptop/main1.webp' },
     { catalogId: 84, price: 9800, category: 'إلكترونيات', name: 'ساعة ذكية Modio ST11 مع 3 أزواج أساور',                image: '../Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
     { catalogId: 85, price: 5300, category: 'إلكترونيات', name: 'Anker SoundCore R50i VG Original – Bluetooth 5.3 Earbuds', image: '../Electronique/earbuds/anker-soundcore-r50i-vg/images/main.png' },
+    { catalogId: 87, price: 2900, category: 'إلكترونيات', name: 'Airpods 4 Type-C Vrac (Garantie)',                         image: '../Electronique/earbuds/airpods-4-type-c-vrac/main.png' },
   ];
 
   /* مجموعة سريعة من catalogId المرئية — لا تشمل الكتب المخفية */

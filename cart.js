@@ -112,6 +112,7 @@
     { catalogId: 84, name: 'ساعة ذكية Modio ST11 مع 3 أزواج أساور', shortName: 'ساعة Modio ST11', price: 9800, available: true, image: '/Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
     { catalogId: 85, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Black)', shortName: 'Anker R50i VG – Black', price: 5300, available: true, image: '/Electronique/earbuds/anker-soundcore-r50i-vg/images/main.png' },
     { catalogId: 86, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Blue)',  shortName: 'Anker R50i VG – Blue',  price: 5300, hidden: true, available: true, image: '' },
+    { catalogId: 87, name: 'Airpods 4 Type-C Vrac (Garantie)', shortName: 'Airpods 4 Type-C Vrac', price: 2900, available: true, image: '/Electronique/earbuds/airpods-4-type-c-vrac/main.webp' },
   ];
 
   /* ══════════════════════════════════════════════════════════

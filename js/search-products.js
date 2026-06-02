@@ -93,6 +93,29 @@
       ]
     });
 
+    /* ── Airpods 4 Type-C Vrac (Garantie) ── */
+    index.push({
+      id:          87,
+      type:        'electronics',
+      name:        'Airpods 4 Type-C Vrac (Garantie)',
+      nameEn:      'Airpods 4 Type-C Vrac with Guarantee',
+      nameFr:      'Airpods 4 Type-C Vrac avec Garantie',
+      category:    'إلكترونيات',
+      price:       2900,
+      image:       '/Electronique/earbuds/airpods-4-type-c-vrac/main.webp',
+      url:         '/Electronique/earbuds/airpods-4-type-c-vrac/',
+      author:      '',
+      description: 'Airpods 4 Type-C Vrac (Garantie) — Wireless Bluetooth earbuds with Type-C charging port. Sold as Vrac (unboxed) with guarantee. No SIM card. No camera. Suitable for daily use, calls, study, work, and travel.',
+      keywords: [
+        'airpods', 'airpods 4', 'airpods type c', 'airpods vrac',
+        'سماعات بلوتوث', 'سماعات type c', 'سماعات vrac', 'سماعات لاسلكية',
+        'سماعات الجزائر', 'airpods algerie', 'airpods dz', 'airpods 4 algerie',
+        'earbuds', 'bluetooth earbuds', 'type c earbuds', 'écouteurs bluetooth',
+        'écouteurs type c', 'écouteurs algérie', 'écouteurs vrac',
+        'garantie', 'vrac', 'إلكترونيات', 'الكترونيات', 'electronique'
+      ]
+    });
+
     window.SEARCH_PRODUCTS = index;
   }
 
