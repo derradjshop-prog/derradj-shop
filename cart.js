@@ -108,11 +108,12 @@
     { catalogId: 81, name: 'وتظن أنك نجوت',                                               shortName: 'وتظن أنك نجوت',                              price: 1400, available: true, image: BASE + '/books/wa-tazun-annaka-najawt/main.png' },
     { catalogId: 82, name: 'كوتلر يتحدث عن التسويق',                                      shortName: 'كوتلر يتحدث عن التسويق',                     price:  990, available: true, image: BASE + '/books/kotler-marketing/main.png' },
     /* ── إلكترونيات ── */
-    { catalogId: 83, name: 'حامل اللابتوب القابل للتعديل', shortName: 'حامل اللابتوب', price: 1500, available: true, image: '/Electronique/laptop/main1.webp' },
+    { catalogId: 83, name: 'حامل اللابتوب القابل للتعديل', shortName: 'حامل اللابتوب', price: 1500, available: true, image: '/Electronique/laptop/main.webp' },
     { catalogId: 84, name: 'ساعة ذكية Modio ST11 مع 3 أزواج أساور', shortName: 'ساعة Modio ST11', price: 9800, available: true, image: '/Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
-    { catalogId: 85, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Black)', shortName: 'Anker R50i VG – Black', price: 5300, available: true, image: '/Electronique/earbuds/anker-soundcore-r50i-vg/images/main.png' },
+    { catalogId: 85, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Black)', shortName: 'Anker R50i VG – Black', price: 5300, available: true, image: '/Electronique/earbuds/anker-soundcore-r50i-vg/main.png' },
     { catalogId: 86, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Blue)',  shortName: 'Anker R50i VG – Blue',  price: 5300, hidden: true, available: true, image: '' },
     { catalogId: 87, name: 'Airpods 4 Type-C Vrac (Garantie)', shortName: 'Airpods 4 Type-C Vrac', price: 2900, available: true, image: '/Electronique/earbuds/airpods-4-type-c-vrac/main.webp' },
+    { catalogId: 88, name: 'Hoco J132A 20000mAh Power Bank USB-A 15W + USB-C PD20W with Built-in Type-C 22.5W Cable and iP 12W Cable', shortName: 'Hoco J132A Power Bank', price: 3950, available: true, image: '/Electronique/power-bank/hoco-j132a-20000mah-power-bank/main.webp' },
   ];
 
   /* ══════════════════════════════════════════════════════════

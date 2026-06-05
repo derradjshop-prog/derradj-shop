@@ -36,7 +36,7 @@
       nameFr:      'Support PC Réglable',
       category:    'إلكترونيات',
       price:       1500,
-      image:       '/Electronique/laptop/main1.webp',
+      image:       '/Electronique/laptop/main.webp',
       url:         '/Electronique/laptop/adjustable-laptop-stand.html',
       author:      '',
       description: 'حامل لابتوب قابل للتعديل متعدد الزوايا، خفيف ومتنقل، مناسب لجميع أحجام اللابتوب. يحسن وضعية الجلوس ويقلل الإجهاد.',
@@ -79,7 +79,7 @@
       nameFr:      'Écouteurs Bluetooth Anker SoundCore R50i VG',
       category:    'إلكترونيات',
       price:       5300,
-      image:       '/Electronique/earbuds/anker-soundcore-r50i-vg/images/main.png',
+      image:       '/Electronique/earbuds/anker-soundcore-r50i-vg/main.png',
       url:         '/Electronique/earbuds/anker-soundcore-r50i-vg/',
       author:      '',
       description: 'Anker SoundCore R50i VG Original Bluetooth 5.3 earbuds with 10 mm drivers, 30h total battery, 2 AI microphones, IPX5 water resistance, USB-C fast charging. Available in Black and Blue.',
@@ -113,6 +113,30 @@
         'earbuds', 'bluetooth earbuds', 'type c earbuds', 'écouteurs bluetooth',
         'écouteurs type c', 'écouteurs algérie', 'écouteurs vrac',
         'garantie', 'vrac', 'إلكترونيات', 'الكترونيات', 'electronique'
+      ]
+    });
+
+    /* ── Hoco J132A 20000mAh Power Bank ── */
+    index.push({
+      id:          88,
+      type:        'electronics',
+      name:        'Hoco J132A 20000mAh Power Bank USB-A 15W + USB-C PD20W with Built-in Type-C 22.5W Cable and iP 12W Cable',
+      nameEn:      'Hoco J132A 20000mAh Power Bank',
+      nameFr:      'Batterie Externe Hoco J132A 20000mAh',
+      category:    'إلكترونيات',
+      price:       3950,
+      image:       '/Electronique/power-bank/hoco-j132a-20000mah-power-bank/main.webp',
+      url:         '/Electronique/power-bank/hoco-j132a-20000mah-power-bank/',
+      author:      '',
+      description: 'Hoco J132A 20000mAh power bank with USB-A 15W output, USB-C PD20W, built-in Type-C 22.5W cable and built-in iP 12W cable. No extra cables needed. Ideal for travel, school, work, and daily use.',
+      keywords: [
+        'power bank', 'powerbank', 'batterie externe', 'chargeur portable',
+        'hoco', 'hoco j132a', 'j132a', 'power bank 20000mah', 'power bank algerie',
+        'powerbank dz', 'power bank algérie', 'batterie externe algérie',
+        'chargeur portable algérie', 'power bank usb c', 'power bank pd',
+        'power bank built-in cable', 'power bank type c',
+        'إلكترونيات', 'الكترونيات', 'electronique',
+        'شاحن محمول', 'بنك طاقة', 'بطارية احتياطية'
       ]
     });
 
