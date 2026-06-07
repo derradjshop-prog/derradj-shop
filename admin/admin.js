@@ -855,20 +855,35 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
          سيُكتَب فوق الاسم العربي الصحيح في Supabase.
   ───────────────────────────────────────────────────────── */
   async function setProductAvailability(catalogId, available) {
-    const meta   = BOOKS_META.find(m => m.catalogId === catalogId);
-    const isElec = meta?.category === 'إلكترونيات';
+    const meta            = BOOKS_META.find(m => m.catalogId === catalogId);
+    const isElec          = meta?.category === 'إلكترونيات';
+    const existingProduct = ALL_PRODUCTS.find(p => p.catalogId === catalogId);
 
-    /* Build payload without "name" by default */
-    const payload = {
-      catalog_id: catalogId,
+    const updatedFields = {
       available,
       category:   isElec ? 'إلكترونيات' : 'كتب',
       price:      meta?.price ?? null,
       updated_at: new Date().toISOString(),
     };
 
-    /* Only include "name" when it is actually known (electronics in BOOKS_META) */
-    if (meta?.name) payload.name = meta.name;
+    if (existingProduct?.inDB) {
+      const { error } = await supabase
+        .from("product_availability")
+        .update(updatedFields)
+        .eq("catalog_id", catalogId);
+      if (error) throw error;
+      return;
+    }
+
+    if (!meta?.name) {
+      throw new Error('هذا الكتاب غير موجود في جدول product_availability، ولا يمكن إضافته بدون اسم. شغّل ملف إعداد المنتج أو أضف السجل يدوياً.');
+    }
+
+    const payload = {
+      catalog_id: catalogId,
+      name:       meta.name,
+      ...updatedFields,
+    };
 
     const { error } = await supabase
       .from("product_availability")
