@@ -110,10 +110,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const userId = authData.user.id;
 
-      // 2) تحقق: هل هذا الحساب موجود في staff_accounts كـ admin و active؟
+      // 2) تحقق: هل هذا الحساب موجود في staff_accounts كـ staff أو admin و active؟
       const { data: staffRow, error: staffErr } = await supabase
         .from("staff_accounts")
-        .select("role, is_active")
+        .select("email, role, is_active, full_name")
         .eq("id", userId)
         .maybeSingle();
 
@@ -142,16 +142,19 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      if (String(staffRow.role).toLowerCase() !== "admin") {
-        setStatus("🚫 هذا الحساب ليس أدمن");
+      const role = String(staffRow.role || "staff").toLowerCase();
+      if (!['admin', 'staff'].includes(role)) {
+        setStatus("🚫 هذا الحساب غير مصرح له بالدخول");
         await supabase.auth.signOut();
         loginButton.textContent = originalText;
         loginButton.disabled = false;
         return;
       }
 
-      // 3) نجاح أدمن
-      setStatus("✅ Welcome admin", true);
+      // 3) نجاح دخول الأدمن/الستاف
+      setStatus("✅ تم تسجيل الدخول بنجاح", true);
+      sessionStorage.setItem("staff_role", role);
+      sessionStorage.setItem("staff_email", String(staffRow.email || emailForAuth).toLowerCase());
 
       // ✅ إذا admin.html في نفس مجلد صفحة الأدمن (admin/)
       window.location.href = "admin.html";

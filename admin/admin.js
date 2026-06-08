@@ -27,6 +27,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let EDIT_REVIEW_ID    = null;
   let prodFilterCurrent = 'all';   /* 'all' | 'books' | 'electronics' */
   let PROD_SEARCH_QUERY = '';
+  let CURRENT_ROLE = 'staff';
+  let CURRENT_STAFF_EMAIL = '';
+  let LIMITED_STAFF_MODE = false;
+  const LIMITED_STAFF_EMAIL = '0696234484@derradjshop.com';
 
   /* ── Constants ─────────────────────────────────────────── */
   const PM_LABELS = {
@@ -61,6 +65,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     return Number(n || 0).toLocaleString("fr-DZ") + " دج";
   }
 
+  function isLimitedStaffMode() {
+    return LIMITED_STAFF_MODE === true;
+  }
+
   /* ─────────────────────────────────────────────────────────
      حالة التأكيد — boolean
      NULL  → قيد المعالجة
@@ -82,11 +90,11 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
     const { data: staff, error } = await supabase
       .from("staff_accounts")
-      .select("id, full_name, role, is_active")
+      .select("id, email, full_name, role, is_active")
       .eq("id", session.user.id)
       .maybeSingle();
 
-    if (error || !staff || !staff.is_active || !["admin", "staff"].includes(staff.role)) {
+    if (error || !staff || !staff.is_active || !["admin", "staff"].includes(String(staff.role || "").toLowerCase())) {
       await supabase.auth.signOut();
       location.href = "login.html";
       return null;
@@ -97,8 +105,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   /* ─────────────────────────────────────────────────────────
      FETCH — الطلبات + منتجاتها في استعلام واحد
   ───────────────────────────────────────────────────────── */
-  async function fetchOrders() {
-    const { data, error } = await supabase
+  async function fetchOrders(limitedOnly = false) {
+    let query = supabase
       .from("orders")
       .select(`
         id, full_name, phone, address, wilaya, commune,
@@ -110,6 +118,13 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       .order("created_at", { ascending: false })
       .limit(500);
 
+    if (limitedOnly) {
+      // Limited staff mode should only see pending/unconfirmed orders.
+      // In this project, pending orders are stored as is_confirmed = null.
+      query = query.is("is_confirmed", null);
+    }
+
+    const { data, error } = await query;
     if (error) throw error;
     return data || [];
   }
@@ -385,6 +400,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const st = document.getElementById("statusFilter").value; /* "pending" | "confirmed" | "" */
 
     return ALL_ORDERS.filter(o => {
+      if (isLimitedStaffMode() && o.is_confirmed === true) return false;
+
       /* فلترة حسب الحالة */
       if (st === "pending"   && o.is_confirmed === true)  return false;
       if (st === "confirmed" && o.is_confirmed !== true)  return false;
@@ -441,7 +458,9 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       /* زر التأكيد */
       const confirmBtn = confirmed
         ? `<button class="btn-confirm" disabled>✔ تم التأكيد</button>`
-        : `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`;
+        : isLimitedStaffMode()
+          ? ``
+          : `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`;
 
       return `
         <tr data-id="${esc(o.id)}">
@@ -462,7 +481,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
             <div class="actions-col">
               ${receiptBtn}
               ${confirmBtn}
-              <button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>
+              ${isLimitedStaffMode() ? `` : `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>`}
             </div>
           </td>
         </tr>`;
@@ -579,7 +598,9 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     /* ── Action buttons ── */
     const confirmBtn = confirmed
       ? `<button class="btn-confirm" disabled>✔ تم التأكيد</button>`
-      : `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`;
+      : isLimitedStaffMode()
+        ? ``
+        : `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`;
 
     return `
       <!-- Customer & delivery info -->
@@ -651,7 +672,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       <!-- Actions -->
       <div class="modal-actions">
         ${confirmBtn}
-        <button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>
+        ${isLimitedStaffMode() ? `` : `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>`}
       </div>`;
   }
 
@@ -1540,6 +1561,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     document.getElementById("ordersTbody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
+      if ((btn.dataset.action === "confirm" || btn.dataset.action === "delete") && isLimitedStaffMode()) return;
       if (btn.dataset.action === "confirm") await handleConfirm(btn.dataset.id, btn);
       if (btn.dataset.action === "delete")  await handleDelete(btn.dataset.id, btn);
       if (btn.dataset.action === "details") showOrderModal(btn.dataset.id);
@@ -1549,6 +1571,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     document.getElementById("modalBody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
+      if ((btn.dataset.action === "confirm" || btn.dataset.action === "delete") && isLimitedStaffMode()) return;
       if (btn.dataset.action === "confirm")    await handleConfirm(btn.dataset.id, btn);
       if (btn.dataset.action === "delete")     await handleDelete(btn.dataset.id, btn);
       if (btn.dataset.action === "delete-msg") await handleDeleteMessage(btn.dataset.msgId, btn);
@@ -1671,20 +1694,39 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       const staff = await authGuard();
       if (!staff) return;
 
+      CURRENT_ROLE = String(staff.role || "staff").toLowerCase();
+      CURRENT_STAFF_EMAIL = String(staff.email || "").toLowerCase();
+      LIMITED_STAFF_MODE = CURRENT_STAFF_EMAIL === LIMITED_STAFF_EMAIL;
+
       document.getElementById("adminBadge").textContent =
-        (staff.role === "admin" ? "👑 Admin" : "👤 Staff") +
+        (LIMITED_STAFF_MODE ? "👤 Limited staff" : CURRENT_ROLE === "admin" ? "👑 Admin" : "👤 Staff") +
         (staff.full_name ? " — " + staff.full_name : "");
 
+      if (LIMITED_STAFF_MODE) {
+        // Limited staff mode: only show unconfirmed orders and hide other sections
+        document.querySelectorAll('.tab-btn[data-tab]:not([data-tab="orders"])').forEach(btn => btn.style.display = 'none');
+        document.querySelectorAll('.tab-content:not(#tab-orders)').forEach(section => section.style.display = 'none');
+        document.querySelectorAll('.stats-grid').forEach(grid => grid.style.display = 'none');
+        const statusFilterEl = document.getElementById('statusFilter');
+        if (statusFilterEl) {
+          statusFilterEl.value = 'pending';
+          statusFilterEl.disabled = true;
+          statusFilterEl.style.display = 'none';
+        }
+      }
+
       [ALL_ORDERS, ALL_MESSAGES, ALL_PRODUCTS, ALL_REVIEWS] = await Promise.all([
-        fetchOrders(), fetchMessages(),
+        fetchOrders(LIMITED_STAFF_MODE), fetchMessages(),
         fetchProducts().catch(() => []),
         fetchReviews().catch(() => []),
       ]);
       renderStats(ALL_ORDERS);
-      renderTable(getFiltered());   /* يعرض الطلبات غير المؤكدة فقط بشكل افتراضي */
-      renderMessagesTable(ALL_MESSAGES);
-      renderProductsTable(getProductsForView());
-      renderReviewsTable(ALL_REVIEWS);
+      renderTable(getFiltered());
+      if (!LIMITED_STAFF_MODE) {
+        renderMessagesTable(ALL_MESSAGES);
+        renderProductsTable(getProductsForView());
+        renderReviewsTable(ALL_REVIEWS);
+      }
       bindEvents();
 
     } catch (err) {
