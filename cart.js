@@ -9,6 +9,28 @@
   const BASE     = window.location.origin;
 
   /* ══════════════════════════════════════════════════════════
+     نصوص حالة التوفر — تُستخدم في صفحات المنتج الفردية
+     (.purchase-avail-badge و .avail-tag)
+  ══════════════════════════════════════════════════════════ */
+  const AVAIL_CHECKING_TEXT    = '⏳ جاري التحقق من التوفر...';
+  const AVAIL_AVAILABLE_TEXT   = '✅ متوفر — يمكن الطلب الآن';
+  const AVAIL_UNAVAILABLE_TEXT = '❌ غير متوفر حاليا';
+  const TAG_CHECKING_HTML      = '<span>⏳</span><span>جاري التحقق من التوفر...</span>';
+  const TAG_AVAILABLE_HTML     = '<span>✓</span><span>متوفر</span>';
+  const TAG_UNAVAILABLE_HTML   = '<span>✗</span><span>غير متوفر حاليا</span>';
+
+  /* المنتج الرئيسي لصفحة المنتج الحالية — مُستمد من زر "أضف للسلة"
+     داخل صندوق الشراء (.product-purchase-box) أو #mainAddToCartBtn */
+  function getMainProductCatalogId () {
+    const btn = document.querySelector(
+      '.product-purchase-box [data-add-to-cart], #mainAddToCartBtn[data-add-to-cart]'
+    );
+    if (!btn) return null;
+    const cid = parseInt(btn.dataset.addToCart, 10);
+    return Number.isFinite(cid) ? cid : null;
+  }
+
+  /* ══════════════════════════════════════════════════════════
      Supabase — لجلب حالة توفر المنتجات
   ══════════════════════════════════════════════════════════ */
   const SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
@@ -110,8 +132,8 @@
     /* ── إلكترونيات ── */
     { catalogId: 83, name: 'حامل اللابتوب القابل للتعديل', shortName: 'حامل اللابتوب', price: 1500, available: true, image: '/Electronique/laptop/main.webp' },
     { catalogId: 84, name: 'ساعة ذكية Modio ST11 مع 3 أزواج أساور', shortName: 'ساعة Modio ST11', price: 9800, available: true, image: '/Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
-    { catalogId: 85, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Black)', shortName: 'Anker R50i VG – Black', price: 5300, available: true, image: '/Electronique/earbuds/anker-soundcore-r50i-vg/main.png' },
-    { catalogId: 86, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Blue)',  shortName: 'Anker R50i VG – Blue',  price: 5300, hidden: true, available: true, image: '' },
+    { catalogId: 85, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Black)', shortName: 'Anker R50i VG – Black', price: 4900, available: true, image: '/Electronique/earbuds/anker-soundcore-r50i-vg/main.png' },
+    { catalogId: 86, name: 'Anker SoundCore R50i VG – Bluetooth Earbuds (Blue)',  shortName: 'Anker R50i VG – Blue',  price: 4900, hidden: true, available: true, image: '' },
     { catalogId: 87, name: 'Airpods 4 Type-C Vrac (Garantie)', shortName: 'Airpods 4 Type-C Vrac', price: 2900, available: true, image: '/Electronique/earbuds/airpods-4-type-c-vrac/main.webp' },
     { catalogId: 88, name: 'Hoco J132A 20000mAh Power Bank USB-A 15W + USB-C PD20W with Built-in Type-C 22.5W Cable and iP 12W Cable', shortName: 'Hoco J132A Power Bank', price: 3950, available: true, image: '/Electronique/power-bank/hoco-j132a-20000mah-power-bank/main.webp' },
   ];
@@ -143,14 +165,18 @@
       btn.style.cursor  = 'not-allowed';
     });
 
-    /* شارات التوفر: حالة محايدة (لا "متوفر" ولا "غير متوفر") */
-    document.querySelectorAll('[data-avail-badge]').forEach(badge => {
-      const cid = parseInt(badge.dataset.availBadge);
-      const p   = catalog.find(c => c.catalogId === cid);
-      if (!p || p.hidden) return;
+    /* شارة التوفر في صندوق الشراء بصفحة المنتج (.purchase-avail-badge) */
+    document.querySelectorAll('.purchase-avail-badge').forEach(badge => {
+      badge.classList.remove('purchase-avail-badge--unavail');
+      badge.classList.add('purchase-avail-badge--checking');
+      badge.textContent = AVAIL_CHECKING_TEXT;
+    });
 
-      badge.classList.remove('new', 'product-badge--unavail');
-      badge.textContent = 'جاري التحقق...';
+    /* وسم التوفر بجانب السعر في صفحة المنتج (.avail-tag) */
+    document.querySelectorAll('.avail-tag').forEach(tag => {
+      tag.classList.remove('avail-tag--unavail');
+      tag.classList.add('avail-tag--checking');
+      tag.innerHTML = TAG_CHECKING_HTML;
     });
   }
 
@@ -249,6 +275,35 @@
         badge.textContent = 'متوفر';
         badge.classList.add('new');
         badge.classList.remove('product-badge--unavail');
+      }
+    });
+
+    /* ── تحديث مؤشرات التوفر في صفحة المنتج الفردية ──
+       (.purchase-avail-badge و .avail-tag) بناءً على المنتج
+       المرتبط بزر "أضف للسلة" الرئيسي في الصفحة */
+    const mainCid = getMainProductCatalogId();
+    const mainP   = mainCid != null ? catalog.find(c => c.catalogId === mainCid) : null;
+    const isUnavailable = !!mainP && mainP.available === false;
+
+    document.querySelectorAll('.purchase-avail-badge').forEach(badge => {
+      badge.classList.remove('purchase-avail-badge--checking');
+      if (isUnavailable) {
+        badge.textContent = AVAIL_UNAVAILABLE_TEXT;
+        badge.classList.add('purchase-avail-badge--unavail');
+      } else {
+        badge.textContent = AVAIL_AVAILABLE_TEXT;
+        badge.classList.remove('purchase-avail-badge--unavail');
+      }
+    });
+
+    document.querySelectorAll('.avail-tag').forEach(tag => {
+      tag.classList.remove('avail-tag--checking');
+      if (isUnavailable) {
+        tag.innerHTML = TAG_UNAVAILABLE_HTML;
+        tag.classList.add('avail-tag--unavail');
+      } else {
+        tag.innerHTML = TAG_AVAILABLE_HTML;
+        tag.classList.remove('avail-tag--unavail');
       }
     });
   }

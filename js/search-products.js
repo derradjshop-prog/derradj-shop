@@ -78,7 +78,7 @@
       nameEn:      'Anker SoundCore R50i VG Original Bluetooth Earbuds',
       nameFr:      'Écouteurs Bluetooth Anker SoundCore R50i VG',
       category:    'إلكترونيات',
-      price:       5300,
+      price:       4900,
       image:       '/Electronique/earbuds/anker-soundcore-r50i-vg/main.png',
       url:         '/Electronique/earbuds/anker-soundcore-r50i-vg/',
       author:      '',

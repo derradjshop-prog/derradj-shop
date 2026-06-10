@@ -48,7 +48,7 @@ VALUES
   (84, 'Modio ST11 Smart Watch',
        true, 'إلكترونيات', 9800),
   (85, 'Anker SoundCore R50i VG Original – Bluetooth 5.3 Earbuds',
-       true, 'إلكترونيات', 5300)
+       true, 'إلكترونيات', 4900)
 ON CONFLICT (catalog_id) DO UPDATE
   SET  name     = EXCLUDED.name,
        category = EXCLUDED.category,

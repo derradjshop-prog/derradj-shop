@@ -198,9 +198,11 @@
     var box = document.createElement('div');
     box.className = 'product-purchase-box';
 
-    /* 1. Availability indicator */
+    /* 1. Availability indicator — neutral "checking" state until cart.js
+       confirms the real stock status from Supabase (avoids showing
+       "available" for products that are actually out of stock) */
     box.insertAdjacentHTML('beforeend',
-      '<div class="purchase-avail-badge">✅ متوفر — يمكن الطلب الآن</div>'
+      '<div class="purchase-avail-badge purchase-avail-badge--checking">⏳ جاري التحقق من التوفر...</div>'
     );
     box.insertAdjacentHTML('beforeend', '<div class="purchase-divider"></div>');
 
@@ -301,7 +303,7 @@
 
     return (
       '<div class="product-card">' +
-        '<div class="' + badgeCls + '">' + badgeText + '</div>' +
+        '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
         '<a href="' + bookUrl + '" class="product-img-area" style="text-decoration:none;">' +
           '<picture>' +
             '<source srcset="' + imgWebp + '" type="image/webp"/>' +
