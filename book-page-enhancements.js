@@ -95,72 +95,100 @@
       var BASE = 'https://derradjshop.com';
       var productUrl = BASE + '/books/' + slug + '/';
 
-      var script = document.createElement('script');
-      script.type = 'application/ld+json';
-      script.textContent = JSON.stringify({
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        '@id': productUrl + '#product',
-        'name': book.title,
-        'description': book.description || book.title,
-        'image': {
-          '@type': 'ImageObject',
-          'url': BASE + '/books/' + book.image,
-          'width': 800,
-          'height': 800
-        },
-        'url': productUrl,
-        'sku': 'BOOK-' + book.id + '-DZ',
-        'brand': { '@type': 'Brand', 'name': 'Derradj Shop' },
-        'offers': {
-          '@type': 'Offer',
+      function availabilityUrl(b) {
+        return b.available !== false
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock';
+      }
+
+      function buildSchema(avail) {
+        return {
+          '@context': 'https://schema.org',
+          '@type': 'Product',
+          '@id': productUrl + '#product',
+          'name': book.title,
+          'description': book.description || book.title,
+          'category': 'Media > Books',
+          'image': {
+            '@type': 'ImageObject',
+            'url': BASE + '/books/' + book.image,
+            'width': 800,
+            'height': 800
+          },
           'url': productUrl,
-          'price': String(book.price),
-          'priceCurrency': 'DZD',
-          'availability': book.available !== false
-            ? 'https://schema.org/InStock'
-            : 'https://schema.org/OutOfStock',
-          'itemCondition': 'https://schema.org/NewCondition',
-          'seller': { '@type': 'Organization', 'name': 'Derradj Shop', 'url': BASE },
-          'shippingDetails': {
-            '@type': 'OfferShippingDetails',
-            'shippingRate': {
-              '@type': 'MonetaryAmount',
-              'value': '500',
-              'currency': 'DZD'
-            },
-            'deliveryTime': {
-              '@type': 'ShippingDeliveryTime',
-              'handlingTime': {
-                '@type': 'QuantitativeValue',
-                'minValue': 1,
-                'maxValue': 1,
-                'unitCode': 'DAY'
+          'sku': 'BOOK-' + book.id + '-DZ',
+          'brand': { '@type': 'Brand', 'name': 'Derradj Shop' },
+          'offers': {
+            '@type': 'Offer',
+            'url': productUrl,
+            'price': String(book.price),
+            'priceCurrency': 'DZD',
+            'availability': avail,
+            'itemCondition': 'https://schema.org/NewCondition',
+            'seller': { '@type': 'Organization', 'name': 'Derradj Shop', 'url': BASE },
+            'shippingDetails': {
+              '@type': 'OfferShippingDetails',
+              'shippingRate': {
+                '@type': 'MonetaryAmount',
+                'value': '500',
+                'currency': 'DZD'
               },
-              'transitTime': {
-                '@type': 'QuantitativeValue',
-                'minValue': 1,
-                'maxValue': 3,
-                'unitCode': 'DAY'
+              'deliveryTime': {
+                '@type': 'ShippingDeliveryTime',
+                'handlingTime': {
+                  '@type': 'QuantitativeValue',
+                  'minValue': 1,
+                  'maxValue': 1,
+                  'unitCode': 'DAY'
+                },
+                'transitTime': {
+                  '@type': 'QuantitativeValue',
+                  'minValue': 1,
+                  'maxValue': 3,
+                  'unitCode': 'DAY'
+                }
+              },
+              'shippingDestination': {
+                '@type': 'DefinedRegion',
+                'addressCountry': 'DZ'
               }
             },
-            'shippingDestination': {
-              '@type': 'DefinedRegion',
-              'addressCountry': 'DZ'
+            'returnPolicy': {
+              '@type': 'MerchantReturnPolicy',
+              'applicableCountry': 'DZ',
+              'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+              'merchantReturnDays': 7,
+              'returnMethod': 'https://schema.org/ReturnByMail',
+              'returnFees': 'https://schema.org/FreeReturn',
+              'returnPolicyLink': BASE + '/return-policy.html'
             }
-          },
-          'returnPolicy': {
-            '@type': 'MerchantReturnPolicy',
-            'applicableCountry': 'DZ',
-            'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
-            'merchantReturnDays': 7,
-            'returnMethod': 'https://schema.org/ReturnByMail',
-            'returnFees': 'https://schema.org/FreeReturn',
-            'returnPolicyLink': BASE + '/return-policy.html'
           }
-        }
-      });
+        };
+      }
+
+      var script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.textContent = JSON.stringify(buildSchema(availabilityUrl(book)));
       document.head.appendChild(script);
+
+      /* book.available above reflects the books-data.js default at parse
+         time. cart.js confirms the real Supabase stock status async and
+         dispatches this event afterwards — re-sync the schema if the
+         confirmed availability differs, so structured data never claims
+         InStock for a product the page itself shows as unavailable. */
+      document.addEventListener('derradj:availability-loaded', function () {
+        var data = window.BOOKS_DATA || booksData;
+        var updated = null;
+        for (var m = 0; m < data.length; m++) {
+          if ((data[m].url || '').replace(/\/$/, '') === slug) { updated = data[m]; break; }
+        }
+        if (!updated) return;
+        var newAvail = availabilityUrl(updated);
+        if (newAvail !== availabilityUrl(book)) {
+          book.available = updated.available;
+          script.textContent = JSON.stringify(buildSchema(newAvail));
+        }
+      }, { once: true });
     }
 
     if (window.BOOKS_DATA) {
