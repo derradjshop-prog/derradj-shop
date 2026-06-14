@@ -3167,37 +3167,6 @@ window.EXTRA_COMMUNES = {
 ],
 
 /* ════════════════════════════════════════════════════════
-   إليزي (33) — ILLIZI — 25 areas
-════════════════════════════════════════════════════════ */
-"إليزي (33)": [
-  "ALRAR",
-  "BORDJ-EL-HAOUES / برج الحواس",
-  "BORDJ-OMAR-DRISS / برج عمر دريس",
-  "DEB-DEB / دبدب",
-  "DJANET / جانت",
-  "DJANET-AIN-ABARBAR / جانت - عين أبربار",
-  "DJANET-SECTEUR-MILITAIRE / جانت - القطاع العسكري",
-  "IFERI / إفري",
-  "IHRIR / إهرير",
-  "ILLIZI 8 MAI 1945 / إليزي - 8 ماي 1945",
-  "ILLIZI-ETABLISSEMENT -POSTAL-ITINERANT 1 / إليزي - مكتب البريد المتنقل 1",
-  "ILLIZI-IN-KOURS / إليزي - عين كورس",
-  "ILLIZI-RP / إليزي - القباضة الرئيسية",
-  "ILLIZI-SECTEUR-MILITAIRE / إليزي - القطاع العسكري",
-  "IN-AMENAS / عين أمناس",
-  "IN-AMENAS-SECTEUR-MILITAIRE / عين أمناس - القطاع العسكري",
-  "IN-AMENAS-SONATRACH-DIVISION-PRODUCTION / عين أمناس - سوناطراك - قسم الإنتاج",
-  "MERKSENE / مركسين",
-  "OHANET / أوهانت",
-  "TABAKAT / تاباكات",
-  "TARAT",
-  "TARAT / تارات",
-  "TIMEROUALINE / تيمروالين",
-  "TIN-FOUYE-05 JUILLET 1962 / تين فوي - 05 جويلية 1962",
-  "TINALKOUM / تينالكوم"
-],
-
-/* ════════════════════════════════════════════════════════
    برج بوعريريج (34) — BORDJ BOU ARRERIDJ — 75 areas
 ════════════════════════════════════════════════════════ */
 "برج بوعريريج (34)": [
@@ -3416,30 +3385,6 @@ window.EXTRA_COMMUNES = {
   "ZERIZER / زريزر",
   "ZITOUNA / زيتونة",
   "ZOHRAMI-ALI / زهرامي علي"
-],
-
-/* ════════════════════════════════════════════════════════
-   تندوف (37) — TINDOUF — 18 areas
-════════════════════════════════════════════════════════ */
-"تندوف (37)": [
-  "GARA-DJEBILET / غار جبيلات",
-  "HASSI-KHEBI / حاسي خبي",
-  "HASSI-MOUNIR / حاسي منير",
-  "OUM-EL-ASSEL / أم العسل",
-  "OUM-EL-ASSEL-COLONEL-LOTFI / أم العسل - العقيد لطفي",
-  "TINDOUF-01-NOVEMBRE-1954 / تندوف - أول نوفمبر 1954",
-  "TINDOUF-05-JUILLET-1962 / تندوف - 05 جويلية 1962",
-  "TINDOUF-BOUMEDIENE-SIDI-BRAHIM / تندوف - بومدين سيدي براهيم",
-  "TINDOUF-EL-MOUSTAKBEL / تندوف - المستقبل",
-  "TINDOUF-ETABLISSEMENT -POSTAL-ITINERANT 1 / تندوف - مكتب البريد المتنقل 1",
-  "TINDOUF-GARE-ROUTIERE / تندوف - المحطة البرية",
-  "TINDOUF-HAI-NASR / تندوف - حي النصر",
-  "TINDOUF-HASSI-AMAR / تندوف - حاسي اعمر",
-  "TINDOUF-LAFDIL-MOHAMMED / تندوف - الفضيل محمد",
-  "TINDOUF-RP / تندوف - القباضة الرئيسية",
-  "TINDOUF-SECTEUR / تندوف - القطاع",
-  "TINDOUF-SGHIR-MOHAMMED / تندوف - صغير محمد",
-  "TINDOUF-UNIVERSITE / تندوف - الجامعة"
 ],
 
 /* ════════════════════════════════════════════════════════
