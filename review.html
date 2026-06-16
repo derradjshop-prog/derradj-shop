@@ -1,8 +1,7 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
-  <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
@@ -10,454 +9,309 @@
     gtag('js', new Date());
     gtag('config', 'G-N4NME3KN9N');
   </script>
-
-  <!-- Private page — do not index -->
   <meta name="robots" content="noindex, nofollow">
-
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>شاركنا رأيك — Derradj Shop</title>
-
   <link rel="icon" type="image/png" href="Logo.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
 
   <style>
-    /* ── Reset ──────────────────────────────────────────────── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    /* ── Variables ──────────────────────────────────────────── */
-    :root {
-      --font:           'Cairo', sans-serif;
-      --primary:        #1d4ed8;
-      --primary-bg:     #eff6ff;
-      --primary-border: #bfdbfe;
-      --gold:           #f59e0b;
-      --gold-dark:      #d97706;
-      --green:          #059669;
-      --green-bg:       #d1fae5;
-      --green-border:   #6ee7b7;
-      --red:            #dc2626;
-      --red-bg:         #fee2e2;
-      --red-border:     #fca5a5;
-      --text:           #1e293b;
-      --text-light:     #64748b;
-      --text-muted:     #94a3b8;
-      --bg:             #f1f5f9;
-      --white:          #ffffff;
-      --border:         #e2e8f0;
-      --radius:         10px;
-      --radius-lg:      16px;
-      --radius-xl:      20px;
-      --shadow-md:      0 4px 24px rgba(0,0,0,.09);
-    }
-
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--text);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       HEADER
-    ═══════════════════════════════════════════════════════ */
-    .rv-header {
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 0 24px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 1px 8px rgba(0,0,0,.06);
-      position: sticky;
-      top: 0;
-      z-index: 20;
-    }
-    .rv-logo {
-      font-size: 20px;
-      font-weight: 900;
-      color: var(--text);
-      text-decoration: none;
-      letter-spacing: -.3px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .rv-logo span { color: var(--primary); }
-    .rv-logo-dot {
-      width: 8px; height: 8px;
-      background: var(--primary);
-      border-radius: 50%;
-    }
-    .rv-back-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text-light);
-      text-decoration: none;
-      padding: 8px 16px;
-      border: 1.5px solid var(--border);
-      border-radius: var(--radius);
-      transition: all .2s;
-    }
-    .rv-back-link:hover {
-      color: var(--primary);
-      border-color: var(--primary);
-      background: var(--primary-bg);
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       HERO
-    ═══════════════════════════════════════════════════════ */
-    .rv-hero {
-      background: linear-gradient(150deg, #1e40af 0%, #1d4ed8 35%, #2563eb 65%, #3b82f6 100%);
-      padding: 52px 24px 48px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .rv-hero::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
-    }
-    .rv-hero-inner { position: relative; z-index: 1; }
-    .rv-hero-stars {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      margin-bottom: 20px;
-    }
-    .rv-hero-star {
-      font-size: 28px;
-      animation: starPop .4s ease both;
-    }
-    .rv-hero-star:nth-child(1) { animation-delay: .00s; }
-    .rv-hero-star:nth-child(2) { animation-delay: .08s; }
-    .rv-hero-star:nth-child(3) { animation-delay: .16s; }
-    .rv-hero-star:nth-child(4) { animation-delay: .24s; }
-    .rv-hero-star:nth-child(5) { animation-delay: .32s; }
-    @keyframes starPop {
-      from { opacity: 0; transform: scale(.5) translateY(6px); }
-      to   { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    .rv-hero h1 {
-      font-size: clamp(22px, 5vw, 34px);
-      font-weight: 900;
-      color: var(--white);
-      margin-bottom: 14px;
-      line-height: 1.3;
-      text-shadow: 0 2px 8px rgba(0,0,0,.15);
-    }
-    .rv-hero p {
-      font-size: 15px;
-      color: rgba(255,255,255,.88);
-      line-height: 1.85;
-      max-width: 500px;
-      margin: 0 auto 26px;
-    }
-    .rv-hero-badges {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .rv-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255,255,255,.14);
-      border: 1px solid rgba(255,255,255,.28);
-      border-radius: 99px;
-      padding: 7px 15px;
-      font-size: 12.5px;
-      font-weight: 700;
-      color: rgba(255,255,255,.95);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-    }
-
-    /* ═══════════════════════════════════════════════════════
-       MAIN
-    ═══════════════════════════════════════════════════════ */
-    .rv-main {
-      flex: 1;
-      max-width: 620px;
-      width: 100%;
+    /* ── Page wrapper ─────────────────────────────────────────── */
+    .rv-wrap {
+      max-width: 640px;
       margin: 0 auto;
-      padding: 32px 16px 80px;
+      padding: 48px 20px 80px;
     }
 
-    /* ── Form card ──────────────────────────────────────── */
+    /* ── Form card ────────────────────────────────────────────── */
     .rv-card {
-      background: var(--white);
+      background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
-      padding: 40px 36px;
       box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .rv-card-top {
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      padding: 28px 36px;
+    }
+    .rv-card-top h2 {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .rv-card-top p {
+      font-size: 13.5px;
+      color: rgba(255,255,255,.78);
+      line-height: 1.5;
+    }
+    .rv-card-body {
+      padding: 32px 36px 36px;
     }
 
-    /* ── Form section ───────────────────────────────────── */
-    .form-section {
-      margin-bottom: 32px;
-      padding-bottom: 32px;
-      border-bottom: 1.5px solid var(--border);
-    }
-    .form-section:last-of-type {
-      margin-bottom: 0;
-      padding-bottom: 0;
-      border-bottom: none;
-    }
-
-    .section-header {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-    }
-    .section-icon {
-      width: 36px; height: 36px;
-      background: var(--primary-bg);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 17px;
-      flex-shrink: 0;
-    }
-    .section-title {
-      font-size: 15px;
-      font-weight: 800;
-      color: var(--text);
-      line-height: 1.3;
-    }
-    .section-desc {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 2px;
-    }
-
-    /* ── Field ──────────────────────────────────────────── */
-    .field-row {
+    /* ── Name row ─────────────────────────────────────────────── */
+    .rv-name-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
+      margin-bottom: 28px;
     }
 
-    .field { display: flex; flex-direction: column; gap: 6px; }
-    .field + .field { margin-top: 16px; }
-
-    .field > label {
+    /* ── Field label style ────────────────────────────────────── */
+    .rv-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       font-size: 13.5px;
       font-weight: 700;
       color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      margin-bottom: 8px;
     }
-    .field > label .req { color: var(--red); font-size: 15px; line-height: 1; }
+    .rv-label .req { color: #ef4444; font-size: 16px; line-height: 1; }
 
-    .field input,
-    .field select,
-    .field textarea {
-      padding: 12px 16px;
+    /* ── Inputs ───────────────────────────────────────────────── */
+    .rv-input {
+      width: 100%;
+      padding: 13px 16px;
       border: 1.5px solid var(--border);
       border-radius: var(--radius);
-      font-size: 14px;
+      font-size: 14.5px;
       font-family: var(--font);
       color: var(--text);
-      background: var(--white);
-      transition: border-color .18s, box-shadow .18s;
-      width: 100%;
+      background: var(--bg);
+      transition: border-color .18s, box-shadow .18s, background .18s;
     }
-    .field input::placeholder,
-    .field textarea::placeholder { color: var(--text-muted); font-weight: 400; }
-    .field input:focus,
-    .field select:focus,
-    .field textarea:focus {
+    .rv-input::placeholder { color: var(--text-muted); font-weight: 400; }
+    .rv-input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.11);
     }
-    .field input.is-error,
-    .field select.is-error,
-    .field textarea.is-error {
-      border-color: var(--red);
-      box-shadow: 0 0 0 3px rgba(220,38,38,.09);
-    }
-    .field textarea { resize: vertical; min-height: 110px; line-height: 1.75; }
-    .field select {
-      cursor: pointer;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath fill='%2364748b' d='M0 0l5 6 5-6z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: left 14px center;
-      padding-left: 38px;
+    .rv-input.is-error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.09);
     }
 
-    .field-err {
+    /* ── Field error ──────────────────────────────────────────── */
+    .rv-err {
       font-size: 12px;
       font-weight: 700;
-      color: var(--red);
+      color: #dc2626;
+      margin-top: 5px;
       display: none;
       align-items: center;
       gap: 4px;
     }
-    .field-err.on { display: flex; }
+    .rv-err.on { display: flex; }
 
-    .field-hint {
-      font-size: 11.5px;
-      color: var(--text-muted);
-      line-height: 1.5;
+    /* ── Divider ──────────────────────────────────────────────── */
+    .rv-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
     }
 
-    .char-count {
-      font-size: 11px;
-      color: var(--text-muted);
-      text-align: left;
-      direction: ltr;
+    /* ── Stars section ────────────────────────────────────────── */
+    .rv-stars-wrap {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 20px 20px;
+      text-align: center;
+      margin-bottom: 8px;
+      transition: border-color .2s;
     }
-    .char-count.warn { color: var(--red); font-weight: 700; }
-    .char-count.ok   { color: var(--green); font-weight: 700; }
+    .rv-stars-wrap.is-error { border-color: #ef4444; }
 
-    /* ── Star rating ──────────────────────────────────── */
-    .star-row {
+    .rv-stars-row {
       display: flex;
-      gap: 6px;
+      justify-content: center;
+      gap: 4px;
       direction: ltr;
-      padding: 10px 0 4px;
+      margin-bottom: 14px;
     }
-    .star-row.is-error .star-btn:not(.lit) { color: #fca5a5; }
-    .star-btn {
-      font-size: 42px;
+
+    .rv-star {
+      font-size: 50px;
       line-height: 1;
       cursor: pointer;
-      color: #e2e8f0;
+      color: #d1d5db;
       background: none;
       border: none;
-      padding: 2px 3px;
+      padding: 2px 4px;
       transition: color .12s, transform .15s;
       font-family: inherit;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      user-select: none;
     }
-    .star-btn:focus-visible {
+    .rv-star:focus-visible {
       outline: 2px solid var(--primary);
       outline-offset: 3px;
-      border-radius: 4px;
+      border-radius: 6px;
     }
-    .star-btn:hover   { transform: scale(1.2); }
-    .star-btn.hover   { color: #fbbf24; }
-    .star-btn.lit     { color: var(--gold); }
+    .rv-star:hover        { transform: scale(1.18); }
+    .rv-star.hovered      { color: #fbbf24; }
+    .rv-star.selected     { color: #f59e0b; }
 
-    .star-meta {
-      display: flex;
+    .rv-rating-pill {
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      direction: rtl;
-      margin-top: 4px;
-      padding: 0 2px;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-light);
+      min-width: 160px;
+      justify-content: center;
+      transition: background .2s, color .2s, border-color .2s;
+      min-height: 36px;
     }
-    .star-edge {
+    .rv-rating-pill.has-value {
+      background: #fffbeb;
+      border-color: #fbbf24;
+      color: #92400e;
+    }
+
+    .rv-star-hint {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4px;
+      margin-top: 12px;
+    }
+    .rv-star-hint span {
       font-size: 11px;
       color: var(--text-muted);
       font-weight: 600;
     }
-    .star-sel-label {
-      font-size: 14px;
-      font-weight: 800;
-      color: var(--gold-dark);
-      min-height: 20px;
-    }
-    .star-err-msg {
+
+    .rv-star-err {
       font-size: 12px;
       font-weight: 700;
-      color: var(--red);
+      color: #dc2626;
+      margin-top: 8px;
       display: none;
       align-items: center;
+      justify-content: center;
       gap: 4px;
-      margin-top: 4px;
     }
-    .star-err-msg.on { display: flex; }
+    .rv-star-err.on { display: flex; }
 
-    /* ── Privacy note ───────────────────────────────── */
-    .privacy-note {
+    /* ── Comment ──────────────────────────────────────────────── */
+    .rv-textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14.5px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      min-height: 130px;
+      resize: vertical;
+      line-height: 1.8;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+    .rv-textarea::placeholder { color: var(--text-muted); font-weight: 400; }
+    .rv-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.11);
+    }
+    .rv-textarea.is-error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.09);
+    }
+
+    .rv-char-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 5px;
+    }
+    .rv-char {
+      font-size: 11px;
+      color: var(--text-muted);
+      direction: ltr;
+    }
+    .rv-char.warn { color: #ef4444; font-weight: 700; }
+    .rv-char.ok   { color: var(--secondary); font-weight: 700; }
+
+    /* ── Privacy note ─────────────────────────────────────────── */
+    .rv-privacy {
       display: flex;
       align-items: flex-start;
       gap: 10px;
-      background: #f8fafc;
-      border: 1px solid var(--border);
+      background: var(--primary-bg);
+      border: 1px solid rgba(37,99,235,.15);
       border-radius: var(--radius);
       padding: 12px 16px;
-      margin-bottom: 20px;
+      margin: 24px 0 20px;
     }
-    .privacy-note-icon { font-size: 15px; flex-shrink: 0; margin-top: 2px; }
-    .privacy-note-text {
-      font-size: 12px;
+    .rv-privacy-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .rv-privacy-text {
+      font-size: 12.5px;
       color: var(--text-light);
       line-height: 1.6;
     }
-    .privacy-note-text strong { color: var(--text); }
+    .rv-privacy-text strong { color: var(--primary); }
 
-    /* ── Submit button ──────────────────────────────── */
-    .submit-btn {
+    /* ── Submit button ────────────────────────────────────────── */
+    .rv-submit {
       width: 100%;
-      padding: 17px 24px;
-      background: linear-gradient(135deg, #1d4ed8, #2563eb);
-      color: var(--white);
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: #fff;
       border: none;
       border-radius: var(--radius-lg);
       font-size: 16px;
       font-weight: 900;
       font-family: var(--font);
       cursor: pointer;
-      transition: opacity .2s, transform .1s, box-shadow .2s;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      box-shadow: 0 4px 18px rgba(29,78,216,.35);
+      box-shadow: var(--shadow-blue);
+      transition: opacity .2s, transform .15s, box-shadow .2s;
     }
-    .submit-btn:hover:not(:disabled) {
+    .rv-submit:hover:not(:disabled) {
       opacity: .92;
-      box-shadow: 0 6px 24px rgba(29,78,216,.45);
-      transform: translateY(-1px);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(37,99,235,.38);
     }
-    .submit-btn:active:not(:disabled) { transform: translateY(0); }
-    .submit-btn:disabled {
+    .rv-submit:active:not(:disabled) { transform: translateY(0); }
+    .rv-submit:disabled {
       background: #94a3b8;
       cursor: not-allowed;
       box-shadow: none;
       transform: none;
     }
 
-    .spin {
-      width: 20px; height: 20px;
-      border: 3px solid rgba(255,255,255,.3);
+    .rv-spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.35);
       border-top-color: #fff;
       border-radius: 50%;
-      animation: spin .65s linear infinite;
+      animation: rv-spin .65s linear infinite;
       display: none;
       flex-shrink: 0;
     }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes rv-spin { to { transform: rotate(360deg); } }
 
-    .form-msg {
-      margin-top: 14px;
+    /* ── Form-level error message ─────────────────────────────── */
+    .rv-alert {
+      margin-top: 16px;
       padding: 14px 18px;
       border-radius: var(--radius);
       font-size: 14px;
@@ -467,300 +321,304 @@
       gap: 10px;
       line-height: 1.6;
     }
-    .form-msg.err {
-      background: var(--red-bg);
-      color: var(--red);
-      border: 1px solid var(--red-border);
+    .rv-alert.err {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
       display: flex;
     }
-    .form-msg.ok {
-      background: var(--green-bg);
-      color: var(--green);
-      border: 1px solid var(--green-border);
-      display: flex;
-    }
-    .form-msg-icon { font-size: 18px; flex-shrink: 0; }
+    .rv-alert-icon { font-size: 18px; flex-shrink: 0; }
 
-    /* ═══════════════════════════════════════════════════════
-       SUCCESS SCREEN
-    ═══════════════════════════════════════════════════════ */
-    .success-screen {
+    /* ── Success screen ───────────────────────────────────────── */
+    .rv-success {
       display: none;
-      background: var(--white);
+      background: var(--card-bg);
       border: 1px solid var(--border);
       border-radius: var(--radius-xl);
-      padding: 60px 32px 52px;
+      padding: 64px 36px 56px;
       text-align: center;
       box-shadow: var(--shadow-md);
-      animation: fadeInUp .4s ease;
+      animation: rv-fadeUp .4s ease;
     }
-    .success-screen.show { display: block; }
-    @keyframes fadeInUp {
+    .rv-success.show { display: block; }
+    @keyframes rv-fadeUp {
       from { opacity: 0; transform: translateY(16px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .success-icon-wrap {
-      width: 90px; height: 90px;
-      background: var(--green-bg);
+    .rv-success-icon {
+      width: 96px; height: 96px;
+      background: #d1fae5;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       margin: 0 auto 28px;
-      font-size: 44px;
-      animation: popIn .45s cubic-bezier(.175,.885,.32,1.275) both;
+      font-size: 46px;
+      animation: rv-pop .45s cubic-bezier(.175,.885,.32,1.275) both;
     }
-    @keyframes popIn {
-      0%  { transform: scale(.3); opacity: 0; }
-      70% { transform: scale(1.1); opacity: 1; }
-      100%{ transform: scale(1); }
+    @keyframes rv-pop {
+      0%   { transform: scale(.3); opacity: 0; }
+      70%  { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); }
     }
-    .success-screen h2 {
-      font-size: clamp(22px, 5vw, 28px);
+    .rv-success h2 {
+      font-size: clamp(22px, 5vw, 30px);
       font-weight: 900;
       color: var(--text);
       margin-bottom: 12px;
     }
-    .success-sub {
+    .rv-success p {
       font-size: 15px;
       color: var(--text-light);
       line-height: 1.85;
       max-width: 380px;
-      margin: 0 auto 28px;
+      margin: 0 auto 32px;
     }
-    .btn-home {
+    .rv-success .rv-home-btn {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      padding: 14px 40px;
-      background: linear-gradient(135deg, #1d4ed8, #2563eb);
-      color: var(--white);
+      padding: 14px 44px;
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: #fff;
       border-radius: var(--radius-lg);
       font-size: 15px;
       font-weight: 800;
       font-family: var(--font);
       text-decoration: none;
-      transition: opacity .2s;
-      box-shadow: 0 4px 16px rgba(29,78,216,.3);
+      transition: opacity .2s, transform .15s;
+      box-shadow: var(--shadow-blue);
     }
-    .btn-home:hover { opacity: .88; }
+    .rv-success .rv-home-btn:hover { opacity: .88; transform: translateY(-2px); }
 
-    /* ═══════════════════════════════════════════════════════
-       FOOTER
-    ═══════════════════════════════════════════════════════ */
-    .rv-footer {
-      text-align: center;
-      padding: 24px 16px;
-      border-top: 1px solid var(--border);
-      font-size: 12.5px;
-      color: var(--text-muted);
-      margin-top: auto;
-      background: var(--white);
-    }
-    .rv-footer a { color: var(--text-muted); text-decoration: none; }
-    .rv-footer a:hover { color: var(--primary); }
-
-    /* ═══════════════════════════════════════════════════════
-       RESPONSIVE
-    ═══════════════════════════════════════════════════════ */
-    @media (max-width: 600px) {
-      .rv-card      { padding: 28px 20px; }
-      .field-row    { grid-template-columns: 1fr; }
-      .star-btn     { font-size: 38px; }
-      .rv-hero      { padding: 40px 16px 36px; }
-      .back-label   { display: none; }
-      .rv-main      { padding: 24px 12px 64px; }
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .rv-wrap        { padding: 32px 16px 64px; }
+      .rv-card-top    { padding: 22px 24px; }
+      .rv-card-body   { padding: 24px 24px 28px; }
+      .rv-name-row    { grid-template-columns: 1fr; gap: 12px; }
+.rv-star        { font-size: 42px; }
     }
     @media (max-width: 420px) {
-      .rv-card      { padding: 22px 16px; }
-      .star-btn     { font-size: 34px; padding: 1px 2px; }
-      .rv-hero h1   { font-size: 20px; }
-      .rv-hero p    { font-size: 13.5px; }
-      .submit-btn   { font-size: 15px; padding: 15px 20px; }
-    }
-    @media (max-width: 360px) {
-      .rv-card    { padding: 18px 14px; }
-      .star-btn   { font-size: 30px; }
+      .rv-card-top    { padding: 20px 18px; }
+      .rv-card-body   { padding: 20px 18px 24px; }
+      .rv-star        { font-size: 36px; padding: 1px 2px; }
+      .rv-submit      { font-size: 15px; padding: 14px 20px; }
     }
   </style>
 </head>
 <body>
 
 <!-- ═══════════ HEADER ═══════════ -->
-<header class="rv-header">
-  <a href="/" class="rv-logo">
-    Derradj&nbsp;<span>Shop</span>
-    <span class="rv-logo-dot"></span>
-  </a>
-  <a href="/" class="rv-back-link">
-    <span>←</span>
-    <span class="back-label">العودة إلى المتجر</span>
-  </a>
-</header>
-
-<!-- ═══════════ HERO ═══════════ -->
-<div class="rv-hero">
-  <div class="rv-hero-inner">
-    <div class="rv-hero-stars">
-      <span class="rv-hero-star">⭐</span>
-      <span class="rv-hero-star">⭐</span>
-      <span class="rv-hero-star">⭐</span>
-      <span class="rv-hero-star">⭐</span>
-      <span class="rv-hero-star">⭐</span>
-    </div>
-    <h1>شاركنا رأيك في تجربتك</h1>
-    <p>رأيك يساعدنا على تحسين الخدمة ويساعد القراء الآخرين على اختيار كتبهم بثقة.</p>
-    <div class="rv-hero-badges">
-      <span class="rv-badge">🔒 بياناتك آمنة</span>
-      <span class="rv-badge">👁 يظهر رأيك بعد المراجعة</span>
-      <span class="rv-badge">⏱ دقيقتان فقط</span>
+<header class="main-header" id="mainHeader">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span>Derradj <span class="logo-accent">Shop</span></span>
+    </a>
+    <nav class="main-nav">
+      <a href="books/"        class="nav-link">📚 الكتب</a>
+      <a href="Electronique/" class="nav-link">💻 إلكترونيات</a>
+      <a href="/#categories"  class="nav-link">التصنيفات</a>
+      <a href="about.html"    class="nav-link">من نحن</a>
+      <a href="faq.html"      class="nav-link">الأسئلة الشائعة</a>
+      <a href="contact.html"  class="nav-link">تواصل معنا</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="gs-btn" id="gsBtn" aria-label="بحث عن منتج" title="بحث" aria-expanded="false">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <a href="ordre/" class="btn-header-cta">🛒 اطلب الآن</a>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
+</header>
+
+<!-- Search Overlay -->
+<div class="gs-overlay" id="gsOverlay" role="search" aria-label="بحث في المنتجات">
+  <div class="gs-inner">
+    <div class="gs-field">
+      <svg class="gs-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="gsInput" class="gs-input"
+             placeholder="ابحث عن كتاب، منتج، حامل حاسوب..."
+             autocomplete="off" autocorrect="off" spellcheck="false" dir="rtl"
+             aria-label="حقل البحث">
+      <button class="gs-x" id="gsX" aria-label="إغلاق البحث">✕</button>
+    </div>
+    <div class="gs-results" id="gsResults" role="listbox" aria-live="polite"></div>
+  </div>
+</div>
+<div class="gs-backdrop" id="gsBackdrop"></div>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="books/">📚 الكتب</a>
+  <a href="Electronique/">💻 إلكترونيات</a>
+  <a href="/#categories">التصنيفات</a>
+  <a href="about.html">من نحن</a>
+  <a href="faq.html">الأسئلة الشائعة</a>
+  <a href="contact.html">تواصل معنا</a>
+  <a href="ordre/" class="mobile-cta-link">🛒 اطلب الآن</a>
 </div>
 
 <!-- ═══════════ MAIN ═══════════ -->
-<main class="rv-main">
+<div class="rv-wrap">
 
   <!-- Form card -->
   <div class="rv-card" id="formCard">
-    <form id="reviewForm" novalidate autocomplete="off">
 
-      <!-- ══ SECTION 1: الاسم ══════════════════════════════ -->
-      <div class="form-section">
-        <div class="section-header">
-          <div class="section-icon">👤</div>
+    <!-- Card top banner -->
+    <div class="rv-card-top">
+      <h2>تقييم تجربتك مع Derradj Shop</h2>
+      <p>رأيك يساعدنا على تقديم خدمة أفضل لك وللجزائريين</p>
+    </div>
+
+    <!-- Card body -->
+    <div class="rv-card-body">
+      <form id="reviewForm" novalidate autocomplete="off">
+
+        <!-- Name fields -->
+        <div class="rv-name-row">
           <div>
-            <div class="section-title">معلوماتك</div>
-            <div class="section-desc">سيظهر اسمك المختصر فقط مع رأيك — مثال: أمين ب.</div>
-          </div>
-        </div>
-
-        <div class="field-row">
-          <div class="field">
-            <label for="fName">الاسم <span class="req">*</span></label>
-            <input type="text" id="fName" placeholder="مثال: أمين"
+            <label class="rv-label" for="fName">الاسم <span class="req">*</span></label>
+            <input class="rv-input" type="text" id="fName"
+                   placeholder="مثال: أمين"
                    autocomplete="given-name" maxlength="60">
-            <span class="field-err" id="e-fName">⚠ الاسم مطلوب</span>
+            <div class="rv-err" id="e-fName">⚠ الاسم مطلوب</div>
           </div>
-          <div class="field">
-            <label for="lName">اللقب <span class="req">*</span></label>
-            <input type="text" id="lName" placeholder="مثال: بوقرة"
+          <div>
+            <label class="rv-label" for="lName">اللقب <span class="req">*</span></label>
+            <input class="rv-input" type="text" id="lName"
+                   placeholder="مثال: بوقرة"
                    autocomplete="family-name" maxlength="60">
-            <span class="field-err" id="e-lName">⚠ اللقب مطلوب</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- ══ SECTION 2: الكتاب ═════════════════════════════ -->
-      <div class="form-section">
-        <div class="section-header">
-          <div class="section-icon">📚</div>
-          <div>
-            <div class="section-title">الكتاب الذي اشتريته</div>
-            <div class="section-desc">اختر الكتاب من القائمة</div>
+            <div class="rv-err" id="e-lName">⚠ اللقب مطلوب</div>
           </div>
         </div>
 
-        <div class="field">
-          <label for="bookSelect">الكتاب <span class="req">*</span></label>
-          <select id="bookSelect">
-            <option value="">— اختر الكتاب —</option>
-          </select>
-          <span class="field-err" id="e-book">⚠ يرجى اختيار الكتاب الذي اشتريته</span>
-        </div>
-      </div>
+        <div class="rv-divider"></div>
 
-      <!-- ══ SECTION 3: التقييم ════════════════════════════ -->
-      <div class="form-section">
-        <div class="section-header">
-          <div class="section-icon">⭐</div>
-          <div>
-            <div class="section-title">تقييمك</div>
-            <div class="section-desc">كيف تقيّم تجربتك الكاملة معنا؟</div>
+        <!-- Star rating -->
+        <div>
+          <label class="rv-label" style="margin-bottom:12px;">
+            تقييمك بالنجوم <span class="req">*</span>
+          </label>
+
+          <div class="rv-stars-wrap" id="starsWrap">
+            <div class="rv-stars-row" id="starRow"
+                 role="group" aria-label="التقييم من 1 إلى 5 نجوم">
+              <!-- injected by JS -->
+            </div>
+            <div id="ratingPill" class="rv-rating-pill">اختر تقييمك</div>
+            <div class="rv-star-hint">
+              <span>ضعيف</span>
+              <span>ممتاز</span>
+            </div>
           </div>
+          <div class="rv-star-err" id="e-rating">⚠ يرجى اختيار تقييم من 1 إلى 5 نجوم</div>
         </div>
 
-        <!-- Stars -->
-        <div class="field">
-          <label>التقييم بالنجوم <span class="req">*</span></label>
-          <div class="star-row" id="starRow"
-               role="group" aria-label="التقييم من 1 إلى 5 نجوم">
-            <!-- injected by JS -->
-          </div>
-          <div class="star-meta">
-            <span class="star-edge">ضعيف ★</span>
-            <span class="star-sel-label" id="ratingLabel" aria-live="polite"></span>
-            <span class="star-edge">★★★★★ ممتاز</span>
-          </div>
-          <span class="star-err-msg" id="e-rating">⚠ يرجى اختيار تقييم من 1 إلى 5 نجوم</span>
-        </div>
+        <div class="rv-divider"></div>
 
         <!-- Comment -->
-        <div class="field">
-          <label for="comment">تعليقك <span class="req">*</span></label>
-          <textarea id="comment" rows="4"
-            placeholder="شاركنا رأيك... هل أعجبك الكتاب؟ كيف كانت سرعة التوصيل؟ كلماتك تساعد قرّاء آخرين 🙏"
+        <div>
+          <label class="rv-label" for="comment">
+            تعليقك <span class="req">*</span>
+          </label>
+          <textarea class="rv-textarea" id="comment" rows="5"
+            placeholder="شاركنا رأيك في تجربتك... كيف كانت سرعة التوصيل؟ هل أعجبك المنتج؟ كلماتك تساعد زبائن آخرين 🙏"
             maxlength="1500"></textarea>
-          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:4px;">
-            <span class="field-err" id="e-comment">⚠ التعليق مطلوب ولا يقل عن 3 أحرف</span>
-            <span class="char-count" id="charCount" style="margin-right:auto;">0 / 1500</span>
+          <div class="rv-char-row">
+            <div class="rv-err" id="e-comment" style="margin-top:0;">⚠ التعليق مطلوب (3 أحرف على الأقل)</div>
+            <span class="rv-char" id="charCount">0 / 1500</span>
           </div>
         </div>
-      </div>
 
-      <!-- ══ PRIVACY + SUBMIT ════════════════════════════════ -->
-      <div class="privacy-note">
-        <span class="privacy-note-icon">🔒</span>
-        <span class="privacy-note-text">
-          <strong>خصوصيتك مهمة:</strong>
-          يظهر اسمك المختصر وتقييمك وتعليقك فقط للعموم.
-          رأيك لن يُنشر قبل مراجعته من فريقنا.
-        </span>
-      </div>
+        <!-- Privacy note -->
+        <div class="rv-privacy">
+          <span class="rv-privacy-icon">🔒</span>
+          <span class="rv-privacy-text">
+            <strong>خصوصيتك مهمة:</strong>
+            يظهر اسمك المختصر وتقييمك وتعليقك فقط — رأيك لن يُنشر قبل مراجعته من فريقنا.
+          </span>
+        </div>
 
-      <button type="submit" class="submit-btn" id="submitBtn">
-        <div class="spin" id="spin"></div>
-        <span id="submitTxt">إرسال التقييم ✦</span>
-      </button>
+        <!-- Submit -->
+        <button type="submit" class="rv-submit" id="submitBtn">
+          <span class="rv-spinner" id="spin"></span>
+          <span id="submitTxt">إرسال التقييم ✦</span>
+        </button>
 
-      <div class="form-msg" id="formMsg">
-        <span class="form-msg-icon" id="formMsgIcon"></span>
-        <span id="formMsgText"></span>
-      </div>
+        <div class="rv-alert" id="formAlert">
+          <span class="rv-alert-icon">❌</span>
+          <span id="formAlertText"></span>
+        </div>
 
-    </form>
-  </div><!-- /formCard -->
+      </form>
+    </div>
+  </div><!-- /rv-card -->
 
-  <!-- ══ SUCCESS ═══════════════════════════════════════════ -->
-  <div class="success-screen" id="successScreen">
-    <div class="success-icon-wrap">🎉</div>
+  <!-- Success screen -->
+  <div class="rv-success" id="successScreen">
+    <div class="rv-success-icon">🎉</div>
     <h2>شكرًا لك!</h2>
-    <p class="success-sub">
-      تم إرسال رأيك بنجاح وسيظهر بعد المراجعة.
+    <p>
+      تم إرسال رأيك بنجاح.<br>
+      سيظهر على الموقع بعد مراجعته من فريقنا.
     </p>
-    <a href="/" class="btn-home">← العودة إلى المتجر</a>
+    <a href="/" class="rv-home-btn">← العودة إلى المتجر</a>
   </div>
 
-</main>
+</div><!-- /rv-wrap -->
 
 <!-- ═══════════ FOOTER ═══════════ -->
-<footer class="rv-footer">
-  <a href="/">© 2026 Derradj Shop</a> — جميع الحقوق محفوظة
+<footer class="main-footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">
+        <span>Derradj <span class="logo-accent">Shop</span></span>
+      </a>
+      <p>متجر جزائري أونلاين — منتجات متنوعة مع توصيل سريع إلى جميع ولايات الجزائر.</p>
+    </div>
+    <div class="footer-links-col">
+      <h4>روابط سريعة</h4>
+      <ul>
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="about.html">من نحن</a></li>
+        <li><a href="delivery.html">سياسة التوصيل</a></li>
+        <li><a href="payment.html">سياسة الدفع</a></li>
+        <li><a href="faq.html">الأسئلة الشائعة</a></li>
+        <li><a href="return-policy.html">سياسة الإرجاع</a></li>
+        <li><a href="terms.html">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+    <div class="footer-links-col">
+      <h4>تواصل</h4>
+      <div class="footer-contact-list">
+        <a href="tel:+213555491316" class="footer-contact-link">
+          <span class="contact-icon">📞</span>
+          <span class="phone-number" dir="ltr">0555 49 13 16</span>
+        </a>
+        <a href="mailto:derradjshop@gmail.com">📧 derradjshop@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-links-col">
+      <h4>الدفع</h4>
+      <div class="footer-pay-badge">💳 CCP / BaridiMob</div>
+      <div class="footer-pay-badge" style="margin-top:6px;">🏠 الدفع عند الاستلام</div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Derradj Shop — جميع الحقوق محفوظة</p>
+  </div>
 </footer>
 
-
-<!-- Books catalog -->
-<script src="books-data.js"></script>
-
-<!-- Main script -->
+<!-- ═══════════ SCRIPTS ═══════════ -->
 <script>
 "use strict";
 
-/* ── Supabase ───────────────────────────────────────────── */
 const SB_URL = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
 const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
 
-/* ── Star labels ────────────────────────────────────────── */
 const STAR_LABELS = {
   1: "ضعيف 😕",
   2: "متوسط 🙂",
@@ -769,110 +627,60 @@ const STAR_LABELS = {
   5: "ممتاز 🤩",
 };
 
-/* ── App state ──────────────────────────────────────────── */
 let selectedRating = 0;
 
-/* ═════════════════════════════════════════════════════════
-   BOOT
-═════════════════════════════════════════════════════════ */
+/* ── Boot ─────────────────────────────────────────────────── */
 (function boot() {
-  fillBookSelect();
   buildStars();
   bindEvents();
 })();
 
-/* ── Fill book <select> from catalog ───────────────────── */
-function fillBookSelect() {
-  const sel = document.getElementById("bookSelect");
-
-  /* Use window.BOOKS_DATA if available, else minimal fallback */
-  const books = (window.BOOKS_DATA && Array.isArray(window.BOOKS_DATA))
-    ? window.BOOKS_DATA
-    : [
-        { title: "العادات الذرية",                    category: "تطوير الذات",        price: 950  },
-        { title: "العادات السبع للناس الأكثر فعالية", category: "تطوير الذات",        price: 1400 },
-        { title: "سيكولوجية المال",                   category: "الإدارة والأعمال",   price: 1600 },
-        { title: "الذكاء العاطفي",                    category: "علم النفس والمجتمع", price: 1600 },
-        { title: "فن اللامبالاة",                     category: "تطوير الذات",        price: 900  },
-        { title: "قوة الآن",                          category: "الفلسفة والفكر",     price: 1100 },
-        { title: "بروباغندا",                         category: "علم النفس والمجتمع", price: 1100 },
-      ];
-
-  /* Group by category */
-  const byCategory = {};
-  books.forEach(b => {
-    const cat = b.category || "أخرى";
-    if (!byCategory[cat]) byCategory[cat] = [];
-    byCategory[cat].push(b);
-  });
-
-  /* Build <optgroup> per category */
-  for (const [cat, items] of Object.entries(byCategory)) {
-    const grp = document.createElement("optgroup");
-    grp.label = cat;
-    items.forEach(b => {
-      const opt = document.createElement("option");
-      opt.value = b.title;
-      opt.textContent = b.price && b.price > 0
-        ? b.title + " — " + b.price.toLocaleString("ar-DZ") + " دج"
-        : b.title;
-      grp.appendChild(opt);
-    });
-    sel.appendChild(grp);
-  }
-}
-
-/* ── Build star buttons ─────────────────────────────────── */
+/* ── Build stars ──────────────────────────────────────────── */
 function buildStars() {
   const row = document.getElementById("starRow");
   for (let i = 1; i <= 5; i++) {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.className = "star-btn";
+    btn.className = "rv-star";
     btn.dataset.v = i;
-    btn.title = STAR_LABELS[i];
     btn.setAttribute("aria-label", i + " نجوم — " + STAR_LABELS[i]);
     btn.textContent = "★";
     row.appendChild(btn);
   }
 }
 
-/* ── Bind events ────────────────────────────────────────── */
+/* ── Bind events ──────────────────────────────────────────── */
 function bindEvents() {
   const starRow = document.getElementById("starRow");
 
-  /* Stars hover */
   starRow.addEventListener("mouseover", e => {
-    const btn = e.target.closest(".star-btn");
+    const btn = e.target.closest(".rv-star");
     if (!btn) return;
     const v = +btn.dataset.v;
-    document.querySelectorAll(".star-btn").forEach((b, i) => {
-      b.classList.toggle("hover", i < v);
-      b.classList.remove("lit");
+    starRow.querySelectorAll(".rv-star").forEach((b, i) => {
+      b.classList.toggle("hovered", i < v);
+      b.classList.remove("selected");
     });
-    document.getElementById("ratingLabel").textContent = STAR_LABELS[v] || "";
+    setPill(STAR_LABELS[v], true);
   });
 
   starRow.addEventListener("mouseleave", () => {
-    document.querySelectorAll(".star-btn").forEach(b => b.classList.remove("hover"));
+    starRow.querySelectorAll(".rv-star").forEach(b => b.classList.remove("hovered"));
     lightStars(selectedRating);
-    document.getElementById("ratingLabel").textContent =
-      selectedRating ? STAR_LABELS[selectedRating] : "";
+    setPill(selectedRating ? STAR_LABELS[selectedRating] : null, !!selectedRating);
   });
 
-  /* Stars click */
   starRow.addEventListener("click", e => {
-    const btn = e.target.closest(".star-btn");
+    const btn = e.target.closest(".rv-star");
     if (!btn) return;
     selectedRating = +btn.dataset.v;
     lightStars(selectedRating);
-    document.getElementById("ratingLabel").textContent = STAR_LABELS[selectedRating];
+    setPill(STAR_LABELS[selectedRating], true);
     clearErr("rating");
   });
 
-  /* Stars keyboard */
   starRow.addEventListener("keydown", e => {
-    const btn = e.target.closest(".star-btn");
+    const btn = e.target.closest(".rv-star");
     if (!btn) return;
     const cur = +btn.dataset.v;
     if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   { e.preventDefault(); focusStar(Math.min(5, cur + 1)); }
@@ -881,73 +689,59 @@ function bindEvents() {
       e.preventDefault();
       selectedRating = cur;
       lightStars(selectedRating);
-      document.getElementById("ratingLabel").textContent = STAR_LABELS[selectedRating];
+      setPill(STAR_LABELS[selectedRating], true);
       clearErr("rating");
     }
   });
 
-  /* Comment char counter */
   document.getElementById("comment").addEventListener("input", function () {
     const len = this.value.trim().length;
     const el  = document.getElementById("charCount");
     el.textContent = len + " / 1500";
-    el.className = len === 0 ? "char-count"
-                 : len < 3  ? "char-count warn"
-                 : "char-count ok";
+    el.className = len === 0 ? "rv-char" : len < 3 ? "rv-char warn" : "rv-char ok";
     if (len >= 3) clearErr("comment");
   });
 
-  /* Inline clear errors */
-  document.getElementById("fName").addEventListener("input",    () => clearErr("fName"));
-  document.getElementById("lName").addEventListener("input",    () => clearErr("lName"));
-  document.getElementById("bookSelect").addEventListener("change", () => clearErr("book"));
+  document.getElementById("fName").addEventListener("input", () => clearErr("fName"));
+  document.getElementById("lName").addEventListener("input", () => clearErr("lName"));
 
-  /* Submit */
   document.getElementById("reviewForm").addEventListener("submit", onSubmit);
 }
 
-/* ── Light stars up to n ────────────────────────────────── */
 function lightStars(n) {
-  document.querySelectorAll(".star-btn").forEach((btn, i) => {
-    btn.classList.toggle("lit", i < n);
-    btn.classList.remove("hover");
+  document.querySelectorAll(".rv-star").forEach((btn, i) => {
+    btn.classList.remove("hovered");
+    btn.classList.toggle("selected", i < n);
   });
 }
 
 function focusStar(n) {
-  document.querySelector(`.star-btn[data-v="${n}"]`)?.focus();
+  document.querySelector(`.rv-star[data-v="${n}"]`)?.focus();
 }
 
-/* ── Validate ───────────────────────────────────────────── */
+function setPill(text, active) {
+  const pill = document.getElementById("ratingPill");
+  pill.textContent = text || "اختر تقييمك";
+  pill.classList.toggle("has-value", !!active);
+}
+
+/* ── Validate ─────────────────────────────────────────────── */
 function validate() {
   let ok = true;
-
-  if (!document.getElementById("fName").value.trim())
-    { showErr("fName"); ok = false; }
-
-  if (!document.getElementById("lName").value.trim())
-    { showErr("lName"); ok = false; }
-
-  if (!document.getElementById("bookSelect").value)
-    { showErr("book"); ok = false; }
-
-  if (!selectedRating)
-    { showErr("rating"); ok = false; }
-
-  if (document.getElementById("comment").value.trim().length < 3)
-    { showErr("comment"); ok = false; }
-
+  if (!document.getElementById("fName").value.trim()) { showErr("fName"); ok = false; }
+  if (!document.getElementById("lName").value.trim()) { showErr("lName"); ok = false; }
+  if (!selectedRating)                                 { showErr("rating"); ok = false; }
+  if (document.getElementById("comment").value.trim().length < 3) { showErr("comment"); ok = false; }
   return ok;
 }
 
-/* ── Submit ─────────────────────────────────────────────── */
+/* ── Submit ───────────────────────────────────────────────── */
 async function onSubmit(e) {
   e.preventDefault();
-  hideMsg();
+  hideAlert();
 
   if (!validate()) {
-    /* Scroll to first error */
-    const first = document.querySelector(".field-err.on, .star-err-msg.on");
+    const first = document.querySelector(".rv-err.on, .rv-star-err.on");
     if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
     return;
   }
@@ -956,20 +750,17 @@ async function onSubmit(e) {
 
   const firstName   = document.getElementById("fName").value.trim().slice(0, 60);
   const lastName    = document.getElementById("lName").value.trim().slice(0, 60);
-  const selectedBook= document.getElementById("bookSelect").value;
   const comment     = document.getElementById("comment").value.trim().slice(0, 1500);
-
-  /* display_name: "أمين ب." */
   const displayName = firstName + " " + lastName.charAt(0) + ".";
 
   const payload = {
     first_name:           firstName,
     last_name:            lastName,
     display_name:         displayName,
-    wilaya:               "غير محدد",   /* hidden field — default value */
+    wilaya:               "غير محدد",
     rating:               selectedRating,
     comment,
-    purchased_items:      [{ name: selectedBook, quantity: 1 }],
+    purchased_items:      [],
     package_name:         null,
     total_price:          null,
     order_id:             null,
@@ -997,56 +788,46 @@ async function onSubmit(e) {
       throw new Error("HTTP " + res.status);
     }
 
-    /* ✅ Success */
     document.getElementById("formCard").style.display = "none";
     document.getElementById("successScreen").classList.add("show");
     window.scrollTo({ top: 0, behavior: "smooth" });
 
   } catch (err) {
     console.error("[review] submit error:", err);
-    showMsg("حدث خطأ أثناء إرسال رأيك، يرجى المحاولة مرة أخرى.", "err");
+    showAlert("حدث خطأ أثناء إرسال رأيك، يرجى المحاولة مرة أخرى.");
   } finally {
     setLoading(false);
   }
 }
 
-/* ── UI helpers ─────────────────────────────────────────── */
+/* ── UI helpers ───────────────────────────────────────────── */
 function setLoading(on) {
   const btn = document.getElementById("submitBtn");
   btn.disabled = on;
-  document.getElementById("spin").style.display    = on ? "inline-block" : "none";
+  document.getElementById("spin").style.display    = on ? "block" : "none";
   document.getElementById("submitTxt").textContent = on ? "جاري الإرسال..." : "إرسال التقييم ✦";
 }
 
-function showMsg(text, type) {
-  const el = document.getElementById("formMsg");
-  el.className = "form-msg " + type;
-  document.getElementById("formMsgIcon").textContent = type === "err" ? "❌" : "✅";
-  document.getElementById("formMsgText").textContent = text;
+function showAlert(text) {
+  const el = document.getElementById("formAlert");
+  el.className = "rv-alert err";
+  document.getElementById("formAlertText").textContent = text;
   el.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-function hideMsg() {
-  const el = document.getElementById("formMsg");
-  el.className = "form-msg";
-  document.getElementById("formMsgIcon").textContent = "";
-  document.getElementById("formMsgText").textContent = "";
+function hideAlert() {
+  document.getElementById("formAlert").className = "rv-alert";
 }
 
 function showErr(field) {
   if (field === "rating") {
-    document.getElementById("e-rating")?.classList.add("on");
-    document.getElementById("starRow")?.classList.add("is-error");
+    document.getElementById("e-rating").classList.add("on");
+    document.getElementById("starsWrap").classList.add("is-error");
     return;
   }
   if (field === "comment") {
-    document.getElementById("e-comment")?.classList.add("on");
-    document.getElementById("comment")?.classList.add("is-error");
-    return;
-  }
-  if (field === "book") {
-    document.getElementById("e-book")?.classList.add("on");
-    document.getElementById("bookSelect")?.classList.add("is-error");
+    document.getElementById("e-comment").classList.add("on");
+    document.getElementById("comment").classList.add("is-error");
     return;
   }
   document.getElementById("e-" + field)?.classList.add("on");
@@ -1055,24 +836,44 @@ function showErr(field) {
 
 function clearErr(field) {
   if (field === "rating") {
-    document.getElementById("e-rating")?.classList.remove("on");
-    document.getElementById("starRow")?.classList.remove("is-error");
+    document.getElementById("e-rating").classList.remove("on");
+    document.getElementById("starsWrap").classList.remove("is-error");
     return;
   }
   if (field === "comment") {
-    document.getElementById("e-comment")?.classList.remove("on");
-    document.getElementById("comment")?.classList.remove("is-error");
-    return;
-  }
-  if (field === "book") {
-    document.getElementById("e-book")?.classList.remove("on");
-    document.getElementById("bookSelect")?.classList.remove("is-error");
+    document.getElementById("e-comment").classList.remove("on");
+    document.getElementById("comment").classList.remove("is-error");
     return;
   }
   document.getElementById("e-" + field)?.classList.remove("on");
   document.getElementById(field)?.classList.remove("is-error");
 }
 </script>
+
+<!-- Mobile menu & scroll -->
+<script>
+  const menuBtn    = document.getElementById('mobileMenuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const header     = document.getElementById('mainHeader');
+  menuBtn?.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+    menuBtn.classList.toggle('open');
+  });
+  document.querySelectorAll('.mobile-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu.classList.remove('open');
+      menuBtn.classList.remove('open');
+    });
+  });
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 50);
+  }, { passive: true });
+</script>
+
+<script src="whatsapp-float.js" defer></script>
+<script src="books-data.js"></script>
+<script src="js/search-products.js"></script>
+<script src="js/search.js" defer></script>
 
 </body>
 </html>

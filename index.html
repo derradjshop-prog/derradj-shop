@@ -588,15 +588,20 @@
 <!-- ===================== DELIVERY INFO ===================== -->
 <section class="delivery-section">
   <div class="container">
+
+    <div class="section-header">
+      <h2 class="section-title">التوصيل والدفع</h2>
+      <p class="section-subtitle">نوصّل طلبك إلى جميع ولايات الجزائر الـ 58 — بسرعة وأمان وبضمان كامل</p>
+    </div>
+
     <div class="delivery-grid">
       <div class="delivery-info">
-        <h2>معلومات التوصيل والدفع</h2>
 
         <div class="delivery-detail">
           <div class="delivery-detail-icon">🕐</div>
           <div>
             <strong>مدة التوصيل</strong>
-            <p>من 24 إلى 72 ساعة (قد تطول في الولايات الجنوبية) — حسب ولايتك ومنطقتك في الجزائر</p>
+            <p>من 24 إلى 72 ساعة — حسب ولايتك ومنطقتك في الجزائر</p>
           </div>
         </div>
 
@@ -609,10 +614,18 @@
         </div>
 
         <div class="delivery-detail">
+          <div class="delivery-detail-icon">💰</div>
+          <div>
+            <strong>تكلفة التوصيل</strong>
+            <p>تبدأ من 400 دج للاستلام من نقطة البريد — وتختلف حسب الولاية ونوع التوصيل</p>
+          </div>
+        </div>
+
+        <div class="delivery-detail">
           <div class="delivery-detail-icon">💳</div>
           <div>
             <strong>طريقة الدفع</strong>
-            <p>دفع مسبق آمن عبر CCP / BaridiMob — أو ادفع نقداً عند استلام طلبك</p>
+            <p>دفع مسبق آمن عبر CCP / BaridiMob — أو نقداً عند استلام طلبك</p>
           </div>
         </div>
 
@@ -620,7 +633,7 @@
           <div class="delivery-detail-icon">🛡️</div>
           <div>
             <strong>الضمان والاسترجاع</strong>
-            <p>في حال وجود عيب في المنتج يتم استرجاع المال أو تعويض العميل حسب الحالة</p>
+            <p>في حال وجود عيب يتم استرجاع المال كاملاً أو إرسال بديل حسب الحالة</p>
           </div>
         </div>
 
@@ -633,7 +646,7 @@
           <div class="step-num">1</div>
           <div class="step-content">
             <strong>اختر منتجك</strong>
-            <p>تصفح الكتب والإلكترونيات والمنتجات المتوفرة واضغط على ما يعجبك لرؤية التفاصيل الكاملة</p>
+            <p>تصفح الكتب والإلكترونيات واضغط على ما يعجبك لرؤية التفاصيل الكاملة</p>
           </div>
         </div>
         <div class="step">
@@ -661,7 +674,7 @@
     </div>
   </div>
 </section>
-<!--
+
 <section class="reviews-section section-wrap" id="reviews">
   <div class="container">
     <div class="section-header">
@@ -709,7 +722,6 @@
 </section>
 
 
--->
 
 <!-- ===================== CONTACT SECTION ===================== -->
 <section class="contact-section" id="support">
@@ -1183,11 +1195,7 @@
       (bookDisplay ? '<div class="review-books">📚 ' + bookDisplay + '</div>' : '') +
       '<div class="review-footer">' +
         '<div class="reviewer">' +
-          '<div class="reviewer-avatar">' + esc(initials(r.display_name)) + '</div>' +
-          '<div class="reviewer-info">' +
-            '<strong>' + esc(r.display_name || "—") + '</strong>' +
-            '<span>' + esc(r.wilaya) + '</span>' +
-          '</div>' +
+          '<span class="reviewer-name">' + esc((r.first_name && r.last_name) ? r.first_name + " " + r.last_name : (r.display_name || "—")) + '</span>' +
         '</div>' +
         (dateStr ? '<span class="review-date">' + esc(dateStr) + '</span>' : '') +
       '</div>' +
@@ -1215,7 +1223,7 @@
         "?is_approved=eq.true" +
         "&order=created_at.desc" +
         "&limit=9" +
-        "&select=display_name,wilaya,rating,comment,purchased_items,package_name,total_price,is_verified_purchase,created_at",
+        "&select=first_name,last_name,display_name,rating,comment,purchased_items,package_name,is_verified_purchase,created_at",
         {
           headers: {
             "apikey": SUPABASE_KEY,
