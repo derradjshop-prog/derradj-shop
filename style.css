@@ -767,9 +767,6 @@ input, select, textarea { font-family: inherit; }
 /* ── Sale price highlight (used for limited-time price drops) ── */
 .price-current.price-sale {
   color: #dc2626;
-  background: #fee2e2;
-  padding: 1px 8px;
-  border-radius: 6px;
 }
 
 /* ── Low-stock message ── */
@@ -1786,9 +1783,6 @@ input, select, textarea { font-family: inherit; }
 .product-price-box .price-old     { font-size: 18px; color: var(--text-muted); text-decoration: line-through; }
 .product-price-box .price-current.price-sale {
   color: #dc2626;
-  background: #fee2e2;
-  padding: 4px 14px;
-  border-radius: 8px;
 }
 .product-price-box .stock-msg { font-size: 14px; }
 
