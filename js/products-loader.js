@@ -99,7 +99,7 @@
 
   /* ── Fetch products from Supabase REST API ── */
   async function fetchProducts() {
-    const url = SB_URL + '/rest/v1/admin_products_catalog?select=id,catalog_id,product_name,product_name_ar,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,is_active&is_active=eq.true&order=created_at.asc';
+    const url = SB_URL + '/rest/v1/admin_products_catalog?select=id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active&is_active=eq.true&order=created_at.asc';
     const res = await fetch(url, {
       headers: {
         'apikey': SB_KEY,
@@ -153,14 +153,20 @@
     products.forEach(p => {
       if (!p.slug || existingSlugs.has(p.slug)) return;
       window.SEARCH_PRODUCTS.push({
-        name:     p.product_name,
-        nameEn:   p.product_name_ar || '',
-        category: catLabelAr(p.category),
-        price:    p.price,
-        image:    p.main_image || '',
-        url:      `/product/?slug=${p.slug}`,
-        slug:     p.slug,
-        supabase: true,
+        name:        p.product_name,
+        nameEn:      p.product_name_ar || '',
+        nameFr:      p.product_name_fr || '',
+        category:    catLabelAr(p.category),
+        subcategory: p.subcategory || '',
+        price:       p.price,
+        image:       p.main_image || '',
+        url:         `/product/?slug=${p.slug}`,
+        slug:        p.slug,
+        description: p.short_description || '',
+        keywords:    p.keywords
+          ? p.keywords.split(',').map(k => k.trim()).filter(Boolean)
+          : [],
+        supabase:    true,
       });
     });
   }

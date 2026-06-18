@@ -326,7 +326,10 @@
             <div class="pm-section-title">🛍 إدارة المنتجات</div>
             <div class="pm-section-sub">إضافة منتجات جديدة وتعديلها وحذفها</div>
           </div>
-          <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد</button>
+            <button class="btn-pm-add" id="pmSitemapBtn" style="background:#1d4ed8;">🗺 توليد Sitemap</button>
+          </div>
         </div>
         <div class="pm-tbl-wrap">
           <table class="pm-tbl">
@@ -367,6 +370,38 @@
       </div>
     `;
     document.body.appendChild(modal);
+
+    /* Sitemap modal */
+    const sitemapModal = document.createElement('div');
+    sitemapModal.id = 'pmSitemapOverlay';
+    sitemapModal.className = 'pm-overlay';
+    sitemapModal.innerHTML = `
+      <div class="pm-modal" style="max-width:860px;">
+        <div class="pm-mhdr">
+          <span class="pm-mhdr-title">🗺 Sitemap Generator</span>
+          <button class="pm-mclose" id="pmSitemapClose">✕</button>
+        </div>
+        <div class="pm-mbody">
+          <p style="font-size:13px;color:#475569;margin-bottom:4px;">
+            انسخ المحتوى أدناه واحفظه في ملف <strong>sitemap.xml</strong> على جذر الموقع.
+          </p>
+          <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">
+            يشمل جميع الصفحات الثابتة + جميع المنتجات النشطة من قاعدة البيانات.
+          </p>
+          <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button id="pmSitemapGenBtn" class="btn-pm-add" style="background:#1d4ed8;">🔄 توليد Sitemap</button>
+            <button id="pmSitemapCopyBtn" class="btn-pm-add" style="background:#059669;display:none;">📋 نسخ الكل</button>
+          </div>
+          <div id="pmSitemapStatus" style="font-size:12px;color:#64748b;margin-bottom:8px;"></div>
+          <textarea id="pmSitemapOutput"
+            style="width:100%;height:420px;font-family:'Courier New',monospace;font-size:12px;
+                   padding:12px;border:1.5px solid #e2e8f0;border-radius:8px;resize:vertical;
+                   direction:ltr;line-height:1.5;background:#f8fafc;"
+            placeholder="اضغط &quot;توليد Sitemap&quot; للبدء..." readonly></textarea>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(sitemapModal);
   }
 
   /* ── Build form HTML ── */
@@ -386,8 +421,13 @@
           <input type="text" id="pmName" required placeholder="ساعة ذكية Huawei GT4">
         </div>
         <div class="pm-fld full">
-          <label>اسم المنتج (إنجليزي / فرنسي)</label>
-          <input type="text" id="pmNameEn" placeholder="Huawei GT4 Smart Watch">
+          <label>English Name * — يُستخدم لعنوان الصفحة في Google</label>
+          <input type="text" id="pmNameEn" placeholder="Huawei GT4 Smart Watch" dir="ltr">
+          <span class="hint">يولّد الـ Slug تلقائياً من هذا الحقل — مثال: Huawei GT4 Smart Watch</span>
+        </div>
+        <div class="pm-fld full">
+          <label>French Name (اختياري)</label>
+          <input type="text" id="pmNameFr" placeholder="Montre Connectée Huawei GT4" dir="ltr">
         </div>
         <div class="pm-fld">
           <label>الفئة *</label>
@@ -396,6 +436,11 @@
         <div class="pm-fld">
           <label>الفئة الفرعية</label>
           <input type="text" id="pmSubcat" placeholder="مثال: TWS Earbuds">
+        </div>
+        <div class="pm-fld full">
+          <label>Brand / العلامة التجارية (اختياري)</label>
+          <input type="text" id="pmBrand" placeholder="مثال: Anker, Samsung, Arduino" dir="ltr">
+          <span class="hint">يظهر في نتائج Google وبيانات المنتج المنظمة</span>
         </div>
 
         <hr class="pm-divider">
@@ -426,23 +471,23 @@
         <div class="pm-sec-lbl">الوصف</div>
 
         <div class="pm-fld full">
-          <label>وصف مختصر (للبطاقة)</label>
+          <label>وصف مختصر (للبطاقة) — سطر واحد</label>
           <textarea id="pmShortDesc" rows="2" placeholder="وصف قصير يظهر في بطاقة المنتج..."></textarea>
         </div>
         <div class="pm-fld full">
           <label>وصف كامل (لصفحة المنتج)</label>
-          <textarea id="pmFullDesc" rows="5" placeholder="وصف مفصل يظهر في صفحة المنتج..."></textarea>
+          <textarea id="pmFullDesc" rows="5" placeholder="وصف مفصل: المميزات، محتوى الصندوق، حالات الاستخدام، التوصيل، الدفع..."></textarea>
         </div>
 
         <hr class="pm-divider">
-        <div class="pm-sec-lbl">الصور</div>
+        <div class="pm-sec-lbl">الصور — alt text تلقائي من اسم المنتج</div>
 
         <div class="pm-fld full">
           <label>الصورة الرئيسية</label>
           <div class="pm-upload-box" id="pmMainBox">
             <div id="pmMainPrev">
               <div class="pm-upload-lbl">📷 انقر لرفع الصورة الرئيسية</div>
-              <div class="pm-upload-sub">PNG · JPG · WebP</div>
+              <div class="pm-upload-sub">PNG · JPG · WebP (يُفضَّل WebP لأداء أفضل)</div>
             </div>
             <input type="file" id="pmMainFile" class="pm-upload-inp" accept="image/*">
           </div>
@@ -461,24 +506,26 @@
         </div>
 
         <hr class="pm-divider">
-        <div class="pm-sec-lbl">الرابط وتحسين محركات البحث</div>
+        <div class="pm-sec-lbl">الرابط وتحسين محركات البحث (SEO)</div>
 
         <div class="pm-fld full">
-          <label>Slug (رابط المنتج) *</label>
+          <label>Slug (رابط المنتج) * — يُولَّد تلقائياً من English Name</label>
           <input type="text" id="pmSlug" required placeholder="huawei-gt4-smart-watch" dir="ltr">
-          <span class="hint">رابط الصفحة: /product/?slug=...</span>
+          <span class="hint">رابط الصفحة: /product/?slug=... — حروف صغيرة وشرطات فقط، بدون مسافات</span>
         </div>
         <div class="pm-fld full">
-          <label>عنوان SEO</label>
-          <input type="text" id="pmSeoTitle" placeholder="ساعة ذكية Huawei GT4 | Derradj Shop">
+          <label>SEO Title — عنوان في Google (بالإنجليزي يُفضَّل)</label>
+          <input type="text" id="pmSeoTitle" placeholder="Huawei GT4 Smart Watch with 3 Straps | Derradj Shop" dir="ltr">
+          <span class="hint">اتركه فارغاً ليُستخدم English Name تلقائياً — بحد أقصى 60 حرفاً</span>
         </div>
         <div class="pm-fld full">
-          <label>وصف SEO</label>
-          <textarea id="pmSeoDesc" rows="2" placeholder="وصف لمحركات البحث..."></textarea>
+          <label>SEO Description — وصف في Google (150-160 حرف)</label>
+          <textarea id="pmSeoDesc" rows="2" placeholder="Buy Huawei GT4 Smart Watch in Algeria. Available at Derradj Shop with nationwide delivery..."></textarea>
         </div>
         <div class="pm-fld full">
-          <label>الكلمات المفتاحية</label>
-          <input type="text" id="pmKeywords" placeholder="ساعة ذكية، huawei، gt4">
+          <label>Keywords — كلمات مفتاحية (مفصولة بفاصلة)</label>
+          <input type="text" id="pmKeywords" placeholder="smart watch, huawei gt4, ساعة ذكية, montre connectée">
+          <span class="hint">تشمل: اسم المنتج بالعربي والإنجليزي والفرنسي + الفئة + العلامة التجارية</span>
         </div>
 
         <hr class="pm-divider">
@@ -536,10 +583,17 @@
       if (files.length) uploadGalleryImages(files);
     });
 
-    /* Auto-slug from name */
-    document.getElementById('pmName')?.addEventListener('input', e => {
+    /* Auto-slug from English name (primary), fallback to Arabic name */
+    document.getElementById('pmNameEn')?.addEventListener('input', e => {
       const slugEl = document.getElementById('pmSlug');
       if (slugEl && !slugEl.dataset.manualEdit) {
+        slugEl.value = slugify(e.target.value);
+      }
+    });
+    document.getElementById('pmName')?.addEventListener('input', e => {
+      const slugEl  = document.getElementById('pmSlug');
+      const enValue = document.getElementById('pmNameEn')?.value?.trim();
+      if (slugEl && !slugEl.dataset.manualEdit && !enValue) {
         slugEl.value = slugify(e.target.value);
       }
     });
@@ -569,6 +623,34 @@
     document.querySelectorAll('.tab-btn[data-tab="products"]').forEach(b => {
       b.addEventListener('click', () => setTimeout(loadProducts, 200));
     });
+
+    /* Sitemap modal open/close */
+    document.getElementById('pmSitemapBtn')?.addEventListener('click', () => {
+      document.getElementById('pmSitemapOverlay')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    });
+    document.getElementById('pmSitemapClose')?.addEventListener('click', () => {
+      document.getElementById('pmSitemapOverlay')?.classList.remove('open');
+      document.body.style.overflow = '';
+    });
+    document.getElementById('pmSitemapOverlay')?.addEventListener('click', e => {
+      if (e.target.id === 'pmSitemapOverlay') {
+        e.target.classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+
+    /* Sitemap generate button */
+    document.getElementById('pmSitemapGenBtn')?.addEventListener('click', generateSitemap);
+
+    /* Sitemap copy button */
+    document.getElementById('pmSitemapCopyBtn')?.addEventListener('click', () => {
+      const out = document.getElementById('pmSitemapOutput');
+      if (!out || !out.value) return;
+      navigator.clipboard?.writeText(out.value)
+        .then(() => showToast('✅ تم نسخ Sitemap XML'))
+        .catch(() => { out.select(); document.execCommand('copy'); showToast('✅ تم النسخ'); });
+    });
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -588,7 +670,7 @@
 
       const { data, error } = await sb
         .from('admin_products_catalog')
-        .select('id, catalog_id, product_name, product_name_ar, category, price, old_price, main_image, is_active, stock_status, slug, created_at')
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
@@ -659,6 +741,8 @@
     if (product) {
       setValue('pmName',      product.product_name);
       setValue('pmNameEn',    product.product_name_ar);
+      setValue('pmNameFr',    product.product_name_fr);
+      setValue('pmBrand',     product.brand);
       setValue('pmCat',       product.category);
       setValue('pmSubcat',    product.subcategory);
       setValue('pmPrice',     product.price);
@@ -823,6 +907,12 @@
         updated_at:        new Date().toISOString(),
       };
 
+      /* New optional columns — only include if filled (safe before SQL migration) */
+      const nameFr = getValue('pmNameFr');
+      if (nameFr) payload.product_name_fr = nameFr;
+      const brand = getValue('pmBrand');
+      if (brand) payload.brand = brand;
+
       if (!payload.product_name) throw new Error('اسم المنتج مطلوب');
       if (!payload.slug)         throw new Error('Slug المنتج مطلوب');
       if (!payload.price)        throw new Error('سعر المنتج مطلوب');
@@ -879,6 +969,87 @@
     } catch (err) {
       showToast('❌ فشل التغيير: ' + err.message, 'error');
       if (btn) btn.disabled = false;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     SITEMAP GENERATOR
+  ══════════════════════════════════════════════════════════ */
+  async function generateSitemap() {
+    const output    = document.getElementById('pmSitemapOutput');
+    const copyBtn   = document.getElementById('pmSitemapCopyBtn');
+    const statusEl  = document.getElementById('pmSitemapStatus');
+    const genBtn    = document.getElementById('pmSitemapGenBtn');
+
+    if (output)  output.value = '';
+    if (copyBtn) copyBtn.style.display = 'none';
+    if (statusEl) statusEl.textContent = '⏳ جاري جلب المنتجات من قاعدة البيانات...';
+    if (genBtn)  { genBtn.disabled = true; genBtn.textContent = '⏳ جاري التوليد...'; }
+
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        if (statusEl) statusEl.textContent = '❌ يجب تسجيل الدخول أولاً';
+        return;
+      }
+
+      const { data, error } = await sb
+        .from('admin_products_catalog')
+        .select('slug, updated_at')
+        .eq('is_active', true)
+        .not('slug', 'is', null)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      const STATIC = [
+        { loc: 'https://derradjshop.com/',                                                          lastmod: today,        freq: 'weekly',  pri: '1.0' },
+        { loc: 'https://derradjshop.com/books/',                                                    lastmod: today,        freq: 'weekly',  pri: '0.9' },
+        { loc: 'https://derradjshop.com/Electronique/',                                             lastmod: today,        freq: 'weekly',  pri: '0.9' },
+        { loc: 'https://derradjshop.com/Electronique/laptop/adjustable-laptop-stand.html',          lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
+        { loc: 'https://derradjshop.com/Electronique/smart-watch/modio-st11-smart-watch/',          lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
+        { loc: 'https://derradjshop.com/Electronique/earbuds/anker-soundcore-r50i-vg/',             lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
+        { loc: 'https://derradjshop.com/Electronique/earbuds/airpods-4-type-c-vrac/',               lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
+        { loc: 'https://derradjshop.com/Electronique/power-bank/hoco-j132a-20000mah-power-bank/',   lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
+        { loc: 'https://derradjshop.com/about.html',                                                lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
+        { loc: 'https://derradjshop.com/contact.html',                                              lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
+        { loc: 'https://derradjshop.com/faq.html',                                                  lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
+        { loc: 'https://derradjshop.com/delivery.html',                                             lastmod: '2026-06-02', freq: 'monthly', pri: '0.6' },
+        { loc: 'https://derradjshop.com/return-policy.html',                                        lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
+      ];
+
+      function urlBlock(u) {
+        return `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.freq}</changefreq>\n    <priority>${u.pri}</priority>\n  </url>`;
+      }
+
+      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
+      xml += '\n  <!-- ══ Static Pages ══ -->\n';
+      xml += STATIC.map(urlBlock).join('\n') + '\n';
+
+      const products = (data || []).filter(p => p.slug);
+      if (products.length) {
+        xml += '\n  <!-- ══ Dynamic Product Pages ══ -->\n';
+        xml += products.map(p => urlBlock({
+          loc:     `https://derradjshop.com/product/?slug=${encodeURIComponent(p.slug)}`,
+          lastmod: p.updated_at ? p.updated_at.slice(0, 10) : today,
+          freq:    'weekly',
+          pri:     '0.8',
+        })).join('\n') + '\n';
+      }
+
+      xml += '\n</urlset>';
+
+      if (output) output.value = xml;
+      if (copyBtn) copyBtn.style.display = '';
+      if (statusEl) statusEl.textContent = `✅ تم التوليد — ${STATIC.length} صفحة ثابتة + ${products.length} منتج ديناميكي`;
+
+    } catch (err) {
+      if (statusEl) statusEl.textContent = '❌ خطأ: ' + err.message;
+      showToast('❌ فشل توليد Sitemap: ' + err.message, 'error');
+    } finally {
+      if (genBtn) { genBtn.disabled = false; genBtn.textContent = '🔄 توليد Sitemap'; }
     }
   }
 

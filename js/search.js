@@ -21,14 +21,18 @@
     var nq = norm(query);
     if (nq.length < 2) return 0;
 
+    var kw = product.keywords;
+    var kwStr = Array.isArray(kw) ? kw.join(' ') : (typeof kw === 'string' ? kw : '');
     var haystack = norm([
       product.name        || '',
       product.nameEn      || '',
       product.nameFr      || '',
       product.author      || '',
       product.category    || '',
+      product.subcategory || '',
       product.description || '',
-      (product.keywords   || []).join(' ')
+      product.slug        || '',
+      kwStr
     ].join(' '));
 
     /* مطابقة كاملة */
