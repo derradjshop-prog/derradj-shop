@@ -2443,7 +2443,7 @@ function initProductRows() {
   var SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
 
-  fetch(SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,product_name,price,stock_status&is_active=eq.true', {
+  fetch(SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,product_name,price,stock_status,display_order&is_active=eq.true&order=display_order.asc.nullslast,created_at.desc', {
     headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
   })
   .then(function(r) { return r.ok ? r.json() : []; })

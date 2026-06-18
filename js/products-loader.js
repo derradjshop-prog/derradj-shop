@@ -99,15 +99,23 @@
 
   /* ── Fetch products from Supabase REST API ── */
   async function fetchProducts() {
-    const url = SB_URL + '/rest/v1/admin_products_catalog?select=id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active&is_active=eq.true&order=created_at.asc';
-    const res = await fetch(url, {
-      headers: {
-        'apikey': SB_KEY,
-        'Authorization': 'Bearer ' + SB_KEY,
-      },
-    });
+    const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+    const SELECT  = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active,display_order';
+    const BASE    = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true`;
+
+    /* First try: ordered by display_order ASC NULLS LAST, then created_at DESC */
+    let res = await fetch(BASE + '&order=display_order.asc.nullslast,created_at.desc', { headers: HEADERS });
+
+    /* If display_order column doesn't exist yet (400 Bad Request), fall back */
+    if (!res.ok && res.status === 400) {
+      console.warn('[products-loader] display_order ordering failed (column may not exist) — falling back to created_at DESC. Run admin/supabase-admin-products-rls-fix.sql to enable ordering.');
+      res = await fetch(BASE + '&order=created_at.desc', { headers: HEADERS });
+    }
+
     if (!res.ok) throw new Error('HTTP ' + res.status);
-    return res.json();
+    const products = await res.json();
+    console.log('[products-loader] Loaded', products?.length ?? 0, 'products (display_order sorted)');
+    return products;
   }
 
   /* ── Extend SHOP_CATALOG with Supabase products ── */

@@ -25,6 +25,8 @@
   /* ── State ── */
   let ALL_PM_PRODUCTS = [];
   let EDIT_PRODUCT_ID = null;
+  /* null = unknown yet, true = column exists in DB, false = column missing */
+  let DISPLAY_ORDER_SUPPORTED = null;
 
   /* ── Helpers ── */
   function esc(v) {
@@ -331,6 +333,10 @@
             <button class="btn-pm-add" id="pmSitemapBtn" style="background:#1d4ed8;">🗺 توليد Sitemap</button>
           </div>
         </div>
+        <div id="pmOrderWarning" style="display:none;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#78350f;line-height:1.6;">
+          ⚠️ <strong>ميزة ترتيب الظهور غير مفعّلة</strong> — عمود <code>display_order</code> غير موجود في قاعدة البيانات.<br>
+          شغّل ملف <strong>admin/supabase-admin-products-rls-fix.sql</strong> في <a href="https://supabase.com/dashboard/project/jbmcbjzcedqpvnhbmrhk/sql/new" target="_blank" style="color:#92400e;">Supabase SQL Editor</a> لتفعيل هذه الميزة.
+        </div>
         <div class="pm-tbl-wrap">
           <table class="pm-tbl">
             <thead>
@@ -340,11 +346,12 @@
                 <th>الفئة</th>
                 <th>السعر</th>
                 <th>الحالة</th>
+                <th style="white-space:nowrap;">الترتيب</th>
                 <th>الإجراءات</th>
               </tr>
             </thead>
             <tbody id="pmTbody">
-              <tr><td colspan="6" class="pm-empty">⏳ جاري التحميل...</td></tr>
+              <tr><td colspan="7" class="pm-empty">⏳ جاري التحميل...</td></tr>
             </tbody>
           </table>
         </div>
@@ -531,12 +538,17 @@
         <hr class="pm-divider">
         <div class="pm-sec-lbl">النشر</div>
 
-        <div class="pm-fld full">
+        <div class="pm-fld">
           <label>حالة النشر</label>
           <select id="pmActive">
             <option value="true">✅ منشور — يظهر للزوار</option>
             <option value="false">👁 مخفي — لا يظهر للزوار</option>
           </select>
+        </div>
+        <div class="pm-fld">
+          <label>ترتيب الظهور — Display Order</label>
+          <input type="number" id="pmOrder" min="1" step="1" placeholder="مثال: 1 أو 2 أو 3">
+          <span class="hint">1 = يظهر أولاً — اتركه فارغاً للترتيب التلقائي حسب تاريخ الإضافة</span>
         </div>
 
       </div>
@@ -659,9 +671,9 @@
   async function loadProducts() {
     const tbody = document.getElementById('pmTbody');
     if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">⏳ جاري التحميل...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">⏳ جاري التحميل...</td></tr>`;
 
-    console.log('[PM] loadProducts — querying admin_products_catalog (no is_active filter — all products)');
+    console.log('[PM] loadProducts — querying admin_products_catalog');
 
     try {
       const { data: { session }, error: authErr } = await sb.auth.getSession();
@@ -669,43 +681,55 @@
 
       if (!session) {
         console.warn('[PM] No active session — products cannot load');
-        tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">🔒 يجب تسجيل الدخول</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">🔒 يجب تسجيل الدخول</td></tr>`;
         return;
       }
 
       console.log('[PM] Authenticated as:', session.user?.email, '| uid:', session.user?.id);
 
-      const { data, error } = await sb
+      let data, queryError;
+
+      /* ── First attempt: order by display_order ─────────────────── */
+      ({ data, error: queryError } = await sb
         .from('admin_products_catalog')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('display_order', { ascending: true, nullsFirst: false })
+        .order('created_at', { ascending: false }));
 
-      if (error) {
-        console.error('[PM] Supabase query error on admin_products_catalog:', error);
-        throw error;
+      /* ── If display_order column is missing, fall back ─────────── */
+      if (queryError && (queryError.code === '42703' || (queryError.message || '').includes('display_order'))) {
+        console.warn('[PM] display_order column not found in DB — falling back. Run admin/supabase-admin-products-rls-fix.sql to add it.');
+        DISPLAY_ORDER_SUPPORTED = false;
+
+        ({ data, error: queryError } = await sb
+          .from('admin_products_catalog')
+          .select('*')
+          .order('created_at', { ascending: false }));
       }
 
-      const count = data?.length ?? 0;
-      console.log('[PM] Fetched', count, 'products from admin_products_catalog');
+      if (queryError) {
+        console.error('[PM] Supabase query error:', queryError);
+        throw queryError;
+      }
 
-      if (count > 0) {
-        console.table(data.map(p => ({
-          id:        p.id,
-          slug:      p.slug,
-          name:      p.product_name,
-          is_active: p.is_active,
-          stock:     p.stock_status,
-          category:  p.category,
-          created:   p.created_at,
-        })));
-      } else {
-        console.warn(
-          '[PM] 0 products returned — possible causes:\n' +
-          '  1. Table is empty (no products added yet)\n' +
-          '  2. Supabase RLS policy is filtering all rows for authenticated user\n' +
-          '  3. Table name mismatch (expected: admin_products_catalog)\n' +
-          '  → Run admin/supabase-admin-products-rls-fix.sql in Supabase SQL editor to fix RLS'
-        );
+      /* ── Detect column support from first row ──────────────────── */
+      if (DISPLAY_ORDER_SUPPORTED === null) {
+        if (Array.isArray(data) && data.length > 0) {
+          DISPLAY_ORDER_SUPPORTED = Object.prototype.hasOwnProperty.call(data[0], 'display_order');
+        } else {
+          /* 0 rows returned — column ordering didn't fail so assume supported */
+          DISPLAY_ORDER_SUPPORTED = true;
+        }
+      }
+
+      console.log('[PM] display_order column supported:', DISPLAY_ORDER_SUPPORTED);
+
+      const count = data?.length ?? 0;
+      console.log('[PM] Fetched', count, 'products. display_order values:',
+        data?.map(p => ({ name: p.product_name, display_order: p.display_order })));
+
+      if (count === 0) {
+        console.warn('[PM] 0 products returned — table empty or RLS is filtering. Run admin/supabase-admin-products-rls-fix.sql if needed.');
       }
 
       ALL_PM_PRODUCTS = data || [];
@@ -713,10 +737,14 @@
       const badge = document.getElementById('pmProductCount');
       if (badge) badge.textContent = ALL_PM_PRODUCTS.length;
 
+      /* Show/hide the "column missing" warning banner */
+      const warning = document.getElementById('pmOrderWarning');
+      if (warning) warning.style.display = DISPLAY_ORDER_SUPPORTED ? 'none' : 'block';
+
       renderTable();
     } catch (err) {
       console.error('[PM] loadProducts failed:', err);
-      tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">
+      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">
         ❌ فشل تحميل المنتجات: ${esc(err.message)}
         <br><small style="font-size:11px;color:#94a3b8;margin-top:4px;display:block;">
           افتح Developer Console (F12) وابحث عن رسائل [PM] للتفاصيل
@@ -730,7 +758,7 @@
     if (!tbody) return;
 
     if (!ALL_PM_PRODUCTS.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">
+      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">
         <div style="font-size:15px;">لا توجد منتجات بعد.</div>
         <div style="font-size:12px;color:#94a3b8;margin-top:6px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.6;">
           إذا أضفت منتجاً ولا يظهر هنا، افتح Developer Console (F12) وابحث عن رسائل <strong>[PM]</strong>.
@@ -767,6 +795,11 @@
           ${p.old_price ? `<span style="font-size:12px;text-decoration:line-through;color:#94a3b8;direction:ltr;">${fmtPrice(p.old_price)}</span>` : ''}
         </td>
         <td>${badge}</td>
+        <td style="text-align:center;">
+          ${p.display_order != null
+            ? `<span style="background:#dbeafe;color:#1d4ed8;font-size:13px;font-weight:900;padding:4px 12px;border-radius:99px;display:inline-block;">#${p.display_order}</span>`
+            : `<span style="color:#cbd5e1;font-size:13px;font-weight:600;">—</span>`}
+        </td>
         <td>
           <div class="pm-btn-grp">
             <button class="btn-pm-edit" data-pma="edit" data-pmid="${esc(p.id)}">✏️ تعديل</button>
@@ -809,6 +842,7 @@
       setValue('pmSeoDesc',   product.seo_description);
       setValue('pmKeywords',  product.keywords);
       setValue('pmActive',    product.is_active ? 'true' : 'false');
+      setValue('pmOrder',     product.display_order ?? '');
 
       if (product.main_image) showMainPreview(product.main_image);
 
@@ -958,6 +992,15 @@
         is_active:         getValue('pmActive') !== 'false',
         updated_at:        new Date().toISOString(),
       };
+
+      /* display_order: only send if column is confirmed to exist in DB */
+      if (DISPLAY_ORDER_SUPPORTED !== false) {
+        const orderRaw = getValue('pmOrder').trim();
+        payload.display_order = orderRaw !== '' ? (parseInt(orderRaw) || null) : null;
+        console.log('[PM] display_order value to save:', payload.display_order);
+      } else {
+        console.warn('[PM] display_order column not supported — not included in payload. Run admin/supabase-admin-products-rls-fix.sql first.');
+      }
 
       /* New optional columns — only include if filled (safe before SQL migration) */
       const nameFr = getValue('pmNameFr');

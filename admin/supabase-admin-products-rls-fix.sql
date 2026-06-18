@@ -40,7 +40,24 @@ BEGIN
   ELSE
     RAISE NOTICE '⏭  Column brand already exists — skipped.';
   END IF;
+
+  -- display_order: controls sort priority on the website
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE  table_schema = 'public'
+      AND  table_name   = 'admin_products_catalog'
+      AND  column_name  = 'display_order'
+  ) THEN
+    ALTER TABLE admin_products_catalog ADD COLUMN display_order INTEGER;
+    RAISE NOTICE '✅ Column display_order added.';
+  ELSE
+    RAISE NOTICE '⏭  Column display_order already exists — skipped.';
+  END IF;
 END $$;
+
+-- Index for fast ordering by display_order
+CREATE INDEX IF NOT EXISTS idx_apc_display_order
+  ON admin_products_catalog (display_order ASC NULLS LAST);
 
 
 -- ── STEP 2: Fix RLS so admin can always read ALL products ───────────
@@ -66,6 +83,7 @@ CREATE POLICY "admin_read_all_products"
 SELECT
   id,
   catalog_id,
+  display_order,
   product_name,
   slug,
   category,
@@ -74,5 +92,5 @@ SELECT
   created_at::date  AS created_date,
   updated_at::date  AS updated_date
 FROM admin_products_catalog
-ORDER BY created_at DESC
+ORDER BY display_order ASC NULLS LAST, created_at DESC
 LIMIT 50;
