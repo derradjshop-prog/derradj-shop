@@ -2356,7 +2356,7 @@ window._refreshProductRowsAvailability = function () {
 };
 
 /* تحميل المنتجات من السلة، أو إضافة صف فارغ إذا كانت السلة فارغة */
-(function initProductRows() {
+function initProductRows() {
 
   /* ── الحد الأقصى لعمر بيانات السلة: 48 ساعة ──────────────
      إذا كانت البيانات أقدم من ذلك نعتبرها "قديمة" ونتجاهلها
@@ -2433,6 +2433,38 @@ window._refreshProductRowsAvailability = function () {
   renumberRows();
   recalcAll();
   updateSummary();
+}
+
+/* ── تحميل المنتجات الجديدة من admin_products_catalog ثم تهيئة الصفوف ──
+   يضيف كل منتج من لوحة الإدارة إلى PRODUCTS_CATALOG (في موضع catalog_id)
+   قبل بناء صفوف السلة حتى تظهر المنتجات الجديدة في قائمة الاختيار وملخص الطلب.
+──────────────────────────────────────────────────────────────────────── */
+(function () {
+  var SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
+  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
+
+  fetch(SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,product_name,price,stock_status&is_active=eq.true', {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  })
+  .then(function(r) { return r.ok ? r.json() : []; })
+  .then(function(products) {
+    if (Array.isArray(products)) {
+      products.forEach(function(p) {
+        if (!p.catalog_id) return;
+        /* فقط نملأ الفراغ — لا نكتب فوق المنتجات القديمة الموجودة */
+        if (window.PRODUCTS_CATALOG[p.catalog_id] === undefined) {
+          window.PRODUCTS_CATALOG[p.catalog_id] = {
+            name:      p.product_name,
+            shortName: p.product_name,
+            price:     Number(p.price) || 0,
+            available: p.stock_status !== 'out_of_stock',
+          };
+        }
+      });
+    }
+  })
+  .catch(function() { /* إذا فشل الاتصال نكمل بالكتالوج الأصلي فقط */ })
+  .finally(function() { initProductRows(); });
 }());
 
 function getProductsTotal() {
