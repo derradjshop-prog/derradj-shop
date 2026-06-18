@@ -491,7 +491,7 @@
           </div>
 
           <div class="product-cta-buttons">
-            <a href="../ordre/" class="btn-buy-now-sb">🛒 اطلب الآن</a>
+            <a href="../ordre/" class="btn-buy-now-sb" id="pdOrderNowBtn">🛒 اطلب الآن</a>
             ${waBtn}
             ${cartBtn}
           </div>
@@ -551,6 +551,19 @@
     `;
 
     document.getElementById('pdContent').innerHTML = html;
+
+    /* ── "Order Now" — add product to cart then redirect ── */
+    const orderNowBtn = document.getElementById('pdOrderNowBtn');
+    if (orderNowBtn && p.catalog_id) {
+      orderNowBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        try {
+          localStorage.setItem('derradj_cart',    JSON.stringify([{ catalogId: p.catalog_id, qty: 1 }]));
+          localStorage.setItem('derradj_cart_ts', String(Date.now()));
+        } catch (_) {}
+        window.location.href = '../ordre/';
+      });
+    }
 
     /* ── Gallery thumbnail switching + lightbox ── */
     const mainImg    = document.getElementById('pdMainImg');
