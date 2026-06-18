@@ -323,7 +323,7 @@
       <div class="pm-section" id="pmSection">
         <div class="pm-section-header">
           <div>
-            <div class="pm-section-title">🛍 إدارة المنتجات</div>
+            <div class="pm-section-title">🛍 إدارة المنتجات <span id="pmProductCount" style="background:#e2e8f0;color:#475569;font-size:13px;font-weight:700;padding:2px 10px;border-radius:99px;margin-right:8px;vertical-align:middle;">—</span></div>
             <div class="pm-section-sub">إضافة منتجات جديدة وتعديلها وحذفها</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
@@ -661,23 +661,67 @@
     if (!tbody) return;
     tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">⏳ جاري التحميل...</td></tr>`;
 
+    console.log('[PM] loadProducts — querying admin_products_catalog (no is_active filter — all products)');
+
     try {
-      const { data: { session } } = await sb.auth.getSession();
+      const { data: { session }, error: authErr } = await sb.auth.getSession();
+      if (authErr) console.warn('[PM] getSession error:', authErr);
+
       if (!session) {
+        console.warn('[PM] No active session — products cannot load');
         tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">🔒 يجب تسجيل الدخول</td></tr>`;
         return;
       }
+
+      console.log('[PM] Authenticated as:', session.user?.email, '| uid:', session.user?.id);
 
       const { data, error } = await sb
         .from('admin_products_catalog')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[PM] Supabase query error on admin_products_catalog:', error);
+        throw error;
+      }
+
+      const count = data?.length ?? 0;
+      console.log('[PM] Fetched', count, 'products from admin_products_catalog');
+
+      if (count > 0) {
+        console.table(data.map(p => ({
+          id:        p.id,
+          slug:      p.slug,
+          name:      p.product_name,
+          is_active: p.is_active,
+          stock:     p.stock_status,
+          category:  p.category,
+          created:   p.created_at,
+        })));
+      } else {
+        console.warn(
+          '[PM] 0 products returned — possible causes:\n' +
+          '  1. Table is empty (no products added yet)\n' +
+          '  2. Supabase RLS policy is filtering all rows for authenticated user\n' +
+          '  3. Table name mismatch (expected: admin_products_catalog)\n' +
+          '  → Run admin/supabase-admin-products-rls-fix.sql in Supabase SQL editor to fix RLS'
+        );
+      }
+
       ALL_PM_PRODUCTS = data || [];
+
+      const badge = document.getElementById('pmProductCount');
+      if (badge) badge.textContent = ALL_PM_PRODUCTS.length;
+
       renderTable();
     } catch (err) {
-      tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">❌ خطأ: ${esc(err.message)}</td></tr>`;
+      console.error('[PM] loadProducts failed:', err);
+      tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">
+        ❌ فشل تحميل المنتجات: ${esc(err.message)}
+        <br><small style="font-size:11px;color:#94a3b8;margin-top:4px;display:block;">
+          افتح Developer Console (F12) وابحث عن رسائل [PM] للتفاصيل
+        </small>
+      </td></tr>`;
     }
   }
 
@@ -686,7 +730,15 @@
     if (!tbody) return;
 
     if (!ALL_PM_PRODUCTS.length) {
-      tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">لا توجد منتجات بعد. اضغط "إضافة منتج جديد" للبدء.</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="pm-empty">
+        <div style="font-size:15px;">لا توجد منتجات بعد.</div>
+        <div style="font-size:12px;color:#94a3b8;margin-top:6px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.6;">
+          إذا أضفت منتجاً ولا يظهر هنا، افتح Developer Console (F12) وابحث عن رسائل <strong>[PM]</strong>.
+          قد تكون مشكلة في سياسات RLS على Supabase — شغّل ملف <strong>supabase-admin-products-rls-fix.sql</strong>.
+        </div>
+        <button id="pmRetryBtn" style="margin-top:12px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Cairo',sans-serif;">🔄 إعادة التحميل</button>
+      </td></tr>`;
+      document.getElementById('pmRetryBtn')?.addEventListener('click', loadProducts);
       return;
     }
 
@@ -917,14 +969,27 @@
       if (!payload.slug)         throw new Error('Slug المنتج مطلوب');
       if (!payload.price)        throw new Error('سعر المنتج مطلوب');
 
+      console.log('[PM] saveProduct —', EDIT_PRODUCT_ID ? 'UPDATE id=' + EDIT_PRODUCT_ID : 'INSERT new', '| slug:', payload.slug, '| is_active:', payload.is_active);
+
       if (EDIT_PRODUCT_ID) {
         const { error } = await sb.from('admin_products_catalog').update(payload).eq('id', EDIT_PRODUCT_ID);
-        if (error) throw error;
+        if (error) {
+          console.error('[PM] UPDATE failed:', error);
+          throw error;
+        }
+        console.log('[PM] UPDATE succeeded for id:', EDIT_PRODUCT_ID);
         showToast('✅ تم تحديث المنتج بنجاح');
       } else {
         payload.created_at = new Date().toISOString();
-        const { error } = await sb.from('admin_products_catalog').insert(payload);
-        if (error) throw error;
+        const { data: insertedData, error } = await sb.from('admin_products_catalog').insert(payload).select('id, slug, catalog_id');
+        if (error) {
+          console.error('[PM] INSERT failed:', error);
+          if (error.message?.includes('column')) {
+            console.error('[PM] Column error — run supabase-admin-products-rls-fix.sql to add missing columns (brand, product_name_fr)');
+          }
+          throw error;
+        }
+        console.log('[PM] INSERT succeeded:', insertedData);
         showToast('✅ تم إضافة المنتج ونشره في المتجر');
       }
 
