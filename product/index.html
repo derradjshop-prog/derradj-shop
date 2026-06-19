@@ -164,6 +164,117 @@
         white-space: normal;
       }
     }
+
+    /* ── Enhanced main image gallery ── */
+    .product-main-image-box {
+      border-radius: 16px;
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 4px 20px rgba(0,0,0,.06);
+      cursor: zoom-in;
+      overflow: hidden;
+    }
+    .product-main-image { transition: transform .3s ease; }
+    .product-main-image-box:hover .product-main-image { transform: scale(1.03); }
+    .zoom-hint {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(0,0,0,.45);
+      color: #fff;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 99px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .2s;
+      z-index: 2;
+    }
+    .product-main-image-box:hover .zoom-hint { opacity: 1; }
+    .product-thumb { cursor: pointer; border-radius: 10px; }
+
+    /* ── Related Products Carousel ── */
+    .rp-section { margin-top: 56px; }
+    .rp-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #1e293b;
+      margin-bottom: 20px;
+    }
+    .rp-outer { overflow: hidden; direction: ltr; cursor: grab; }
+    .rp-outer:active { cursor: grabbing; }
+    .rp-track {
+      display: flex;
+      gap: 16px;
+      width: max-content;
+      padding-bottom: 8px;
+    }
+    .rp-card {
+      width: 190px;
+      flex-shrink: 0;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 14px;
+      overflow: hidden;
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      transition: box-shadow .2s, transform .15s;
+      direction: rtl;
+    }
+    .rp-card:hover {
+      box-shadow: 0 8px 28px rgba(30,64,175,.13);
+      transform: translateY(-3px);
+    }
+    .rp-img {
+      width: 100%;
+      height: 155px;
+      object-fit: cover;
+      display: block;
+      background: #f8fafc;
+    }
+    .rp-body {
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .rp-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      line-height: 1.4;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+    .rp-price-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .rp-price  { font-size: 14px; font-weight: 900; color: #1d4ed8; }
+    .rp-old-price { font-size: 11px; color: #94a3b8; text-decoration: line-through; }
+    .rp-discount {
+      background: #fee2e2; color: #dc2626;
+      font-size: 10px; font-weight: 800;
+      padding: 1px 5px; border-radius: 4px;
+    }
+    .rp-stock {
+      font-size: 11px; font-weight: 700;
+      padding: 2px 8px; border-radius: 99px;
+      display: inline-block; width: fit-content;
+    }
+    .rp-avail   { background: #d1fae5; color: #065f46; }
+    .rp-unavail { background: #fee2e2; color: #991b1b; }
+    .rp-btn {
+      display: block;
+      background: #1d4ed8; color: #fff;
+      text-align: center;
+      font-size: 12px; font-weight: 800;
+      padding: 8px; border-radius: 8px;
+      margin-top: auto;
+      font-family: 'Cairo', sans-serif;
+    }
+    .rp-card:hover .rp-btn { background: #1e40af; }
   </style>
 </head>
 <body>
@@ -292,6 +403,8 @@
       .replaceAll('&','&amp;').replaceAll('<','&lt;')
       .replaceAll('>','&gt;');
   }
+
+  function escAttr(v) { return esc(v).replaceAll('"','&quot;'); }
 
   function setMeta(id, val) {
     const el = document.getElementById(id);
@@ -530,22 +643,6 @@
       </div>
       ` : ''}
 
-      <!-- Gallery grid -->
-      ${gallery.length > 0 ? `
-      <div style="margin-top:40px;">
-        <h2 style="font-size:18px;font-weight:800;margin-bottom:16px;">📸 معرض الصور</h2>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">
-          ${gallery.map(u => `
-            <div style="border-radius:10px;overflow:hidden;border:1px solid #e2e8f0;">
-              <img src="${esc(u)}" alt="${esc(p.product_name)}"
-                   style="width:100%;height:200px;object-fit:cover;display:block;"
-                   loading="lazy" onerror="this.parentElement.style.display='none'">
-            </div>
-          `).join('')}
-        </div>
-      </div>
-      ` : ''}
-
       <!-- Order info -->
       <div style="margin-top:48px;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;">
         <div class="info-card">
@@ -563,9 +660,15 @@
           </p>
         </div>
       </div>
+
+      <!-- Related products — filled by loadRelatedProducts() -->
+      <div id="relatedProducts"></div>
     `;
 
     document.getElementById('pdContent').innerHTML = html;
+
+    /* ── Related products ── */
+    loadRelatedProducts(slug, p.catalog_id);
 
     /* ── "Order Now" — add product to cart then redirect ── */
     const orderNowBtn = document.getElementById('pdOrderNowBtn');
@@ -661,6 +764,131 @@
           slug:       p.slug,
         });
       }
+    }
+  }
+
+  async function loadRelatedProducts(currentSlug, currentCatalogId) {
+    const container = document.getElementById('relatedProducts');
+    if (!container) return;
+
+    try {
+      let products = [];
+
+      if (window.SUPABASE_PRODUCTS && window.SUPABASE_PRODUCTS.length > 0) {
+        products = window.SUPABASE_PRODUCTS.slice();
+      } else {
+        const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
+        const SELECT  = 'id,catalog_id,product_name,category,price,old_price,stock_status,main_image,slug';
+        const BASE    = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true&limit=50`;
+        let res = await fetch(BASE + '&order=display_order.asc.nullslast,created_at.desc', { headers: HEADERS });
+        if (!res.ok && res.status === 400) {
+          res = await fetch(BASE + '&order=created_at.desc', { headers: HEADERS });
+        }
+        if (!res.ok) return;
+        products = await res.json();
+      }
+
+      /* Exclude the current product */
+      products = products.filter(p =>
+        p.slug !== currentSlug &&
+        (currentCatalogId == null || p.catalog_id !== currentCatalogId)
+      );
+      if (products.length < 2) return;
+
+      /* Fisher-Yates shuffle */
+      for (let i = products.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [products[i], products[j]] = [products[j], products[i]];
+      }
+
+      /* Pick 8–12 */
+      const count = Math.min(products.length, 8 + Math.floor(Math.random() * 5));
+      const selected = products.slice(0, count);
+
+      function buildRpCard(p) {
+        const url     = `../product/?slug=${encodeURIComponent(p.slug)}`;
+        const isAvail = p.stock_status !== 'out_of_stock';
+        const imgSrc  = p.main_image || '../Logo.jpg';
+        const fmt     = n => Number(n).toLocaleString('en-US');
+
+        let priceRow = `<span class="rp-price">${fmt(p.price)} دج</span>`;
+        let discTag  = '';
+        if (p.old_price) {
+          priceRow += ` <span class="rp-old-price">${fmt(p.old_price)} دج</span>`;
+          const pct = Math.round((1 - p.price / p.old_price) * 100);
+          if (pct > 0) discTag = `<span class="rp-discount">-${pct}%</span>`;
+        }
+
+        const stockBadge = isAvail
+          ? `<span class="rp-stock rp-avail">✅ متوفر</span>`
+          : `<span class="rp-stock rp-unavail">❌ غير متوفر</span>`;
+
+        return `<a href="${url}" class="rp-card">
+          <img src="${escAttr(imgSrc)}" alt="${escAttr(p.product_name)}"
+               class="rp-img" loading="lazy" onerror="this.src='../Logo.jpg'">
+          <div class="rp-body">
+            <div class="rp-name">${esc(p.product_name)}</div>
+            <div class="rp-price-row">${priceRow}${discTag}</div>
+            ${stockBadge}
+            <span class="rp-btn">عرض المنتج</span>
+          </div>
+        </a>`;
+      }
+
+      const cardsHtml = selected.map(buildRpCard).join('');
+
+      container.innerHTML = `
+        <div class="rp-section">
+          <h2 class="rp-title">🎯 منتجات قد تعجبك</h2>
+          <div class="rp-outer" id="rpOuter">
+            <div class="rp-track" id="rpTrack">
+              ${cardsHtml}${cardsHtml}
+            </div>
+          </div>
+        </div>
+      `;
+
+      const outer = document.getElementById('rpOuter');
+      const track = document.getElementById('rpTrack');
+      if (!outer || !track) return;
+
+      let isPaused = false;
+      let pos      = 0;
+      const SPEED  = 0.6;
+
+      outer.addEventListener('mouseenter', () => { isPaused = true;  });
+      outer.addEventListener('mouseleave', () => { isPaused = false; });
+
+      /* Touch / swipe */
+      let touchStartX   = 0;
+      let touchStartPos = 0;
+      outer.addEventListener('touchstart', e => {
+        isPaused     = true;
+        touchStartX  = e.touches[0].clientX;
+        touchStartPos = pos;
+      }, { passive: true });
+      outer.addEventListener('touchmove', e => {
+        pos = Math.max(0, touchStartPos + (touchStartX - e.touches[0].clientX));
+        outer.scrollLeft = pos;
+      }, { passive: true });
+      outer.addEventListener('touchend', () => {
+        pos      = outer.scrollLeft;
+        isPaused = false;
+      }, { passive: true });
+
+      /* Auto-scroll animation */
+      (function animate() {
+        if (!isPaused) {
+          pos += SPEED;
+          const half = track.scrollWidth / 2;
+          if (pos >= half) pos -= half;
+          outer.scrollLeft = pos;
+        }
+        requestAnimationFrame(animate);
+      })();
+
+    } catch (err) {
+      console.warn('[related products]', err.message);
     }
   }
 
