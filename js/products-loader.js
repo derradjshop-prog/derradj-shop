@@ -53,14 +53,14 @@
 
   /* ── Build a product card HTML ── */
   function buildCard(p) {
-    const url     = `/product/?slug=${encodeURIComponent(p.slug)}`;
-    const isAvail = p.stock_status !== 'out_of_stock';
+    const url      = `/product/?slug=${encodeURIComponent(p.slug)}`;
+    const isAvail  = p.stock_status !== 'out_of_stock';
     const badgeCls = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
     const badgeTxt = isAvail ? 'متوفر' : 'غير متوفر';
-    const icon = catIcon(p.category);
-    const catAr = catLabelAr(p.category);
-
-    const imgSrc = p.main_image || '/Logo.jpg';
+    const icon     = catIcon(p.category);
+    const catAr    = catLabelAr(p.category);
+    const imgSrc   = p.main_image || '/Logo.jpg';
+    const summary  = cardSummary(p);
 
     const cartBtn = isAvail
       ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
@@ -78,9 +78,7 @@
         <a href="${url}" style="text-decoration:none;color:inherit;">
           <h3 class="product-name">${esc(p.product_name)}</h3>
         </a>
-        ${p.short_description
-          ? `<p class="product-rating" style="font-size:13px;color:#64748b;margin:4px 0 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(p.short_description)}</p>`
-          : ''}
+        ${summary ? `<p class="product-card-summary">${esc(summary)}</p>` : ''}
         <div class="product-prices">${priceHTML(p.price, p.old_price)}</div>
         <div class="product-card-btns">
           <a href="${url}" class="btn-order-card">${icon} تفاصيل</a>
@@ -96,6 +94,17 @@
       .replaceAll('>', '&gt;');
   }
   function escAttr(v) { return esc(v).replaceAll('"', '&quot;'); }
+
+  /* One-line card summary: takes short_description first, falls back to
+     full_description, truncates at a word boundary ≤ 72 chars. */
+  function cardSummary(p) {
+    const raw = (p.short_description || p.full_description || '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    if (!raw) return '';
+    if (raw.length <= 72) return raw;
+    const cut = raw.slice(0, 72);
+    const lastSpace = cut.lastIndexOf(' ');
+    return (lastSpace > 40 ? cut.slice(0, lastSpace) : cut) + '…';
+  }
 
   /* ── Fetch products from Supabase REST API ── */
   async function fetchProducts() {
