@@ -118,23 +118,39 @@
     return products;
   }
 
-  /* ── Extend SHOP_CATALOG with Supabase products ── */
+  /* ── Extend / update SHOP_CATALOG with Supabase products ── */
   function extendCatalog(products) {
     if (!window.SHOP_CATALOG) window.SHOP_CATALOG = [];
-    const existing = new Set(window.SHOP_CATALOG.map(c => c.catalogId));
+
+    /* Build lookup: catalogId → index in array */
+    const byId = {};
+    window.SHOP_CATALOG.forEach((c, i) => { byId[c.catalogId] = i; });
 
     products.forEach(p => {
-      if (!p.catalog_id || existing.has(p.catalog_id)) return;
-      window.SHOP_CATALOG.push({
-        catalogId:  p.catalog_id,
-        name:       p.product_name,
-        shortName:  p.product_name || p.product_name,
-        price:      p.price,
-        image:      p.main_image || '',
-        available:  p.stock_status !== 'out_of_stock',
-        supabaseId: p.id,
-        slug:       p.slug,
-      });
+      if (!p.catalog_id) return;
+      if (byId[p.catalog_id] !== undefined) {
+        /* Update existing entry — admin_products_catalog is authoritative */
+        const entry = window.SHOP_CATALOG[byId[p.catalog_id]];
+        entry.name      = p.product_name;
+        entry.shortName = p.product_name;
+        entry.price     = p.price;
+        entry.available = p.stock_status !== 'out_of_stock';
+        if (p.main_image) entry.image = p.main_image;
+        if (p.slug)       entry.slug  = p.slug;
+        entry.supabaseId = p.id;
+      } else {
+        /* Add new entry */
+        window.SHOP_CATALOG.push({
+          catalogId:  p.catalog_id,
+          name:       p.product_name,
+          shortName:  p.product_name,
+          price:      p.price,
+          image:      p.main_image || '',
+          available:  p.stock_status !== 'out_of_stock',
+          supabaseId: p.id,
+          slug:       p.slug,
+        });
+      }
     });
   }
 

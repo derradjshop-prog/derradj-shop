@@ -25,36 +25,42 @@
     <priority>0.9</priority>
   </url>
 
-  <!-- ══ منتجات إلكترونية ══ -->
+  <!-- ══ منتجات إلكترونية (Supabase) ══ -->
   <url>
-    <loc>https://derradjshop.com/Electronique/laptop/adjustable-laptop-stand.html</loc>
-    <lastmod>2026-06-02</lastmod>
+    <loc>https://derradjshop.com/product/?slug=adjustable-laptop-stand</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://derradjshop.com/Electronique/smart-watch/modio-st11-smart-watch/</loc>
-    <lastmod>2026-06-02</lastmod>
+    <loc>https://derradjshop.com/product/?slug=modio-st11-smart-watch</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://derradjshop.com/Electronique/earbuds/anker-soundcore-r50i-vg/</loc>
-    <lastmod>2026-06-02</lastmod>
+    <loc>https://derradjshop.com/product/?slug=anker-soundcore-r50i-vg</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://derradjshop.com/Electronique/earbuds/airpods-4-type-c-vrac/</loc>
-    <lastmod>2026-06-02</lastmod>
+    <loc>https://derradjshop.com/product/?slug=airpods-4-type-c-vrac</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://derradjshop.com/Electronique/power-bank/hoco-j132a-20000mah-power-bank/</loc>
-    <lastmod>2026-06-05</lastmod>
+    <loc>https://derradjshop.com/product/?slug=hoco-j132a-20000mah-power-bank</loc>
+    <lastmod>2026-06-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/</loc>
+    <lastmod>2026-06-19</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
 
   <!-- ══ صفحات الكتب ══ -->

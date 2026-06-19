@@ -2451,15 +2451,13 @@ function initProductRows() {
     if (Array.isArray(products)) {
       products.forEach(function(p) {
         if (!p.catalog_id) return;
-        /* فقط نملأ الفراغ — لا نكتب فوق المنتجات القديمة الموجودة */
-        if (window.PRODUCTS_CATALOG[p.catalog_id] === undefined) {
-          window.PRODUCTS_CATALOG[p.catalog_id] = {
-            name:      p.product_name,
-            shortName: p.product_name,
-            price:     Number(p.price) || 0,
-            available: p.stock_status !== 'out_of_stock',
-          };
-        }
+        /* admin_products_catalog is authoritative — always override */
+        window.PRODUCTS_CATALOG[p.catalog_id] = {
+          name:      p.product_name,
+          shortName: p.product_name,
+          price:     Number(p.price) || 0,
+          available: p.stock_status !== 'out_of_stock',
+        };
       });
     }
   })
