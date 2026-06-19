@@ -632,74 +632,8 @@
   </div>
 </section>
 
-<!-- ===================== FOOTER ===================== -->
-<footer class="main-footer">
-  <div class="footer-top">
-    <div class="footer-brand">
-      <a href="/" class="footer-logo">
-
-        <span>Derradj <span class="logo-accent">Shop</span></span>
-      </a>
-      <p>متجر جزائري أونلاين — منتجات متنوعة مع توصيل سريع إلى جميع ولايات الجزائر.</p>
-      <div class="footer-contact-list">
-        <a href="tel:+213555491316" class="footer-contact-link">
-          <span class="contact-icon">📞</span>
-          <span class="phone-number" dir="ltr">0555 49 13 16</span>
-        </a>
-        <a href="mailto:derradjshop@gmail.com">📧 derradjshop@gmail.com</a>
-        <span>📍 الجزائر العاصمة، الجزائر</span>
-      </div>
-    </div>
-
-    <div class="footer-links-col">
-      <h4>الكتب</h4>
-      <ul>
-        <li><a href="books/">📚 جميع الكتب</a></li>
-        <li><a href="books/">تطوير الذات</a></li>
-        <li><a href="books/">الفلسفة والفكر</a></li>
-        <li><a href="books/">علم النفس</a></li>
-        <li><a href="books/">الإدارة والأعمال</a></li>
-      </ul>
-      <h4 style="margin-top:16px;">إلكترونيات</h4>
-      <ul>
-        <li><a href="/product/?slug=adjustable-laptop-stand">💻 حامل اللابتوب — 1,500 دج</a></li>
-        <li><a href="/product/?slug=anker-soundcore-r50i-vg">🎧 Anker R50i VG Earbuds — 4,900 دج</a></li>
-        <li><a href="/product/?slug=airpods-4-type-c-vrac">🎧 Airpods 4 Type-C Vrac — 2,900 دج</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-links-col">
-      <h4>المتجر</h4>
-      <ul>
-        <li><a href="about.html">من نحن</a></li>
-        <li><a href="delivery.html">سياسة التوصيل</a></li>
-        <li><a href="payment.html">الدفع والضمان</a></li>
-        <li><a href="faq.html">الأسئلة الشائعة</a></li>
-        <li><a href="contact.html">تواصل معنا</a></li>
-        <li><a href="return-policy.html">سياسة الإرجاع</a></li>
-        <li><a href="terms.html">الشروط والأحكام</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-links-col">
-      <h4>الدعم</h4>
-      <ul>
-        <li><a href="ordre/">اطلب الآن</a></li>
-        <li><a href="faq.html">كيف أطلب؟</a></li>
-        <li><a href="contact.html">خدمة العملاء</a></li>
-      </ul>
-      <div style="margin-top:20px;">
-        <h4>طريقة الدفع</h4>
-        <div class="footer-pay-badge">💳 دفع مسبق (CCP / BaridiMob)</div>
-        <div class="footer-pay-badge" style="margin-top:8px;">🏠 دفع عند الاستلام</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <p>© 2025 Derradj Shop — جميع الحقوق محفوظة | المتجر الجزائري أونلاين</p>
-  </div>
-</footer>
+<!-- ===================== FOOTER (shared component) ===================== -->
+<footer class="main-footer" data-shared-footer></footer>
 
 <!-- ===================== SCRIPTS ===================== -->
 <script>
@@ -760,27 +694,9 @@
   });
 </script>
 
+<script src="js/shared-footer.js"></script>
+<script src="js/mobile-menu.js"></script>
 <script>
-  const menuBtn    = document.getElementById('mobileMenuBtn');
-  const mobileMenu = document.getElementById('mobileMenu');
-  const header     = document.getElementById('mainHeader');
-
-  menuBtn?.addEventListener('click', () => {
-    mobileMenu.classList.toggle('open');
-    menuBtn.classList.toggle('open');
-  });
-
-  document.querySelectorAll('.mobile-menu a').forEach(link => {
-    link.addEventListener('click', () => {
-      mobileMenu.classList.remove('open');
-      menuBtn.classList.remove('open');
-    });
-  });
-
-  window.addEventListener('scroll', () => {
-    header.classList.toggle('scrolled', window.scrollY > 50);
-  }, { passive: true });
-
   document.getElementById('homeLogoLink')?.addEventListener('click', function (e) {
     e.preventDefault();
     if (window.scrollY > 0) {

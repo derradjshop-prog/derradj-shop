@@ -8,7 +8,29 @@
       "Bash(curl -s 'https://jbmcbjzcedqpvnhbmrhk.supabase.co/rest/v1/admin_products_catalog?select=catalog_id,product_name,slug,price,stock_status,is_active,main_image,gallery_images,short_description,full_description,display_order&catalog_id=in.\\(83,84,85,87,88\\)&order=catalog_id.asc' -H 'apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTY2NTUwNSwiZXhwIjoyMDg1MjQxNTA1fQ.kH4zr8rDSNJKFYhPf0yhedzDNP85x90DckRCp6N3Nhc' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2OTY2NTUwNSwiZXhwIjoyMDg1MjQxNTA1fQ.kH4zr8rDSNJKFYhPf0yhedzDNP85x90DckRCp6N3Nhc')",
       "Bash(python3 -c ' *)",
       "Bash(grep -v \"canonical\\\\|og:url\\\\|Electronique/\\\\\"\\\\|Electronique/$\\\\|#\\\\|json\")",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/index.html)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"http://localhost:8765/product/?slug=adjustable-laptop-stand\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/js/mobile-menu.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/js/shared-footer.js)",
+      "Bash(node -c \"c:\\\\Users\\\\Social Media\\\\Desktop\\\\derradj-shop\\\\js\\\\mobile-menu.js\")",
+      "Bash(node -c \"c:\\\\Users\\\\Social Media\\\\Desktop\\\\derradj-shop\\\\js\\\\shared-footer.js\")",
+      "Read(//c/tmp/**)",
+      "Bash(npm view *)",
+      "Bash(mkdir -p /tmp/verify-derradj)",
+      "Bash(npm init *)",
+      "Bash(npm install *)",
+      "Bash(node verify.js)",
+      "Bash(ls -la /tmp/verify-derradj/ 2>&1; echo \"---\"; find / -iname \"verify.js\" 2>/dev/null)",
+      "Read(//c//**)",
+      "Bash(node /tmp/verify-derradj/verify.js)",
+      "Bash(tasklist)",
+      "Bash(netstat -ano)",
+      "Bash(taskkill //PID 17332 //F)"
+    ],
+    "additionalDirectories": [
+      "\\tmp\\verify-derradj",
+      "c:\\tmp\\verify-derradj"
     ]
   }
 }
