@@ -62,6 +62,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   function fmtMoney(n) {
+    if (isLimitedStaffMode()) return "—";
     return Number(n || 0).toLocaleString("fr-DZ") + " دج";
   }
 
@@ -106,14 +107,18 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
      FETCH — الطلبات + منتجاتها في استعلام واحد
   ───────────────────────────────────────────────────────── */
   async function fetchOrders(limitedOnly = false) {
+    const moneyFields = limitedOnly
+      ? ``
+      : `shipping_fee, subtotal, total_price,`;
+    const itemMoneyFields = limitedOnly ? `` : `, unit_price, subtotal`;
     let query = supabase
       .from("orders")
       .select(`
         id, full_name, phone, address, wilaya, commune,
-        delivery_type, shipping_fee, subtotal, total_price,
+        delivery_type, ${moneyFields}
         payment_method, receipt_url, is_confirmed,
         notes, created_at,
-        order_items ( product_name, unit_price, quantity, subtotal )
+        order_items ( product_name, quantity${itemMoneyFields} )
       `)
       .order("created_at", { ascending: false })
       .limit(500);
@@ -1717,8 +1722,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
       [ALL_ORDERS, ALL_MESSAGES, ALL_PRODUCTS, ALL_REVIEWS] = await Promise.all([
         fetchOrders(LIMITED_STAFF_MODE), fetchMessages(),
-        fetchProducts().catch(() => []),
-        fetchReviews().catch(() => []),
+        LIMITED_STAFF_MODE ? Promise.resolve([]) : fetchProducts().catch(() => []),
+        LIMITED_STAFF_MODE ? Promise.resolve([]) : fetchReviews().catch(() => []),
       ]);
       renderStats(ALL_ORDERS);
       renderTable(getFiltered());

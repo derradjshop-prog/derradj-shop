@@ -26,7 +26,11 @@
       "Bash(node /tmp/verify-derradj/verify.js)",
       "Bash(tasklist)",
       "Bash(netstat -ano)",
-      "Bash(taskkill //PID 17332 //F)"
+      "Bash(taskkill //PID 17332 //F)",
+      "Bash(grep -E \"^d|\\\\.html$|\\\\.js$\")",
+      "Bash(grep -rn \"fetch\\\\|\\\\/api\\\\|axios\\\\|XMLHttpRequest\\\\|http://\" \"c:\\\\Users\\\\Social Media\\\\Desktop\\\\derradj-shop\\\\admin\" --include=\"*.js\")",
+      "Bash(node --check admin.js)",
+      "Bash(node --check products-manager.js)"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",

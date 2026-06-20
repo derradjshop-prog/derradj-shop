@@ -11,6 +11,26 @@
   if (!window.supabase?.createClient) return;
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+  /* Limited staff account: Products tab is hidden by admin.js — never
+     load/render product data (incl. prices) for this account so it
+     can't be revealed via the DOM even while the tab is hidden via CSS. */
+  const LIMITED_STAFF_EMAIL = '0696234484@derradjshop.com';
+  async function isLimitedStaffSession() {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return false;
+      const { data: staff } = await sb
+        .from('staff_accounts')
+        .select('email')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      const email = String(staff?.email || session.user.email || '').toLowerCase();
+      return email === LIMITED_STAFF_EMAIL;
+    } catch {
+      return false;
+    }
+  }
+
   /* ── Categories ── */
   const CATEGORIES = [
     { value: 'books',        label: '📚 كتب' },
@@ -1164,7 +1184,9 @@
   /* ══════════════════════════════════════════════════════════
      INIT
   ══════════════════════════════════════════════════════════ */
-  function init() {
+  async function init() {
+    if (await isLimitedStaffSession()) return;
+
     injectStyles();
     injectHTML();
     bindEvents();
