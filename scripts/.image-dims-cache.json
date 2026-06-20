@@ -1,0 +1,26 @@
+{
+  "https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1781815095537-3vnhwwj.jpg": {
+    "height": 800,
+    "width": 800
+  },
+  "https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/modio-st11-smart-watch/main.webp": {
+    "width": 1074,
+    "height": 1465
+  },
+  "https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/adjustable-laptop-stand/main.webp": {
+    "width": 1254,
+    "height": 1254
+  },
+  "https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/anker-soundcore-r50i-vg/main.png": {
+    "width": 1024,
+    "height": 1024
+  },
+  "https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/airpods-4-type-c-vrac/main.webp": {
+    "width": 1254,
+    "height": 1254
+  },
+  "https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/hoco-j132a-20000mah-power-bank/main.webp": {
+    "width": 1254,
+    "height": 1254
+  }
+}

@@ -1,0 +1,49 @@
+name: Generate product pages
+
+# Regenerates static /product/{slug}/ pages (with real OG/Twitter/
+# JSON-LD meta tags baked in from Supabase) plus sitemap.xml, then
+# commits the result back to main so GitHub Pages republishes it.
+#
+# This exists because WhatsApp/Facebook/Telegram/X/Discord crawlers
+# don't execute JavaScript — the product meta tags must already be
+# in the raw HTML on every push/schedule run for link previews and
+# Google rich results to work.
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'   # every 2 hours
+  workflow_dispatch: {}      # manual "Run workflow" button
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-product-pages
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate product pages + sitemap
+        run: node scripts/generate-product-pages.js
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "derradj-shop-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add product/ sitemap.xml scripts/.image-dims-cache.json
+          if git diff --cached --quiet; then
+            echo "No changes — products are already up to date."
+          else
+            git commit -m "chore: regenerate product pages + sitemap from Supabase"
+            git push
+          fi

@@ -36,9 +36,9 @@
         </ul>
         <h4 style="margin-top:16px;">إلكترونيات</h4>
         <ul>
-          <li><a href="/product/?slug=adjustable-laptop-stand">💻 حامل اللابتوب — 1,500 دج</a></li>
-          <li><a href="/product/?slug=anker-soundcore-r50i-vg">🎧 Anker R50i VG Earbuds — 4,900 دج</a></li>
-          <li><a href="/product/?slug=airpods-4-type-c-vrac">🎧 Airpods 4 Type-C Vrac — 2,900 دج</a></li>
+          <li><a href="/product/adjustable-laptop-stand/">💻 حامل اللابتوب — 1,500 دج</a></li>
+          <li><a href="/product/anker-soundcore-r50i-vg/">🎧 Anker R50i VG Earbuds — 4,900 دج</a></li>
+          <li><a href="/product/airpods-4-type-c-vrac/">🎧 Airpods 4 Type-C Vrac — 2,900 دج</a></li>
         </ul>
       </div>
 

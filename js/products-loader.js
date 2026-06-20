@@ -53,7 +53,7 @@
 
   /* ── Build a product card HTML ── */
   function buildCard(p) {
-    const url      = `/product/?slug=${encodeURIComponent(p.slug)}`;
+    const url      = `/product/${encodeURIComponent(p.slug)}/`;
     const isAvail  = p.stock_status !== 'out_of_stock';
     const badgeCls = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
     const badgeTxt = isAvail ? 'متوفر' : 'غير متوفر';
@@ -193,7 +193,7 @@
         subcategory: p.subcategory || '',
         price:       p.price,
         image:       p.main_image || '',
-        url:         `/product/?slug=${p.slug}`,
+        url:         `/product/${p.slug}/`,
         slug:        p.slug,
         description: p.short_description || '',
         keywords:    p.keywords

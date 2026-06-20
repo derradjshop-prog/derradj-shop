@@ -538,7 +538,7 @@
         <div class="pm-fld full">
           <label>Slug (رابط المنتج) * — يُولَّد تلقائياً من English Name</label>
           <input type="text" id="pmSlug" required placeholder="huawei-gt4-smart-watch" dir="ltr">
-          <span class="hint">رابط الصفحة: /product/?slug=... — حروف صغيرة وشرطات فقط، بدون مسافات</span>
+          <span class="hint">رابط الصفحة: /product/{slug}/ — حروف صغيرة وشرطات فقط، بدون مسافات</span>
         </div>
         <div class="pm-fld full">
           <label>SEO Title — عنوان في Google (بالإنجليزي يُفضَّل)</label>
@@ -807,7 +807,7 @@
         <td>
           <strong style="font-size:13px;display:block;">${esc(p.product_name)}</strong>
           ${p.product_name_ar ? `<span style="font-size:12px;color:#64748b;">${esc(p.product_name_ar)}</span><br>` : ''}
-          ${p.slug ? `<span style="font-size:11px;color:#94a3b8;direction:ltr;">/product/?slug=${esc(p.slug)}</span>` : ''}
+          ${p.slug ? `<span style="font-size:11px;color:#94a3b8;direction:ltr;">/product/${esc(p.slug)}/</span>` : ''}
         </td>
         <td style="font-size:13px;font-weight:600;">${esc(catLabel(p.category))}</td>
         <td>
@@ -1160,7 +1160,7 @@
       if (products.length) {
         xml += '\n  <!-- ══ Dynamic Product Pages ══ -->\n';
         xml += products.map(p => urlBlock({
-          loc:     `https://derradjshop.com/product/?slug=${encodeURIComponent(p.slug)}`,
+          loc:     `https://derradjshop.com/product/${encodeURIComponent(p.slug)}/`,
           lastmod: p.updated_at ? p.updated_at.slice(0, 10) : today,
           freq:    'weekly',
           pri:     '0.8',
