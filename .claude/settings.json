@@ -46,7 +46,17 @@
       "Bash(node -e \"require\\('playwright'\\)\")",
       "Read(//usr/**)",
       "Bash(pkill -f \"node /tmp/static-server.js\")",
-      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>console.log\\(Object.keys\\(JSON.parse\\(d\\)\\).length, 'cached images'\\)\\)\")"
+      "Bash(node -e \"let d='';process.stdin.on\\('data',c=>d+=c\\);process.stdin.on\\('end',\\(\\)=>console.log\\(Object.keys\\(JSON.parse\\(d\\)\\).length, 'cached images'\\)\\)\")",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh workflow *)",
+      "Bash(gh api *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" https://derradjshop.com/product/adjustable-laptop-stand/)",
+      "Bash(curl -s -A \"facebookexternalhit/1.1\" https://derradjshop.com/product/adjustable-laptop-stand/)",
+      "Bash(curl -s https://derradjshop.com/Electronique/laptop/adjustable-laptop-stand.html)",
+      "Bash(curl -s https://derradjshop.com/sitemap.xml)",
+      "Bash(curl -s https://derradjshop.com/robots.txt)"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",
