@@ -25,13 +25,25 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let ALL_MESSAGES = [];
   let ALL_PRODUCTS = [];
   let ALL_REVIEWS  = [];
+  let ALL_SELLERS  = [];
   let EDIT_REVIEW_ID    = null;
   let prodFilterCurrent = 'all';   /* 'all' | 'books' | 'electronics' */
   let PROD_SEARCH_QUERY = '';
+  let ORD_ASSIGN_FILTER = '';      /* '' | 'unassigned' | 'completed' | <sellerId> */
   let CURRENT_ROLE = 'staff';
+  let CURRENT_STAFF_ID = '';
   let CURRENT_STAFF_EMAIL = '';
-  let LIMITED_STAFF_MODE = false;
-  const LIMITED_STAFF_EMAIL = '0696234484@derradjshop.com';
+  let UNSEEN_ORDERS   = 0;
+  let UNSEEN_MESSAGES = 0;
+
+  function isAdmin() { return CURRENT_ROLE === 'admin'; }
+
+  /* ── Assignment status labels ──────────────────────────── */
+  const ASSIGN_LABELS = {
+    pending_admin: '🆕 غير معيّن',
+    assigned:      '👤 معيّن',
+    completed:     '✅ مكتمل',
+  };
 
   /* ── Constants ─────────────────────────────────────────── */
   const PM_LABELS = {
@@ -63,12 +75,11 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   function fmtMoney(n) {
-    if (isLimitedStaffMode()) return "—";
     return Number(n || 0).toLocaleString("fr-DZ") + " دج";
   }
 
-  function isLimitedStaffMode() {
-    return LIMITED_STAFF_MODE === true;
+  function assignBadge(status) {
+    return `<span class="badge badge-assign-${esc(status)}">${esc(ASSIGN_LABELS[status] || status)}</span>`;
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -106,33 +117,156 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
   /* ─────────────────────────────────────────────────────────
      FETCH — الطلبات + منتجاتها في استعلام واحد
+     RLS يحدد ما يُعاد فعلياً: الأدمن يرى كل الطلبات، والبائع
+     (لو دخل هنا) لا يرى إلا ما عُيّن له — هذا الاستعلام نفسه
+     لا يفرض أي قيد إضافي على الرؤية.
   ───────────────────────────────────────────────────────── */
-  async function fetchOrders(limitedOnly = false) {
-    const moneyFields = limitedOnly
-      ? ``
-      : `shipping_fee, subtotal, total_price,`;
-    const itemMoneyFields = limitedOnly ? `` : `, unit_price, subtotal`;
-    let query = supabase
+  async function fetchOrders() {
+    const { data, error } = await supabase
       .from("orders")
       .select(`
-        id, full_name, phone, address, wilaya, commune,
-        delivery_type, ${moneyFields}
+        id, order_number, full_name, phone, address, wilaya, commune,
+        delivery_type, shipping_fee, subtotal, total_price,
         payment_method, receipt_url, is_confirmed,
         notes, created_at,
-        order_items ( product_name, quantity${itemMoneyFields} )
+        assigned_to, assigned_by, assigned_at, assignment_status,
+        completed_by, completed_at,
+        assigned_staff:staff_accounts!orders_assigned_to_fkey ( id, full_name, email ),
+        order_items ( product_name, quantity, unit_price, subtotal )
       `)
       .order("created_at", { ascending: false })
       .limit(500);
 
-    if (limitedOnly) {
-      // Limited staff mode should only see pending/unconfirmed orders.
-      // In this project, pending orders are stored as is_confirmed = null.
-      query = query.is("is_confirmed", null);
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
     return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     FETCH — البائعون النشطون (لقائمة "تعيين لبائع")
+     لا نُدرج أي بائع بشكل ثابت في الكود — كل القائمة من الجدول.
+  ───────────────────────────────────────────────────────── */
+  async function fetchSellers() {
+    const { data, error } = await supabase
+      .from("staff_accounts")
+      .select("id, full_name, email")
+      .eq("role", "seller")
+      .eq("is_active", true)
+      .order("full_name");
+    if (error) throw error;
+    return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     ASSIGN / REASSIGN / REMOVE — الطلبات
+  ───────────────────────────────────────────────────────── */
+  async function assignOrder(orderId, sellerId) {
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        assigned_to: sellerId,
+        assigned_by: CURRENT_STAFF_ID,
+        assigned_at: new Date().toISOString(),
+        assignment_status: "assigned",
+      })
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  async function removeOrderAssignment(orderId) {
+    const { error } = await supabase
+      .from("orders")
+      .update({
+        assigned_to: null,
+        assigned_by: null,
+        assigned_at: null,
+        assignment_status: "pending_admin",
+      })
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     ASSIGNMENT HISTORY — مشترك بين الطلبات والرسائل
+  ───────────────────────────────────────────────────────── */
+  async function fetchAssignmentHistory(entityType, entityId) {
+    const { data, error } = await supabase
+      .from("assignment_history")
+      .select(`
+        id, action, created_at,
+        from_staff:staff_accounts!assignment_history_from_staff_id_fkey ( full_name ),
+        to_staff:staff_accounts!assignment_history_to_staff_id_fkey ( full_name ),
+        performer:staff_accounts!assignment_history_performed_by_fkey ( full_name )
+      `)
+      .eq("entity_type", entityType)
+      .eq("entity_id", String(entityId))
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     VIEW AS USER — معاينة للقراءة فقط، بدون أي جلسة دخول حقيقية
+     للمستخدم المستهدف. كل RPC يتحقق من is_admin() في قاعدة
+     البيانات نفسها، فهذه القائمة الأمامية فقط للعرض.
+  ───────────────────────────────────────────────────────── */
+  async function fetchImpersonationTargets() {
+    const { data, error } = await supabase
+      .from("staff_accounts")
+      .select("id, full_name, email, role")
+      .neq("role", "admin")
+      .eq("is_active", true)
+      .order("full_name");
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function startImpersonation(targetId) {
+    const { error } = await supabase.rpc("impersonation_start_log", { target_staff_id: targetId });
+    if (error) throw error;
+  }
+
+  function buildViewAsModalHTML(targets) {
+    if (!targets.length) {
+      return `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0;">لا يوجد حسابات بائعين نشطة لمعاينتها حالياً.</p>`;
+    }
+    const options = targets.map(t =>
+      `<option value="${esc(t.id)}">${esc(t.full_name || t.email)} — ${esc(t.role)}</option>`
+    ).join("");
+    return `
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;line-height:1.6;">
+        تعرض معاينة للقراءة فقط — تشاهد بيانات وواجهة المستخدم المختار تماماً كما يراها،
+        لكن أزرار الإجراءات (مثل "إنهاء الطلب" أو تغيير توفر الكتب) تكون معطّلة.
+      </p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <select class="filter-select" id="viewAsSelect" style="flex:1;min-width:180px;">
+          ${options}
+        </select>
+        <button class="btn-confirm" id="viewAsStartBtn" data-action="start-impersonation">👁 بدء المعاينة</button>
+      </div>`;
+  }
+
+  async function handleStartImpersonation(btn) {
+    const select   = document.getElementById("viewAsSelect");
+    const targetId = select?.value;
+    if (!targetId) return;
+    const target = (await fetchImpersonationTargets()).find(t => t.id === targetId);
+
+    btn.disabled = true;
+    btn.textContent = "⏳...";
+    try {
+      await startImpersonation(targetId);
+      sessionStorage.setItem("impersonation_active", "true");
+      sessionStorage.setItem("impersonation_target_id", targetId);
+      sessionStorage.setItem("impersonation_target_email", target?.email || "");
+      sessionStorage.setItem("impersonation_target_name", target?.full_name || "");
+      sessionStorage.setItem("impersonation_started_at", new Date().toISOString());
+      location.href = "../seller/books.html?previewAs=" + encodeURIComponent(targetId);
+    } catch (err) {
+      console.error("Start impersonation error:", err);
+      alert("❌ فشل بدء المعاينة:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = "👁 بدء المعاينة";
+    }
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -163,11 +297,44 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   async function fetchMessages() {
     const { data, error } = await supabase
       .from("messages")
-      .select("id, name, contact, message, created_at")
+      .select(`
+        id, name, contact, message, created_at,
+        assigned_to, assigned_by, assigned_at, assignment_status,
+        assigned_staff:staff_accounts!messages_assigned_to_fkey ( id, full_name, email )
+      `)
       .order("created_at", { ascending: false })
       .limit(500);
     if (error) throw error;
     return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     ASSIGN / REASSIGN / REMOVE — الرسائل
+  ───────────────────────────────────────────────────────── */
+  async function assignMessage(msgId, sellerId) {
+    const { error } = await supabase
+      .from("messages")
+      .update({
+        assigned_to: sellerId,
+        assigned_by: CURRENT_STAFF_ID,
+        assigned_at: new Date().toISOString(),
+        assignment_status: "assigned",
+      })
+      .eq("id", msgId);
+    if (error) throw error;
+  }
+
+  async function removeMessageAssignment(msgId) {
+    const { error } = await supabase
+      .from("messages")
+      .update({
+        assigned_to: null,
+        assigned_by: null,
+        assigned_at: null,
+        assignment_status: "pending_admin",
+      })
+      .eq("id", msgId);
+    if (error) throw error;
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -207,7 +374,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     document.getElementById("tab-badge-messages").textContent = ALL_MESSAGES.length;
 
     if (!cnt) {
-      tbody.innerHTML = `<tr><td colspan="5" class="empty">لا توجد رسائل</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="6" class="empty">لا توجد رسائل</td></tr>`;
       return;
     }
 
@@ -216,11 +383,15 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         <td class="nowrap"><strong>${esc(m.name || "—")}</strong></td>
         <td class="nowrap" style="direction:ltr;">${esc(m.contact || "—")}</td>
         <td><div class="msg-text">${esc(m.message || "—")}</div></td>
+        <td class="nowrap">
+          ${assignBadge(m.assignment_status)}
+          ${m.assigned_staff ? `<div style="font-size:11px;color:var(--text-light);margin-top:3px;">${esc(m.assigned_staff.full_name || "")}</div>` : ""}
+        </td>
         <td class="nowrap" style="font-size:12px;color:var(--text-light);">${esc(fmtDate(m.created_at))}</td>
         <td class="nowrap">
           <div class="actions-col">
             <a href="tel:${esc(m.contact || "")}" class="btn-receipt">📞 اتصال</a>
-            <button class="btn-delete" data-msg-id="${esc(m.id)}" data-action="delete-msg">🗑 حذف</button>
+            ${isAdmin() ? `<button class="btn-delete" data-msg-id="${esc(m.id)}" data-action="delete-msg">🗑 حذف</button>` : ""}
           </div>
         </td>
       </tr>`).join("");
@@ -277,16 +448,161 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         <div class="m-title">نص الرسالة</div>
         <div class="msg-full">${esc(msg.message || "—")}</div>
       </div>
+      ${buildAssignmentSectionHTML(msg, "message")}
       <div class="m-section">
         <div class="m-title">الإجراءات</div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
           <a href="tel:${esc(msg.contact || "")}" class="btn-receipt" style="font-size:14px;padding:10px 20px;">📞 اتصال</a>
-          <button class="btn-delete" data-msg-id="${esc(msg.id)}" data-action="delete-msg"
-                  style="font-size:14px;padding:10px 20px;">🗑 حذف الرسالة</button>
+          ${isAdmin() ? `<button class="btn-delete" data-msg-id="${esc(msg.id)}" data-action="delete-msg"
+                  style="font-size:14px;padding:10px 20px;">🗑 حذف الرسالة</button>` : ""}
         </div>
       </div>`;
     openModal();
   }
+
+  /* ─────────────────────────────────────────────────────────
+     ASSIGNMENT SECTION — مشترك بين مودال الطلب ومودال الرسالة
+  ───────────────────────────────────────────────────────── */
+  function buildAssignmentSectionHTML(entity, entityType) {
+    const status   = entity.assignment_status || "pending_admin";
+    const assignee = entity.assigned_staff;
+    const sellerOptions = ALL_SELLERS.map(s =>
+      `<option value="${esc(s.id)}" ${entity.assigned_to === s.id ? "selected" : ""}>${esc(s.full_name || s.email)}</option>`
+    ).join("");
+
+    const adminControls = isAdmin() ? `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <select class="filter-select" id="assignSellerSelect" style="flex:1;min-width:160px;">
+          <option value="">— اختر بائع —</option>
+          ${sellerOptions}
+        </select>
+        <button class="btn-confirm" data-action="assign-${entityType}" data-entity-id="${esc(entity.id)}">
+          ${assignee ? "🔁 إعادة تعيين" : "➡️ تعيين لبائع"}
+        </button>
+        ${assignee ? `<button class="btn-delete" data-action="unassign-${entityType}" data-entity-id="${esc(entity.id)}">✖ إزالة التعيين</button>` : ""}
+      </div>` : "";
+
+    return `
+      <div class="m-section">
+        <div class="m-title">التعيين</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="i-lbl">الحالة</span>
+            <span class="i-val">${assignBadge(status)}</span>
+          </div>
+          <div class="info-item">
+            <span class="i-lbl">البائع المعيّن</span>
+            <span class="i-val">${assignee ? esc(assignee.full_name || assignee.email) : "غير معيّن"}</span>
+          </div>
+          <div class="info-item">
+            <span class="i-lbl">تاريخ التعيين</span>
+            <span class="i-val" style="font-size:12px;">${esc(fmtDate(entity.assigned_at))}</span>
+          </div>
+        </div>
+        ${adminControls}
+        ${isAdmin() ? `
+        <button class="btn-receipt" data-action="show-history" data-entity-type="${entityType}" data-entity-id="${esc(entity.id)}"
+                style="margin-top:10px;">🕘 سجل التعيينات</button>
+        <div id="historyBox" style="margin-top:10px;"></div>` : ""}
+      </div>`;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     HANDLE ASSIGN / UNASSIGN — الطلبات والرسائل
+  ───────────────────────────────────────────────────────── */
+  async function handleAssign(entityType, entityId, btn) {
+    const select   = document.getElementById("assignSellerSelect");
+    const sellerId = select?.value;
+    if (!sellerId) { alert("⚠️ يرجى اختيار بائع أولاً"); return; }
+
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳...";
+
+    try {
+      if (entityType === "order")   await assignOrder(entityId, sellerId);
+      else                          await assignMessage(entityId, sellerId);
+
+      const seller = ALL_SELLERS.find(s => s.id === sellerId);
+      const list   = entityType === "order" ? ALL_ORDERS : ALL_MESSAGES;
+      const row    = list.find(x => x.id === entityId);
+      if (row) {
+        row.assigned_to        = sellerId;
+        row.assignment_status  = "assigned";
+        row.assigned_at        = new Date().toISOString();
+        row.assigned_staff     = seller ? { id: seller.id, full_name: seller.full_name, email: seller.email } : null;
+      }
+
+      if (entityType === "order") { renderTable(getFiltered()); if (ACTIVE_ORDER?.id === entityId) showOrderModal(entityId); }
+      else                        { renderMessagesTable(getFilteredMessages()); showMessageModal(entityId); }
+    } catch (err) {
+      console.error("Assign error:", err);
+      alert("❌ فشل التعيين:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  async function handleUnassign(entityType, entityId, btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳...";
+
+    try {
+      if (entityType === "order")   await removeOrderAssignment(entityId);
+      else                          await removeMessageAssignment(entityId);
+
+      const list = entityType === "order" ? ALL_ORDERS : ALL_MESSAGES;
+      const row  = list.find(x => x.id === entityId);
+      if (row) {
+        row.assigned_to       = null;
+        row.assigned_by       = null;
+        row.assigned_at       = null;
+        row.assignment_status = "pending_admin";
+        row.assigned_staff    = null;
+      }
+
+      if (entityType === "order") { renderTable(getFiltered()); if (ACTIVE_ORDER?.id === entityId) showOrderModal(entityId); }
+      else                        { renderMessagesTable(getFilteredMessages()); showMessageModal(entityId); }
+    } catch (err) {
+      console.error("Unassign error:", err);
+      alert("❌ فشل إزالة التعيين:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = "✖ إزالة التعيين";
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     HANDLE SHOW HISTORY
+  ───────────────────────────────────────────────────────── */
+  async function handleShowHistory(entityType, entityId, btn) {
+    const box = document.getElementById("historyBox");
+    if (!box) return;
+    btn.disabled = true;
+    box.innerHTML = `<p style="font-size:12px;color:var(--text-muted);">⏳ جاري التحميل...</p>`;
+    try {
+      const rows = await fetchAssignmentHistory(entityType, entityId);
+      box.innerHTML = rows.length
+        ? rows.map(h => `
+            <div style="font-size:12px;color:var(--text-light);padding:6px 0;border-bottom:1px solid var(--bg);">
+              <strong>${esc(fmtDate(h.created_at))}</strong> — ${esc(ASSIGN_HISTORY_LABELS[h.action] || h.action)}
+              ${h.from_staff ? ` — من: ${esc(h.from_staff.full_name || "—")}` : ""}
+              ${h.to_staff   ? ` — إلى: ${esc(h.to_staff.full_name || "—")}` : ""}
+              — بواسطة: ${esc(h.performer?.full_name || "—")}
+            </div>`).join("")
+        : `<p style="font-size:12px;color:var(--text-muted);">لا يوجد سجل تعيينات لهذا العنصر</p>`;
+    } catch (err) {
+      console.error("History error:", err);
+      box.innerHTML = `<p style="font-size:12px;color:var(--red);">❌ فشل تحميل السجل</p>`;
+    }
+    btn.disabled = false;
+  }
+
+  const ASSIGN_HISTORY_LABELS = {
+    assigned:   "تعيين",
+    reassigned: "إعادة تعيين",
+    unassigned: "إزالة تعيين",
+    completed:  "إنهاء",
+  };
 
   /* ─────────────────────────────────────────────────────────
      STATS — 3 بطاقات فقط
@@ -355,7 +671,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         <div class="m-msg-preview">${esc(m.message || "—")}</div>
         <div class="m-msg-actions">
           <a href="tel:${esc(m.contact || "")}" class="btn-receipt">📞 اتصال</a>
-          <button class="btn-delete" data-msg-id="${esc(m.id)}" data-action="delete-msg">🗑 حذف</button>
+          ${isAdmin() ? `<button class="btn-delete" data-msg-id="${esc(m.id)}" data-action="delete-msg">🗑 حذف</button>` : ""}
         </div>
       </div>`).join("");
   }
@@ -406,11 +722,15 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const st = document.getElementById("statusFilter").value; /* "pending" | "confirmed" | "" */
 
     return ALL_ORDERS.filter(o => {
-      if (isLimitedStaffMode() && o.is_confirmed === true) return false;
-
       /* فلترة حسب الحالة */
       if (st === "pending"   && o.is_confirmed === true)  return false;
       if (st === "confirmed" && o.is_confirmed !== true)  return false;
+
+      /* فلترة حسب التعيين */
+      if (ORD_ASSIGN_FILTER === "unassigned" && o.assignment_status !== "pending_admin") return false;
+      if (ORD_ASSIGN_FILTER === "completed"  && o.assignment_status !== "completed")     return false;
+      if (ORD_ASSIGN_FILTER && ORD_ASSIGN_FILTER !== "unassigned" && ORD_ASSIGN_FILTER !== "completed"
+          && o.assigned_to !== ORD_ASSIGN_FILTER) return false;
 
       /* بحث */
       if (!q) return true;
@@ -434,7 +754,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       cnt + " طلب" + (cnt !== ALL_ORDERS.length ? ` (من ${ALL_ORDERS.length})` : "");
 
     if (!cnt) {
-      tbody.innerHTML = `<tr><td colspan="11" class="empty">لا توجد طلبات مطابقة</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="12" class="empty">لا توجد طلبات مطابقة</td></tr>`;
       return;
     }
 
@@ -464,13 +784,17 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       /* زر التأكيد */
       const confirmBtn = confirmed
         ? `<button class="btn-confirm" disabled>✔ تم التأكيد</button>`
-        : isLimitedStaffMode()
-          ? ``
-          : `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`;
+        : isAdmin()
+          ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`
+          : ``;
+
+      const assignCell = `
+        ${assignBadge(o.assignment_status)}
+        ${o.assigned_staff ? `<div style="font-size:11px;color:var(--text-light);margin-top:3px;">${esc(o.assigned_staff.full_name || "")}</div>` : ""}`;
 
       return `
         <tr data-id="${esc(o.id)}">
-          <td class="nowrap"><strong>${esc(o.full_name || "—")}</strong></td>
+          <td class="nowrap"><strong>${esc(o.full_name || "—")}</strong><br><span style="font-size:10px;color:var(--text-muted);">#${esc(o.order_number ?? "—")}</span></td>
           <td class="nowrap" style="direction:ltr;">${esc(o.phone || "—")}</td>
           <td class="nowrap">${esc(o.wilaya || "—")}</td>
           <td class="nowrap">${esc(o.commune || "—")}</td>
@@ -483,11 +807,12 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
           </td>
           <td class="nowrap"><span class="pm-tag">${esc(PM_LABELS[o.payment_method] || o.payment_method || "—")}</span></td>
           <td class="nowrap">${confirmBadge(o.is_confirmed)}</td>
+          <td class="nowrap">${assignCell}</td>
           <td class="td-actions">
             <div class="actions-col">
               ${receiptBtn}
               ${confirmBtn}
-              ${isLimitedStaffMode() ? `` : `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>`}
+              ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
             </div>
           </td>
         </tr>`;
@@ -575,7 +900,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const order = ALL_ORDERS.find(o => o.id === orderId);
     if (!order) return;
     ACTIVE_ORDER = order;
-    document.getElementById("modalTitle").textContent = "طلب: " + (order.full_name || "—");
+    document.getElementById("modalTitle").textContent = "طلب #" + (order.order_number ?? "—") + " — " + (order.full_name || "—");
     document.getElementById("modalBody").innerHTML = buildModalHTML(order);
     openModal();
   }
@@ -604,9 +929,9 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     /* ── Action buttons ── */
     const confirmBtn = confirmed
       ? `<button class="btn-confirm" disabled>✔ تم التأكيد</button>`
-      : isLimitedStaffMode()
-        ? ``
-        : `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`;
+      : isAdmin()
+        ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`
+        : ``;
 
     return `
       <!-- Customer & delivery info -->
@@ -678,8 +1003,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       <!-- Actions -->
       <div class="modal-actions">
         ${confirmBtn}
-        ${isLimitedStaffMode() ? `` : `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>`}
-      </div>`;
+        ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
+      </div>
+
+      ${buildAssignmentSectionHTML(o, "order")}`;
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -1311,6 +1638,19 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       location.href = "login.html";
     });
 
+    /* ── View as User ────────────────────────────────────────── */
+    document.getElementById("viewAsBtn")?.addEventListener("click", async () => {
+      document.getElementById("modalTitle").textContent = "👁 معاينة كمستخدم";
+      document.getElementById("modalBody").innerHTML = `<p style="text-align:center;color:var(--text-muted);">⏳ جاري التحميل...</p>`;
+      openModal();
+      try {
+        const targets = await fetchImpersonationTargets();
+        document.getElementById("modalBody").innerHTML = buildViewAsModalHTML(targets);
+      } catch (err) {
+        document.getElementById("modalBody").innerHTML = `<p style="color:var(--red);text-align:center;">❌ فشل تحميل القائمة: ${esc(err.message || "")}</p>`;
+      }
+    });
+
     /* ── Tab switching ─────────────────────────────────────── */
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1324,6 +1664,11 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         : tab === "messages" ? "✉️ الرسائل الواردة"
         : tab === "reviews"  ? "⭐ إدارة التقييمات"
         : "📚 إدارة المنتجات";
+
+        /* فتح التبويب يصفّر عداد "غير مُشاهد" الخاص به */
+        if (tab === "orders")   { UNSEEN_ORDERS   = 0; sessionStorage.setItem("admin_orders_last_seen",   new Date().toISOString()); }
+        if (tab === "messages") { UNSEEN_MESSAGES = 0; sessionStorage.setItem("admin_messages_last_seen", new Date().toISOString()); }
+        updateLiveBadges();
       });
     });
 
@@ -1362,6 +1707,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
     document.getElementById("searchInput").addEventListener("input",  () => renderTable(getFiltered()));
     document.getElementById("statusFilter").addEventListener("change", () => renderTable(getFiltered()));
+    document.getElementById("assignFilter")?.addEventListener("change", e => {
+      ORD_ASSIGN_FILTER = e.target.value;
+      renderTable(getFiltered());
+    });
 
     document.getElementById("refreshBtn").addEventListener("click", async () => {
       const btn = document.getElementById("refreshBtn");
@@ -1378,7 +1727,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     document.getElementById("ordersTbody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
-      if ((btn.dataset.action === "confirm" || btn.dataset.action === "delete") && isLimitedStaffMode()) return;
+      if ((btn.dataset.action === "confirm" || btn.dataset.action === "delete") && !isAdmin()) return;
       if (btn.dataset.action === "confirm") await handleConfirm(btn.dataset.id, btn);
       if (btn.dataset.action === "delete")  await handleDelete(btn.dataset.id, btn);
       if (btn.dataset.action === "details") showOrderModal(btn.dataset.id);
@@ -1388,10 +1737,17 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     document.getElementById("modalBody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
-      if ((btn.dataset.action === "confirm" || btn.dataset.action === "delete") && isLimitedStaffMode()) return;
-      if (btn.dataset.action === "confirm")    await handleConfirm(btn.dataset.id, btn);
-      if (btn.dataset.action === "delete")     await handleDelete(btn.dataset.id, btn);
-      if (btn.dataset.action === "delete-msg") await handleDeleteMessage(btn.dataset.msgId, btn);
+      if (["confirm", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message", "start-impersonation"]
+            .includes(btn.dataset.action) && !isAdmin()) return;
+      if (btn.dataset.action === "confirm")          await handleConfirm(btn.dataset.id, btn);
+      if (btn.dataset.action === "delete")           await handleDelete(btn.dataset.id, btn);
+      if (btn.dataset.action === "delete-msg")       await handleDeleteMessage(btn.dataset.msgId, btn);
+      if (btn.dataset.action === "assign-order")     await handleAssign("order", btn.dataset.entityId, btn);
+      if (btn.dataset.action === "unassign-order")   await handleUnassign("order", btn.dataset.entityId, btn);
+      if (btn.dataset.action === "assign-message")   await handleAssign("message", btn.dataset.entityId, btn);
+      if (btn.dataset.action === "unassign-message") await handleUnassign("message", btn.dataset.entityId, btn);
+      if (btn.dataset.action === "show-history")     await handleShowHistory(btn.dataset.entityType, btn.dataset.entityId, btn);
+      if (btn.dataset.action === "start-impersonation") await handleStartImpersonation(btn);
     });
 
     /* ── Products — تحديث التوفر عبر Toggle ───────────────── */
@@ -1504,6 +1860,73 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
+     LIVE NOTIFICATIONS — Supabase Realtime (في اللوحة فقط، بدون بريد)
+  ───────────────────────────────────────────────────────── */
+  function showToast(message, durationMs = 4000) {
+    const el = document.createElement("div");
+    el.className = "live-toast";
+    el.textContent = message;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("show"));
+    setTimeout(() => {
+      el.classList.remove("show");
+      setTimeout(() => el.remove(), 300);
+    }, durationMs);
+  }
+
+  function updateLiveBadges() {
+    const lo = document.getElementById("liveBadgeOrders");
+    const lm = document.getElementById("liveBadgeMessages");
+    if (lo) { lo.style.display = UNSEEN_ORDERS   > 0 ? "inline-flex" : "none"; lo.textContent = UNSEEN_ORDERS; }
+    if (lm) { lm.style.display = UNSEEN_MESSAGES > 0 ? "inline-flex" : "none"; lm.textContent = UNSEEN_MESSAGES; }
+  }
+
+  function setupRealtime() {
+    supabase
+      .channel("admin-orders-messages")
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "orders" }, payload => {
+        ALL_ORDERS.unshift(payload.new);
+        UNSEEN_ORDERS++;
+        updateLiveBadges();
+        renderStats(ALL_ORDERS);
+        renderTable(getFiltered());
+        showToast("📦 طلب جديد من " + (payload.new.full_name || "—"));
+      })
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "messages" }, payload => {
+        ALL_MESSAGES.unshift(payload.new);
+        UNSEEN_MESSAGES++;
+        updateLiveBadges();
+        renderMessagesTable(getFilteredMessages());
+        showToast("✉️ رسالة جديدة من " + (payload.new.name || "—"));
+      })
+      .on("postgres_changes",
+          { event: "UPDATE", schema: "public", table: "orders", filter: "assignment_status=eq.completed" },
+          payload => {
+            /* REPLICA IDENTITY FULL (see supabase-order-completion-system.sql)
+               makes payload.old include the previous assignment_status, so we
+               only notify on the actual assigned→completed transition, not on
+               an unrelated edit to an already-completed order. */
+            if (payload.old?.assignment_status === "completed") return;
+
+            const o = payload.new;
+            const idx = ALL_ORDERS.findIndex(x => x.id === o.id);
+            if (idx > -1) ALL_ORDERS[idx] = { ...ALL_ORDERS[idx], ...o };
+            renderTable(getFiltered());
+
+            const seller = ALL_SELLERS.find(s => s.id === o.assigned_to);
+            showToast(
+              `📦 تم إنهاء الطلب\n` +
+              `الطلب: #${o.order_number ?? "—"}\n` +
+              `الزبون: ${o.full_name || "—"}\n` +
+              `المندوب: ${seller?.full_name || "—"}\n` +
+              `الوقت: ${fmtDate(o.completed_at)}`,
+              7000
+            );
+          })
+      .subscribe();
+  }
+
+  /* ─────────────────────────────────────────────────────────
      BOOT
   ───────────────────────────────────────────────────────── */
   async function boot() {
@@ -1511,40 +1934,46 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       const staff = await authGuard();
       if (!staff) return;
 
-      CURRENT_ROLE = String(staff.role || "staff").toLowerCase();
-      CURRENT_STAFF_EMAIL = String(staff.email || "").toLowerCase();
-      LIMITED_STAFF_MODE = CURRENT_STAFF_EMAIL === LIMITED_STAFF_EMAIL;
+      CURRENT_ROLE        = String(staff.role || "staff").toLowerCase();
+      CURRENT_STAFF_ID     = staff.id;
+      CURRENT_STAFF_EMAIL  = String(staff.email || "").toLowerCase();
 
       document.getElementById("adminBadge").textContent =
-        (LIMITED_STAFF_MODE ? "👤 Limited staff" : CURRENT_ROLE === "admin" ? "👑 Admin" : "👤 Staff") +
-        (staff.full_name ? " — " + staff.full_name : "");
+        (isAdmin() ? "👑 Admin" : "👤 Staff") + (staff.full_name ? " — " + staff.full_name : "");
 
-      if (LIMITED_STAFF_MODE) {
-        // Limited staff mode: only show unconfirmed orders and hide other sections
-        document.querySelectorAll('.tab-btn[data-tab]:not([data-tab="orders"])').forEach(btn => btn.style.display = 'none');
-        document.querySelectorAll('.tab-content:not(#tab-orders)').forEach(section => section.style.display = 'none');
-        document.querySelectorAll('.stats-grid').forEach(grid => grid.style.display = 'none');
-        const statusFilterEl = document.getElementById('statusFilter');
-        if (statusFilterEl) {
-          statusFilterEl.value = 'pending';
-          statusFilterEl.disabled = true;
-          statusFilterEl.style.display = 'none';
-        }
+      if (isAdmin()) document.getElementById("viewAsBtn").style.display = "inline-flex";
+
+      /* حساب "غير مُشاهد منذ آخر زيارة" قبل أي بيانات جديدة تصل عبر Realtime */
+      const lastSeenOrders   = sessionStorage.getItem("admin_orders_last_seen");
+      const lastSeenMessages = sessionStorage.getItem("admin_messages_last_seen");
+
+      [ALL_ORDERS, ALL_MESSAGES, ALL_PRODUCTS, ALL_REVIEWS, ALL_SELLERS] = await Promise.all([
+        fetchOrders(), fetchMessages(),
+        fetchProducts().catch(() => []),
+        fetchReviews().catch(() => []),
+        fetchSellers().catch(() => []),
+      ]);
+
+      if (lastSeenOrders)   UNSEEN_ORDERS   = ALL_ORDERS.filter(o => new Date(o.created_at)   > new Date(lastSeenOrders)).length;
+      if (lastSeenMessages) UNSEEN_MESSAGES = ALL_MESSAGES.filter(m => new Date(m.created_at) > new Date(lastSeenMessages)).length;
+      updateLiveBadges();
+
+      const assignFilterEl = document.getElementById("assignFilter");
+      if (assignFilterEl) {
+        assignFilterEl.innerHTML = `
+          <option value="">📋 كل حالات التعيين</option>
+          <option value="unassigned">🆕 غير معيّن</option>
+          ${ALL_SELLERS.map(s => `<option value="${esc(s.id)}">👤 ${esc(s.full_name || s.email)}</option>`).join("")}
+          <option value="completed">✅ مكتمل</option>`;
       }
 
-      [ALL_ORDERS, ALL_MESSAGES, ALL_PRODUCTS, ALL_REVIEWS] = await Promise.all([
-        fetchOrders(LIMITED_STAFF_MODE), fetchMessages(),
-        LIMITED_STAFF_MODE ? Promise.resolve([]) : fetchProducts().catch(() => []),
-        LIMITED_STAFF_MODE ? Promise.resolve([]) : fetchReviews().catch(() => []),
-      ]);
       renderStats(ALL_ORDERS);
       renderTable(getFiltered());
-      if (!LIMITED_STAFF_MODE) {
-        renderMessagesTable(ALL_MESSAGES);
-        renderProductsTable(getProductsForView());
-        renderReviewsTable(ALL_REVIEWS);
-      }
+      renderMessagesTable(ALL_MESSAGES);
+      renderProductsTable(getProductsForView());
+      renderReviewsTable(ALL_REVIEWS);
       bindEvents();
+      setupRealtime();
 
     } catch (err) {
       console.error("Boot error:", err);

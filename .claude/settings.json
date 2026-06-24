@@ -74,7 +74,8 @@
       "Bash(node --check js/products-loader.js)",
       "Bash(node --check js/search-products.js)",
       "Bash(node --check cart.js)",
-      "Bash(sort -u -t/ -k2)"
+      "Bash(sort -u -t/ -k2)",
+      "Bash(xargs grep -l \"submitOrder\\\\|checkout\")"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",

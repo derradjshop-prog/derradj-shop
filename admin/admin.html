@@ -75,6 +75,19 @@
       transition: background .2s;
     }
     .btn-logout:hover { background: rgba(255,255,255,.18); }
+    .btn-view-as {
+      background: #1e3a8a;
+      border: 1px solid #3b82f6;
+      color: #93c5fd;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s;
+    }
+    .btn-view-as:hover { background: #1d4ed8; color: #fff; }
 
     /* ━━ MAIN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .admin-main { padding: 28px 24px; max-width: 1600px; margin: 0 auto; }
@@ -206,6 +219,9 @@
     }
     .badge-pending   { background: #fef3c7; color: #92400e; }
     .badge-confirmed { background: #d1fae5; color: #065f46; }
+    .badge-assign-pending_admin { background: #e0e7ff; color: #3730a3; }
+    .badge-assign-assigned      { background: #dbeafe; color: #1d4ed8; }
+    .badge-assign-completed     { background: #d1fae5; color: #065f46; }
 
     .pm-tag {
       display: inline-block;
@@ -691,6 +707,43 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
+    /* ━━ LIVE NOTIFICATIONS — badge dot + toast ━━━━━━━━━━━━━━━ */
+    .live-badge-dot {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      min-width: 18px;
+      height: 18px;
+      padding: 0 5px;
+      border-radius: 99px;
+      font-size: 10px;
+      font-weight: 900;
+      background: #dc2626;
+      color: #fff;
+      margin-right: -2px;
+    }
+    .live-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(12px);
+      background: #0f172a;
+      color: #fff;
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.7;
+      white-space: pre-line;
+      max-width: 90vw;
+      box-shadow: 0 8px 28px rgba(0,0,0,.3);
+      z-index: 2000;
+      opacity: 0;
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+    }
+    .live-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
     /* ━━ MESSAGES TABLE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .msg-text {
       max-width: 300px;
@@ -809,6 +862,7 @@
   <div class="header-logo">Derradj <span>Shop</span> — Admin</div>
   <div class="header-right">
     <span class="admin-badge" id="adminBadge">...</span>
+    <button class="btn-view-as" id="viewAsBtn" style="display:none;">👁 معاينة كمستخدم</button>
     <button class="btn-logout" id="logoutBtn">خروج</button>
   </div>
 </header>
@@ -823,10 +877,12 @@
     <button class="tab-btn active" data-tab="orders">
       📦 الطلبات
       <span class="tab-badge" id="tab-badge-orders">—</span>
+      <span class="live-badge-dot" id="liveBadgeOrders">0</span>
     </button>
     <button class="tab-btn" data-tab="messages">
       ✉️ الرسائل
       <span class="tab-badge" id="tab-badge-messages">—</span>
+      <span class="live-badge-dot" id="liveBadgeMessages">0</span>
     </button>
     <button class="tab-btn" data-tab="products">
       📚 المنتجات
@@ -869,6 +925,9 @@
       <option value="pending" selected>⏳ قيد المعالجة / غير مؤكدة</option>
       <option value="confirmed">✅ تم التأكيد</option>
     </select>
+    <select class="filter-select" id="assignFilter">
+      <option value="">📋 كل حالات التعيين</option>
+    </select>
     <button class="btn-refresh" id="refreshBtn">↻ تحديث</button>
     <span class="orders-count" id="ordersCount"></span>
   </div>
@@ -887,7 +946,8 @@
         <col style="width:7%">  <!-- الإجمالي -->
         <col style="width:9%">  <!-- طريقة الدفع -->
         <col style="width:9%">  <!-- حالة التأكيد -->
-        <col style="width:14%"> <!-- الإجراءات -->
+        <col style="width:8%">  <!-- التعيين -->
+        <col style="width:12%"> <!-- الإجراءات -->
       </colgroup>
       <thead>
         <tr>
@@ -901,11 +961,12 @@
           <th>الإجمالي</th>
           <th>طريقة الدفع</th>
           <th>حالة التأكيد</th>
+          <th>التعيين</th>
           <th>الإجراءات</th>
         </tr>
       </thead>
       <tbody id="ordersTbody">
-        <tr><td colspan="11" class="empty">⏳ جاري التحميل...</td></tr>
+        <tr><td colspan="12" class="empty">⏳ جاري التحميل...</td></tr>
       </tbody>
     </table>
   </div>
@@ -934,12 +995,13 @@
             <th>الاسم</th>
             <th>الهاتف</th>
             <th>الرسالة</th>
+            <th>التعيين</th>
             <th>التاريخ</th>
             <th>الإجراءات</th>
           </tr>
         </thead>
         <tbody id="msgTbody">
-          <tr><td colspan="5" class="empty">⏳ جاري التحميل...</td></tr>
+          <tr><td colspan="6" class="empty">⏳ جاري التحميل...</td></tr>
         </tbody>
       </table>
       <div class="table-scroll-hint">← اسحب لرؤية المزيد →</div>
