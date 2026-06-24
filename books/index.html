@@ -597,15 +597,17 @@
   });
 </script>
 
-<!-- بيانات الكتب — يجب تحميله قبل سكريبت العرض -->
-<script src="../books-data.js"></script>
+<!-- الكتب الآن صفوف admin_products_catalog (category='books') عبر
+     products-loader.js — نفس مصدر الإلكترونيات بالضبط -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="../js/search-products.js"></script>
+<script src="../js/products-loader.js"></script>
 
 <script>
-/* تحديث العدد الديناميكي في meta description وJSON-LD بعد تحميل books-data.js */
-(function () {
-  if (!window.BOOKS_DATA) return;
-  var n = window.BOOKS_DATA.length;
+/* تحديث العدد الديناميكي في meta description وJSON-LD بعد تحميل الكتالوج */
+document.addEventListener('derradj:catalog-loaded', function (e) {
+  var n = (e.detail.products || []).filter(function (p) { return p.category === 'books'; }).length;
+  if (!n) return;
   /* meta description */
   var meta = document.getElementById('metaDesc');
   if (meta) {
@@ -625,7 +627,7 @@
       if (updated) el.textContent = JSON.stringify(obj);
     } catch (e) {}
   });
-})();
+});
 </script>
 
 <script>
@@ -637,6 +639,25 @@
 
   let currentCategory = 'الكل';
   let currentSearch   = '';
+  let ALL_BOOKS        = [];
+
+  /* ── Map an admin_products_catalog row (category='books') into the
+     shape this page's buildCard()/openModal() already expect — same
+     field names this page's templates already expect. ── */
+  function mapRow(p) {
+    return {
+      id: p.catalog_id,
+      title: p.product_name,
+      titleEn: p.product_name_ar || '',
+      author: p.author || '',
+      category: p.subcategory || 'كتب',
+      price: p.price,
+      image: p.main_image || '',
+      url: (p.slug || '') + '/',
+      available: p.stock_status !== 'out_of_stock',
+      description: p.short_description || '',
+    };
+  }
 
   /* ── بناء HTML كارت كتاب واحد ──────────────────────── */
   function buildCard(book, idx) {
@@ -708,13 +729,13 @@
     const grid    = document.getElementById('booksGrid');
     const noMsg   = document.getElementById('noBooksMsg');
     const counter = document.getElementById('resultsCount');
-    if (!grid || !window.BOOKS_DATA) return;
+    if (!grid) return;
 
     const searchLow = currentSearch.trim().toLowerCase();
-    const filtered  = window.BOOKS_DATA.filter(book => {
+    const filtered  = ALL_BOOKS.filter(book => {
       const matchCat    = currentCategory === 'الكل' || book.category === currentCategory;
       const matchSearch = !searchLow || book.title.toLowerCase().includes(searchLow)
-                                     || book.author.toLowerCase().includes(searchLow);
+                                     || (book.author || '').toLowerCase().includes(searchLow);
       return matchCat && matchSearch;
     });
 
@@ -736,7 +757,7 @@
       btn.addEventListener('click', e => {
         e.stopPropagation();
         const id   = parseInt(btn.dataset.bookId);
-        const book = window.BOOKS_DATA.find(b => b.id === id);
+        const book = ALL_BOOKS.find(b => b.id === id);
         if (book) openModal(book);
       });
     });
@@ -834,6 +855,13 @@
   }
   renderBooks();
 
+  /* مصدر الكتب الحقيقي: products-loader.js يجلب admin_products_catalog
+     (نفس مصدر الإلكترونيات بالضبط) ويُطلق هذا الحدث عند الجلب. */
+  document.addEventListener('derradj:catalog-loaded', e => {
+    ALL_BOOKS = (e.detail.products || []).filter(p => p.category === 'books').map(mapRow);
+    renderBooks();
+  });
+
   /* إعادة عرض الكتب بعد تحميل حالة التوفر من Supabase */
   document.addEventListener('derradj:availability-loaded', () => {
     renderBooks();
@@ -850,8 +878,5 @@
 <!-- whatsapp-float -->
 <script src="../whatsapp-float.js" defer></script>
 <script src="../js/search.js" defer></script>
-
-<!-- product page enhancements: WhatsApp btn / related products / FAQ -->
-<script src="../../book-page-enhancements.js" defer></script>
 </body>
 </html>

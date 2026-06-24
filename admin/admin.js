@@ -3,7 +3,8 @@
    is_confirmed: NULL = قيد المعالجة | true = تم التأكيد
    BUILD: 2026-06-01-v6
    - Reads category + price FROM Supabase (after running SQL setup)
-   - Electronics always visible even before SQL is run (BOOKS_META fallback)
+   - Books and electronics both read directly from admin_products_catalog
+     (the same table admin/products-manager.js edits) — see fetchProducts()
    - upsert replaces update/insert everywhere to avoid silent failures
    ========================================================== */
 console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + price, upsert everywhere');
@@ -686,234 +687,47 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   ───────────────────────────────────────────────────────── */
 
   /* ─────────────────────────────────────────────────────────
-     بيانات المنتجات الثابتة (للصورة والتصنيف)
-     المسار النسبي: ../books/{folder}/main.webp
-     (يعمل من /admin/ سواء محلياً أو على الخادم المباشر)
-  ───────────────────────────────────────────────────────── */
-  const BOOKS_META = [
-    /* ── IDs 2–42 ── */
-    { catalogId: 2,  price: 1400, category: 'تطوير الذات',        image: '../books/7-habits/main.webp' },
-    { catalogId: 3,  price: 950,  category: 'تطوير الذات',        image: '../books/atomic-habits/main.webp' },
-    { catalogId: 4,  price: 1350, category: 'تطوير الذات',        image: '../books/rule-333/main.webp' },
-    { catalogId: 6,  price: 1800, category: 'تطوير الذات',        image: '../books/joy-of-imperfection/main.webp' },
-    { catalogId: 7,  price: 1300, category: 'الفلسفة والفكر',     image: '../books/courage-is-calling/main.webp' },
-    { catalogId: 8,  price: 1100, category: 'الفلسفة والفكر',     image: '../books/power-of-now/main.webp' },
-    { catalogId: 9,  price: 1100, category: 'علم النفس والمجتمع', image: '../books/propaganda/main.webp' },
-    { catalogId: 10, price: 1600, category: 'الإدارة والأعمال',   image: '../books/management-mess/main.webp' },
-    { catalogId: 11, price: 1600, category: 'علم النفس والمجتمع', image: '../books/myths-of-happiness/main.webp' },
-    { catalogId: 12, price: 1300, category: 'علم النفس والمجتمع', image: '../books/happy-ever-after/main.webp' },
-    { catalogId: 13, price: 1800, category: 'علم النفس والمجتمع', image: '../books/hungry-ghosts/main.webp' },
-    { catalogId: 14, price: 1200, category: 'العلوم والمعرفة',    image: '../books/brief-history-of-time/main.webp' },
-    { catalogId: 16, price: 950,  category: 'تطوير الذات',        image: '../books/joy-of-thirties/main.webp' },
-    { catalogId: 17, price: 1200, category: 'العلاقات والحياة',   image: '../books/be-happy-with-someone/main.webp' },
-    { catalogId: 20, price: 1600, category: 'علم النفس والمجتمع', image: '../books/emotional-intelligence/main.webp' },
-    { catalogId: 21, price: 1100, category: 'الإدارة والأعمال',   image: '../books/sell-anything/main.webp' },
-    { catalogId: 22, price: 1700, category: 'الإدارة والأعمال',   image: '../books/sell-yourself/main.webp' },
-    { catalogId: 23, price: 1500, category: 'الإدارة والأعمال',   image: '../books/mastering-deals/main.webp' },
-    { catalogId: 24, price: 1600, category: 'الإدارة والأعمال',   image: '../books/psychology-of-money/main.webp' },
-    { catalogId: 25, price: 950,  category: 'علم النفس والمجتمع', image: '../books/subconscious-mind/main.webp' },
-    { catalogId: 26, price: 900,  category: 'تطوير الذات',        image: '../books/subtle-art/main.webp' },
-    { catalogId: 27, price: 750,  category: 'علم النفس والمجتمع', image: '../books/crowd-psychology/main.webp' },
-    { catalogId: 28, price: 1300, category: 'علم النفس والمجتمع', image: '../books/psychological-laws/main.webp' },
-    { catalogId: 29, price: 1550, category: 'علم النفس والمجتمع', image: '../books/opinions-beliefs/main.webp' },
-    { catalogId: 30, price: 2100, category: 'تطوير الذات',        image: '../books/rational-male/main.webp' },
-    { catalogId: 31, price: 1400, category: 'الإدارة والأعمال',   image: '../books/6-sales-skills/main.webp' },
-    { catalogId: 32, price: 1800, category: 'تطوير الذات',        image: '../books/small-habits-effect/main.webp' },
-    { catalogId: 33, price: 1100, category: 'تطوير الذات',        image: '../books/7-habits-teens/main.webp' },
-    { catalogId: 34, price: 1300, category: 'تطوير الذات',        image: '../books/leader-in-me/main.webp' },
-    { catalogId: 35, price:  800, category: 'تطوير الذات',        image: '../books/dark-feminine-power/main.webp' },
-    { catalogId: 36, price: 1100, category: 'علم النفس والمجتمع', image: '../books/why-sheep-dont-go-to-doctor/main.webp' },
-    { catalogId: 37, price:  850, category: 'الإدارة والأعمال',   image: '../books/zero-to-one/main.webp' },
-    { catalogId: 38, price:  950, category: 'علم النفس والمجتمع', image: '../books/kindness-side-effects/main.webp' },
-    { catalogId: 39, price:  900, category: 'تطوير الذات',        image: '../books/feminine-energy/main.webp' },
-    { catalogId: 40, price: 1400, category: 'علم النفس والمجتمع', image: '../books/full-of-emptiness/main.webp' },
-    { catalogId: 41, price: 1100, category: 'علم النفس والمجتمع', image: '../books/father-i-hate/main.webp' },
-    { catalogId: 42, price: 1100, category: 'علم النفس والمجتمع', image: '../books/crystallizing-public-opinion/main.webp' },
-    /* ── IDs 43–56 ── */
-    { catalogId: 43, price:  950, category: 'تطوير الذات',        image: '../books/bawabatuka-liltaghyir/main.webp' },
-    { catalogId: 44, price:  950, category: 'الإدارة والأعمال',   image: '../books/richest-man-in-babylon/main.webp' },
-    { catalogId: 45, price:  850, category: 'الروايات والأدب',    image: '../books/urid-an-anam/main.webp' },
-    { catalogId: 46, price: 1300, category: 'العلاقات والحياة',   image: '../books/how-not-to-die-alone/main.webp' },
-    { catalogId: 47, price: 1400, category: 'تطوير الذات',        image: '../books/stronger-than-your-emotions/main.webp' },
-    { catalogId: 48, price:  950, category: 'العلاقات والحياة',   image: '../books/act-like-a-lady-think-like-a-man/main.webp' },
-    { catalogId: 49, price:  950, category: 'تطوير الذات',        image: '../books/kabber-dmaghak/main.webp' },
-    { catalogId: 50, price:  900, category: 'تطوير الذات',        image: '../books/qawanin-al-najah-al-mustadam/main.webp' },
-    { catalogId: 51, price:  850, category: 'العلاقات والحياة',   image: '../books/happiness-and-depression/main.webp' },
-    { catalogId: 52, price: 2400, category: 'العلوم والمعرفة',    image: '../books/will-my-cat-eat-my-eyeballs/main.webp' },
-    { catalogId: 53, price: 1400, category: 'الفلسفة والفكر',     image: '../books/the-monster-inside-you-can-be-kind/main.webp' },
-    { catalogId: 54, price:  950, category: 'تطوير الذات',        image: '../books/burn-after-writing/main.webp' },
-    { catalogId: 55, price: 1300, category: 'الفلسفة والفكر',     image: '../books/the-eye-of-the-i/main.webp' },
-    { catalogId: 56, price: 1300, category: 'الروايات والأدب',    image: '../books/the-sun-does-shine/main.webp' },
-    /* ── IDs 57–82 (الكتب الجديدة) ── */
-    { catalogId: 57, price: 1200, category: 'تطوير الذات',        image: '../books/kitab-al-millionaire/main.webp' },
-    { catalogId: 58, price: 1300, category: 'الإدارة والأعمال',   image: '../books/al-sannara/main.webp' },
-    { catalogId: 59, price: 1300, category: 'الفلسفة والفكر',     image: '../books/tajawoz-mostawayat-al-waai/main.webp' },
-    { catalogId: 60, price:  950, category: 'الروايات والأدب',    image: '../books/hatha-alkitab-sayuulimuk/main.webp' },
-    { catalogId: 61, price:  950, category: 'تطوير الذات',        image: '../books/al-khitabat-al-sirriya/main.webp' },
-    { catalogId: 62, price:  950, category: 'تطوير الذات',        image: '../books/al-rahib-allathi-baa/main.webp' },
-    { catalogId: 63, price: 1900, category: 'تطوير الذات',        image: '../books/daily-laws/main.webp' },
-    { catalogId: 64, price: 3200, category: 'علم النفس والمجتمع', image: '../books/art-of-seduction/main.webp' },
-    { catalogId: 65, price:  650, category: 'تطوير الذات',        image: '../books/fan-altaamal-maa-alnas/main.webp' },
-    { catalogId: 66, price:  700, category: 'الإدارة والأعمال',   image: '../books/fan-alidara-walqiyada/main.webp' },
-    { catalogId: 67, price:  650, category: 'تطوير الذات',        image: '../books/daa-alqalaq-wabda-alhayat/main.webp' },
-    { catalogId: 68, price: 1200, category: 'الإدارة والأعمال',   image: '../books/one-page-marketing-plan/main.webp' },
-    { catalogId: 69, price: 1750, category: 'الإدارة والأعمال',   image: '../books/fowda-altasweq/main.webp' },
-    { catalogId: 70, price: 1100, category: 'تطوير الذات',        image: '../books/miracle-morning/main.webp' },
-    { catalogId: 71, price:  950, category: 'تطوير الذات',        image: '../books/training-camp/main.webp' },
-    { catalogId: 72, price: 1400, category: 'علم النفس والمجتمع', image: '../books/tiktok-syndrome/main.webp' },
-    { catalogId: 73, price: 1700, category: 'العلاقات والحياة',   image: '../books/quwwat-alhub-almudhila/main.webp' },
-    { catalogId: 74, price:  950, category: 'تطوير الذات',        image: '../books/mumayaz-bil-asfar/main.webp' },
-    { catalogId: 75, price:  950, category: 'تطوير الذات',        image: '../books/bored-and-brilliant/main.webp' },
-    { catalogId: 76, price: 1200, category: 'تطوير الذات',        image: '../books/alhayat-takhtit/main.webp' },
-    { catalogId: 77, price: 1100, category: 'العلاقات والحياة',   image: '../books/men-mars-women-venus/main.webp' },
-    { catalogId: 78, price: 2500, category: 'العلوم والمعرفة',    image: '../books/eat-to-live/main.webp' },
-    { catalogId: 79, price: 2900, category: 'علم النفس والمجتمع', image: '../books/upside-of-irrationality/main.webp' },
-    { catalogId: 80, price: 2000, category: 'الفلسفة والفكر',     image: '../books/man-unknown/main.webp' },
-    { catalogId: 81, price: 1400, category: 'الروايات والأدب',    image: '../books/wa-tazun-annaka-najawt/main.webp' },
-    { catalogId: 82, price:  990, category: 'الإدارة والأعمال',   image: '../books/kotler-marketing/main.webp' },
-    /* ── إلكترونيات ── */
-    { catalogId: 83, price: 1500, category: 'إلكترونيات', name: 'حامل اللابتوب القابل للتعديل',                          image: '../Electronique/laptop/main.webp' },
-    { catalogId: 84, price: 9800, category: 'إلكترونيات', name: 'ساعة ذكية Modio ST11 مع 3 أزواج أساور',                image: '../Electronique/smart-watch/modio-st11-smart-watch/main.webp' },
-    { catalogId: 85, price: 4900, category: 'إلكترونيات', name: 'Anker SoundCore R50i VG Original – Bluetooth 5.3 Earbuds', image: '../Electronique/earbuds/anker-soundcore-r50i-vg/main.png' },
-    { catalogId: 87, price: 2900, category: 'إلكترونيات', name: 'Airpods 4 Type-C Vrac (Garantie)',                         image: '../Electronique/earbuds/airpods-4-type-c-vrac/main.webp' },
-    { catalogId: 88, price: 3950, category: 'إلكترونيات', name: 'Hoco J132A 20000mAh Power Bank',                           image: '../Electronique/power-bank/hoco-j132a-20000mah-power-bank/main.webp' },
-  ];
-
-  /* مجموعة سريعة من catalogId المرئية — لا تشمل الكتب المخفية */
-  const VISIBLE_IDS = new Set(BOOKS_META.map(m => m.catalogId));
-
-  /* ─────────────────────────────────────────────────────────
-     جلب المنتجات من Supabase ودمجها مع BOOKS_META
-
-     منطق العرض:
-     • الكتب        : تُعرض فقط إذا وُجدت في Supabase
-     • الإلكترونيات : تُعرض دائماً من BOOKS_META حتى لو لم تُضَف بعد
-       → إذا لم تكن في Supabase تُحاوَل إضافتها تلقائياً بـ upsert
-
-     مصدر category و price:
-       1. Supabase (بعد تشغيل supabase-electronics-setup.sql)
-       2. BOOKS_META كاحتياط إذا لم تُحدَّث Supabase بعد
+     جلب المنتجات — مصدر واحد لكل شيء (كتب وإلكترونيات):
+     admin_products_catalog. هذا الجدول هو نفسه ما يحرّره
+     admin/products-manager.js، فلا حاجة لأي دمج أو احتياط محلي.
   ───────────────────────────────────────────────────────── */
   async function fetchProducts() {
-
-    /* ── 1. جلب الجدول كاملاً بما فيه category و price ── */
     const { data, error } = await supabase
-      .from("product_availability")
-      .select("catalog_id, name, available, category, price")
-      .order("catalog_id");
-
+      .from('admin_products_catalog')
+      .select('id, catalog_id, product_name, category, subcategory, price, stock_status, main_image, is_active')
+      .order('catalog_id');
     if (error) throw error;
 
-    /* خريطة catalog_id → row لمطابقة O(1) */
-    const sbMap = new Map((data || []).map(r => [r.catalog_id, r]));
+    return (data || []).map(p => ({
+      catalogId: p.catalog_id,
+      name:      p.product_name || '—',
+      available: p.stock_status !== 'out_of_stock',
+      category:  p.category === 'books' ? (p.subcategory || 'كتب') : 'إلكترونيات',
+      price:     p.price,
+      image:     resolveAdminImage(p),
+      isActive:  p.is_active,
+    }));
+  }
 
-    /* ── 2. upsert المنتجات الإلكترونية المفقودة ── */
-    const elecMeta    = BOOKS_META.filter(m => m.category === 'إلكترونيات');
-    const missingElec = elecMeta.filter(m => !sbMap.has(m.catalogId));
-
-    if (missingElec.length) {
-      try {
-        const payload = missingElec.map(m => ({
-          catalog_id: m.catalogId,
-          name:       m.name,
-          available:  true,
-          category:   'إلكترونيات',
-          price:      m.price,
-        }));
-        const { data: ups, error: upErr } = await supabase
-          .from("product_availability")
-          .upsert(payload, { onConflict: 'catalog_id' })
-          .select("catalog_id, name, available, category, price");
-
-        if (!upErr && ups) {
-          ups.forEach(r => sbMap.set(r.catalog_id, r));
-          console.log('[admin] upserted electronics:', ups.map(r => r.catalog_id));
-        } else if (upErr) {
-          /* upsert فشل (RLS أو عمود مفقود) — يظهر المنتج من BOOKS_META بدلاً من ذلك */
-          console.warn('[admin] upsert failed (run supabase-electronics-setup.sql):', upErr.message);
-        }
-      } catch (e) {
-        console.warn('[admin] upsert error:', e.message);
-      }
+  /* main_image لكتب قديمة قد يكون مساراً محلياً نسبياً ('slug/main.png')
+     بدل رابط Supabase Storage كامل — يُحلّ هنا لعرض الصورة في لوحة التحكم. */
+  function resolveAdminImage(p) {
+    let img = p.main_image || '';
+    if (!img) return '';
+    if (p.category === 'books' && !/^https?:\/\//.test(img)) {
+      img = '../books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
     }
-
-    /* ── 3. بناء قائمة الكتب (فقط الموجودة في Supabase) ── */
-    const booksMeta = BOOKS_META.filter(m => m.category !== 'إلكترونيات');
-    const bookRows  = booksMeta
-      .filter(m => sbMap.has(m.catalogId))
-      .map(m => buildProdObj(m, sbMap.get(m.catalogId)));
-
-    /* ── 4. بناء قائمة الإلكترونيات (دائماً من BOOKS_META) ── */
-    const elecRows = elecMeta.map(m => buildProdObj(m, sbMap.get(m.catalogId)));
-
-    return [...bookRows, ...elecRows];
+    return img;
   }
 
   /* ─────────────────────────────────────────────────────────
-     دمج BOOKS_META مع صف Supabase في كائن منتج واحد.
-     الأولوية: Supabase → ثم BOOKS_META كاحتياط.
-  ───────────────────────────────────────────────────────── */
-  function buildProdObj(meta, row) {
-    const dbCategory = row?.category || null;
-    const category   = dbCategory
-      ? dbCategory
-      : (meta.category === 'إلكترونيات' ? 'إلكترونيات' : 'كتب');
-
-    return {
-      catalogId: meta.catalogId,
-      /* name: prefer DB → then BOOKS_META (electronics only) → then '—'
-         NEVER use String(catalogId) — that caused catalog_id = 2 to show as "2" */
-      name:      row?.name   || meta.name   || '—',
-      available: row         ? row.available : true,
-      category,
-      price:     row?.price  ?? meta.price  ?? null,
-      image:     meta.image  || '',
-      inDB:      !!row,
-    };
-  }
-
-  /* ─────────────────────────────────────────────────────────
-     حفظ حالة التوفر في Supabase — upsert آمن.
-
-     ⚠️  IMPORTANT: لا تُدرج حقل "name" للكتب.
-         BOOKS_META لا يحتوي على أسماء الكتب (فقط الإلكترونيات لها name).
-         إذا أُدرج "name" للكتاب بقيمة undefined → String(catalogId) = "2"
-         سيُكتَب فوق الاسم العربي الصحيح في Supabase.
+     حفظ حالة التوفر (stock_status) مباشرة في admin_products_catalog.
   ───────────────────────────────────────────────────────── */
   async function setProductAvailability(catalogId, available) {
-    const meta            = BOOKS_META.find(m => m.catalogId === catalogId);
-    const isElec          = meta?.category === 'إلكترونيات';
-    const existingProduct = ALL_PRODUCTS.find(p => p.catalogId === catalogId);
-
-    const updatedFields = {
-      available,
-      category:   isElec ? 'إلكترونيات' : 'كتب',
-      price:      meta?.price ?? null,
-      updated_at: new Date().toISOString(),
-    };
-
-    if (existingProduct?.inDB) {
-      const { error } = await supabase
-        .from("product_availability")
-        .update(updatedFields)
-        .eq("catalog_id", catalogId);
-      if (error) throw error;
-      return;
-    }
-
-    if (!meta?.name) {
-      throw new Error('هذا الكتاب غير موجود في جدول product_availability، ولا يمكن إضافته بدون اسم. شغّل ملف إعداد المنتج أو أضف السجل يدوياً.');
-    }
-
-    const payload = {
-      catalog_id: catalogId,
-      name:       meta.name,
-      ...updatedFields,
-    };
-
     const { error } = await supabase
-      .from("product_availability")
-      .upsert(payload, { onConflict: 'catalog_id' });
+      .from('admin_products_catalog')
+      .update({ stock_status: available ? 'in_stock' : 'out_of_stock', updated_at: new Date().toISOString() })
+      .eq('catalog_id', catalogId);
     if (error) throw error;
   }
 
@@ -1054,11 +868,9 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     if (p) p.available = newValue;
     applyAvailabilityUI(catalogId, newValue);
 
-    /* 2. إرسال التحديث (upsert) لقاعدة البيانات */
+    /* 2. إرسال التحديث لقاعدة البيانات */
     try {
       await setProductAvailability(catalogId, newValue);
-      /* بعد upsert ناجح: اعتبر السجل محفوظاً في DB */
-      if (p) p.inDB = true;
     } catch (err) {
       console.error("Toggle availability error:", err);
 

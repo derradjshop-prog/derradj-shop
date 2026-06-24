@@ -330,7 +330,7 @@
     </div>
 
     <div class="product-carousel" id="homeBooksGrid">
-      <!-- تُعرض تلقائياً من books-data.js -->
+      <!-- كتب تُحمَّل تلقائياً من Supabase عبر products-loader.js -->
     </div>
   </div>
 </section>
@@ -715,86 +715,9 @@
 </script>
 
 
-<script src="books-data.js"></script>
 <script src="js/search-products.js"></script>
-<script>
-/* عرض جميع الكتب في شريط التمرير الأفقي */
-(function () {
-  'use strict';
-
-  function formatPriceHTML(price) {
-    var formatted = Number(price).toLocaleString('en-US');
-    return '<span class="price-value">' +
-      '<span class="price-currency">دج</span>' +
-      '<span class="price-amount">' + formatted + '</span>' +
-    '</span>';
-  }
-
-  function buildHomeCard(book, idx) {
-    var isAvail    = book.available !== false;
-    var bookUrl    = 'books/' + (book.url || '');
-    var oldPrice   = book.oldPrice || book.originalPrice || book.compareAtPrice;
-    var discount   = book.discount || book.discountPercent;
-    var priceLabel = '<span class="price-current">' + formatPriceHTML(book.price) + '</span>' +
-      (oldPrice ? '<span class="price-old">' + formatPriceHTML(oldPrice) + '</span>' : '') +
-      (discount ? '<span class="discount-tag">' + discount + '</span>' : '');
-    var badgeCls  = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
-    var badgeText = isAvail ? 'متوفر' : 'غير متوفر حاليا';
-    var cartBtn   = isAvail
-      ? '<button class="btn-add-cart" data-add-to-cart="' + book.id + '">🛒 أضف للسلة</button>'
-      : '<button class="btn-add-cart" disabled>غير متوفر</button>';
-
-    /* First card: highest-priority eager. Next 2: eager. All others: lazy. */
-    var imgAttrs = idx === 0
-      ? 'loading="eager" fetchpriority="high" decoding="async"'
-      : idx < 3
-        ? 'loading="eager" decoding="async"'
-        : 'loading="lazy" decoding="async"';
-
-    var englishSub = book.titleEn || book.author || '';
-
-    return '<div class="product-card">' +
-      '<div class="' + badgeCls + '" data-avail-badge="' + book.id + '">' + badgeText + '</div>' +
-      '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" class="product-img-area" style="text-decoration:none;">' +
-        '<picture>' +
-          '<source srcset="books/' + book.image.replace('.png', '.webp') + '" type="image/webp" />' +
-          '<img src="books/' + book.image + '" alt="غلاف كتاب ' + book.title + '"' +
-               ' class="product-image" ' + imgAttrs + ' width="400" height="400"' +
-               ' onerror="this.src=\'Logo.jpg\'">' +
-        '</picture>' +
-      '</a>' +
-      '<div class="product-info">' +
-        '<div class="product-cat-label">' + book.category + '</div>' +
-        '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" style="text-decoration:none;color:inherit;">' +
-          '<h3 class="product-name">' + book.title + '</h3>' +
-        '</a>' +
-        '<div class="product-rating">' +
-          '<span class="product-stars">📖</span>' +
-          '<span class="product-rating-count">' + englishSub + '</span>' +
-        '</div>' +
-        '<div class="product-prices">' + priceLabel + '</div>' +
-        '<div class="product-card-btns">' +
-          '<a href="' + bookUrl + '" target="_blank" rel="noopener noreferrer" class="btn-order-card">📖 تفاصيل</a>' +
-          cartBtn +
-        '</div>' +
-      '</div>' +
-    '</div>';
-  }
-
-  function renderHomeBooks() {
-    var grid = document.getElementById('homeBooksGrid');
-    if (!grid || !window.BOOKS_DATA) return;
-    /* Show ALL books — user scrolls horizontally to browse the full catalog */
-    grid.innerHTML = window.BOOKS_DATA.map(buildHomeCard).join('');
-  }
-
-  renderHomeBooks();
-
-  /* Re-render after availability is loaded from Supabase (fired by cart.js) */
-  document.addEventListener('derradj:availability-loaded', renderHomeBooks);
-})();
-</script>
 <!-- card styles and price-value layout now fully in style.css -->
+<!-- الكتب الآن تُعرض في #homeBooksGrid عبر products-loader.js → renderHomepageBooks() — نفس مصدر وآلية الإلكترونيات بالضبط -->
 
 <script src="js/products-loader.js"></script>
 <script src="cart.js"></script>
@@ -892,7 +815,7 @@
       if (el.querySelector('.product-card')) {
         initCarousel(el);
       } else {
-        /* Dynamic content (e.g. books rendered by books-data.js) — poll until ready */
+        /* Dynamic content (rendered async by products-loader.js) — poll until ready */
         var poll = setInterval(function () {
           if (el.querySelector('.product-card')) {
             clearInterval(poll);

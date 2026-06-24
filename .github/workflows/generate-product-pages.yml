@@ -40,7 +40,7 @@ jobs:
         run: |
           git config user.name "derradj-shop-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add product/ sitemap.xml scripts/.image-dims-cache.json
+          git add product/ books/ books-data.js sitemap.xml scripts/.image-dims-cache.json
           if git diff --cached --quiet; then
             echo "No changes — products are already up to date."
           else

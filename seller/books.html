@@ -470,88 +470,6 @@
   /* ── State ─────────────────────────────────────────────── */
   let ALL_BOOKS = [];
 
-  /* ── Book catalog metadata (no prices) ────────────────── */
-  const BOOKS_META = [
-    { catalogId: 2,  category: 'تطوير الذات',        image: '../books/7-habits/main.webp' },
-    { catalogId: 3,  category: 'تطوير الذات',        image: '../books/atomic-habits/main.webp' },
-    { catalogId: 4,  category: 'تطوير الذات',        image: '../books/rule-333/main.webp' },
-    { catalogId: 6,  category: 'تطوير الذات',        image: '../books/joy-of-imperfection/main.webp' },
-    { catalogId: 7,  category: 'الفلسفة والفكر',     image: '../books/courage-is-calling/main.webp' },
-    { catalogId: 8,  category: 'الفلسفة والفكر',     image: '../books/power-of-now/main.webp' },
-    { catalogId: 9,  category: 'علم النفس والمجتمع', image: '../books/propaganda/main.webp' },
-    { catalogId: 10, category: 'الإدارة والأعمال',   image: '../books/management-mess/main.webp' },
-    { catalogId: 11, category: 'علم النفس والمجتمع', image: '../books/myths-of-happiness/main.webp' },
-    { catalogId: 12, category: 'علم النفس والمجتمع', image: '../books/happy-ever-after/main.webp' },
-    { catalogId: 13, category: 'علم النفس والمجتمع', image: '../books/hungry-ghosts/main.webp' },
-    { catalogId: 14, category: 'العلوم والمعرفة',    image: '../books/brief-history-of-time/main.webp' },
-    { catalogId: 16, category: 'تطوير الذات',        image: '../books/joy-of-thirties/main.webp' },
-    { catalogId: 17, category: 'العلاقات والحياة',   image: '../books/be-happy-with-someone/main.webp' },
-    { catalogId: 20, category: 'علم النفس والمجتمع', image: '../books/emotional-intelligence/main.webp' },
-    { catalogId: 21, category: 'الإدارة والأعمال',   image: '../books/sell-anything/main.webp' },
-    { catalogId: 22, category: 'الإدارة والأعمال',   image: '../books/sell-yourself/main.webp' },
-    { catalogId: 23, category: 'الإدارة والأعمال',   image: '../books/mastering-deals/main.webp' },
-    { catalogId: 24, category: 'الإدارة والأعمال',   image: '../books/psychology-of-money/main.webp' },
-    { catalogId: 25, category: 'علم النفس والمجتمع', image: '../books/subconscious-mind/main.webp' },
-    { catalogId: 26, category: 'تطوير الذات',        image: '../books/subtle-art/main.webp' },
-    { catalogId: 27, category: 'علم النفس والمجتمع', image: '../books/crowd-psychology/main.webp' },
-    { catalogId: 28, category: 'علم النفس والمجتمع', image: '../books/psychological-laws/main.webp' },
-    { catalogId: 29, category: 'علم النفس والمجتمع', image: '../books/opinions-beliefs/main.webp' },
-    { catalogId: 30, category: 'تطوير الذات',        image: '../books/rational-male/main.webp' },
-    { catalogId: 31, category: 'الإدارة والأعمال',   image: '../books/6-sales-skills/main.webp' },
-    { catalogId: 32, category: 'تطوير الذات',        image: '../books/small-habits-effect/main.webp' },
-    { catalogId: 33, category: 'تطوير الذات',        image: '../books/7-habits-teens/main.webp' },
-    { catalogId: 34, category: 'تطوير الذات',        image: '../books/leader-in-me/main.webp' },
-    { catalogId: 35, category: 'تطوير الذات',        image: '../books/dark-feminine-power/main.webp' },
-    { catalogId: 36, category: 'علم النفس والمجتمع', image: '../books/why-sheep-dont-go-to-doctor/main.webp' },
-    { catalogId: 37, category: 'الإدارة والأعمال',   image: '../books/zero-to-one/main.webp' },
-    { catalogId: 38, category: 'علم النفس والمجتمع', image: '../books/kindness-side-effects/main.webp' },
-    { catalogId: 39, category: 'تطوير الذات',        image: '../books/feminine-energy/main.webp' },
-    { catalogId: 40, category: 'علم النفس والمجتمع', image: '../books/full-of-emptiness/main.webp' },
-    { catalogId: 41, category: 'علم النفس والمجتمع', image: '../books/father-i-hate/main.webp' },
-    { catalogId: 42, category: 'علم النفس والمجتمع', image: '../books/crystallizing-public-opinion/main.webp' },
-    { catalogId: 43, category: 'تطوير الذات',        image: '../books/bawabatuka-liltaghyir/main.webp' },
-    { catalogId: 44, category: 'الإدارة والأعمال',   image: '../books/richest-man-in-babylon/main.webp' },
-    { catalogId: 45, category: 'الروايات والأدب',    image: '../books/urid-an-anam/main.webp' },
-    { catalogId: 46, category: 'العلاقات والحياة',   image: '../books/how-not-to-die-alone/main.webp' },
-    { catalogId: 47, category: 'تطوير الذات',        image: '../books/stronger-than-your-emotions/main.webp' },
-    { catalogId: 48, category: 'العلاقات والحياة',   image: '../books/act-like-a-lady-think-like-a-man/main.webp' },
-    { catalogId: 49, category: 'تطوير الذات',        image: '../books/kabber-dmaghak/main.webp' },
-    { catalogId: 50, category: 'تطوير الذات',        image: '../books/qawanin-al-najah-al-mustadam/main.webp' },
-    { catalogId: 51, category: 'العلاقات والحياة',   image: '../books/happiness-and-depression/main.webp' },
-    { catalogId: 52, category: 'العلوم والمعرفة',    image: '../books/will-my-cat-eat-my-eyeballs/main.webp' },
-    { catalogId: 53, category: 'الفلسفة والفكر',     image: '../books/the-monster-inside-you-can-be-kind/main.webp' },
-    { catalogId: 54, category: 'تطوير الذات',        image: '../books/burn-after-writing/main.webp' },
-    { catalogId: 55, category: 'الفلسفة والفكر',     image: '../books/the-eye-of-the-i/main.webp' },
-    { catalogId: 56, category: 'الروايات والأدب',    image: '../books/the-sun-does-shine/main.webp' },
-    { catalogId: 57, category: 'تطوير الذات',        image: '../books/kitab-al-millionaire/main.webp' },
-    { catalogId: 58, category: 'الإدارة والأعمال',   image: '../books/al-sannara/main.webp' },
-    { catalogId: 59, category: 'الفلسفة والفكر',     image: '../books/tajawoz-mostawayat-al-waai/main.webp' },
-    { catalogId: 60, category: 'الروايات والأدب',    image: '../books/hatha-alkitab-sayuulimuk/main.webp' },
-    { catalogId: 61, category: 'تطوير الذات',        image: '../books/al-khitabat-al-sirriya/main.webp' },
-    { catalogId: 62, category: 'تطوير الذات',        image: '../books/al-rahib-allathi-baa/main.webp' },
-    { catalogId: 63, category: 'تطوير الذات',        image: '../books/daily-laws/main.webp' },
-    { catalogId: 64, category: 'علم النفس والمجتمع', image: '../books/art-of-seduction/main.webp' },
-    { catalogId: 65, category: 'تطوير الذات',        image: '../books/fan-altaamal-maa-alnas/main.webp' },
-    { catalogId: 66, category: 'الإدارة والأعمال',   image: '../books/fan-alidara-walqiyada/main.webp' },
-    { catalogId: 67, category: 'تطوير الذات',        image: '../books/daa-alqalaq-wabda-alhayat/main.webp' },
-    { catalogId: 68, category: 'الإدارة والأعمال',   image: '../books/one-page-marketing-plan/main.webp' },
-    { catalogId: 69, category: 'الإدارة والأعمال',   image: '../books/fowda-altasweq/main.webp' },
-    { catalogId: 70, category: 'تطوير الذات',        image: '../books/miracle-morning/main.webp' },
-    { catalogId: 71, category: 'تطوير الذات',        image: '../books/training-camp/main.webp' },
-    { catalogId: 72, category: 'علم النفس والمجتمع', image: '../books/tiktok-syndrome/main.webp' },
-    { catalogId: 73, category: 'العلاقات والحياة',   image: '../books/quwwat-alhub-al-mudhila/main.webp' },
-    { catalogId: 74, category: 'تطوير الذات',        image: '../books/mumayaz-bil-asfar/main.webp' },
-    { catalogId: 75, category: 'تطوير الذات',        image: '../books/bored-and-brilliant/main.webp' },
-    { catalogId: 76, category: 'تطوير الذات',        image: '../books/alhayat-takhtit/main.webp' },
-    { catalogId: 77, category: 'العلاقات والحياة',   image: '../books/men-mars-women-venus/main.webp' },
-    { catalogId: 78, category: 'العلوم والمعرفة',    image: '../books/eat-to-live/main.webp' },
-    { catalogId: 79, category: 'علم النفس والمجتمع', image: '../books/upside-of-irrationality/main.webp' },
-    { catalogId: 80, category: 'الفلسفة والفكر',     image: '../books/man-unknown/main.webp' },
-    { catalogId: 81, category: 'الروايات والأدب',    image: '../books/wa-tazun-annaka-najawt/main.webp' },
-    { catalogId: 82, category: 'الإدارة والأعمال',   image: '../books/kotler-marketing/main.webp' },
-  ];
-
-  const VISIBLE_IDS = new Set(BOOKS_META.map(m => m.catalogId));
 
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
@@ -579,33 +497,30 @@
     return staff;
   }
 
-  /* ── Fetch books from product_availability ─────────────── */
+  /* ── Fetch books directly from admin_products_catalog — the same
+     table admin/products-manager.js edits, no separate book source. ── */
   async function fetchBooks() {
     const { data, error } = await supabase
-      .from("product_availability")
-      .select("catalog_id, name, available")
+      .from("admin_products_catalog")
+      .select("catalog_id, product_name, subcategory, main_image, stock_status")
+      .eq("category", "books")
       .order("catalog_id");
     if (error) throw error;
 
-    return (data || [])
-      .filter(row => VISIBLE_IDS.has(row.catalog_id))
-      .map(row => {
-        const meta = BOOKS_META.find(m => m.catalogId === row.catalog_id);
-        return {
-          catalogId: row.catalog_id,
-          name:      row.name,
-          available: row.available,
-          category:  meta?.category || '—',
-          image:     meta?.image    || '',
-        };
-      });
+    return (data || []).map(p => ({
+      catalogId: p.catalog_id,
+      name:      p.product_name,
+      available: p.stock_status !== 'out_of_stock',
+      category:  p.subcategory || '—',
+      image:     p.main_image ? (/^https?:\/\//.test(p.main_image) ? p.main_image : '../books/' + p.main_image.replace(/\.(png|jpg|jpeg)$/i, '.webp')) : '',
+    }));
   }
 
-  /* ── Update only the available field ───────────────────── */
+  /* ── Update stock_status directly on admin_products_catalog ────── */
   async function setAvailability(catalogId, available) {
     const { error } = await supabase
-      .from("product_availability")
-      .update({ available, updated_at: new Date().toISOString() })
+      .from("admin_products_catalog")
+      .update({ stock_status: available ? 'in_stock' : 'out_of_stock', updated_at: new Date().toISOString() })
       .eq("catalog_id", catalogId);
     if (error) throw error;
   }

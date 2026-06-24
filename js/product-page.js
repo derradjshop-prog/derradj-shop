@@ -16,6 +16,35 @@
 
   const { esc, escAttr, buildProductView } = window.ProductTemplate;
 
+  /* ── Same admin_products_catalog → book-shape mapping the build-time
+     generator uses (scripts/generate-product-pages.js's toBookRow),
+     minus the filesystem check — the browser can't stat local files,
+     so it optimistically prefers the webp sibling and relies on the
+     existing onerror fallback if it doesn't exist. ── */
+  function mapToBookShape(p) {
+    let image = p.main_image || null;
+    if (image && !/^https?:\/\//.test(image)) {
+      image = location.origin + '/books/' + image.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    }
+    return {
+      id: p.catalog_id,
+      title: p.product_name,
+      titleEn: p.product_name_ar || null,
+      author: p.author || null,
+      translator: p.translator || null,
+      year: p.year || null,
+      category: p.subcategory || null,
+      price: p.price,
+      image,
+      url: (p.slug || '') + '/',
+      available: p.stock_status !== 'out_of_stock',
+      description: p.short_description || null,
+      full_description: p.full_description || null,
+      seo_description: p.seo_description || null,
+      keywords: p.keywords || null,
+    };
+  }
+
   function setMeta(id, val) {
     const el = document.getElementById(id);
     if (el && val) {
@@ -77,7 +106,10 @@
   }
 
   function renderProduct(p) {
-    const view = buildProductView(p);
+    const isBook = p.category === 'books';
+    const view = isBook && window.BookTemplate
+      ? window.BookTemplate.buildBookView(mapToBookShape(p))
+      : buildProductView(p);
 
     applyMeta(view.meta);
     document.getElementById('pdContent').innerHTML = view.bodyHtml;
@@ -220,9 +252,13 @@
       const selected = products.slice(0, count);
 
       function buildRpCard(p) {
-        const url = `/product/${encodeURIComponent(p.slug)}/`;
+        const isBook = p.category === 'books';
+        const url = `${isBook ? '/books/' : '/product/'}${encodeURIComponent(p.slug)}/`;
         const isAvail = p.stock_status !== 'out_of_stock';
-        const imgSrc = p.main_image || '/Logo.jpg';
+        let imgSrc = p.main_image || '/Logo.jpg';
+        if (isBook && imgSrc && !/^https?:\/\//.test(imgSrc)) {
+          imgSrc = '/books/' + imgSrc.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+        }
         const fmt = n => Number(n).toLocaleString('en-US');
 
         let priceRow = `<span class="rp-price">${fmt(p.price)} دج</span>`;

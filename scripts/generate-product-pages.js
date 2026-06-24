@@ -19,6 +19,7 @@
 const fs = require('fs');
 const path = require('path');
 const ProductTemplate = require('../js/product-template.js');
+const BookTemplate = require('../js/book-template.js');
 const { getImageSize } = require('./image-size.js');
 
 const SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
@@ -40,6 +41,39 @@ async function fetchActiveProducts() {
   }
   if (!res.ok) throw new Error(`Supabase fetch failed: HTTP ${res.status}`);
   return res.json();
+}
+
+/* ── Map an admin_products_catalog row (category='books') into the
+   shape js/book-template.js expects. Books and electronics are the
+   same table now — this is the only place the two schemas meet. ── */
+function toBookRow(p) {
+  const dir = path.join(BOOKS_DIR, p.slug || '');
+  let image = p.main_image || null;
+  if (image && !/^https?:\/\//.test(image)) {
+    /* Legacy local file ('7-habits/main.png') — resolve to a full
+       absolute URL (required for OG/Twitter image tags to work in
+       link previews), preferring the webp sibling if present. */
+    const webp = image.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    image = `${SITE_URL}/books/` + (fs.existsSync(path.join(ROOT, 'books', webp)) ? webp : image);
+  }
+  return {
+    id: p.catalog_id,
+    title: p.product_name,
+    titleEn: p.product_name_ar || null,
+    author: p.author || null,
+    translator: p.translator || null,
+    year: p.year || null,
+    category: p.subcategory || null,
+    price: p.price,
+    image,
+    url: (p.slug || '') + '/',
+    available: p.stock_status !== 'out_of_stock',
+    description: p.short_description || null,
+    full_description: p.full_description || null,
+    seo_description: p.seo_description || null,
+    keywords: p.keywords || null,
+    updated_at: p.updated_at || null,
+  };
 }
 
 /* ── Image dimension cache (avoids re-downloading images every run) ── */
@@ -64,6 +98,21 @@ async function probeImageDims(url, cache) {
     console.warn(`[image-size] failed to probe ${url}: ${err.message}`);
     return null;
   }
+}
+
+/* ── Local book cover dims — these are repo files, not remote
+   Supabase Storage URLs, so a plain fs read is enough (no
+   network probe / cache needed). Tries webp → png → jpg. ── */
+function probeLocalBookImageDims(slug) {
+  for (const name of ['main.webp', 'main.png', 'main.jpg']) {
+    const file = path.join(BOOKS_DIR, slug, name);
+    if (!fs.existsSync(file)) continue;
+    try {
+      const dims = getImageSize(fs.readFileSync(file));
+      if (dims) return dims;
+    } catch (_) { /* try next extension */ }
+  }
+  return null;
 }
 
 /* ── HTML page shell (absolute paths — safe at any folder depth) ── */
@@ -187,7 +236,6 @@ function renderPage(view, dims) {
 
 <!-- ════ SCRIPTS ════════════════════════════════════════════ -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="/books-data.js"></script>
 <script src="/js/search-products.js"></script>
 <script src="/js/products-loader.js"></script>
 <script src="/cart.js"></script>
@@ -204,8 +252,156 @@ function renderPage(view, dims) {
 `;
 }
 
+/* ── Book page shell — mirrors renderPage() above exactly, with
+   only the book-specific cover styling/CSS differing. Same script
+   includes as electronics product pages — books and electronics
+   share one rendering pipeline now. ── */
+function renderBookPage(view, dims) {
+  const m = view.meta;
+  const imgW = dims ? dims.width : '';
+  const imgH = dims ? dims.height : '';
+
+  return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
+  <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-N4NME3KN9N');</script>
+
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="index, follow"/>
+
+  <title>${ProductTemplate.esc(m.title)}</title>
+  <meta name="description" content="${ProductTemplate.escAttr(m.description)}">
+  <meta name="keywords" content="${ProductTemplate.escAttr(m.keywords)}">
+  <meta name="author" content="${ProductTemplate.escAttr(view.title)}">
+  <meta name="geo.region" content="DZ">
+
+  <meta property="og:type"        content="product"/>
+  <meta property="og:site_name"   content="Derradj Shop"/>
+  <meta property="og:locale"      content="ar_DZ"/>
+  <meta property="og:title"       content="${ProductTemplate.escAttr(m.ogTitle)}">
+  <meta property="og:description" content="${ProductTemplate.escAttr(m.ogDescription)}">
+  <meta property="og:url"         content="${ProductTemplate.escAttr(m.ogUrl)}">
+  <meta property="og:image"       content="${ProductTemplate.escAttr(m.ogImage)}">
+  ${imgW ? `<meta property="og:image:width" content="${imgW}">` : ''}
+  ${imgH ? `<meta property="og:image:height" content="${imgH}">` : ''}
+  <meta property="product:price:amount" content="${view.price}">
+  <meta property="product:price:currency" content="DZD">
+
+  <meta name="twitter:card"        content="summary_large_image"/>
+  <meta name="twitter:title"       content="${ProductTemplate.escAttr(m.twitterTitle)}">
+  <meta name="twitter:description" content="${ProductTemplate.escAttr(m.twitterDescription)}">
+  <meta name="twitter:image"       content="${ProductTemplate.escAttr(m.twitterImage)}">
+
+  <link rel="canonical" href="${ProductTemplate.escAttr(m.canonical)}">
+  <link rel="icon" type="image/png" href="/Logo.png"/>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/style.css"/>
+  <style>
+    .product-img-gallery { grid-template-columns: 1fr; max-width: 260px; }
+    .product-main-image-box { aspect-ratio: 3 / 4; cursor: default; }
+    .product-main-image { object-fit: contain; padding: 0; }
+    .zoom-hint { display: none; }
+    .book-en-title { display: block; font-size: 15px; color: #94a3b8; font-weight: 600; margin: 4px 0 18px; font-style: italic; direction: ltr; }
+  </style>
+</head>
+<body>
+
+<!-- ════ HEADER ════════════════════════════════════════════ -->
+<header class="main-header" id="mainHeader">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span>Derradj <span class="logo-accent">Shop</span></span>
+    </a>
+    <nav class="main-nav">
+      <a href="/"              class="nav-link">الرئيسية</a>
+      <a href="/#categories"   class="nav-link">التصنيفات</a>
+      <a href="/books/"        class="nav-link" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
+      <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
+      <a href="/about.html"    class="nav-link">من نحن</a>
+      <a href="/faq.html"      class="nav-link">الأسئلة الشائعة</a>
+      <a href="/contact.html"  class="nav-link">تواصل معنا</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="gs-btn" id="gsBtn" aria-label="بحث" title="بحث" aria-expanded="false">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <a href="/ordre/" class="btn-header-cta">🛒 اطلب الآن</a>
+      <button class="cart-btn" aria-label="فتح السلة">🛒<span class="cart-badge" aria-live="polite"></span></button>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<!-- Search Overlay -->
+<div class="gs-overlay" id="gsOverlay" role="search" aria-label="بحث في المنتجات">
+  <div class="gs-inner">
+    <div class="gs-field">
+      <svg class="gs-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="gsInput" class="gs-input" placeholder="ابحث عن كتاب، منتج، حامل حاسوب..." autocomplete="off" dir="rtl" aria-label="حقل البحث">
+      <button class="gs-x" id="gsX" aria-label="إغلاق البحث">&#x2715;</button>
+    </div>
+    <div class="gs-results" id="gsResults" role="listbox" aria-live="polite"></div>
+  </div>
+</div>
+<div class="gs-backdrop" id="gsBackdrop"></div>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="/">الرئيسية</a>
+  <a href="/#categories">التصنيفات</a>
+  <a href="/books/" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
+  <a href="/Electronique/">💻 إلكترونيات</a>
+  <a href="/about.html">من نحن</a>
+  <a href="/faq.html">الأسئلة الشائعة</a>
+  <a href="/contact.html">تواصل معنا</a>
+  <a href="/ordre/" class="mobile-cta-link">🛒 اطلب الآن</a>
+</div>
+
+<!-- ════ MAIN — pre-rendered, real content for crawlers & no-JS ════ -->
+<main class="product-page">
+  <div class="container">
+    <div id="pdContent">${view.bodyHtml}</div>
+  </div>
+</main>
+
+<!-- ════ FOOTER (shared component) ═══════════════════════════ -->
+<footer class="main-footer" data-shared-footer></footer>
+
+<!-- ════ LIGHTBOX ══════════════════════════════════════════ -->
+<div id="pdZoomModal" class="image-zoom-modal" role="dialog" aria-modal="true" aria-label="عرض الصورة">
+  <button class="zoom-close" id="pdZoomClose" aria-label="إغلاق">&#x2715;</button>
+  <button class="zoom-arrow zoom-prev" id="pdZoomPrev" aria-label="الصورة السابقة">&#8249;</button>
+  <img id="pdZoomImg" class="zoomed-product-image" src="" alt="">
+  <button class="zoom-arrow zoom-next" id="pdZoomNext" aria-label="الصورة التالية">&#8250;</button>
+</div>
+
+<!-- ════ SCRIPTS ════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/js/search-products.js"></script>
+<script src="/js/products-loader.js"></script>
+<script src="/cart.js"></script>
+<script src="/js/search.js"></script>
+<script src="/js/shared-footer.js"></script>
+<script src="/js/mobile-menu.js"></script>
+<script src="/whatsapp-float.js"></script>
+
+<script src="/js/product-template.js"></script>
+<script src="/js/book-template.js"></script>
+<script>window.PRODUCT_SLUG = ${JSON.stringify(view.slug)};</script>
+<script src="/js/product-page.js"></script>
+</body>
+</html>
+`;
+}
+
 /* ── Sitemap (static + books + electronics, with image extension) ── */
-function buildSitemap(products) {
+function buildSitemap(products, books) {
   const today = new Date().toISOString().slice(0, 10);
   const urls = [];
 
@@ -222,21 +418,14 @@ function buildSitemap(products) {
   ];
   STATIC.forEach(u => urls.push({ ...u, lastmod: today }));
 
-  /* Books — scan books/{slug}/index.html for a main image */
-  const bookSlugs = fs.readdirSync(BOOKS_DIR, { withFileTypes: true })
-    .filter(d => d.isDirectory())
-    .map(d => d.name)
-    .sort();
-
-  bookSlugs.forEach(slug => {
-    const dir = path.join(BOOKS_DIR, slug);
-    let image = null;
-    for (const name of ['main.webp', 'main.png', 'main.jpg']) {
-      if (fs.existsSync(path.join(dir, name))) { image = `${SITE_URL}/books/${slug}/${name}`; break; }
-    }
+  /* Books — from Supabase (admin_products_catalog, category='books') */
+  books.forEach(p => {
+    if (!p.slug) return;
+    const b = toBookRow(p);
+    const image = b.image ? (/^https?:\/\//.test(b.image) ? b.image : `${SITE_URL}${b.image}`) : null;
     urls.push({
-      loc: `${SITE_URL}/books/${slug}/`,
-      lastmod: today,
+      loc: `${SITE_URL}/books/${p.slug}/`,
+      lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : today,
       freq: 'monthly',
       pri: '0.8',
       image,
@@ -275,9 +464,11 @@ ${urls.map(urlBlock).join('\n')}
 
 /* ── Main ── */
 async function main() {
-  console.log('[generate-product-pages] fetching active products from Supabase...');
-  const products = await fetchActiveProducts();
-  console.log(`[generate-product-pages] ${products.length} active product(s) found.`);
+  console.log('[generate-product-pages] fetching active catalog from Supabase...');
+  const rows = await fetchActiveProducts();
+  const products = rows.filter(p => p.category !== 'books');
+  const books    = rows.filter(p => p.category === 'books');
+  console.log(`[generate-product-pages] ${products.length} product(s), ${books.length} book(s) found.`);
 
   const cache = loadCache();
   const writtenSlugs = new Set();
@@ -311,7 +502,30 @@ async function main() {
 
   saveCache(cache);
 
-  const sitemap = buildSitemap(products);
+  for (const p of books) {
+    if (!p.slug) {
+      console.warn(`[generate-product-pages] skipping book without slug: catalog_id=${p.catalog_id}`);
+      continue;
+    }
+    const b = toBookRow(p);
+    const slug = p.slug;
+    const view = BookTemplate.buildBookView(b);
+    const dims = /^https?:\/\//.test(b.image || '') ? await probeImageDims(b.image, cache) : probeLocalBookImageDims(slug);
+    const html = renderBookPage(view, dims);
+
+    const dir = path.join(BOOKS_DIR, slug);
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, 'index.html'), html);
+    console.log(`[generate-product-pages] wrote books/${slug}/index.html (${dims ? dims.width + 'x' + dims.height : 'no dims'})`);
+  }
+  /* Note: unlike products, directories not present in Supabase are
+     left untouched — this protects the legacy redirect-stub
+     folders (e.g. books/la-anam/, books/small-habits-revolution/)
+     from ever being written or removed by this script. */
+
+  saveCache(cache);
+
+  const sitemap = buildSitemap(products, books);
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap);
   console.log('[generate-product-pages] sitemap.xml regenerated.');
 }

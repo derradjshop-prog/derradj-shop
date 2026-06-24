@@ -51,15 +51,28 @@
     return html;
   }
 
+  /* ── Resolve an image src for either category — electronics store
+     full Supabase Storage URLs already; legacy books store a path
+     relative to /books/ and prefer the webp sibling. ── */
+  function resolveImage(p) {
+    let img = p.main_image || '';
+    if (!img) return '/Logo.jpg';
+    if (p.category === 'books' && !/^https?:\/\//.test(img)) {
+      img = '/books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    }
+    return img;
+  }
+
   /* ── Build a product card HTML ── */
   function buildCard(p) {
-    const url      = `/product/${encodeURIComponent(p.slug)}/`;
+    const isBook   = p.category === 'books';
+    const url      = `${isBook ? '/books/' : '/product/'}${encodeURIComponent(p.slug)}/`;
     const isAvail  = p.stock_status !== 'out_of_stock';
     const badgeCls = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
     const badgeTxt = isAvail ? 'متوفر' : 'غير متوفر';
     const icon     = catIcon(p.category);
     const catAr    = catLabelAr(p.category);
-    const imgSrc   = p.main_image || '/Logo.jpg';
+    const imgSrc   = resolveImage(p);
     const summary  = cardSummary(p);
 
     const cartBtn = isAvail
@@ -179,12 +192,29 @@
     });
   }
 
+  /* ── Render the homepage books carousel — mirrors
+     renderHomepageProducts(); books/index.html keeps its own
+     richer search/filter grid and sources from window.SUPABASE_PRODUCTS
+     directly instead of going through this generic card builder. ── */
+  function renderHomepageBooks(products) {
+    const grid = document.getElementById('homeBooksGrid');
+    if (!grid) return;
+
+    const books = products.filter(p => p.category === 'books');
+    if (!books.length) return;
+
+    books.forEach(p => {
+      grid.insertAdjacentHTML('beforeend', buildCard(p));
+    });
+  }
+
   /* ── Build SEARCH_PRODUCTS entries for new products ── */
   function extendSearch(products) {
     if (!window.SEARCH_PRODUCTS) return;
     const existingSlugs = new Set(window.SEARCH_PRODUCTS.map(s => s.slug));
     products.forEach(p => {
       if (!p.slug || existingSlugs.has(p.slug)) return;
+      const isBook = p.category === 'books';
       window.SEARCH_PRODUCTS.push({
         name:        p.product_name,
         nameEn:      p.product_name_ar || '',
@@ -192,8 +222,8 @@
         category:    catLabelAr(p.category),
         subcategory: p.subcategory || '',
         price:       p.price,
-        image:       p.main_image || '',
-        url:         `/product/${p.slug}/`,
+        image:       resolveImage(p),
+        url:         `${isBook ? '/books/' : '/product/'}${p.slug}/`,
         slug:        p.slug,
         description: p.short_description || '',
         keywords:    p.keywords
@@ -214,6 +244,7 @@
 
       extendCatalog(products);
       renderHomepageProducts(products);
+      renderHomepageBooks(products);
 
       /* Extend search after search-products.js has run */
       if (window.SEARCH_PRODUCTS) {
@@ -221,6 +252,10 @@
       } else {
         document.addEventListener('search-products-ready', () => extendSearch(products));
       }
+
+      /* Let pages with their own render logic (books/index.html) know
+         the live catalog is ready, instead of going through buildCard(). */
+      document.dispatchEvent(new CustomEvent('derradj:catalog-loaded', { detail: { products } }));
 
     } catch (err) {
       console.warn('[products-loader] Failed to load Supabase products:', err.message);

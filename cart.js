@@ -43,94 +43,15 @@
      available: true = متوفر | false = غير متوفر حاليا
   ══════════════════════════════════════════════════════════ */
   window.SHOP_CATALOG = [
-    /* ── منتجات مخفية (احتفاظ بها لتطابق catalogId — لا تظهر للمستخدم) ── */
-    { catalogId: 0, name: 'Electronics Components Kit',       shortName: 'Electronics Components Kit',  price: 7000, hidden: true, available: true, image: '' },
-    { catalogId: 1, name: 'YNINCH Super Learning Kit Arduino', shortName: 'YNINCH Super Learning Kit', price: 7300, hidden: true, available: true, image: '' },
-    /* ── الكتب (catalogId يتطابق مع id في books-data.js) ─ */
-    { catalogId: 2,  name: 'العادات السبع للناس الأكثر فعالية',   shortName: 'العادات السبع',                    price: 1400, available: true, image: BASE + '/books/7-habits/main.png' },
-    { catalogId: 3,  name: 'العادات الذرية',                       shortName: 'العادات الذرية',                   price: 950,  available: true, image: BASE + '/books/atomic-habits/main.png' },
-    { catalogId: 4,  name: 'قاعدة الـ 333',                        shortName: 'قاعدة الـ 333',                    price: 1350, available: true, image: BASE + '/books/rule-333/main.png' },
-    { catalogId: 5,  name: 'الأثر المذهل للعادات البسيطة (قديم)',   shortName: 'الأثر المذهل (قديم)',              price: 1200, hidden: true, available: true, image: '' },
-    { catalogId: 6,  name: 'متعة عدم الكمال',                      shortName: 'متعة عدم الكمال',                  price: 1800, available: true, image: BASE + '/books/joy-of-imperfection/main.png' },
-    { catalogId: 7,  name: 'الشجاعة تنادي',                        shortName: 'الشجاعة تنادي',                    price: 1300, available: true, image: BASE + '/books/courage-is-calling/main.png' },
-    { catalogId: 8,  name: 'قوة الآن',                             shortName: 'قوة الآن',                         price: 1100, available: true, image: BASE + '/books/power-of-now/main.png' },
-    { catalogId: 9,  name: 'بروباغندا',                            shortName: 'بروباغندا',                        price: 1100, available: true, image: BASE + '/books/propaganda/main.png' },
-    { catalogId: 10, name: 'فوضى الإدارة',                         shortName: 'فوضى الإدارة',                     price: 1600, available: true, image: BASE + '/books/management-mess/main.png' },
-    { catalogId: 11, name: 'السعادة الحقيقية والسعادة الزائفة',    shortName: 'السعادة الحقيقية والزائفة',        price: 1600, available: true, image: BASE + '/books/myths-of-happiness/main.png' },
-    { catalogId: 12, name: 'مسارات السعادة',                       shortName: 'مسارات السعادة',                   price: 1300, available: true, image: BASE + '/books/happy-ever-after/main.png' },
-    { catalogId: 13, name: 'في عالم الأشباح الجائعة',              shortName: 'في عالم الأشباح الجائعة',         price: 1800, available: true, image: BASE + '/books/hungry-ghosts/main.png' },
-    { catalogId: 14, name: 'تاريخ موجز للزمان',                    shortName: 'تاريخ موجز للزمان',                price: 1200, available: true, image: BASE + '/books/brief-history-of-time/main.png' },
-    { catalogId: 15, name: 'الجسد لا ينسى',                        shortName: 'الجسد لا ينسى',                    price: 1800, hidden: true,  available: true, image: '' },
-    { catalogId: 16, name: 'متعة أن تكون في الثلاثين',             shortName: 'متعة أن تكون في الثلاثين',        price: 950,  available: true, image: BASE + '/books/joy-of-thirties/main.png' },
-    { catalogId: 17, name: 'كن مع الشخص الذي يجعلك سعيداً',       shortName: 'كن مع من يجعلك سعيداً',           price: 1200, available: true, image: BASE + '/books/be-happy-with-someone/main.png' },
-    { catalogId: 18, name: 'الثالوث المظلم',                       shortName: 'الثالوث المظلم',                   price: 1200, hidden: true,  available: true, image: '' },
-    { catalogId: 19, name: 'كيف تتقن فن البيع',                    shortName: 'كيف تتقن فن البيع',                price: 1500, hidden: true,  available: true, image: '' },
-    { catalogId: 20, name: 'الذكاء العاطفي',                       shortName: 'الذكاء العاطفي',                   price: 1600, available: true, image: BASE + '/books/emotional-intelligence/main.png' },
-    { catalogId: 21, name: 'كيف تبيع أي شيء لأي إنسان',           shortName: 'كيف تبيع أي شيء لأي إنسان',      price: 1100, available: true, image: BASE + '/books/sell-anything/main.png' },
-    { catalogId: 22, name: 'كيف تسوق نفسك',                        shortName: 'كيف تسوق نفسك',                   price: 1700, available: true, image: BASE + '/books/sell-yourself/main.png' },
-    { catalogId: 23, name: 'كيف تتقن إتمام الصفقات',               shortName: 'كيف تتقن إتمام الصفقات',          price: 1500, available: true, image: BASE + '/books/mastering-deals/main.png' },
-    { catalogId: 24, name: 'سيكولوجية المال',                       shortName: 'سيكولوجية المال',                  price: 1600, available: true, image: BASE + '/books/psychology-of-money/main.png' },
-    { catalogId: 25, name: 'العقل الباطن',                          shortName: 'العقل الباطن',                     price: 950,  available: true, image: BASE + '/books/subconscious-mind/main.png' },
-    { catalogId: 26, name: 'فن اللامبالاة',                         shortName: 'فن اللامبالاة',                    price: 900,  available: true, image: BASE + '/books/subtle-art/main.png' },
-    { catalogId: 27, name: 'سيكولوجية الجماهير',                    shortName: 'سيكولوجية الجماهير',               price: 750,  available: true, image: BASE + '/books/crowd-psychology/main.png' },
-    { catalogId: 28, name: 'السنن النفسية لتطور الأمم',             shortName: 'السنن النفسية لتطور الأمم',        price: 1300, available: true, image: BASE + '/books/psychological-laws/main.png' },
-    { catalogId: 29, name: 'الآراء والمعتقدات',                     shortName: 'الآراء والمعتقدات',                price: 1550, available: true, image: BASE + '/books/opinions-beliefs/main.png' },
-    { catalogId: 30, name: 'الذكر العقلاني: الذكورة الإيجابية',     shortName: 'الذكر العقلاني',                   price: 2100, available: true, image: BASE + '/books/rational-male/main.png' },
-    { catalogId: 31, name: '6 مهارات لتحقيق مبيعات مختلفة مذهلة',  shortName: '6 مهارات مبيعات مذهلة',            price: 1400, available: true, image: BASE + '/books/6-sales-skills/main.png' },
-    { catalogId: 32, name: 'الأثر المذهل للعادات البسيطة',          shortName: 'الأثر المذهل للعادات البسيطة',    price: 1800, available: true, image: BASE + '/books/small-habits-effect/main.png' },
-    { catalogId: 33, name: 'العادات السبع للمراهقين الأكثر فعالية', shortName: 'العادات السبع للمراهقين',           price: 1100, available: true, image: BASE + '/books/7-habits-teens/main.png' },
-    { catalogId: 34, name: 'القائد في داخلي',                        shortName: 'القائد في داخلي',                  price: 1300, available: true, image: BASE + '/books/leader-in-me/main.png' },
-    { catalogId: 35, name: 'الأنوثة المظلمة',                        shortName: 'الأنوثة المظلمة',                  price:  800, available: true, image: BASE + '/books/dark-feminine-power/main.png' },
-    { catalogId: 36, name: 'لماذا لا تذهب الخراف إلى الطبيب؟',       shortName: 'لماذا لا تذهب الخراف؟',           price: 1100, available: true, image: BASE + '/books/why-sheep-dont-go-to-doctor/main.png' },
-    { catalogId: 37, name: 'من صفر إلى واحد',                        shortName: 'من صفر إلى واحد',                 price:  850, available: true, image: BASE + '/books/zero-to-one/main.png' },
-    { catalogId: 38, name: 'اللطف وآثاره الجانبية الخمسة',           shortName: 'اللطف وآثاره الجانبية',           price:  950, available: true, image: BASE + '/books/kindness-side-effects/main.png' },
-    { catalogId: 39, name: 'طاقة الأنوثة',                           shortName: 'طاقة الأنوثة',                    price:  900, available: true, image: BASE + '/books/feminine-energy/main.png' },
-    { catalogId: 40, name: 'ممتلئ بالفراغ',                          shortName: 'ممتلئ بالفراغ',                   price: 1400, available: true, image: BASE + '/books/full-of-emptiness/main.png' },
-    { catalogId: 41, name: 'أبي الذي أكره',                          shortName: 'أبي الذي أكره',                   price: 1100, available: true, image: BASE + '/books/father-i-hate/main.png' },
-    { catalogId: 42, name: 'بلورة الرأي العام',                                           shortName: 'بلورة الرأي العام',                          price: 1100, available: true, image: BASE + '/books/crystallizing-public-opinion/main.png' },
-    { catalogId: 43, name: 'بوابتك للتغيير',                                              shortName: 'بوابتك للتغيير',                             price:  950, available: true, image: BASE + '/books/bawabatuka-liltaghyir/main.png' },
-    { catalogId: 44, name: 'أغنى رجل في بابل',                                            shortName: 'أغنى رجل في بابل',                          price:  950, available: true, image: BASE + '/books/richest-man-in-babylon/main.png' },
-    { catalogId: 45, name: 'أريد أن أنام',                                                shortName: 'أريد أن أنام',                               price:  850, available: true, image: BASE + '/books/urid-an-anam/main.png' },
-    { catalogId: 46, name: 'كيف لا تموت وحيدًا',                                          shortName: 'كيف لا تموت وحيدًا',                        price: 1300, available: true, image: BASE + '/books/how-not-to-die-alone/main.png' },
-    { catalogId: 47, name: 'كن أقوى من مشاعرك',                                           shortName: 'كن أقوى من مشاعرك',                         price: 1400, available: true, image: BASE + '/books/stronger-than-your-emotions/main.png' },
-    { catalogId: 48, name: 'تصرفي كسيدة وفكري كرجل',                                     shortName: 'تصرفي كسيدة وفكري كرجل',                   price:  950, available: true, image: BASE + '/books/act-like-a-lady-think-like-a-man/main.png' },
-    { catalogId: 49, name: 'كبر دماغك',                                                   shortName: 'كبر دماغك',                                  price:  950, available: true, image: BASE + '/books/kabber-dmaghak/main.png' },
-    { catalogId: 50, name: 'قوانين النجاح المستدام: كيف تستمر في النجاح',                 shortName: 'قوانين النجاح المستدام',                     price:  900, available: true, image: BASE + '/books/qawanin-al-najah-al-mustadam/main.png' },
-    { catalogId: 51, name: 'كيف نحصل على السعادة ونبتعد عن الكآبة',                       shortName: 'كيف نحصل على السعادة',                      price:  850, available: true, image: BASE + '/books/happiness-and-depression/main.png' },
-    { catalogId: 52, name: 'هل ستأكل قطتي مقلتي؟',                                       shortName: 'هل ستأكل قطتي مقلتي؟',                      price: 2400, available: true, image: BASE + '/books/will-my-cat-eat-my-eyeballs/main.png' },
-    { catalogId: 53, name: 'الوحش الذي يسكنك يمكن أن يكون لطيفًا',                       shortName: 'الوحش الذي يسكنك',                          price: 1400, available: true, image: BASE + '/books/the-monster-inside-you-can-be-kind/main.png' },
-    { catalogId: 54, name: 'احرق بعد الكتابة',                                            shortName: 'احرق بعد الكتابة',                          price:  950, available: true, image: BASE + '/books/burn-after-writing/main.png' },
-    { catalogId: 55, name: 'عين الأنا: الذي لا يُخفى عنه شيء',                           shortName: 'عين الأنا',                                  price: 1300, available: true, image: BASE + '/books/the-eye-of-the-i/main.png' },
-    { catalogId: 56, name: 'وأشرقت الشمس من جديد',                                        shortName: 'وأشرقت الشمس من جديد',                      price: 1300, available: true, image: BASE + '/books/the-sun-does-shine/main.png' },
-    /* ── كتب جديدة (IDs 57–82) ── */
-    { catalogId: 57, name: 'كتاب المليونير',                                               shortName: 'كتاب المليونير',                             price: 1200, available: true, image: BASE + '/books/kitab-al-millionaire/main.png' },
-    { catalogId: 58, name: 'السنارة: كل شيء عن ريادة الأعمال الابتكارية',                 shortName: 'السنارة',                                    price: 1300, available: true, image: BASE + '/books/al-sannara/main.png' },
-    { catalogId: 59, name: 'تجاوز مستويات الوعي: الطريق إلى التنوير',                     shortName: 'تجاوز مستويات الوعي',                        price: 1300, available: true, image: BASE + '/books/tajawoz-mostawayat-al-waai/main.png' },
-    { catalogId: 60, name: 'هذا الكتاب سيؤلمك: يوميات سرية لطبيب مبتدئ',                 shortName: 'هذا الكتاب سيؤلمك',                          price:  950, available: true, image: BASE + '/books/hatha-alkitab-sayuulimuk/main.png' },
-    { catalogId: 61, name: 'الخطابات السرية للراهب الذي باع سيارته الفيراري',             shortName: 'الخطابات السرية للراهب',                     price:  950, available: true, image: BASE + '/books/al-khitabat-al-sirriya/main.png' },
-    { catalogId: 62, name: 'الراهب الذي باع سيارته الفيراري',                              shortName: 'الراهب الذي باع سيارته الفيراري',            price:  950, available: true, image: BASE + '/books/al-rahib-allathi-baa/main.png' },
-    { catalogId: 63, name: 'القوانين اليومية',                                              shortName: 'القوانين اليومية',                           price: 1900, available: true, image: BASE + '/books/daily-laws/main.png' },
-    { catalogId: 64, name: 'فن الإغواء',                                                   shortName: 'فن الإغواء',                                 price: 3200, available: true, image: BASE + '/books/art-of-seduction/main.png' },
-    { catalogId: 65, name: 'فن التعامل مع الناس',                                          shortName: 'فن التعامل مع الناس',                        price:  650, available: true, image: BASE + '/books/fan-altaamal-maa-alnas/main.png' },
-    { catalogId: 66, name: 'فن الإدارة والقيادة',                                          shortName: 'فن الإدارة والقيادة',                        price:  700, available: true, image: BASE + '/books/fan-alidara-walqiyada/main.png' },
-    { catalogId: 67, name: 'دع القلق وابدأ الحياة',                                        shortName: 'دع القلق وابدأ الحياة',                      price:  650, available: true, image: BASE + '/books/daa-alqalaq-wabda-alhayat/main.png' },
-    { catalogId: 68, name: 'خطة تسويق في صفحة واحدة',                                     shortName: 'خطة تسويق في صفحة واحدة',                   price: 1200, available: true, image: BASE + '/books/one-page-marketing-plan/main.png' },
-    { catalogId: 69, name: 'فوضى التسويق',                                                 shortName: 'فوضى التسويق',                               price: 1750, available: true, image: BASE + '/books/fowda-altasweq/main.png' },
-    { catalogId: 70, name: 'معجزة الصباح',                                                 shortName: 'معجزة الصباح',                               price: 1100, available: true, image: BASE + '/books/miracle-morning/main.png' },
-    { catalogId: 71, name: 'معسكر التدريب',                                                shortName: 'معسكر التدريب',                              price:  950, available: true, image: BASE + '/books/training-camp/main.png' },
-    { catalogId: 72, name: 'متلازمة تيك توك',                                              shortName: 'متلازمة تيك توك',                            price: 1400, available: true, image: BASE + '/books/tiktok-syndrome/main.png' },
-    { catalogId: 73, name: 'قوة الحب المذهلة',                                             shortName: 'قوة الحب المذهلة',                           price: 1700, available: true, image: BASE + '/books/quwwat-alhub-almudhila/main.png' },
-    { catalogId: 74, name: 'مميز بالأصفر',                                                 shortName: 'مميز بالأصفر',                               price:  950, available: true, image: BASE + '/books/mumayaz-bil-asfar/main.png' },
-    { catalogId: 75, name: 'ملول وعبقري',                                                  shortName: 'ملول وعبقري',                                price:  950, available: true, image: BASE + '/books/bored-and-brilliant/main.png' },
-    { catalogId: 76, name: 'الحياة تخطيط',                                                 shortName: 'الحياة تخطيط',                               price: 1200, available: true, image: BASE + '/books/alhayat-takhtit/main.png' },
-    { catalogId: 77, name: 'الرجال من المريخ والنساء من الزهرة',                           shortName: 'الرجال من المريخ والنساء من الزهرة',         price: 1100, available: true, image: BASE + '/books/men-mars-women-venus/main.png' },
-    { catalogId: 78, name: 'كل لتعيش',                                                    shortName: 'كل لتعيش',                                   price: 2500, available: true, image: BASE + '/books/eat-to-live/main.png' },
-    { catalogId: 79, name: 'الجانب الإيجابي من اللاعقلانية',                              shortName: 'الجانب الإيجابي من اللاعقلانية',             price: 2900, available: true, image: BASE + '/books/upside-of-irrationality/main.png' },
-    { catalogId: 80, name: 'الإنسان ذلك المجهول',                                         shortName: 'الإنسان ذلك المجهول',                        price: 2000, available: true, image: BASE + '/books/man-unknown/main.png' },
-    { catalogId: 81, name: 'وتظن أنك نجوت',                                               shortName: 'وتظن أنك نجوت',                              price: 1400, available: true, image: BASE + '/books/wa-tazun-annaka-najawt/main.png' },
-    { catalogId: 82, name: 'كوتلر يتحدث عن التسويق',                                      shortName: 'كوتلر يتحدث عن التسويق',                     price:  990, available: true, image: BASE + '/books/kotler-marketing/main.png' },
-    /* ── Electronics (83–88) managed exclusively via admin_products_catalog in Supabase.
-       products-loader.js extends this array at runtime — no hardcoded entries needed. ── */
+    /* ── منتجات مخفية فقط — للحفاظ على تطابق catalogId مع طلبات
+       قديمة في قاعدة البيانات. كل المنتجات الحقيقية (كتب وإلكترونيات)
+       تُحمَّل ديناميكياً من admin_products_catalog عبر products-loader.js. ── */
+    { catalogId: 0,  name: 'Electronics Components Kit',        shortName: 'Electronics Components Kit',  price: 7000, hidden: true, available: true, image: '' },
+    { catalogId: 1,  name: 'YNINCH Super Learning Kit Arduino', shortName: 'YNINCH Super Learning Kit',   price: 7300, hidden: true, available: true, image: '' },
+    { catalogId: 5,  name: 'الأثر المذهل للعادات البسيطة (قديم)', shortName: 'الأثر المذهل (قديم)',        price: 1200, hidden: true, available: true, image: '' },
+    { catalogId: 15, name: 'الجسد لا ينسى',                       shortName: 'الجسد لا ينسى',              price: 1800, hidden: true, available: true, image: '' },
+    { catalogId: 18, name: 'الثالوث المظلم',                      shortName: 'الثالوث المظلم',             price: 1200, hidden: true, available: true, image: '' },
+    { catalogId: 19, name: 'كيف تتقن فن البيع',                   shortName: 'كيف تتقن فن البيع',          price: 1500, hidden: true, available: true, image: '' },
   ];
 
   /* ══════════════════════════════════════════════════════════
@@ -204,14 +125,6 @@
         const entry = window.SHOP_CATALOG.find(c => c.catalogId === row.catalog_id);
         if (entry) entry.available = row.available;
       });
-
-      /* تطبيق حالة التوفر على BOOKS_DATA إذا كانت محملة */
-      if (Array.isArray(window.BOOKS_DATA)) {
-        rows.forEach(row => {
-          const book = window.BOOKS_DATA.find(b => b.id === row.catalog_id);
-          if (book) book.available = row.available;
-        });
-      }
 
       /* إطلاق حدث لإعلام الصفحات الأخرى (مثل books/index.html) */
       document.dispatchEvent(new CustomEvent('derradj:availability-loaded', {

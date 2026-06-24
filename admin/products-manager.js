@@ -470,6 +470,21 @@
           <span class="hint">يظهر في نتائج Google وبيانات المنتج المنظمة</span>
         </div>
 
+        <div id="pmBookFields" style="display:none;">
+          <div class="pm-fld full">
+            <label>المؤلف (Author)</label>
+            <input type="text" id="pmAuthor" placeholder="مثال: جيمس كلير">
+          </div>
+          <div class="pm-fld">
+            <label>المترجم (اختياري)</label>
+            <input type="text" id="pmTranslator" placeholder="مثال: محمد فتحي خضر">
+          </div>
+          <div class="pm-fld">
+            <label>سنة النشر (اختياري)</label>
+            <input type="number" id="pmYear" min="0" placeholder="2018">
+          </div>
+        </div>
+
         <hr class="pm-divider">
         <div class="pm-sec-lbl">السعر والمخزون</div>
 
@@ -596,6 +611,9 @@
       e.preventDefault();
       saveProduct();
     });
+
+    /* Show book-specific fields (author/translator/year) only for category=books */
+    document.getElementById('pmCat')?.addEventListener('change', toggleBookFields);
 
     /* Main image area click */
     document.getElementById('pmMainBox')?.addEventListener('click', e => {
@@ -834,6 +852,12 @@
   /* ══════════════════════════════════════════════════════════
      MODAL OPEN / CLOSE
   ══════════════════════════════════════════════════════════ */
+  /* إظهار/إخفاء حقول الكتب (المؤلف/المترجم/سنة النشر) حسب الفئة المختارة */
+  function toggleBookFields() {
+    const el = document.getElementById('pmBookFields');
+    if (el) el.style.display = getValue('pmCat') === 'books' ? '' : 'none';
+  }
+
   function openModal(product) {
     EDIT_PRODUCT_ID = product?.id || null;
     const isEdit = !!product;
@@ -850,6 +874,9 @@
       setValue('pmBrand',     product.brand);
       setValue('pmCat',       product.category);
       setValue('pmSubcat',    product.subcategory);
+      setValue('pmAuthor',     product.author);
+      setValue('pmTranslator', product.translator);
+      setValue('pmYear',       product.year);
       setValue('pmPrice',     product.price);
       setValue('pmOldPrice',  product.old_price);
       setValue('pmStock',     product.stock_status || 'in_stock');
@@ -874,6 +901,7 @@
       if (slugEl) slugEl.dataset.manualEdit = '1';
     }
 
+    toggleBookFields();
     document.getElementById('pmOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -1027,6 +1055,14 @@
       if (nameFr) payload.product_name_fr = nameFr;
       const brand = getValue('pmBrand');
       if (brand) payload.brand = brand;
+
+      /* Book-specific fields — only meaningful for category=books */
+      if (payload.category === 'books') {
+        payload.author     = getValue('pmAuthor')     || null;
+        payload.translator = getValue('pmTranslator') || null;
+        const yearRaw = getValue('pmYear');
+        payload.year = yearRaw !== '' ? (parseInt(yearRaw) || null) : null;
+      }
 
       if (!payload.product_name) throw new Error('اسم المنتج مطلوب');
       if (!payload.slug)         throw new Error('Slug المنتج مطلوب');
