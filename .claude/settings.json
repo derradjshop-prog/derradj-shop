@@ -77,11 +77,14 @@
       "Bash(sort -u -t/ -k2)",
       "Bash(xargs grep -l \"submitOrder\\\\|checkout\")",
       "Bash(node -e \"console.log\\(process.version\\)\")",
-      "Bash(node -e \"fetch\\('https://derradjshop.com'\\).then\\(r=>console.log\\('ok',r.status\\)\\).catch\\(e=>console.log\\('fail',e.message\\)\\)\")"
+      "Bash(node -e \"fetch\\('https://derradjshop.com'\\).then\\(r=>console.log\\('ok',r.status\\)\\).catch\\(e=>console.log\\('fail',e.message\\)\\)\")",
+      "Bash(grep -iE '\\\\.\\(js|cjs|mjs\\)$')",
+      "Bash(git ls-files *)"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",
-      "c:\\tmp\\verify-derradj"
+      "c:\\tmp\\verify-derradj",
+      "\\tmp"
     ]
   }
 }
