@@ -11,6 +11,13 @@
 
   const SITE_URL = 'https://derradjshop.com';
 
+  /* ── Single source of truth for the shipping-duration message.
+     book-template.js reuses these via the ProductTemplate API
+     instead of hardcoding its own copy — update only here. ── */
+  const SHIPPING_NOTICE_AR = 'التوصيل خلال 24 ساعة إلى 48 ساعة كحد أقصى لجميع ولايات الجزائر الـ58.';
+  const SHIPPING_NOTICE_AR_SHORT = 'من 24 إلى 48 ساعة كحد أقصى لجميع ولايات الجزائر الـ58';
+  const SHIPPING_NOTICE_EN = 'Delivery within 24–48 hours (maximum) across all 58 Algerian wilayas.';
+
   function esc(v) {
     return String(v == null ? '' : v)
       .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -217,7 +224,7 @@
         <div class="info-card">
           <h2>🚚 التوصيل</h2>
           <p style="color:#475569;line-height:1.9;font-size:14px;">
-            نوصّل لجميع ولايات الجزائر الـ 58. مدة التوصيل من 2 إلى 5 أيام عمل.
+            ${SHIPPING_NOTICE_AR}
             يمكنك الاستلام من أقرب نقطة توصيل أو التوصيل للمنزل.
           </p>
         </div>
@@ -255,7 +262,10 @@
     };
   }
 
-  const API = { esc, escAttr, fmtPrice, stockBadge, catLabelAr, buildProductView, SITE_URL };
+  const API = {
+    esc, escAttr, fmtPrice, stockBadge, catLabelAr, buildProductView, SITE_URL,
+    SHIPPING_NOTICE_AR, SHIPPING_NOTICE_AR_SHORT, SHIPPING_NOTICE_EN,
+  };
 
   if (typeof module !== 'undefined' && module.exports) {
     module.exports = API;

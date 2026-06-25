@@ -202,7 +202,7 @@
           <p style="color:#475569;line-height:1.9;font-size:14px;margin-bottom:12px;">${orderInfo}</p>
           <ul>
             <li><strong>طريقة الدفع:</strong> مسبق (CCP / BaridiMob) أو عند الاستلام</li>
-            <li><strong>مدة التوصيل:</strong> من 24 إلى 72 ساعة لجميع ولايات الجزائر (قد تطول في الولايات الجنوبية النائية)</li>
+            <li><strong>مدة التوصيل:</strong> ${ProductTemplate.SHIPPING_NOTICE_AR_SHORT}</li>
             <li><strong>الضمان:</strong> ضمان كامل — استرجاع المال في حال وجود مشكلة</li>
             <li><strong>السعر:</strong> ${priceFmt} دج</li>
           </ul>
