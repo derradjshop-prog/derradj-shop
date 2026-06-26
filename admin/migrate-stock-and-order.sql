@@ -16,16 +16,9 @@
 --   https://supabase.com/dashboard/project/jbmcbjzcedqpvnhbmrhk/sql/new
 -- ================================================================
 
--- ── STEP 1: Backfill stock_status BEFORE touching the CHECK constraint ──
--- (old constraint still allows 'in_stock'/'low_stock'/'out_of_stock' here)
-UPDATE admin_products_catalog
-SET stock_status = CASE
-  WHEN is_active = false        THEN 'out_of_stock'
-  WHEN stock_status = 'out_of_stock' THEN 'out_of_stock'
-  ELSE 'available'
-END;
-
--- ── STEP 2: Replace the CHECK constraint with the new 2-state version ──
+-- ── STEP 1: Drop the OLD CHECK constraint BEFORE backfilling ────────────
+-- (must happen first — the old constraint only allows 'in_stock'/'low_stock'/
+--  'out_of_stock', so writing 'available' below would violate it otherwise)
 DO $$
 DECLARE
   c_name TEXT;
@@ -41,6 +34,14 @@ BEGIN
     EXECUTE format('ALTER TABLE admin_products_catalog DROP CONSTRAINT %I', c_name);
   END IF;
 END $$;
+
+-- ── STEP 2: Backfill stock_status to the new 2-state values ─────────────
+UPDATE admin_products_catalog
+SET stock_status = CASE
+  WHEN is_active = false        THEN 'out_of_stock'
+  WHEN stock_status = 'out_of_stock' THEN 'out_of_stock'
+  ELSE 'available'
+END;
 
 ALTER TABLE admin_products_catalog
   ALTER COLUMN stock_status SET DEFAULT 'available';

@@ -115,6 +115,7 @@
       transition:background .2s;
     }
     .btn-pm-add:hover { background:#047857; }
+    .pm-header-actions { display:flex; gap:8px; flex-wrap:wrap; }
 
     /* ── Table ─────────────────────────────────────────── */
     .pm-tbl-wrap {
@@ -143,13 +144,27 @@
       border:1px solid #e2e8f0; background:#f1f5f9;
       display:flex; align-items:center; justify-content:center; font-size:20px;
     }
-    .pm-badge {
-      display:inline-flex; align-items:center; gap:4px;
-      padding:4px 10px; border-radius:99px;
-      font-size:12px; font-weight:800;
+    /* ── Stock toggle (ON = available / OFF = out of stock) ─ */
+    .pm-toggle {
+      display:inline-flex; align-items:center; gap:8px;
+      border:none; background:transparent; padding:2px;
+      cursor:pointer; font-family:'Cairo',sans-serif; user-select:none;
     }
-    .pm-badge-on  { background:#d1fae5; color:#065f46; }
-    .pm-badge-off { background:#fee2e2; color:#991b1b; }
+    .pm-toggle-track {
+      position:relative; width:38px; height:21px; border-radius:99px;
+      background:#cbd5e1; transition:background .18s; flex-shrink:0;
+    }
+    .pm-toggle-thumb {
+      position:absolute; top:2px; left:2px; width:17px; height:17px;
+      border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.25);
+      transition:transform .18s;
+    }
+    .pm-toggle.is-on .pm-toggle-track  { background:#22c55e; }
+    .pm-toggle.is-on .pm-toggle-thumb  { transform:translateX(17px); }
+    .pm-toggle-label { font-size:12px; font-weight:800; white-space:nowrap; }
+    .pm-toggle.is-on  .pm-toggle-label { color:#065f46; }
+    .pm-toggle:not(.is-on) .pm-toggle-label { color:#991b1b; }
+    .pm-toggle:disabled, .pm-toggle.is-disabled { opacity:.55; cursor:wait; }
 
     .pm-btn-grp { display:flex; gap:6px; align-items:center; flex-wrap:wrap; }
     .btn-pm-edit {
@@ -173,13 +188,7 @@
     }
 
     /* ── Availability cell ───────────────────────────────── */
-    .pm-avail-cell { display:flex; flex-direction:column; gap:5px; align-items:flex-start; }
-    .pm-avail-select {
-      padding:4px 8px; border:1.5px solid #e2e8f0; border-radius:7px;
-      font-size:12px; font-weight:700; font-family:'Cairo',sans-serif;
-      background:#fff; cursor:pointer; color:#1e293b;
-    }
-    .pm-avail-select:disabled { opacity:.6; cursor:wait; }
+    .pm-avail-cell { display:flex; align-items:center; }
 
     /* ── Order cell — inline-editable + drag handle ──────── */
     .pm-drag-handle {
@@ -354,6 +363,96 @@
       .pm-grid .full { grid-column:1; }
       .pm-mbody { padding:16px; }
     }
+
+    /* ══════════════════════════════════════════════════════════
+       MOBILE — Products Manager (<768px)
+       Desktop table/layout above is untouched; below 768px the
+       table is replaced by .pm-cards (same data, via renderTable()).
+       ══════════════════════════════════════════════════════════ */
+    .pm-cards { display:none; }
+
+    @media (max-width:768px) {
+      .pm-section { padding:14px; border-radius:14px; }
+
+      /* Header — smaller, buttons wrap instead of overlapping */
+      .pm-section-header { margin-bottom:14px; }
+      .pm-section-title  { font-size:15px; }
+      .pm-section-sub    { font-size:12px; }
+      .pm-header-actions { width:100%; }
+      .pm-header-actions .btn-pm-add {
+        flex:1 1 auto; justify-content:center;
+        padding:11px 14px; font-size:13px; min-height:44px;
+      }
+
+      /* Search bar — full width, ≥44px touch targets, button under input
+         (scoped to #tab-products so other admin tabs are unaffected) */
+      #tab-products .controls-bar { padding:12px; }
+      #tab-products .search-input { min-height:44px; font-size:15px; padding:11px 14px; }
+      #tab-products .btn-refresh  { min-height:44px; font-size:14px; width:100%; }
+
+      .prod-sf-btn { min-height:44px; }
+
+      /* Swap table for cards */
+      .pm-tbl-wrap { display:none; }
+      .pm-cards    { display:flex; flex-direction:column; gap:14px; }
+      .pm-cards .pm-empty {
+        background:#fff; border:1px solid #e2e8f0; border-radius:14px;
+      }
+
+      /* ── Card ───────────────────────────────────────── */
+      .pm-card {
+        background:#fff; border:1px solid #e2e8f0; border-radius:16px;
+        padding:16px; display:flex; flex-direction:column; gap:12px;
+        box-shadow:0 2px 10px rgba(0,0,0,.06);
+      }
+      .pm-card-top { display:flex; gap:12px; align-items:flex-start; }
+      .pm-card-img, .pm-card-img-ph {
+        width:76px; height:76px; border-radius:12px; flex-shrink:0;
+        object-fit:cover; border:1px solid #e2e8f0; background:#f8fafc;
+      }
+      .pm-card-img-ph { display:flex; align-items:center; justify-content:center; font-size:28px; }
+      .pm-card-titles { flex:1; min-width:0; }
+      .pm-card-name {
+        font-size:15px; font-weight:800; color:#1e293b; line-height:1.35;
+        display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;
+        overflow:hidden; word-break:break-word;
+      }
+      .pm-card-name-en {
+        font-size:13px; color:#64748b; margin-top:3px;
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      }
+      .pm-card-slug {
+        font-size:11px; color:#94a3b8; direction:ltr; margin-top:2px;
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+      }
+
+      .pm-card-meta {
+        display:flex; flex-wrap:wrap; gap:6px 18px;
+        font-size:13.5px; font-weight:700; color:#334155;
+      }
+      .pm-card-price   { color:#1d4ed8; }
+      .pm-card-price s { color:#94a3b8; font-weight:600; margin-right:4px; }
+
+      .pm-card-row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+      .pm-card-order-lbl { font-size:13px; font-weight:700; color:#64748b; }
+      .pm-card .pm-order-input  { width:72px; min-height:44px; font-size:15px; }
+      .pm-card .pm-toggle       { min-height:44px; }
+      .pm-card .pm-toggle-label { font-size:13.5px; }
+      .pm-card .pm-toggle-track { width:44px; height:24px; }
+      .pm-card .pm-toggle-thumb { width:20px; height:20px; }
+      .pm-card .pm-toggle.is-on .pm-toggle-thumb { transform:translateX(20px); }
+
+      .pm-card-edit {
+        width:100%; text-align:center; padding:12px; font-size:14px;
+        min-height:44px; border-radius:10px;
+      }
+    }
+
+    @media (max-width:380px) {
+      .pm-card     { padding:13px; gap:10px; }
+      .pm-card-img, .pm-card-img-ph { width:64px; height:64px; }
+      .pm-card-name { font-size:14px; }
+    }
     `;
     document.head.appendChild(s);
   }
@@ -374,7 +473,7 @@
             <div class="pm-section-title">🛍 إدارة المنتجات <span id="pmProductCount" style="background:#e2e8f0;color:#475569;font-size:13px;font-weight:700;padding:2px 10px;border-radius:99px;margin-right:8px;vertical-align:middle;">—</span></div>
             <div class="pm-section-sub">إضافة منتجات جديدة، تعديلها، التحكم بتوفرها وترتيب ظهورها</div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div class="pm-header-actions">
             <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد</button>
             <button class="btn-pm-add" id="pmSitemapBtn" style="background:#1d4ed8;">🗺 توليد Sitemap</button>
           </div>
@@ -395,23 +494,28 @@
           <span class="orders-count" id="pmResultsCount"></span>
         </div>
 
-        <div class="pm-tbl-wrap">
-          <table class="pm-tbl">
-            <thead>
-              <tr>
-                <th>الصورة</th>
-                <th>اسم المنتج</th>
-                <th>الفئة</th>
-                <th>السعر</th>
-                <th>التوفر</th>
-                <th style="white-space:nowrap;">الترتيب</th>
-                <th>الإجراءات</th>
-              </tr>
-            </thead>
-            <tbody id="pmTbody">
-              <tr><td colspan="7" class="pm-empty">⏳ جاري التحميل...</td></tr>
-            </tbody>
-          </table>
+        <div class="pm-list-wrap" id="pmListWrap">
+          <div class="pm-tbl-wrap">
+            <table class="pm-tbl">
+              <thead>
+                <tr>
+                  <th>الصورة</th>
+                  <th>اسم المنتج</th>
+                  <th>الفئة</th>
+                  <th>السعر</th>
+                  <th>التوفر</th>
+                  <th style="white-space:nowrap;">الترتيب</th>
+                  <th>الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody id="pmTbody">
+                <tr><td colspan="7" class="pm-empty">⏳ جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="pm-cards" id="pmCards">
+            <div class="pm-empty">⏳ جاري التحميل...</div>
+          </div>
         </div>
       </div>
     `;
@@ -534,10 +638,12 @@
         </div>
         <div class="pm-fld">
           <label>التوفر</label>
-          <select id="pmStock">
-            <option value="available">🟢 متوفر</option>
-            <option value="out_of_stock">🔴 نفذت الكمية</option>
-          </select>
+          <button type="button" class="pm-toggle is-on" id="pmStockToggle"
+                  role="switch" aria-checked="true" title="متوفر — اضغط لتعليمه كنفذت الكمية">
+            <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
+            <span class="pm-toggle-label">🟢 متوفر</span>
+          </button>
+          <input type="hidden" id="pmStock" value="available">
         </div>
         <div class="pm-fld">
           <label>الكمية المتاحة</label>
@@ -683,27 +789,39 @@
       e.target.dataset.manualEdit = '1';
     });
 
-    /* Table delegation — edit button */
-    const pmTbody = document.getElementById('pmTbody');
-    pmTbody?.addEventListener('click', e => {
+    /* Delegation root — covers both the desktop <table> and the mobile cards,
+       since both render the same data-pma/data-pmid attributes */
+    const pmTbody    = document.getElementById('pmTbody');
+    const pmListWrap = document.getElementById('pmListWrap');
+
+    /* Edit button */
+    pmListWrap?.addEventListener('click', e => {
       const btn = e.target.closest('[data-pma="edit"]');
       if (!btn) return;
       const p = ALL_PM_PRODUCTS.find(x => x.id === btn.dataset.pmid);
       if (p) openModal(p);
     });
 
-    /* Availability <select> — saves immediately on change */
-    pmTbody?.addEventListener('change', e => {
-      const sel = e.target.closest('select[data-pma="avail"]');
-      if (sel) setAvailability(sel.dataset.pmid, sel.value, sel);
+    /* Availability toggle — saves immediately on click */
+    pmListWrap?.addEventListener('click', e => {
+      const btn = e.target.closest('button[data-pma="avail"]');
+      if (!btn || btn.disabled) return;
+      const next = btn.classList.contains('is-on') ? 'out_of_stock' : 'available';
+      setAvailability(btn.dataset.pmid, next, btn);
+    });
+
+    /* Modal stock toggle — flips the hidden #pmStock value, saved on form submit */
+    document.getElementById('pmStockToggle')?.addEventListener('click', () => {
+      const isAvailNow = document.getElementById('pmStock')?.value !== 'out_of_stock';
+      setStockToggle(isAvailNow ? 'out_of_stock' : 'available');
     });
 
     /* Order <input> — Enter commits + blurs; focusout (bubbles) saves */
-    pmTbody?.addEventListener('keydown', e => {
+    pmListWrap?.addEventListener('keydown', e => {
       const inp = e.target.closest('input[data-pma="order"]');
       if (inp && e.key === 'Enter') { e.preventDefault(); inp.blur(); }
     });
-    pmTbody?.addEventListener('focusout', e => {
+    pmListWrap?.addEventListener('focusout', e => {
       const inp = e.target.closest('input[data-pma="order"]');
       if (inp) commitOrderInput(inp);
     });
@@ -907,11 +1025,32 @@
     set('pmProductCount', ALL_PM_PRODUCTS.length);
   }
 
-  function availBadgeHtml(id, status) {
+  function availToggleHtml(id, status) {
     const isAvail = status !== 'out_of_stock';
-    const cls = isAvail ? 'pm-badge-on' : 'pm-badge-off';
-    const txt = isAvail ? '🟢 متوفر' : '🔴 نفذت الكمية';
-    return `<span class="pm-badge ${cls}" id="pmAvailBadge-${esc(id)}">${txt}</span>`;
+    return `<button type="button" class="pm-toggle ${isAvail ? 'is-on' : ''}" data-pma="avail" data-pmid="${esc(id)}"
+              role="switch" aria-checked="${isAvail}"
+              title="${isAvail ? 'متوفر — اضغط لتعليمه كنفذت الكمية' : 'نفذت الكمية — اضغط لتعليمه كمتوفر'}">
+      <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
+      <span class="pm-toggle-label">${isAvail ? '🟢 متوفر' : '⚪ نفذت الكمية'}</span>
+    </button>`;
+  }
+
+  /* Mutates an existing .pm-toggle button in place (used for optimistic UI + rollback) */
+  function applyToggleState(btn, isAvail) {
+    if (!btn) return;
+    btn.classList.toggle('is-on', isAvail);
+    btn.setAttribute('aria-checked', String(isAvail));
+    btn.title = isAvail ? 'متوفر — اضغط لتعليمه كنفذت الكمية' : 'نفذت الكمية — اضغط لتعليمه كمتوفر';
+    const label = btn.querySelector('.pm-toggle-label');
+    if (label) label.textContent = isAvail ? '🟢 متوفر' : '⚪ نفذت الكمية';
+  }
+
+  /* Syncs the modal's stock toggle (hidden input + visual) — used on open/reset */
+  function setStockToggle(status) {
+    const isAvail = status !== 'out_of_stock';
+    const hidden = document.getElementById('pmStock');
+    if (hidden) hidden.value = isAvail ? 'available' : 'out_of_stock';
+    applyToggleState(document.getElementById('pmStockToggle'), isAvail);
   }
 
   function rowHtml(p) {
@@ -932,13 +1071,7 @@
           ${p.old_price ? `<span style="font-size:12px;text-decoration:line-through;color:#94a3b8;direction:ltr;">${fmtPrice(p.old_price)}</span>` : ''}
         </td>
         <td>
-          <div class="pm-avail-cell">
-            ${availBadgeHtml(p.id, p.stock_status)}
-            <select class="pm-avail-select" data-pma="avail" data-pmid="${esc(p.id)}">
-              <option value="available"   ${p.stock_status !== 'out_of_stock' ? 'selected' : ''}>🟢 متوفر</option>
-              <option value="out_of_stock" ${p.stock_status === 'out_of_stock' ? 'selected' : ''}>🔴 نفذت الكمية</option>
-            </select>
-          </div>
+          <div class="pm-avail-cell">${availToggleHtml(p.id, p.stock_status)}</div>
         </td>
         <td style="text-align:center;white-space:nowrap;">
           <span class="pm-drag-handle" title="اسحب لإعادة الترتيب">⠿</span>
@@ -951,22 +1084,55 @@
       </tr>`;
   }
 
+  /* Mobile card — same data as rowHtml(), shown instead of the table below 768px */
+  function cardHtml(p) {
+    const imgHtml = p.main_image
+      ? `<img src="${esc(p.main_image)}" class="pm-card-img" alt="" loading="lazy" onerror="this.outerHTML='<div class=pm-card-img-ph>📦</div>'">`
+      : `<div class="pm-card-img-ph">📦</div>`;
+
+    return `<div class="pm-card" data-pmid="${esc(p.id)}">
+        <div class="pm-card-top">
+          ${imgHtml}
+          <div class="pm-card-titles">
+            <div class="pm-card-name">${esc(p.product_name)}</div>
+            ${p.product_name_ar ? `<div class="pm-card-name-en">${esc(p.product_name_ar)}</div>` : ''}
+            ${p.slug ? `<div class="pm-card-slug">/product/${esc(p.slug)}/</div>` : ''}
+          </div>
+        </div>
+        <div class="pm-card-meta">
+          <span>📂 ${esc(catLabel(p.category))}</span>
+          <span class="pm-card-price">💰 ${fmtPrice(p.price)}${p.old_price ? ` <s>${fmtPrice(p.old_price)}</s>` : ''}</span>
+        </div>
+        <div class="pm-card-row">
+          ${availToggleHtml(p.id, p.stock_status)}
+        </div>
+        <div class="pm-card-row">
+          <label class="pm-card-order-lbl" for="pmCardOrder-${esc(p.id)}">🔢 الترتيب</label>
+          <input type="number" id="pmCardOrder-${esc(p.id)}" class="pm-order-input" min="1" step="1"
+                 value="${p.display_order ?? ''}" data-pma="order" data-pmid="${esc(p.id)}">
+        </div>
+        <button class="btn-pm-edit pm-card-edit" data-pma="edit" data-pmid="${esc(p.id)}">✏️ تعديل المنتج</button>
+      </div>`;
+  }
+
   function renderTable() {
     const tbody = document.getElementById('pmTbody');
+    const cards = document.getElementById('pmCards');
     if (!tbody) return;
 
     updateSubfilterBadges();
 
     if (!ALL_PM_PRODUCTS.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">
+      const emptyHtml = `
         <div style="font-size:15px;">لا توجد منتجات بعد.</div>
         <div style="font-size:12px;color:#94a3b8;margin-top:6px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.6;">
           إذا أضفت منتجاً ولا يظهر هنا، افتح Developer Console (F12) وابحث عن رسائل <strong>[PM]</strong>.
           قد تكون مشكلة في سياسات RLS على Supabase — شغّل ملف <strong>supabase-admin-products-rls-fix.sql</strong>.
         </div>
-        <button id="pmRetryBtn" style="margin-top:12px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Cairo',sans-serif;">🔄 إعادة التحميل</button>
-      </td></tr>`;
-      document.getElementById('pmRetryBtn')?.addEventListener('click', loadProducts);
+        <button class="pm-retry-btn" style="margin-top:12px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Cairo',sans-serif;">🔄 إعادة التحميل</button>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">${emptyHtml}</td></tr>`;
+      if (cards) cards.innerHTML = `<div class="pm-empty">${emptyHtml}</div>`;
+      document.querySelectorAll('.pm-retry-btn').forEach(b => b.addEventListener('click', loadProducts));
       return;
     }
 
@@ -979,23 +1145,24 @@
 
     if (!list.length) {
       tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">لا توجد منتجات مطابقة</td></tr>`;
+      if (cards) cards.innerHTML = `<div class="pm-empty">لا توجد منتجات مطابقة</div>`;
       return;
     }
 
     tbody.innerHTML = list.map(rowHtml).join('');
+    if (cards) cards.innerHTML = list.map(cardHtml).join('');
   }
 
   /* ══════════════════════════════════════════════════════════
      AVAILABILITY — AJAX save, optimistic UI, rollback on failure
   ══════════════════════════════════════════════════════════ */
-  async function setAvailability(id, status, selectEl) {
+  async function setAvailability(id, status, btnEl) {
     const product  = ALL_PM_PRODUCTS.find(p => p.id === id);
-    const previous = product?.stock_status;
-    if (selectEl) selectEl.disabled = true;
+    const previous = product?.stock_status ?? 'available';
+    if (btnEl) { btnEl.disabled = true; btnEl.classList.add('is-disabled'); }
 
     if (product) product.stock_status = status;
-    const badge = document.getElementById('pmAvailBadge-' + id);
-    if (badge) badge.outerHTML = availBadgeHtml(id, status);
+    applyToggleState(btnEl, status !== 'out_of_stock');
 
     try {
       const { error } = await sb.from('admin_products_catalog')
@@ -1005,12 +1172,10 @@
       showToast(status === 'out_of_stock' ? '✅ تم تعليم المنتج كنفذت الكمية' : '✅ المنتج متوفر الآن');
     } catch (err) {
       if (product) product.stock_status = previous;
-      const badgeNow = document.getElementById('pmAvailBadge-' + id);
-      if (badgeNow) badgeNow.outerHTML = availBadgeHtml(id, previous);
-      if (selectEl) selectEl.value = previous === 'out_of_stock' ? 'out_of_stock' : 'available';
+      applyToggleState(btnEl, previous !== 'out_of_stock');
       showToast('❌ فشل تحديث التوفر: ' + err.message, 'error');
     } finally {
-      if (selectEl) selectEl.disabled = false;
+      if (btnEl) { btnEl.disabled = false; btnEl.classList.remove('is-disabled'); }
     }
   }
 
@@ -1150,7 +1315,7 @@
       setValue('pmYear',       product.year);
       setValue('pmPrice',     product.price);
       setValue('pmOldPrice',  product.old_price);
-      setValue('pmStock',     product.stock_status === 'out_of_stock' ? 'out_of_stock' : 'available');
+      setStockToggle(product.stock_status);
       setValue('pmQty',       product.quantity);
       setValue('pmShortDesc', product.short_description);
       setValue('pmFullDesc',  product.full_description);
@@ -1188,6 +1353,7 @@
 
   function resetForm() {
     document.getElementById('pmForm')?.reset();
+    setStockToggle('available');
     const slugEl = document.getElementById('pmSlug');
     if (slugEl) delete slugEl.dataset.manualEdit;
 

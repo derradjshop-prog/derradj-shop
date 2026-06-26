@@ -26,8 +26,8 @@ CREATE TABLE IF NOT EXISTS admin_products_catalog (
   price              INTEGER     NOT NULL DEFAULT 0,
   old_price          INTEGER,
   discount_enabled   BOOLEAN     DEFAULT false,
-  stock_status       TEXT        DEFAULT 'in_stock'
-                                 CHECK (stock_status IN ('in_stock','low_stock','out_of_stock')),
+  stock_status       TEXT        DEFAULT 'available'
+                                 CHECK (stock_status IN ('available','out_of_stock')),
   quantity           INTEGER     DEFAULT 0,
   slug               TEXT        UNIQUE,
   product_url        TEXT,

@@ -92,7 +92,16 @@
       "Bash(git -C \"c:/Users/Social Media/Desktop/derradj-shop\" mv seller/books.html seller/dashboard.html)",
       "Bash(grep -rln \"seller/login\\\\|seller\\\\\\\\\\\\\\\\login\" --include=\"*.html\" --include=\"*.js\" --include=\"*.xml\" --include=\"*.txt\" .)",
       "Bash(grep -rn \"Staff\\\\b\" admin/admin.html admin/admin.js)",
-      "Bash(node --check admin/login.js)"
+      "Bash(node --check admin/login.js)",
+      "Bash(curl -s -D - \"https://derradjshop.com/admin/login.js\" -o /tmp/prod-login.js)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://derradjshop.com/seller/dashboard.html\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://derradjshop.com/seller/login.html\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" \"https://derradjshop.com/admin/login.html\")",
+      "Bash(curl -s \"https://jbmcbjzcedqpvnhbmrhk.supabase.co/rest/v1/admin_products_catalog?select=stock_status&limit=1000\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(set\\(x['stock_status'] for x in d\\)\\)\")",
+      "Bash(which supabase *)",
+      "Bash(curl -s \"https://jbmcbjzcedqpvnhbmrhk.supabase.co/rest/v1/admin_products_catalog?select=stock_status&limit=1\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\" -X PATCH -d '{\"stock_status\":\"available\"}')",
+      "Bash(curl -s \"https://jbmcbjzcedqpvnhbmrhk.supabase.co/rest/v1/admin_products_catalog?select=*&catalog_id=eq.201\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\")"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",
