@@ -11,26 +11,6 @@
   if (!window.supabase?.createClient) return;
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  /* Limited staff account: Products tab is hidden by admin.js — never
-     load/render product data (incl. prices) for this account so it
-     can't be revealed via the DOM even while the tab is hidden via CSS. */
-  const LIMITED_STAFF_EMAIL = '0696234484@derradjshop.com';
-  async function isLimitedStaffSession() {
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) return false;
-      const { data: staff } = await sb
-        .from('staff_accounts')
-        .select('email')
-        .eq('id', session.user.id)
-        .maybeSingle();
-      const email = String(staff?.email || session.user.email || '').toLowerCase();
-      return email === LIMITED_STAFF_EMAIL;
-    } catch {
-      return false;
-    }
-  }
-
   /* ── Categories ── */
   const CATEGORIES = [
     { value: 'books',        label: '📚 كتب' },
@@ -47,6 +27,12 @@
   let EDIT_PRODUCT_ID = null;
   /* null = unknown yet, true = column exists in DB, false = column missing */
   let DISPLAY_ORDER_SUPPORTED = null;
+  let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' */
+  let PROD_SEARCH_QUERY = '';
+  let DRAG_SRC_ID = null;
+
+  /* إلكتروني = كل ما ليس كتاباً */
+  function isElec(p) { return p.category !== 'books'; }
 
   /* ── Helpers ── */
   function esc(v) {
@@ -180,20 +166,60 @@
       font-family:'Cairo',sans-serif; white-space:nowrap; transition:background .15s;
     }
     .btn-pm-del:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
-    .btn-pm-tog {
-      padding:5px 11px; border-radius:7px;
-      font-size:12px; font-weight:700; cursor:pointer;
-      font-family:'Cairo',sans-serif; white-space:nowrap;
-      border:1.5px solid; transition:background .15s;
-    }
-    .btn-pm-tog.on  { background:#fef3c7; color:#92400e; border-color:#fcd34d; }
-    .btn-pm-tog.on:hover  { background:#f59e0b; color:#fff; border-color:#f59e0b; }
-    .btn-pm-tog.off { background:#d1fae5; color:#065f46; border-color:#6ee7b7; }
-    .btn-pm-tog.off:hover { background:#059669; color:#fff; border-color:#059669; }
 
     .pm-empty {
       text-align:center; padding:40px 20px;
       color:#94a3b8; font-size:15px;
+    }
+
+    /* ── Availability cell ───────────────────────────────── */
+    .pm-avail-cell { display:flex; flex-direction:column; gap:5px; align-items:flex-start; }
+    .pm-avail-select {
+      padding:4px 8px; border:1.5px solid #e2e8f0; border-radius:7px;
+      font-size:12px; font-weight:700; font-family:'Cairo',sans-serif;
+      background:#fff; cursor:pointer; color:#1e293b;
+    }
+    .pm-avail-select:disabled { opacity:.6; cursor:wait; }
+
+    /* ── Order cell — inline-editable + drag handle ──────── */
+    .pm-drag-handle {
+      cursor:grab; color:#94a3b8; font-size:15px;
+      margin-inline-end:4px; user-select:none;
+    }
+    .pm-order-input {
+      width:48px; padding:5px 6px; text-align:center;
+      border:1.5px solid #e2e8f0; border-radius:7px;
+      font-size:13px; font-weight:800; color:#1d4ed8;
+      font-family:'Cairo',sans-serif;
+    }
+    .pm-order-input:focus { outline:none; border-color:#059669; }
+    .pm-tbl tbody tr[draggable="true"] { cursor:default; }
+    .pm-tbl tbody tr.pm-row-dragging { opacity:.4; background:#f0fdf4; }
+
+    /* ── Sub-filter bar (الكل / الكتب / إلكترونيات) ───────── */
+    .prod-subfilter-bar {
+      display:flex; gap:6px; margin-bottom:14px;
+      background:#fff; border:1px solid #e2e8f0;
+      border-radius:12px; padding:6px;
+    }
+    .prod-sf-btn {
+      flex:1; display:flex; align-items:center; justify-content:center;
+      gap:8px; padding:10px 14px; border:none; border-radius:9px;
+      font-family:'Cairo',sans-serif; font-size:13px; font-weight:700;
+      cursor:pointer; transition:background .2s,color .2s;
+      background:transparent; color:#64748b;
+    }
+    .prod-sf-btn.active { background:#059669; color:#fff; }
+    .prod-sf-btn:not(.active):hover { background:#f0fdf4; color:#059669; }
+    .prod-sf-badge {
+      display:inline-flex; align-items:center; justify-content:center;
+      min-width:20px; height:20px; padding:0 5px; border-radius:99px;
+      font-size:11px; font-weight:900; background:rgba(255,255,255,.25);
+    }
+    .prod-sf-btn:not(.active) .prod-sf-badge { background:#e2e8f0; color:#64748b; }
+    @media (max-width:480px) {
+      .prod-subfilter-bar { flex-wrap:wrap; }
+      .prod-sf-btn { padding:8px; font-size:12px; }
     }
 
     /* ── Modal ──────────────────────────────────────────── */
@@ -346,7 +372,7 @@
         <div class="pm-section-header">
           <div>
             <div class="pm-section-title">🛍 إدارة المنتجات <span id="pmProductCount" style="background:#e2e8f0;color:#475569;font-size:13px;font-weight:700;padding:2px 10px;border-radius:99px;margin-right:8px;vertical-align:middle;">—</span></div>
-            <div class="pm-section-sub">إضافة منتجات جديدة وتعديلها وحذفها</div>
+            <div class="pm-section-sub">إضافة منتجات جديدة، تعديلها، التحكم بتوفرها وترتيب ظهورها</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;">
             <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد</button>
@@ -357,6 +383,18 @@
           ⚠️ <strong>ميزة ترتيب الظهور غير مفعّلة</strong> — عمود <code>display_order</code> غير موجود في قاعدة البيانات.<br>
           شغّل ملف <strong>admin/supabase-admin-products-rls-fix.sql</strong> في <a href="https://supabase.com/dashboard/project/jbmcbjzcedqpvnhbmrhk/sql/new" target="_blank" style="color:#92400e;">Supabase SQL Editor</a> لتفعيل هذه الميزة.
         </div>
+
+        <div class="prod-subfilter-bar" id="prodSubfilterBar">
+          <button class="prod-sf-btn active" data-pfilter="all">🗂 الكل <span class="prod-sf-badge" id="psb-all">—</span></button>
+          <button class="prod-sf-btn" data-pfilter="books">📚 الكتب <span class="prod-sf-badge" id="psb-books">—</span></button>
+          <button class="prod-sf-btn" data-pfilter="electronics">💻 إلكترونيات <span class="prod-sf-badge" id="psb-electronics">—</span></button>
+        </div>
+        <div class="controls-bar">
+          <input type="text" class="search-input" id="prodSearchInput" placeholder="🔍 بحث في المنتجات بالاسم أو التصنيف...">
+          <button class="btn-refresh" id="productsRefreshBtn">↻ تحديث</button>
+          <span class="orders-count" id="pmResultsCount"></span>
+        </div>
+
         <div class="pm-tbl-wrap">
           <table class="pm-tbl">
             <thead>
@@ -365,7 +403,7 @@
                 <th>اسم المنتج</th>
                 <th>الفئة</th>
                 <th>السعر</th>
-                <th>الحالة</th>
+                <th>التوفر</th>
                 <th style="white-space:nowrap;">الترتيب</th>
                 <th>الإجراءات</th>
               </tr>
@@ -376,8 +414,6 @@
           </table>
         </div>
       </div>
-      <hr class="pm-separator">
-      <span class="pm-old-label">⚙️ إدارة التوفر للمنتجات الموجودة (كتب وإلكترونيات قديمة)</span>
     `;
     tab.insertBefore(wrap, tab.firstChild);
 
@@ -497,11 +533,10 @@
           <input type="number" id="pmOldPrice" min="0" placeholder="2000">
         </div>
         <div class="pm-fld">
-          <label>حالة المخزون</label>
+          <label>التوفر</label>
           <select id="pmStock">
-            <option value="in_stock">✅ متوفر</option>
-            <option value="low_stock">⚠️ كميات محدودة</option>
-            <option value="out_of_stock">❌ غير متوفر</option>
+            <option value="available">🟢 متوفر</option>
+            <option value="out_of_stock">🔴 نفذت الكمية</option>
           </select>
         </div>
         <div class="pm-fld">
@@ -571,25 +606,22 @@
         </div>
 
         <hr class="pm-divider">
-        <div class="pm-sec-lbl">النشر</div>
+        <div class="pm-sec-lbl">الترتيب</div>
 
-        <div class="pm-fld">
-          <label>حالة النشر</label>
-          <select id="pmActive">
-            <option value="true">✅ منشور — يظهر للزوار</option>
-            <option value="false">👁 مخفي — لا يظهر للزوار</option>
-          </select>
-        </div>
         <div class="pm-fld">
           <label>ترتيب الظهور — Display Order</label>
           <input type="number" id="pmOrder" min="1" step="1" placeholder="مثال: 1 أو 2 أو 3">
-          <span class="hint">1 = يظهر أولاً — اتركه فارغاً للترتيب التلقائي حسب تاريخ الإضافة</span>
+          <span class="hint">اتركه فارغاً ليظهر المنتج في آخر القائمة — يمكن تعديل الترتيب لاحقاً من الجدول</span>
         </div>
 
       </div>
 
       <button type="submit" class="pm-save" id="pmSaveBtn">🚀 نشر المنتج</button>
     </form>
+    <div id="pmDeleteWrap" style="display:none;margin-top:16px;padding-top:16px;border-top:2px dashed #fee2e2;">
+      <button type="button" class="btn-pm-del" id="pmDeleteBtn" style="width:100%;padding:12px;font-size:14px;">🗑 حذف المنتج نهائياً</button>
+      <div class="hint" style="margin-top:6px;text-align:center;">إجراء لا يمكن التراجع عنه — سيُحذف المنتج نهائياً من المتجر.</div>
+    </div>
     `;
   }
 
@@ -651,22 +683,63 @@
       e.target.dataset.manualEdit = '1';
     });
 
-    /* Table delegation */
-    document.getElementById('pmTbody')?.addEventListener('click', async e => {
-      const btn = e.target.closest('[data-pma]');
+    /* Table delegation — edit button */
+    const pmTbody = document.getElementById('pmTbody');
+    pmTbody?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-pma="edit"]');
       if (!btn) return;
-      const { pma: action, pmid: id } = btn.dataset;
-      if (action === 'edit') {
-        const p = ALL_PM_PRODUCTS.find(x => x.id === id);
-        if (p) openModal(p);
-      }
-      if (action === 'del') {
-        if (confirm('حذف هذا المنتج نهائياً؟')) await deleteProduct(id, btn);
-      }
-      if (action === 'tog') {
-        const p = ALL_PM_PRODUCTS.find(x => x.id === id);
-        if (p) await toggleActive(id, !p.is_active, btn);
-      }
+      const p = ALL_PM_PRODUCTS.find(x => x.id === btn.dataset.pmid);
+      if (p) openModal(p);
+    });
+
+    /* Availability <select> — saves immediately on change */
+    pmTbody?.addEventListener('change', e => {
+      const sel = e.target.closest('select[data-pma="avail"]');
+      if (sel) setAvailability(sel.dataset.pmid, sel.value, sel);
+    });
+
+    /* Order <input> — Enter commits + blurs; focusout (bubbles) saves */
+    pmTbody?.addEventListener('keydown', e => {
+      const inp = e.target.closest('input[data-pma="order"]');
+      if (inp && e.key === 'Enter') { e.preventDefault(); inp.blur(); }
+    });
+    pmTbody?.addEventListener('focusout', e => {
+      const inp = e.target.closest('input[data-pma="order"]');
+      if (inp) commitOrderInput(inp);
+    });
+
+    /* Drag & drop reordering */
+    bindDragEvents(pmTbody);
+
+    /* Delete — only reachable from inside the edit modal */
+    document.getElementById('pmDeleteBtn')?.addEventListener('click', async function () {
+      if (!EDIT_PRODUCT_ID) return;
+      if (!confirm('حذف هذا المنتج نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+      const ok = await deleteProduct(EDIT_PRODUCT_ID, this);
+      if (ok) closeModal();
+    });
+
+    /* Sub-filter (الكل / الكتب / إلكترونيات) */
+    document.getElementById('prodSubfilterBar')?.addEventListener('click', e => {
+      const btn = e.target.closest('.prod-sf-btn');
+      if (!btn) return;
+      PROD_FILTER = btn.dataset.pfilter || 'all';
+      document.querySelectorAll('.prod-sf-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTable();
+    });
+
+    /* Search */
+    document.getElementById('prodSearchInput')?.addEventListener('input', e => {
+      PROD_SEARCH_QUERY = e.target.value.trim();
+      renderTable();
+    });
+
+    /* Manual refresh */
+    document.getElementById('productsRefreshBtn')?.addEventListener('click', async function () {
+      this.disabled = true; this.textContent = '⏳ جاري التحديث...';
+      await loadProducts();
+      this.disabled = false; this.textContent = '↻ تحديث';
     });
 
     /* Reload when tab is clicked */
@@ -732,7 +805,7 @@
         .from('admin_products_catalog')
         .select('*')
         .order('display_order', { ascending: true, nullsFirst: false })
-        .order('created_at', { ascending: false }));
+        .order('created_at', { ascending: true }));
 
       /* ── If display_order column is missing, fall back ─────────── */
       if (queryError && (queryError.code === '42703' || (queryError.message || '').includes('display_order'))) {
@@ -742,7 +815,7 @@
         ({ data, error: queryError } = await sb
           .from('admin_products_catalog')
           .select('*')
-          .order('created_at', { ascending: false }));
+          .order('created_at', { ascending: true }));
       }
 
       if (queryError) {
@@ -772,14 +845,19 @@
 
       ALL_PM_PRODUCTS = data || [];
 
-      const badge = document.getElementById('pmProductCount');
-      if (badge) badge.textContent = ALL_PM_PRODUCTS.length;
-
       /* Show/hide the "column missing" warning banner */
       const warning = document.getElementById('pmOrderWarning');
       if (warning) warning.style.display = DISPLAY_ORDER_SUPPORTED ? 'none' : 'block';
 
-      renderTable();
+      /* Self-heal: fix gaps/duplicates in display_order so it's always
+         a clean 1..N sequence (requirement: no gaps, no duplicates). */
+      if (DISPLAY_ORDER_SUPPORTED !== false && needsRenumber(ALL_PM_PRODUCTS)) {
+        const sorted = sortedByOrder(ALL_PM_PRODUCTS);
+        await persistOrder(sorted, /* silent */ true);
+      } else {
+        ALL_PM_PRODUCTS = sortedByOrder(ALL_PM_PRODUCTS);
+        renderTable();
+      }
     } catch (err) {
       console.error('[PM] loadProducts failed:', err);
       tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">
@@ -791,9 +869,93 @@
     }
   }
 
+  /* ── Sort helper: display_order ASC, NULLs last, then created_at ASC ── */
+  function sortedByOrder(products) {
+    return [...products].sort((a, b) => {
+      const ao = a.display_order ?? Infinity;
+      const bo = b.display_order ?? Infinity;
+      if (ao !== bo) return ao - bo;
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+  }
+
+  /* ── True if display_order isn't a clean, gap-free 1..N sequence ───── */
+  function needsRenumber(products) {
+    const sorted = sortedByOrder(products);
+    return sorted.some((p, i) => p.display_order !== i + 1);
+  }
+
+  function getFilteredProducts() {
+    const q = PROD_SEARCH_QUERY.toLowerCase();
+    return ALL_PM_PRODUCTS.filter(p => {
+      if (PROD_FILTER === 'books'       &&  isElec(p)) return false;
+      if (PROD_FILTER === 'electronics' && !isElec(p)) return false;
+      if (q && !String(p.product_name || '').toLowerCase().includes(q) &&
+               !String(p.category || '').toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }
+
+  function updateSubfilterBadges() {
+    const elecCount  = ALL_PM_PRODUCTS.filter(isElec).length;
+    const booksCount = ALL_PM_PRODUCTS.length - elecCount;
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+    set('psb-all', ALL_PM_PRODUCTS.length);
+    set('psb-books', booksCount);
+    set('psb-electronics', elecCount);
+    set('tab-badge-products', ALL_PM_PRODUCTS.length);
+    set('pmProductCount', ALL_PM_PRODUCTS.length);
+  }
+
+  function availBadgeHtml(id, status) {
+    const isAvail = status !== 'out_of_stock';
+    const cls = isAvail ? 'pm-badge-on' : 'pm-badge-off';
+    const txt = isAvail ? '🟢 متوفر' : '🔴 نفذت الكمية';
+    return `<span class="pm-badge ${cls}" id="pmAvailBadge-${esc(id)}">${txt}</span>`;
+  }
+
+  function rowHtml(p) {
+    const imgHtml = p.main_image
+      ? `<img src="${esc(p.main_image)}" class="pm-thumb" alt="" onerror="this.outerHTML='<div class=pm-thumb-ph>📦</div>'">`
+      : `<div class="pm-thumb-ph">📦</div>`;
+
+    return `<tr draggable="true" data-pmid="${esc(p.id)}">
+        <td>${imgHtml}</td>
+        <td>
+          <strong style="font-size:13px;display:block;">${esc(p.product_name)}</strong>
+          ${p.product_name_ar ? `<span style="font-size:12px;color:#64748b;">${esc(p.product_name_ar)}</span><br>` : ''}
+          ${p.slug ? `<span style="font-size:11px;color:#94a3b8;direction:ltr;">/product/${esc(p.slug)}/</span>` : ''}
+        </td>
+        <td style="font-size:13px;font-weight:600;">${esc(catLabel(p.category))}</td>
+        <td>
+          <strong style="color:#1d4ed8;direction:ltr;display:block;">${fmtPrice(p.price)}</strong>
+          ${p.old_price ? `<span style="font-size:12px;text-decoration:line-through;color:#94a3b8;direction:ltr;">${fmtPrice(p.old_price)}</span>` : ''}
+        </td>
+        <td>
+          <div class="pm-avail-cell">
+            ${availBadgeHtml(p.id, p.stock_status)}
+            <select class="pm-avail-select" data-pma="avail" data-pmid="${esc(p.id)}">
+              <option value="available"   ${p.stock_status !== 'out_of_stock' ? 'selected' : ''}>🟢 متوفر</option>
+              <option value="out_of_stock" ${p.stock_status === 'out_of_stock' ? 'selected' : ''}>🔴 نفذت الكمية</option>
+            </select>
+          </div>
+        </td>
+        <td style="text-align:center;white-space:nowrap;">
+          <span class="pm-drag-handle" title="اسحب لإعادة الترتيب">⠿</span>
+          <input type="number" class="pm-order-input" min="1" step="1"
+                 value="${p.display_order ?? ''}" data-pma="order" data-pmid="${esc(p.id)}">
+        </td>
+        <td>
+          <button class="btn-pm-edit" data-pma="edit" data-pmid="${esc(p.id)}">✏️ تعديل</button>
+        </td>
+      </tr>`;
+  }
+
   function renderTable() {
     const tbody = document.getElementById('pmTbody');
     if (!tbody) return;
+
+    updateSubfilterBadges();
 
     if (!ALL_PM_PRODUCTS.length) {
       tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">
@@ -808,45 +970,154 @@
       return;
     }
 
-    tbody.innerHTML = ALL_PM_PRODUCTS.map(p => {
-      const imgHtml = p.main_image
-        ? `<img src="${esc(p.main_image)}" class="pm-thumb" alt="" onerror="this.outerHTML='<div class=pm-thumb-ph>📦</div>'">`
-        : `<div class="pm-thumb-ph">📦</div>`;
+    const list = getFilteredProducts();
+    const countEl = document.getElementById('pmResultsCount');
+    if (countEl) {
+      countEl.textContent = list.length + ' منتج' +
+        (list.length !== ALL_PM_PRODUCTS.length ? ` (من ${ALL_PM_PRODUCTS.length})` : '');
+    }
 
-      const badge = p.is_active
-        ? `<span class="pm-badge pm-badge-on">✅ منشور</span>`
-        : `<span class="pm-badge pm-badge-off">👁 مخفي</span>`;
+    if (!list.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">لا توجد منتجات مطابقة</td></tr>`;
+      return;
+    }
 
-      const togClass = p.is_active ? 'on' : 'off';
-      const togLabel = p.is_active ? '🙈 إخفاء' : '👁 نشر';
+    tbody.innerHTML = list.map(rowHtml).join('');
+  }
 
-      return `<tr>
-        <td>${imgHtml}</td>
-        <td>
-          <strong style="font-size:13px;display:block;">${esc(p.product_name)}</strong>
-          ${p.product_name_ar ? `<span style="font-size:12px;color:#64748b;">${esc(p.product_name_ar)}</span><br>` : ''}
-          ${p.slug ? `<span style="font-size:11px;color:#94a3b8;direction:ltr;">/product/${esc(p.slug)}/</span>` : ''}
-        </td>
-        <td style="font-size:13px;font-weight:600;">${esc(catLabel(p.category))}</td>
-        <td>
-          <strong style="color:#1d4ed8;direction:ltr;display:block;">${fmtPrice(p.price)}</strong>
-          ${p.old_price ? `<span style="font-size:12px;text-decoration:line-through;color:#94a3b8;direction:ltr;">${fmtPrice(p.old_price)}</span>` : ''}
-        </td>
-        <td>${badge}</td>
-        <td style="text-align:center;">
-          ${p.display_order != null
-            ? `<span style="background:#dbeafe;color:#1d4ed8;font-size:13px;font-weight:900;padding:4px 12px;border-radius:99px;display:inline-block;">#${p.display_order}</span>`
-            : `<span style="color:#cbd5e1;font-size:13px;font-weight:600;">—</span>`}
-        </td>
-        <td>
-          <div class="pm-btn-grp">
-            <button class="btn-pm-edit" data-pma="edit" data-pmid="${esc(p.id)}">✏️ تعديل</button>
-            <button class="btn-pm-tog ${togClass}" data-pma="tog" data-pmid="${esc(p.id)}">${togLabel}</button>
-            <button class="btn-pm-del"  data-pma="del"  data-pmid="${esc(p.id)}">🗑</button>
-          </div>
-        </td>
-      </tr>`;
-    }).join('');
+  /* ══════════════════════════════════════════════════════════
+     AVAILABILITY — AJAX save, optimistic UI, rollback on failure
+  ══════════════════════════════════════════════════════════ */
+  async function setAvailability(id, status, selectEl) {
+    const product  = ALL_PM_PRODUCTS.find(p => p.id === id);
+    const previous = product?.stock_status;
+    if (selectEl) selectEl.disabled = true;
+
+    if (product) product.stock_status = status;
+    const badge = document.getElementById('pmAvailBadge-' + id);
+    if (badge) badge.outerHTML = availBadgeHtml(id, status);
+
+    try {
+      const { error } = await sb.from('admin_products_catalog')
+        .update({ stock_status: status, updated_at: new Date().toISOString() })
+        .eq('id', id);
+      if (error) throw error;
+      showToast(status === 'out_of_stock' ? '✅ تم تعليم المنتج كنفذت الكمية' : '✅ المنتج متوفر الآن');
+    } catch (err) {
+      if (product) product.stock_status = previous;
+      const badgeNow = document.getElementById('pmAvailBadge-' + id);
+      if (badgeNow) badgeNow.outerHTML = availBadgeHtml(id, previous);
+      if (selectEl) selectEl.value = previous === 'out_of_stock' ? 'out_of_stock' : 'available';
+      showToast('❌ فشل تحديث التوفر: ' + err.message, 'error');
+    } finally {
+      if (selectEl) selectEl.disabled = false;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     ORDERING — inline edit, drag & drop, auto-renumber
+  ══════════════════════════════════════════════════════════ */
+
+  /* Moves product `id` to 1-based position `pos` within the full,
+     globally-ordered catalog and returns the new ordered array. */
+  function moveToPosition(id, pos) {
+    const sorted = sortedByOrder(ALL_PM_PRODUCTS);
+    const idx = sorted.findIndex(p => p.id === id);
+    if (idx === -1) return sorted;
+    const [item] = sorted.splice(idx, 1);
+    const clamped = Math.max(1, Math.min(pos, sorted.length + 1));
+    sorted.splice(clamped - 1, 0, item);
+    return sorted;
+  }
+
+  /* Persists a fully-ordered product array as display_order = 1..N,
+     only writing rows whose order actually changed. Re-renders
+     immediately (optimistic) and reloads from DB if the save fails. */
+  async function persistOrder(orderedProducts, silent) {
+    const changed = [];
+    orderedProducts.forEach((p, i) => {
+      const newOrder = i + 1;
+      if (p.display_order !== newOrder) changed.push({ id: p.id, display_order: newOrder });
+      p.display_order = newOrder;
+    });
+
+    ALL_PM_PRODUCTS = orderedProducts;
+    renderTable();
+
+    if (!changed.length) return;
+
+    try {
+      const results = await Promise.all(changed.map(c =>
+        sb.from('admin_products_catalog')
+          .update({ display_order: c.display_order })
+          .eq('id', c.id)
+      ));
+      const failed = results.find(r => r.error);
+      if (failed) throw failed.error;
+      if (!silent) showToast(`✅ تم تحديث الترتيب (${changed.length} منتج)`);
+    } catch (err) {
+      showToast('❌ فشل حفظ الترتيب: ' + err.message, 'error');
+      await loadProducts(); /* resync truth from DB */
+    }
+  }
+
+  async function commitOrderInput(inp) {
+    const id  = inp.dataset.pmid;
+    const pos = parseInt(inp.value, 10);
+    const current = ALL_PM_PRODUCTS.find(p => p.id === id);
+    if (!Number.isFinite(pos) || pos < 1) {
+      inp.value = current?.display_order ?? '';
+      return;
+    }
+    if (current && current.display_order === pos) return;
+    await persistOrder(moveToPosition(id, pos));
+  }
+
+  /* Merges a re-ordered visible subset back into the full catalog order:
+     items outside the current filter/search keep their absolute position;
+     the dragged subset is re-inserted, in its new order, into the slots
+     it used to occupy. */
+  function applyDragReorder(newVisibleIds) {
+    const globalSorted = sortedByOrder(ALL_PM_PRODUCTS);
+    const visibleSet = new Set(newVisibleIds);
+    const queue = newVisibleIds.slice();
+    let qi = 0;
+    return globalSorted.map(p => visibleSet.has(p.id) ? ALL_PM_PRODUCTS.find(x => x.id === queue[qi++]) : p);
+  }
+
+  function bindDragEvents(tbody) {
+    if (!tbody) return;
+
+    tbody.addEventListener('dragstart', e => {
+      const tr = e.target.closest('tr[draggable="true"]');
+      if (!tr) return;
+      DRAG_SRC_ID = tr.dataset.pmid;
+      tr.classList.add('pm-row-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+
+    tbody.addEventListener('dragend', () => {
+      tbody.querySelectorAll('tr.pm-row-dragging').forEach(tr => tr.classList.remove('pm-row-dragging'));
+    });
+
+    tbody.addEventListener('dragover', e => {
+      e.preventDefault();
+      if (!DRAG_SRC_ID) return;
+      const tr = e.target.closest('tr[draggable="true"]');
+      const dragEl = tbody.querySelector(`tr[data-pmid="${DRAG_SRC_ID}"]`);
+      if (!tr || !dragEl || tr === dragEl) return;
+      const rect = tr.getBoundingClientRect();
+      const before = (e.clientY - rect.top) < rect.height / 2;
+      tr.parentNode.insertBefore(dragEl, before ? tr : tr.nextSibling);
+    });
+
+    tbody.addEventListener('drop', async e => {
+      e.preventDefault();
+      if (!DRAG_SRC_ID) return;
+      const ids = Array.from(tbody.querySelectorAll('tr[data-pmid]')).map(tr => tr.dataset.pmid);
+      DRAG_SRC_ID = null;
+      await persistOrder(applyDragReorder(ids));
+    });
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -879,7 +1150,7 @@
       setValue('pmYear',       product.year);
       setValue('pmPrice',     product.price);
       setValue('pmOldPrice',  product.old_price);
-      setValue('pmStock',     product.stock_status || 'in_stock');
+      setValue('pmStock',     product.stock_status === 'out_of_stock' ? 'out_of_stock' : 'available');
       setValue('pmQty',       product.quantity);
       setValue('pmShortDesc', product.short_description);
       setValue('pmFullDesc',  product.full_description);
@@ -888,7 +1159,6 @@
       setValue('pmSeoTitle',  product.seo_title);
       setValue('pmSeoDesc',   product.seo_description);
       setValue('pmKeywords',  product.keywords);
-      setValue('pmActive',    product.is_active ? 'true' : 'false');
       setValue('pmOrder',     product.display_order ?? '');
 
       if (product.main_image) showMainPreview(product.main_image);
@@ -902,6 +1172,9 @@
     }
 
     toggleBookFields();
+    const delWrap = document.getElementById('pmDeleteWrap');
+    if (delWrap) delWrap.style.display = isEdit ? '' : 'none';
+
     document.getElementById('pmOverlay').classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -1027,7 +1300,7 @@
         price:             parseInt(getValue('pmPrice')) || 0,
         old_price:         oldPrice,
         discount_enabled:  !!oldPrice,
-        stock_status:      getValue('pmStock')      || 'in_stock',
+        stock_status:      getValue('pmStock')      || 'available',
         quantity:          parseInt(getValue('pmQty')) || 0,
         short_description: getValue('pmShortDesc')  || null,
         full_description:  getValue('pmFullDesc')   || null,
@@ -1037,7 +1310,7 @@
         seo_title:         getValue('pmSeoTitle')   || null,
         seo_description:   getValue('pmSeoDesc')    || null,
         keywords:          getValue('pmKeywords')   || null,
-        is_active:         getValue('pmActive') !== 'false',
+        is_active:         true,
         updated_at:        new Date().toISOString(),
       };
 
@@ -1106,32 +1379,20 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     DELETE / TOGGLE
+     DELETE — only reachable from inside the edit modal, after confirm()
   ══════════════════════════════════════════════════════════ */
   async function deleteProduct(id, btn) {
-    if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+    if (btn) btn.disabled = true;
     try {
       const { error } = await sb.from('admin_products_catalog').delete().eq('id', id);
       if (error) throw error;
       showToast('✅ تم حذف المنتج');
       await loadProducts();
+      return true;
     } catch (err) {
       showToast('❌ فشل الحذف: ' + err.message, 'error');
-      if (btn) { btn.disabled = false; btn.textContent = '🗑'; }
-    }
-  }
-
-  async function toggleActive(id, newState, btn) {
-    if (btn) btn.disabled = true;
-    try {
-      const { error } = await sb.from('admin_products_catalog')
-        .update({ is_active: newState, updated_at: new Date().toISOString() })
-        .eq('id', id);
-      if (error) throw error;
-      showToast(newState ? '✅ تم نشر المنتج' : '👁 تم إخفاء المنتج');
-      await loadProducts();
-    } catch (err) {
-      showToast('❌ فشل التغيير: ' + err.message, 'error');
+      return false;
+    } finally {
       if (btn) btn.disabled = false;
     }
   }
@@ -1221,8 +1482,6 @@
      INIT
   ══════════════════════════════════════════════════════════ */
   async function init() {
-    if (await isLimitedStaffSession()) return;
-
     injectStyles();
     injectHTML();
     bindEvents();

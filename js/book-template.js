@@ -15,8 +15,8 @@
 
   function availBadge(available) {
     return available
-      ? `<span class="pd-stock avail">✅ متوفر — يمكن الطلب الآن</span>`
-      : `<span class="pd-stock unavail">❌ غير متوفر حالياً</span>`;
+      ? `<span class="pd-stock avail">🟢 متوفر — يمكن الطلب الآن</span>`
+      : `<span class="pd-stock unavail">🔴 نفذت الكمية</span>`;
   }
 
   /* ── Build the full view-model for a book row from
@@ -132,7 +132,12 @@
     /* Cart button — disabled state when out of stock, mirrors product-template.js exactly */
     const cartBtn = isAvail
       ? `<button class="btn-add-cart-sb" id="pdAddCart" data-add-to-cart="${b.id}">🛒 أضف إلى السلة</button>`
-      : `<button class="btn-add-cart-sb" id="pdAddCart" disabled>❌ غير متوفر حاليا</button>`;
+      : `<button class="btn-add-cart-sb" id="pdAddCart" disabled>🔴 نفذت الكمية</button>`;
+
+    /* Buy-now button — disabled (no live link) when out of stock */
+    const buyNowBtn = isAvail
+      ? `<a href="/ordre/" class="btn-buy-now-sb" id="pdOrderNowBtn">🛒 اطلب الكتاب الآن</a>`
+      : `<button class="btn-buy-now-sb" id="pdOrderNowBtn" disabled style="opacity:.6;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 
     /* ── Visible body markup (goes inside #pdContent) ── */
     const bodyHtml = `
@@ -179,7 +184,7 @@
           </div>
 
           <div class="product-cta-buttons">
-            <a href="/ordre/" class="btn-buy-now-sb" id="pdOrderNowBtn">🛒 اطلب الكتاب الآن</a>
+            ${buyNowBtn}
             ${waBtn}
             ${cartBtn}
           </div>

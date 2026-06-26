@@ -315,7 +315,7 @@
     var imgSrc    = ROOT + 'books/' + book.image;
     var imgWebp   = ROOT + 'books/' + book.image.replace(/\.png$/, '.webp');
     var badgeCls  = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
-    var badgeText = isAvail ? 'متوفر' : 'غير متوفر';
+    var badgeText = isAvail ? 'متوفر' : 'نفذت الكمية';
     var formatted = book.price.toLocaleString('en-US');
     var priceHTML =
       '<span class="price-current">' +
@@ -326,7 +326,7 @@
       '</span>';
     var cartBtn = isAvail
       ? '<button class="btn-add-cart" data-add-to-cart="' + book.id + '">🛒 أضف للسلة</button>'
-      : '<button class="btn-add-cart" disabled>غير متوفر</button>';
+      : '<button class="btn-add-cart" disabled>🔴 نفذت الكمية</button>';
     var subtitle = book.titleEn || book.author || '';
 
     return (

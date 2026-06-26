@@ -2796,7 +2796,7 @@ window.validateCheckout = function () {
     }
     if (hasUnavail) {
       if (!alertEl.classList.contains('show')) {
-        alertEl.textContent = '❌ بعض المنتجات التي اخترتها غير متوفرة حاليا. يرجى إزالتها والمحاولة مرة أخرى.';
+        alertEl.textContent = '❌ نفذت الكمية من بعض المنتجات التي اخترتها. يرجى إزالتها والمحاولة مرة أخرى.';
         alertEl.classList.add('show');
       }
       if (!firstErrorEl && firstBadRow) firstErrorEl = firstBadRow;

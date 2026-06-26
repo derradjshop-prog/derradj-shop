@@ -59,7 +59,7 @@ GRANT EXECUTE ON FUNCTION public.current_staff_id()     TO authenticated;
 ALTER TABLE public.staff_accounts ENABLE ROW LEVEL SECURITY;
 
 -- Every staff member can read their own row (needed by every login/authGuard
--- check in admin/login.js, seller login, admin.js, seller/books.html).
+-- check in admin/login.js, admin.js, seller/dashboard.html).
 -- Admin can read everyone (needed for Assignment History display names).
 DROP POLICY IF EXISTS "staff_accounts_self_or_admin_select" ON public.staff_accounts;
 CREATE POLICY "staff_accounts_self_or_admin_select"

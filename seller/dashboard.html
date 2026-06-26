@@ -571,6 +571,9 @@
       <span class="tab-badge" id="tab-badge-messages">—</span>
       <span class="live-badge-dot" id="liveBadgeMessages">0</span>
     </button>
+    <button class="tab-btn" data-tab="profile">
+      👤 الملف الشخصي
+    </button>
   </div>
 
   <!-- ══ Tab: My Assigned Orders ═══════════════════════════ -->
@@ -651,6 +654,9 @@
 
     <div class="mobile-cards" id="msgMobileCards"></div>
   </div>
+
+  <!-- ══ Tab: Profile ══════════════════════════════════════ -->
+  <div class="tab-content" id="tab-profile"></div>
 
 </main>
 
@@ -746,20 +752,44 @@
     return `<div class="empty-state"><div class="es-icon">${icon}</div><div class="es-text">${esc(text)}</div></div>`;
   }
 
+  /* ── Profile tab — read-only, from the staff row authGuard() already
+     fetched. No extra query. ── */
+  function renderProfile(staff) {
+    const box = document.getElementById("tab-profile");
+    if (!box) return;
+    box.innerHTML = `
+      <div class="table-wrap" style="padding:20px;">
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="i-lbl">الاسم</span>
+            <span class="i-val">${esc(staff.full_name || "—")}</span>
+          </div>
+          <div class="info-item">
+            <span class="i-lbl">البريد / الحساب</span>
+            <span class="i-val">${esc(staff.email || "—")}</span>
+          </div>
+          <div class="info-item">
+            <span class="i-lbl">الصلاحية</span>
+            <span class="i-val">🛒 بائع</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
   /* ── Auth guard — seller role only ────────────────────── */
   async function authGuard() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { location.href = "login.html"; return null; }
+    if (!session) { location.href = "../admin/login.html"; return null; }
 
     const { data: staff, error } = await supabase
       .from("staff_accounts")
-      .select("id, full_name, role, is_active")
+      .select("id, full_name, email, role, is_active")
       .eq("id", session.user.id)
       .maybeSingle();
 
     if (error || !staff || !staff.is_active || staff.role !== "seller") {
       await supabase.auth.signOut();
-      location.href = "login.html";
+      location.href = "../admin/login.html";
       return null;
     }
     return staff;
@@ -1206,7 +1236,7 @@
   function bindEvents() {
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await supabase.auth.signOut();
-      location.href = "login.html";
+      location.href = "../admin/login.html";
     });
 
     /* ── Tab switching ──────────────────────────────────────── */
@@ -1218,7 +1248,9 @@
         btn.classList.add("active");
         document.getElementById("tab-" + tab).classList.add("active");
         document.getElementById("pageTitle").textContent =
-          tab === "orders" ? "📦 طلباتي المعيّنة" : "✉️ رسائلي المعيّنة";
+          tab === "orders"   ? "📦 طلباتي المعيّنة" :
+          tab === "messages" ? "✉️ رسائلي المعيّنة" :
+                               "👤 الملف الشخصي";
 
         if (tab === "orders")   { UNSEEN_ORDERS   = 0; }
         if (tab === "messages") { UNSEEN_MESSAGES = 0; }
@@ -1429,6 +1461,8 @@
 
       document.getElementById("sellerBadge").textContent =
         "🛒 بائع" + (staff.full_name ? " — " + staff.full_name : "");
+
+      renderProfile(staff);
 
       [ALL_ORDERS, ALL_MESSAGES] = await Promise.all([
         fetchMyOrders(), fetchMyMessages(),

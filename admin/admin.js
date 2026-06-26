@@ -3,8 +3,8 @@
    is_confirmed: NULL = قيد المعالجة | true = تم التأكيد
    BUILD: 2026-06-01-v6
    - Reads category + price FROM Supabase (after running SQL setup)
-   - Books and electronics both read directly from admin_products_catalog
-     (the same table admin/products-manager.js edits) — see fetchProducts()
+   - Products tab (admin_products_catalog) is fully owned by
+     admin/products-manager.js — this file no longer touches it.
    - upsert replaces update/insert everywhere to avoid silent failures
    ========================================================== */
 console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + price, upsert everywhere');
@@ -23,19 +23,19 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let ALL_ORDERS   = [];
   let ACTIVE_ORDER = null;
   let ALL_MESSAGES = [];
-  let ALL_PRODUCTS = [];
   let ALL_REVIEWS  = [];
   let ALL_SELLERS  = [];
   let EDIT_REVIEW_ID    = null;
-  let prodFilterCurrent = 'all';   /* 'all' | 'books' | 'electronics' */
-  let PROD_SEARCH_QUERY = '';
   let ORD_ASSIGN_FILTER = '';      /* '' | 'unassigned' | 'completed' | <sellerId> */
-  let CURRENT_ROLE = 'staff';
+  let CURRENT_ROLE = '';
   let CURRENT_STAFF_ID = '';
   let CURRENT_STAFF_EMAIL = '';
   let UNSEEN_ORDERS   = 0;
   let UNSEEN_MESSAGES = 0;
 
+  /* Only an admin ever reaches this page — authGuard() redirects sellers
+     away before this runs — so this is always true in practice. Kept as
+     an explicit check (not hardcoded true) for defense-in-depth. */
   function isAdmin() { return CURRENT_ROLE === 'admin'; }
 
   /* ── Assignment status labels ──────────────────────────── */
@@ -107,7 +107,20 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       .eq("id", session.user.id)
       .maybeSingle();
 
-    if (error || !staff || !staff.is_active || !["admin", "staff"].includes(String(staff.role || "").toLowerCase())) {
+    if (error || !staff) {
+      await supabase.auth.signOut();
+      location.href = "login.html";
+      return null;
+    }
+
+    /* حساب بائع (Seller) وصل لهذه الصفحة (رابط محفوظ/تبويب قديم) —
+       يُحوَّل إلى لوحة البائع بدل تحميل واجهة الأدمن أو رفضه فقط. */
+    if (String(staff.role || "").toLowerCase() === "seller") {
+      location.href = "../seller/dashboard.html";
+      return null;
+    }
+
+    if (!staff.is_active || String(staff.role || "").toLowerCase() !== "admin") {
       await supabase.auth.signOut();
       location.href = "login.html";
       return null;
@@ -260,7 +273,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       sessionStorage.setItem("impersonation_target_email", target?.email || "");
       sessionStorage.setItem("impersonation_target_name", target?.full_name || "");
       sessionStorage.setItem("impersonation_started_at", new Date().toISOString());
-      location.href = "../seller/books.html?previewAs=" + encodeURIComponent(targetId);
+      location.href = "../seller/dashboard.html?previewAs=" + encodeURIComponent(targetId);
     } catch (err) {
       console.error("Start impersonation error:", err);
       alert("❌ فشل بدء المعاينة:\n" + (err.message || ""));
@@ -466,21 +479,40 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   function buildAssignmentSectionHTML(entity, entityType) {
     const status   = entity.assignment_status || "pending_admin";
     const assignee = entity.assigned_staff;
-    const sellerOptions = ALL_SELLERS.map(s =>
-      `<option value="${esc(s.id)}" ${entity.assigned_to === s.id ? "selected" : ""}>${esc(s.full_name || s.email)}</option>`
-    ).join("");
 
-    const adminControls = isAdmin() ? `
-      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
-        <select class="filter-select" id="assignSellerSelect" style="flex:1;min-width:160px;">
-          <option value="">— اختر بائع —</option>
-          ${sellerOptions}
-        </select>
-        <button class="btn-confirm" data-action="assign-${entityType}" data-entity-id="${esc(entity.id)}">
-          ${assignee ? "🔁 إعادة تعيين" : "➡️ تعيين لبائع"}
-        </button>
-        ${assignee ? `<button class="btn-delete" data-action="unassign-${entityType}" data-entity-id="${esc(entity.id)}">✖ إزالة التعيين</button>` : ""}
-      </div>` : "";
+    /* Exactly one seller account exists in this system today (Mehdi) —
+       so the decision is the literal two-button choice the workflow is
+       built around: assign to that seller, or keep it with admin. If a
+       second seller account is ever added, fall back to a dropdown
+       instead of guessing which one was meant. */
+    let adminControls = "";
+    if (isAdmin()) {
+      if (ALL_SELLERS.length <= 1) {
+        const seller = ALL_SELLERS[0];
+        adminControls = `
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            ${seller ? `<button class="btn-confirm" data-action="assign-${entityType}" data-entity-id="${esc(entity.id)}" data-seller-id="${esc(seller.id)}">
+              ➡️ تعيين لـ ${esc(seller.full_name || seller.email)}
+            </button>` : ""}
+            ${assignee ? `<button class="btn-delete" data-action="unassign-${entityType}" data-entity-id="${esc(entity.id)}">🔒 الاحتفاظ به مع الأدمن</button>` : ""}
+          </div>`;
+      } else {
+        const sellerOptions = ALL_SELLERS.map(s =>
+          `<option value="${esc(s.id)}" ${entity.assigned_to === s.id ? "selected" : ""}>${esc(s.full_name || s.email)}</option>`
+        ).join("");
+        adminControls = `
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            <select class="filter-select" id="assignSellerSelect" style="flex:1;min-width:160px;">
+              <option value="">— اختر بائع —</option>
+              ${sellerOptions}
+            </select>
+            <button class="btn-confirm" data-action="assign-${entityType}" data-entity-id="${esc(entity.id)}">
+              ${assignee ? "🔁 إعادة تعيين" : "➡️ تعيين لبائع"}
+            </button>
+            ${assignee ? `<button class="btn-delete" data-action="unassign-${entityType}" data-entity-id="${esc(entity.id)}">🔒 الاحتفاظ به مع الأدمن</button>` : ""}
+          </div>`;
+      }
+    }
 
     return `
       <div class="m-section">
@@ -511,8 +543,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
      HANDLE ASSIGN / UNASSIGN — الطلبات والرسائل
   ───────────────────────────────────────────────────────── */
   async function handleAssign(entityType, entityId, btn) {
-    const select   = document.getElementById("assignSellerSelect");
-    const sellerId = select?.value;
+    const sellerId = btn.dataset.sellerId || document.getElementById("assignSellerSelect")?.value;
     if (!sellerId) { alert("⚠️ يرجى اختيار بائع أولاً"); return; }
 
     btn.disabled = true;
@@ -567,7 +598,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       console.error("Unassign error:", err);
       alert("❌ فشل إزالة التعيين:\n" + (err.message || ""));
       btn.disabled = false;
-      btn.textContent = "✖ إزالة التعيين";
+      btn.textContent = "🔒 الاحتفاظ به مع الأدمن";
     }
   }
 
@@ -672,44 +703,6 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         <div class="m-msg-actions">
           <a href="tel:${esc(m.contact || "")}" class="btn-receipt">📞 اتصال</a>
           ${isAdmin() ? `<button class="btn-delete" data-msg-id="${esc(m.id)}" data-action="delete-msg">🗑 حذف</button>` : ""}
-        </div>
-      </div>`).join("");
-  }
-
-  /* ─────────────────────────────────────────────────────────
-     MOBILE CARDS — Products
-  ───────────────────────────────────────────────────────── */
-  function renderProductsMobileCards(products) {
-    const container = document.getElementById("productsMobileCards");
-    if (!container) return;
-
-    if (!products.length) {
-      container.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-muted);font-size:15px;">لا توجد منتجات</div>`;
-      return;
-    }
-
-    container.innerHTML = products.map(p => `
-      <div class="m-product-card" data-catalog-id="${p.catalogId}">
-        ${p.image
-          ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="m-prod-img"
-                 loading="lazy" decoding="async"
-                 onerror="if(!this.dataset.f){this.dataset.f='1';this.src=this.src.replace('main.webp','main.png')}else{this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:32px;flex-shrink:0;line-height:1;\\'>📚</span>')}">`
-          : '<span style="font-size:32px;flex-shrink:0;line-height:1;">📚</span>'
-        }
-        <div class="m-prod-body">
-          <div class="m-prod-name">${esc(p.name)}</div>
-          <div class="m-prod-cat">${esc(p.category)}</div>
-          <div class="m-prod-bottom">
-            <span class="m-prod-price" dir="ltr">${p.price ? p.price.toLocaleString("fr-DZ") + " دج" : "—"}</span>
-            <span class="avail-status ${p.available ? 'is-avail' : 'not-avail'}">
-              ${p.available ? '✅ متوفر' : '⚠️ نفذت الكمية مؤقتًا'}
-            </span>
-            <label class="avail-toggle" title="${p.available ? 'إيقاف التوفر' : 'تفعيل التوفر'}">
-              <input type="checkbox" data-action="toggle-avail" data-catalog-id="${p.catalogId}"
-                     ${p.available ? 'checked' : ''}>
-              <span class="avail-slider"></span>
-            </label>
-          </div>
         </div>
       </div>`).join("");
   }
@@ -1009,208 +1002,6 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       ${buildAssignmentSectionHTML(o, "order")}`;
   }
 
-  /* ─────────────────────────────────────────────────────────
-     PRODUCTS — قائمة الكتب من SHOP_CATALOG المدمجة مع Supabase
-  ───────────────────────────────────────────────────────── */
-
-  /* ─────────────────────────────────────────────────────────
-     جلب المنتجات — مصدر واحد لكل شيء (كتب وإلكترونيات):
-     admin_products_catalog. هذا الجدول هو نفسه ما يحرّره
-     admin/products-manager.js، فلا حاجة لأي دمج أو احتياط محلي.
-  ───────────────────────────────────────────────────────── */
-  async function fetchProducts() {
-    const { data, error } = await supabase
-      .from('admin_products_catalog')
-      .select('id, catalog_id, product_name, category, subcategory, price, stock_status, main_image, is_active')
-      .order('catalog_id');
-    if (error) throw error;
-
-    return (data || []).map(p => ({
-      catalogId: p.catalog_id,
-      name:      p.product_name || '—',
-      available: p.stock_status !== 'out_of_stock',
-      category:  p.category === 'books' ? (p.subcategory || 'كتب') : 'إلكترونيات',
-      price:     p.price,
-      image:     resolveAdminImage(p),
-      isActive:  p.is_active,
-    }));
-  }
-
-  /* main_image لكتب قديمة قد يكون مساراً محلياً نسبياً ('slug/main.png')
-     بدل رابط Supabase Storage كامل — يُحلّ هنا لعرض الصورة في لوحة التحكم. */
-  function resolveAdminImage(p) {
-    let img = p.main_image || '';
-    if (!img) return '';
-    if (p.category === 'books' && !/^https?:\/\//.test(img)) {
-      img = '../books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-    }
-    return img;
-  }
-
-  /* ─────────────────────────────────────────────────────────
-     حفظ حالة التوفر (stock_status) مباشرة في admin_products_catalog.
-  ───────────────────────────────────────────────────────── */
-  async function setProductAvailability(catalogId, available) {
-    const { error } = await supabase
-      .from('admin_products_catalog')
-      .update({ stock_status: available ? 'in_stock' : 'out_of_stock', updated_at: new Date().toISOString() })
-      .eq('catalog_id', catalogId);
-    if (error) throw error;
-  }
-
-  /* تحديد ما إذا كان المنتج إلكترونياً */
-  function isElec(p) { return p.category === 'إلكترونيات'; }
-
-  /* تحديث شارات التصفية الفرعية (الكل / الكتب / إلكترونيات) */
-  function updateProdSubfilterBadges() {
-    const elecCount  = ALL_PRODUCTS.filter(isElec).length;
-    const booksCount = ALL_PRODUCTS.length - elecCount;
-    const allEl = document.getElementById('psb-all');
-    const bEl   = document.getElementById('psb-books');
-    const eEl   = document.getElementById('psb-electronics');
-    if (allEl) allEl.textContent = ALL_PRODUCTS.length;
-    if (bEl)   bEl.textContent   = booksCount;
-    if (eEl)   eEl.textContent   = elecCount;
-    document.getElementById("tab-badge-products").textContent = ALL_PRODUCTS.length;
-  }
-
-  /* فلترة المنتجات بحسب القسم النشط والبحث النصي */
-  function getProductsForView() {
-    const q = PROD_SEARCH_QUERY.toLowerCase();
-    return ALL_PRODUCTS.filter(p => {
-      if (prodFilterCurrent === 'books'       &&  isElec(p)) return false;
-      if (prodFilterCurrent === 'electronics' && !isElec(p)) return false;
-      if (q && !p.name.toLowerCase().includes(q) &&
-               !(p.category || '').toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }
-
-  /* بناء HTML لصف منتج واحد */
-  function prodRow(p) {
-    const icon = isElec(p) ? '💻' : '📚';
-    return `
-      <tr data-catalog-id="${p.catalogId}">
-        <td>
-          ${p.image
-            ? `<img src="${esc(p.image)}" alt="${esc(p.name)}" class="prod-thumb"
-                   loading="lazy" decoding="async"
-                   onerror="if(!this.dataset.f){this.dataset.f='1';this.src=this.src.replace('main.webp','main.png')}else{this.style.display='none';this.insertAdjacentHTML('afterend','<span style=\\'font-size:24px;\\'>${icon}</span>')}">`
-            : `<span style="font-size:24px;">${icon}</span>`
-          }
-        </td>
-        <td><strong>${esc(p.name)}</strong></td>
-        <td class="nowrap" style="color:var(--primary);font-weight:800;" dir="ltr">
-          ${p.price ? p.price.toLocaleString("fr-DZ") + " دج" : "—"}
-        </td>
-        <td class="nowrap">
-          <span class="pm-tag">${esc(p.category)}</span>
-        </td>
-        <td class="nowrap">
-          <span class="avail-status ${p.available ? 'is-avail' : 'not-avail'}">
-            ${p.available ? '✅ متوفر' : '⚠️ نفذت الكمية مؤقتًا'}
-          </span>
-        </td>
-        <td class="nowrap">
-          <label class="avail-toggle" title="${p.available ? 'اضغط لإيقاف التوفر' : 'اضغط لتفعيل التوفر'}">
-            <input type="checkbox" data-action="toggle-avail" data-catalog-id="${p.catalogId}"
-                   ${p.available ? 'checked' : ''}>
-            <span class="avail-slider"></span>
-          </label>
-        </td>
-      </tr>`;
-  }
-
-  /* عرض جدول المنتجات — يدعم التجميع حسب الفئة في وضع "الكل" */
-  function renderProductsTable(products) {
-    renderProductsMobileCards(products);
-    const tbody = document.getElementById("productsTbody");
-    const cnt   = products.length;
-    const total = ALL_PRODUCTS.length;
-
-    document.getElementById("productsCount").textContent =
-      cnt + " منتج" + (cnt !== total ? ` (من ${total})` : "");
-    updateProdSubfilterBadges();
-
-    if (!cnt) {
-      tbody.innerHTML = `<tr><td colspan="6" class="empty">لا توجد منتجات مطابقة</td></tr>`;
-      return;
-    }
-
-    /* وضع "الكل" بدون بحث: نعرض الكتب ثم الإلكترونيات مع رؤوس المجموعات */
-    if (prodFilterCurrent === 'all' && !PROD_SEARCH_QUERY) {
-      const books = products.filter(p => !isElec(p));
-      const elec  = products.filter(p =>  isElec(p));
-      let html = '';
-
-      if (books.length) {
-        html += `<tr class="prod-group-hdr">
-          <td colspan="6">📚 الكتب <span class="prod-group-count">(${books.length} كتاب)</span></td>
-        </tr>`;
-        html += books.map(p => prodRow(p)).join('');
-      }
-
-      if (elec.length) {
-        html += `<tr class="prod-group-hdr">
-          <td colspan="6">💻 إلكترونيات <span class="prod-group-count">(${elec.length} منتج)</span></td>
-        </tr>`;
-        html += elec.map(p => prodRow(p)).join('');
-      }
-
-      tbody.innerHTML = html;
-    } else {
-      /* وضع الفلتر أو البحث: قائمة مسطحة بدون رؤوس مجموعات */
-      tbody.innerHTML = products.map(p => prodRow(p)).join('');
-    }
-  }
-
-  /* تحديث شارة التوفر في الجدول والبطاقات المحمولة */
-  function applyAvailabilityUI(catalogId, value) {
-    const label = value ? '✅ متوفر' : '⚠️ نفذت الكمية مؤقتًا';
-    const cls   = value ? 'is-avail' : 'not-avail';
-
-    const row = document.querySelector(`#productsTbody tr[data-catalog-id="${catalogId}"]`);
-    if (row) {
-      const badge = row.querySelector(".avail-status");
-      if (badge) { badge.className = `avail-status ${cls}`; badge.textContent = label; }
-    }
-
-    const mCard = document.querySelector(`#productsMobileCards [data-catalog-id="${catalogId}"]`);
-    if (mCard) {
-      const mBadge = mCard.querySelector(".avail-status");
-      if (mBadge) { mBadge.className = `avail-status ${cls}`; mBadge.textContent = label; }
-    }
-  }
-
-  /* معالجة تغيير التوفر — Optimistic UI */
-  async function handleToggleAvailability(catalogId, newValue, checkbox) {
-    /* منع النقر المزدوج */
-    checkbox.disabled = true;
-
-    /* حفظ القيمة السابقة للتراجع عند الفشل */
-    const p = ALL_PRODUCTS.find(p => p.catalogId === catalogId);
-    const previousValue = p ? p.available : !newValue;
-
-    /* 1. تحديث فوري للواجهة (Optimistic update) */
-    if (p) p.available = newValue;
-    applyAvailabilityUI(catalogId, newValue);
-
-    /* 2. إرسال التحديث لقاعدة البيانات */
-    try {
-      await setProductAvailability(catalogId, newValue);
-    } catch (err) {
-      console.error("Toggle availability error:", err);
-
-      /* 3. عند الفشل: التراجع عن التغيير في الواجهة */
-      checkbox.checked = previousValue;
-      if (p) p.available = previousValue;
-      applyAvailabilityUI(catalogId, previousValue);
-
-      alert("❌ فشل تحديث حالة التوفر:\n" + (err.message || "تحقق من صلاحيات قاعدة البيانات."));
-    }
-
-    checkbox.disabled = false;
-  }
 
   /* ═══════════════════════════════════════════════════════════
      ⭐ REVIEWS MANAGEMENT
@@ -1750,25 +1541,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       if (btn.dataset.action === "start-impersonation") await handleStartImpersonation(btn);
     });
 
-    /* ── Products — تحديث التوفر عبر Toggle ───────────────── */
-    document.getElementById("productsTbody").addEventListener("change", async e => {
-      const cb = e.target.closest('input[data-action="toggle-avail"]');
-      if (!cb) return;
-      const catalogId = parseInt(cb.dataset.catalogId);
-      await handleToggleAvailability(catalogId, cb.checked, cb);
-    });
-
     /* ── Mobile: Orders cards ──────────────────────────────── */
     document.getElementById("ordersMobileCards").addEventListener("click", async e => {
       const detailsBtn = e.target.closest("[data-action='details']");
       if (detailsBtn) { showOrderModal(detailsBtn.dataset.id); return; }
-    });
-
-    /* ── Mobile: Products cards toggle ─────────────────────── */
-    document.getElementById("productsMobileCards").addEventListener("change", async e => {
-      const cb = e.target.closest('input[data-action="toggle-avail"]');
-      if (!cb) return;
-      await handleToggleAvailability(parseInt(cb.dataset.catalogId), cb.checked, cb);
     });
 
     /* ── Mobile: Messages cards ─────────────────────────────── */
@@ -1780,32 +1556,6 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       }
       const card = e.target.closest(".m-msg-card");
       if (card) showMessageModal(card.dataset.msgId);
-    });
-
-    document.getElementById("productsRefreshBtn").addEventListener("click", async () => {
-      const btn = document.getElementById("productsRefreshBtn");
-      btn.disabled = true; btn.textContent = "⏳ جاري التحديث...";
-      try {
-        ALL_PRODUCTS = await fetchProducts();
-        renderProductsTable(getProductsForView());
-      } catch (err) { alert("❌ فشل تحديث المنتجات: " + (err.message || "")); }
-      btn.disabled = false; btn.textContent = "↻ تحديث";
-    });
-
-    /* ── Product sub-filter buttons ────────────────────────── */
-    document.getElementById("prodSubfilterBar")?.addEventListener("click", e => {
-      const btn = e.target.closest(".prod-sf-btn");
-      if (!btn) return;
-      prodFilterCurrent = btn.dataset.pfilter || 'all';
-      document.querySelectorAll(".prod-sf-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      renderProductsTable(getProductsForView());
-    });
-
-    /* ── Product search ─────────────────────────────────────── */
-    document.getElementById("prodSearchInput")?.addEventListener("input", e => {
-      PROD_SEARCH_QUERY = e.target.value.trim();
-      renderProductsTable(getProductsForView());
     });
 
     /* ── Reviews: search & filter ───────────────────────────── */
@@ -1934,22 +1684,21 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       const staff = await authGuard();
       if (!staff) return;
 
-      CURRENT_ROLE        = String(staff.role || "staff").toLowerCase();
+      CURRENT_ROLE        = String(staff.role || "").toLowerCase();
       CURRENT_STAFF_ID     = staff.id;
       CURRENT_STAFF_EMAIL  = String(staff.email || "").toLowerCase();
 
       document.getElementById("adminBadge").textContent =
-        (isAdmin() ? "👑 Admin" : "👤 Staff") + (staff.full_name ? " — " + staff.full_name : "");
+        "👑 Admin" + (staff.full_name ? " — " + staff.full_name : "");
 
-      if (isAdmin()) document.getElementById("viewAsBtn").style.display = "inline-flex";
+      document.getElementById("viewAsBtn").style.display = "inline-flex";
 
       /* حساب "غير مُشاهد منذ آخر زيارة" قبل أي بيانات جديدة تصل عبر Realtime */
       const lastSeenOrders   = sessionStorage.getItem("admin_orders_last_seen");
       const lastSeenMessages = sessionStorage.getItem("admin_messages_last_seen");
 
-      [ALL_ORDERS, ALL_MESSAGES, ALL_PRODUCTS, ALL_REVIEWS, ALL_SELLERS] = await Promise.all([
+      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS] = await Promise.all([
         fetchOrders(), fetchMessages(),
-        fetchProducts().catch(() => []),
         fetchReviews().catch(() => []),
         fetchSellers().catch(() => []),
       ]);
@@ -1970,7 +1719,6 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       renderStats(ALL_ORDERS);
       renderTable(getFiltered());
       renderMessagesTable(ALL_MESSAGES);
-      renderProductsTable(getProductsForView());
       renderReviewsTable(ALL_REVIEWS);
       bindEvents();
       setupRealtime();

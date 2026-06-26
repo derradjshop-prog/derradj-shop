@@ -242,7 +242,7 @@
     const unavailName = checkAllAvailable();
     if (unavailName) {
       const alertEl2 = document.getElementById("formAlert");
-      const msg2 = `❌ عذرًا، الكتاب "${unavailName}" غير متوفر حاليا. يرجى إزالته من طلبك.`;
+      const msg2 = `❌ عذرًا، نفذت الكمية من "${unavailName}". يرجى إزالته من طلبك.`;
       if (alertEl2) {
         alertEl2.innerHTML = msg2;
         alertEl2.classList.add("show");

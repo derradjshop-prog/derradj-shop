@@ -27,9 +27,8 @@
   function fmtPrice(n) { return Number(n).toLocaleString('en-US'); }
 
   function stockBadge(status) {
-    if (status === 'out_of_stock') return `<span class="pd-stock unavail">❌ غير متوفر حاليا</span>`;
-    if (status === 'low_stock')    return `<span class="pd-stock limited">⚠️ كميات محدودة</span>`;
-    return `<span class="pd-stock avail">✅ متوفر — يمكن الطلب الآن</span>`;
+    if (status === 'out_of_stock') return `<span class="pd-stock unavail">🔴 نفذت الكمية</span>`;
+    return `<span class="pd-stock avail">🟢 متوفر — يمكن الطلب الآن</span>`;
   }
 
   function catLabelAr(cat) {
@@ -91,7 +90,12 @@
     /* ── Cart button ── */
     const cartBtn = isAvail && p.catalog_id
       ? `<button class="btn-add-cart-sb" id="pdAddCart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</button>`
-      : `<button class="btn-add-cart-sb" disabled>❌ غير متوفر حاليا</button>`;
+      : `<button class="btn-add-cart-sb" disabled>🔴 نفذت الكمية</button>`;
+
+    /* ── Buy-now button — disabled (no live link) when out of stock ── */
+    const buyNowBtn = isAvail
+      ? `<a href="/ordre/" class="btn-buy-now-sb" id="pdOrderNowBtn">🛒 اطلب الآن</a>`
+      : `<button class="btn-buy-now-sb" id="pdOrderNowBtn" disabled style="opacity:.6;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 
     /* ── WhatsApp contact button ── */
     const waMsg = encodeURIComponent('مرحبا، أريد الاستفسار عن هذا المنتج: ' + p.product_name);
@@ -189,7 +193,7 @@
           </div>
 
           <div class="product-cta-buttons">
-            <a href="/ordre/" class="btn-buy-now-sb" id="pdOrderNowBtn">🛒 اطلب الآن</a>
+            ${buyNowBtn}
             ${waBtn}
             ${cartBtn}
           </div>

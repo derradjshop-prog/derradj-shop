@@ -662,7 +662,7 @@ document.addEventListener('derradj:catalog-loaded', function (e) {
   /* ── بناء HTML كارت كتاب واحد ──────────────────────── */
   function buildCard(book, idx) {
     const isAvail   = book.available !== false;
-    const badgeText = isAvail ? 'متوفر' : 'غير متوفر حاليا';
+    const badgeText = isAvail ? 'متوفر' : 'نفذت الكمية';
     const badgeCls  = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
     const bookUrl   = book.url || '#';
 
@@ -718,7 +718,7 @@ document.addEventListener('derradj:catalog-loaded', function (e) {
           <div class="product-prices">${priceLabel}${extraPrice}</div>
           <div class="product-card-btns">
             <a href="${bookUrl}" target="_blank" rel="noopener noreferrer" class="btn-order-card">📖 تفاصيل</a>
-            <button class="btn-add-cart" data-add-to-cart="${book.id}"${isAvail ? '' : ' disabled'}>${isAvail ? '🛒 أضف للسلة' : 'غير متوفر'}</button>
+            <button class="btn-add-cart" data-add-to-cart="${book.id}"${isAvail ? '' : ' disabled'}>${isAvail ? '🛒 أضف للسلة' : '🔴 نفذت الكمية'}</button>
           </div>
         </div>
       </div>`;
@@ -784,7 +784,7 @@ document.addEventListener('derradj:catalog-loaded', function (e) {
       <div class="modal-btns">
         ${book.available !== false
           ? `<button class="btn-add-cart" data-add-to-cart="${book.id}">🛒 أضف إلى السلة</button>`
-          : `<button class="btn-add-cart" disabled style="opacity:.6;cursor:not-allowed;">غير متوفر حاليا</button>`
+          : `<button class="btn-add-cart" disabled style="opacity:.6;cursor:not-allowed;">🔴 نفذت الكمية</button>`
         }
       </div>`;
 

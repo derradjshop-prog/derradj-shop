@@ -142,8 +142,18 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const role = String(staffRow.role || "staff").toLowerCase();
-      if (!['admin', 'staff'].includes(role)) {
+      const role = String(staffRow.role || "").toLowerCase();
+
+      // 2.5) حساب بائع (Seller) — يُحوَّل تلقائياً إلى لوحة البائع
+      //      بدلاً من رفضه أو تحميل واجهة الأدمن. الجلسة صالحة بالفعل
+      //      لصفحة seller/dashboard.html فلا حاجة لإعادة تسجيل الدخول.
+      if (role === 'seller') {
+        setStatus("↪️ هذا حساب بائع — يتم تحويلك إلى لوحة البائع...", true);
+        window.location.href = "../seller/dashboard.html";
+        return;
+      }
+
+      if (role !== 'admin') {
         setStatus("🚫 هذا الحساب غير مصرح له بالدخول");
         await supabase.auth.signOut();
         loginButton.textContent = originalText;

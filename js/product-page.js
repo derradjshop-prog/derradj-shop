@@ -136,11 +136,14 @@
   }
 
   function wireInteractions(view, p) {
-    /* ── "Order Now" — add product to cart then redirect ── */
+    /* ── "Order Now" — add product to cart then redirect ──
+       Guarded against stock: the button is rendered disabled when
+       out of stock, but this guard covers it defensively too. */
     const orderNowBtn = document.getElementById('pdOrderNowBtn');
     if (orderNowBtn && view.catalogId) {
       orderNowBtn.addEventListener('click', function (e) {
         e.preventDefault();
+        if (!view.isAvail) return;
         try {
           localStorage.setItem('derradj_cart', JSON.stringify([{ catalogId: view.catalogId, qty: 1 }]));
           localStorage.setItem('derradj_cart_ts', String(Date.now()));
@@ -271,7 +274,7 @@
 
         const stockBadgeHtml = isAvail
           ? `<span class="rp-stock rp-avail">✅ متوفر</span>`
-          : `<span class="rp-stock rp-unavail">❌ غير متوفر</span>`;
+          : `<span class="rp-stock rp-unavail">🔴 نفذت الكمية</span>`;
 
         return `<a href="${url}" class="rp-card">
           <img src="${escAttr(imgSrc)}" alt="${escAttr(p.product_name)}"

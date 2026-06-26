@@ -14,10 +14,10 @@
   ══════════════════════════════════════════════════════════ */
   const AVAIL_CHECKING_TEXT    = '⏳ جاري التحقق من التوفر...';
   const AVAIL_AVAILABLE_TEXT   = '✅ متوفر — يمكن الطلب الآن';
-  const AVAIL_UNAVAILABLE_TEXT = '❌ غير متوفر حاليا';
+  const AVAIL_UNAVAILABLE_TEXT = '🔴 نفذت الكمية';
   const TAG_CHECKING_HTML      = '<span>⏳</span><span>جاري التحقق من التوفر...</span>';
   const TAG_AVAILABLE_HTML     = '<span>✓</span><span>متوفر</span>';
-  const TAG_UNAVAILABLE_HTML   = '<span>✗</span><span>غير متوفر حاليا</span>';
+  const TAG_UNAVAILABLE_HTML   = '<span>✗</span><span>نفذت الكمية</span>';
 
   /* المنتج الرئيسي لصفحة المنتج الحالية — مُستمد من زر "أضف للسلة"
      داخل صندوق الشراء (.product-purchase-box) أو #mainAddToCartBtn */
@@ -154,7 +154,7 @@
       if (p.available === false) {
         btn.disabled          = true;
         btn.dataset._origText = btn.dataset._origText || btn.textContent;
-        btn.textContent       = 'غير متوفر حاليا';
+        btn.textContent       = 'نفذت الكمية';
         btn.classList.add('btn-unavailable');
         btn.style.cursor      = 'not-allowed';
         btn.style.opacity     = '0.65';
@@ -176,7 +176,7 @@
       if (!p || p.hidden) return;
 
       if (p.available === false) {
-        badge.textContent = 'غير متوفر';
+        badge.textContent = 'نفذت الكمية';
         badge.classList.remove('new');
         badge.classList.add('product-badge--unavail');
       } else {
@@ -273,7 +273,7 @@
 
       /* حماية: رفض المنتجات غير المتوفرة */
       if (p.available === false) {
-        showToast('عذرًا، هذا الكتاب غير متوفر حاليا.');
+        showToast('عذرًا، نفذت الكمية من هذا المنتج حالياً.');
         return false;
       }
 
@@ -426,7 +426,7 @@
         <div class="cart-item-info">
           <div class="cart-item-name">${item.shortName || item.name}</div>
           ${isUnavail
-            ? `<div class="cart-item-unavail-badge">⚠️ غير متوفر حاليا</div>`
+            ? `<div class="cart-item-unavail-badge">🔴 نفذت الكمية</div>`
             : `<div class="cart-item-price">${item.priceDisplay ? item.priceDisplay : formatCartPrice(item.price)} / وحدة</div>
                <div class="cart-item-sub">${item.priceDisplay ? '—' : formatCartPrice(item.price * item.qty)}</div>`
           }
@@ -450,7 +450,7 @@
     if (hasUnavail) {
       footer.innerHTML = `
         <div class="cart-unavail-warning">
-          ⚠️ بعض المنتجات في سلتك غير متوفرة حاليا. احذفها لإتمام الطلب.
+          ⚠️ بعض المنتجات في سلتك نفذت كميتها. احذفها لإتمام الطلب.
         </div>
         <div class="cart-total-row">
           <span>مجموع المنتجات المتوفرة</span>
@@ -616,7 +616,7 @@
         const p = (window.SHOP_CATALOG || []).find(c => c.catalogId === cid);
         if (p && !p.hidden) {
           if (p.available === false) {
-            showToast('عذرًا، هذا الكتاب غير متوفر حاليا.', 'warn');
+            showToast('عذرًا، نفذت الكمية من هذا المنتج حالياً.', 'warn');
             return;
           }
           /* مسح السلة القديمة وإضافة هذا الكتاب فقط (Cart.save يُحدّث الطابع الزمني) */

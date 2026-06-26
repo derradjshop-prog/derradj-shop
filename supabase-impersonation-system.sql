@@ -98,7 +98,7 @@ $$;
 -- ──────────────────────────────────────────────────────────────
 -- 4. impersonation_get_orders() — mirrors orders_seller_select_assigned
 --    (assigned_to = target_staff_id) by hand. order_items is built as a
---    JSONB array so the shape matches what seller/books.html's existing
+--    JSONB array so the shape matches what seller/dashboard.html's existing
 --    render functions already expect — no reliance on PostgREST's
 --    RPC-result embedding, which is version-sensitive.
 -- ──────────────────────────────────────────────────────────────

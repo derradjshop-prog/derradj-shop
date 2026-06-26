@@ -69,7 +69,7 @@
     const url      = `${isBook ? '/books/' : '/product/'}${encodeURIComponent(p.slug)}/`;
     const isAvail  = p.stock_status !== 'out_of_stock';
     const badgeCls = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
-    const badgeTxt = isAvail ? 'متوفر' : 'غير متوفر';
+    const badgeTxt = isAvail ? 'متوفر' : 'نفذت الكمية';
     const icon     = catIcon(p.category);
     const catAr    = catLabelAr(p.category);
     const imgSrc   = resolveImage(p);
@@ -77,7 +77,7 @@
 
     const cartBtn = isAvail
       ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
-      : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">❌ غير متوفر</button>`;
+      : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 
     return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}">
       <div class="${badgeCls}" data-avail-badge="${p.catalog_id}">${badgeTxt}</div>

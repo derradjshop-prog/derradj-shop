@@ -114,7 +114,10 @@ CREATE POLICY "reviews_anon_read_approved"
   TO anon
   USING (is_approved = TRUE);
 
--- ● Authenticated users: approved reviews, OR all reviews if they are staff
+-- ● Authenticated users: approved reviews, OR all reviews if they are admin.
+--   (The 'staff' role this used to also check for was retired in
+--   admin/refactor-admin-seller-system.sql — only admin/seller exist now,
+--   and review management is admin-only.)
 DROP POLICY IF EXISTS "reviews_auth_read" ON public.reviews;
 CREATE POLICY "reviews_auth_read"
   ON public.reviews
@@ -126,11 +129,11 @@ CREATE POLICY "reviews_auth_read"
       SELECT 1 FROM public.staff_accounts sa
       WHERE sa.id = auth.uid()
         AND sa.is_active = TRUE
-        AND sa.role IN ('admin', 'staff')
+        AND sa.role = 'admin'
     )
   );
 
--- ● Staff only: INSERT
+-- ● Admin only: INSERT
 DROP POLICY IF EXISTS "reviews_staff_insert" ON public.reviews;
 CREATE POLICY "reviews_staff_insert"
   ON public.reviews
@@ -141,11 +144,11 @@ CREATE POLICY "reviews_staff_insert"
       SELECT 1 FROM public.staff_accounts sa
       WHERE sa.id = auth.uid()
         AND sa.is_active = TRUE
-        AND sa.role IN ('admin', 'staff')
+        AND sa.role = 'admin'
     )
   );
 
--- ● Staff only: UPDATE (approve, edit, etc.)
+-- ● Admin only: UPDATE (approve, edit, etc.)
 DROP POLICY IF EXISTS "reviews_staff_update" ON public.reviews;
 CREATE POLICY "reviews_staff_update"
   ON public.reviews
@@ -156,7 +159,7 @@ CREATE POLICY "reviews_staff_update"
       SELECT 1 FROM public.staff_accounts sa
       WHERE sa.id = auth.uid()
         AND sa.is_active = TRUE
-        AND sa.role IN ('admin', 'staff')
+        AND sa.role = 'admin'
     )
   )
   WITH CHECK (
@@ -164,11 +167,11 @@ CREATE POLICY "reviews_staff_update"
       SELECT 1 FROM public.staff_accounts sa
       WHERE sa.id = auth.uid()
         AND sa.is_active = TRUE
-        AND sa.role IN ('admin', 'staff')
+        AND sa.role = 'admin'
     )
   );
 
--- ● Staff only: DELETE
+-- ● Admin only: DELETE
 DROP POLICY IF EXISTS "reviews_staff_delete" ON public.reviews;
 CREATE POLICY "reviews_staff_delete"
   ON public.reviews
@@ -179,7 +182,7 @@ CREATE POLICY "reviews_staff_delete"
       SELECT 1 FROM public.staff_accounts sa
       WHERE sa.id = auth.uid()
         AND sa.is_active = TRUE
-        AND sa.role IN ('admin', 'staff')
+        AND sa.role = 'admin'
     )
   );
 
