@@ -1,8 +1,21 @@
 # ============================================================
 # Netlify _headers — Derradj Shop
 # Purpose: cache static image assets aggressively so repeat
-#          visitors see images instantly (served from disk).
+#          visitors see images instantly (served from disk), and
+#          send baseline security headers on every response.
+#
+# Note: no Content-Security-Policy is set here — the site relies
+# on many inline <script> blocks (GA init, cart, reviews loader,
+# carousels). A strict CSP would need those moved to files or
+# given nonces/hashes first, otherwise it breaks the site.
 # ============================================================
+
+/*
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: geolocation=(), camera=(), microphone=()
+  Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
 # Book cover images — 1-year immutable cache
 # Path pattern: /books/<slug>/main.png

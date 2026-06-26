@@ -177,9 +177,9 @@ function renderPage(view, dims) {
       <a href="/#categories"   class="nav-link">التصنيفات</a>
       <a href="/books/"        class="nav-link">📚 الكتب</a>
       <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
-      <a href="/about.html"    class="nav-link">من نحن</a>
-      <a href="/faq.html"      class="nav-link">الأسئلة الشائعة</a>
-      <a href="/contact.html"  class="nav-link">تواصل معنا</a>
+      <a href="/about"    class="nav-link">من نحن</a>
+      <a href="/faq"      class="nav-link">الأسئلة الشائعة</a>
+      <a href="/contact"  class="nav-link">تواصل معنا</a>
     </nav>
     <div style="display:flex;align-items:center;gap:10px;">
       <button class="gs-btn" id="gsBtn" aria-label="بحث" title="بحث" aria-expanded="false">
@@ -210,9 +210,9 @@ function renderPage(view, dims) {
   <a href="/#categories">التصنيفات</a>
   <a href="/books/">📚 الكتب</a>
   <a href="/Electronique/">💻 إلكترونيات</a>
-  <a href="/about.html">من نحن</a>
-  <a href="/faq.html">الأسئلة الشائعة</a>
-  <a href="/contact.html">تواصل معنا</a>
+  <a href="/about">من نحن</a>
+  <a href="/faq">الأسئلة الشائعة</a>
+  <a href="/contact">تواصل معنا</a>
   <a href="/ordre/" class="mobile-cta-link">🛒 اطلب الآن</a>
 </div>
 
@@ -324,9 +324,9 @@ function renderBookPage(view, dims) {
       <a href="/#categories"   class="nav-link">التصنيفات</a>
       <a href="/books/"        class="nav-link" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
       <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
-      <a href="/about.html"    class="nav-link">من نحن</a>
-      <a href="/faq.html"      class="nav-link">الأسئلة الشائعة</a>
-      <a href="/contact.html"  class="nav-link">تواصل معنا</a>
+      <a href="/about"    class="nav-link">من نحن</a>
+      <a href="/faq"      class="nav-link">الأسئلة الشائعة</a>
+      <a href="/contact"  class="nav-link">تواصل معنا</a>
     </nav>
     <div style="display:flex;align-items:center;gap:10px;">
       <button class="gs-btn" id="gsBtn" aria-label="بحث" title="بحث" aria-expanded="false">
@@ -357,9 +357,9 @@ function renderBookPage(view, dims) {
   <a href="/#categories">التصنيفات</a>
   <a href="/books/" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
   <a href="/Electronique/">💻 إلكترونيات</a>
-  <a href="/about.html">من نحن</a>
-  <a href="/faq.html">الأسئلة الشائعة</a>
-  <a href="/contact.html">تواصل معنا</a>
+  <a href="/about">من نحن</a>
+  <a href="/faq">الأسئلة الشائعة</a>
+  <a href="/contact">تواصل معنا</a>
   <a href="/ordre/" class="mobile-cta-link">🛒 اطلب الآن</a>
 </div>
 
@@ -409,12 +409,13 @@ function buildSitemap(products, books) {
     { loc: `${SITE_URL}/`,                  freq: 'weekly',  pri: '1.0' },
     { loc: `${SITE_URL}/books/`,            freq: 'weekly',  pri: '0.9' },
     { loc: `${SITE_URL}/Electronique/`,     freq: 'weekly',  pri: '0.9' },
-    { loc: `${SITE_URL}/about.html`,        freq: 'monthly', pri: '0.5' },
-    { loc: `${SITE_URL}/contact.html`,      freq: 'monthly', pri: '0.5' },
-    { loc: `${SITE_URL}/faq.html`,          freq: 'monthly', pri: '0.5' },
-    { loc: `${SITE_URL}/delivery.html`,     freq: 'monthly', pri: '0.6' },
-    { loc: `${SITE_URL}/payment.html`,      freq: 'monthly', pri: '0.5' },
+    { loc: `${SITE_URL}/about`,        freq: 'monthly', pri: '0.5' },
+    { loc: `${SITE_URL}/contact`,      freq: 'monthly', pri: '0.5' },
+    { loc: `${SITE_URL}/faq`,          freq: 'monthly', pri: '0.5' },
+    { loc: `${SITE_URL}/delivery`,     freq: 'monthly', pri: '0.6' },
+    { loc: `${SITE_URL}/payment`,      freq: 'monthly', pri: '0.5' },
     { loc: `${SITE_URL}/return-policy.html`,freq: 'monthly', pri: '0.5' },
+    { loc: `${SITE_URL}/terms`,        freq: 'yearly',  pri: '0.3' },
   ];
   STATIC.forEach(u => urls.push({ ...u, lastmod: today }));
 

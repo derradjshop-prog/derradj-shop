@@ -79,7 +79,11 @@
       "Bash(node -e \"console.log\\(process.version\\)\")",
       "Bash(node -e \"fetch\\('https://derradjshop.com'\\).then\\(r=>console.log\\('ok',r.status\\)\\).catch\\(e=>console.log\\('fail',e.message\\)\\)\")",
       "Bash(grep -iE '\\\\.\\(js|cjs|mjs\\)$')",
-      "Bash(git ls-files *)"
+      "Bash(git ls-files *)",
+      "Bash(awk -F: '{print $1}')",
+      "Bash(sed -i -E ' *)",
+      "Bash(sed -i -E \"s#\\(\\\\\\\\\\\\$\\\\{SITE_URL\\\\}/about\\)\\\\.html\\\\`#\\\\1\\\\`#; s#\\(\\\\\\\\\\\\$\\\\{SITE_URL\\\\}/contact\\)\\\\.html\\\\`#\\\\1\\\\`#; s#\\(\\\\\\\\\\\\$\\\\{SITE_URL\\\\}/faq\\)\\\\.html\\\\`#\\\\1\\\\`#; s#\\(\\\\\\\\\\\\$\\\\{SITE_URL\\\\}/delivery\\)\\\\.html\\\\`#\\\\1\\\\`#; s#\\(\\\\\\\\\\\\$\\\\{SITE_URL\\\\}/payment\\)\\\\.html\\\\`#\\\\1\\\\`#; s#\\(\\\\\\\\\\\\$\\\\{SITE_URL\\\\}/terms\\)\\\\.html\\\\`#\\\\1\\\\`#\" scripts/generate-product-pages.js)",
+      "Bash(npx -y clean-css-cli --version)"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",

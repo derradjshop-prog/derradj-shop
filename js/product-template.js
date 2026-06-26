@@ -52,8 +52,9 @@
     const gallery   = Array.isArray(p.gallery_images) ? p.gallery_images : [];
     const allImgs   = [imgSrc, ...gallery.filter(u => u && u !== imgSrc)];
     const catAr     = catLabelAr(p.category);
-    const titleName = p.seo_title || p.product_name_ar || p.product_name;
-    const title     = `${titleName} | Derradj Shop`;
+    const titleNameRaw = p.seo_title || p.product_name_ar || p.product_name;
+    const titleName    = String(titleNameRaw || '').replace(/\s*\|\s*Derradj Shop\s*$/i, '');
+    const title        = `${titleName} | Derradj Shop`;
     const desc      = p.seo_description || p.short_description || `اطلب ${p.product_name} من Derradj Shop`;
     const imgAlt    = `${p.product_name} — Derradj Shop`;
     const schemaName = p.product_name_ar || p.product_name;

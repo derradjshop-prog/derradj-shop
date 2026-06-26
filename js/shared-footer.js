@@ -45,13 +45,13 @@
       <div class="footer-links-col">
         <h4>المتجر</h4>
         <ul>
-          <li><a href="/about.html">من نحن</a></li>
-          <li><a href="/delivery.html">سياسة التوصيل</a></li>
-          <li><a href="/payment.html">الدفع والضمان</a></li>
-          <li><a href="/faq.html">الأسئلة الشائعة</a></li>
-          <li><a href="/contact.html">تواصل معنا</a></li>
+          <li><a href="/about">من نحن</a></li>
+          <li><a href="/delivery">سياسة التوصيل</a></li>
+          <li><a href="/payment">الدفع والضمان</a></li>
+          <li><a href="/faq">الأسئلة الشائعة</a></li>
+          <li><a href="/contact">تواصل معنا</a></li>
           <li><a href="/return-policy.html">سياسة الإرجاع</a></li>
-          <li><a href="/terms.html">الشروط والأحكام</a></li>
+          <li><a href="/terms">الشروط والأحكام</a></li>
         </ul>
       </div>
 
@@ -59,8 +59,8 @@
         <h4>الدعم</h4>
         <ul>
           <li><a href="/ordre/">اطلب الآن</a></li>
-          <li><a href="/faq.html">كيف أطلب؟</a></li>
-          <li><a href="/contact.html">خدمة العملاء</a></li>
+          <li><a href="/faq">كيف أطلب؟</a></li>
+          <li><a href="/contact">خدمة العملاء</a></li>
         </ul>
         <div style="margin-top:20px;">
           <h4>طريقة الدفع</h4>
