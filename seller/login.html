@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N4NME3KN9N');
+  </script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>تسجيل دخول البائع — Derradj Shop</title>
+  <meta name="robots" content="noindex, nofollow"/>
+  <link rel="icon" type="image/png" href="../Logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font:    'Cairo', sans-serif;
+      --bg:      #f1f5f9;
+      --white:   #ffffff;
+      --border:  #e2e8f0;
+      --text:    #1e293b;
+      --muted:   #64748b;
+      --primary: #1d4ed8;
+      --radius:  10px;
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .login-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 40px 36px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 32px rgba(0,0,0,.10);
+    }
+
+    .login-logo {
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--text);
+      text-align: center;
+      margin-bottom: 6px;
+    }
+    .login-logo span { color: #1d4ed8; }
+
+    .login-subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 28px;
+    }
+
+    .seller-badge {
+      display: block;
+      text-align: center;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 99px;
+      margin: 0 auto 24px;
+      width: fit-content;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    input {
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--white);
+      transition: border-color .2s;
+    }
+    input:focus { outline: none; border-color: var(--primary); }
+
+    .btn-login {
+      width: 100%;
+      padding: 13px;
+      background: #1d4ed8;
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s;
+      margin-top: 8px;
+    }
+    .btn-login:hover:not(:disabled) { background: #1e40af; }
+    .btn-login:disabled { background: #94a3b8; cursor: default; }
+
+    .status-msg {
+      text-align: center;
+      font-size: 13px;
+      font-weight: 700;
+      margin-top: 14px;
+      min-height: 20px;
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-card">
+  <div class="login-logo">Derradj <span>Shop</span></div>
+  <div class="login-subtitle">لوحة البائع</div>
+  <span class="seller-badge">🛒 Seller Portal</span>
+
+  <h2>تسجيل دخول البائع</h2>
+
+  <form id="sellerLoginForm" autocomplete="off">
+    <div class="form-group">
+      <label for="contact">البريد الإلكتروني أو رقم الهاتف</label>
+      <input type="text" id="contact" name="contact"
+             placeholder="أدخل البريد أو رقم الهاتف" required autocomplete="username"/>
+    </div>
+
+    <div class="form-group">
+      <label for="password">كلمة المرور</label>
+      <input type="password" id="password" name="password"
+             placeholder="أدخل كلمة المرور" required autocomplete="current-password"/>
+    </div>
+
+    <button type="submit" class="btn-login" id="loginBtn">دخول</button>
+  </form>
+
+  <p class="status-msg" id="statusMsg"></p>
+  <p class="footer-note">هذه الصفحة مخصصة للبائعين المعتمدين فقط</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  const SUPABASE_URL      = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
+
+  if (!window.supabase?.createClient) {
+    alert("❌ Supabase غير محمّل.");
+    return;
+  }
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const form      = document.getElementById("sellerLoginForm");
+  const loginBtn  = document.getElementById("loginBtn");
+  const statusMsg = document.getElementById("statusMsg");
+
+  function setStatus(text, ok) {
+    statusMsg.textContent  = text;
+    statusMsg.style.color  = ok ? "#065f46" : "#b91c1c";
+  }
+
+  function toAuthEmail(contact) {
+    let c = String(contact || "").trim().toLowerCase().replace(/[^0-9a-zA-Z@.]/g, "");
+    if (c.startsWith("+213")) c = "0" + c.slice(4);
+    else if (c.startsWith("213")) c = "0" + c.slice(3);
+    return c.includes("@") ? c : `${c}@derradjshop.com`;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    setStatus("");
+
+    const contact  = document.getElementById("contact").value.trim();
+    const password = document.getElementById("password").value;
+
+    if (!contact || !password) {
+      setStatus("❌ يرجى إدخال البريد/الرقم وكلمة المرور");
+      return;
+    }
+
+    loginBtn.disabled    = true;
+    loginBtn.textContent = "⏳ جاري التحقق...";
+
+    try {
+      const email = toAuthEmail(contact);
+
+      const { data: authData, error: authError } =
+        await supabase.auth.signInWithPassword({ email, password });
+
+      if (authError || !authData?.user) {
+        setStatus("❌ بيانات غير صحيحة");
+        loginBtn.disabled    = false;
+        loginBtn.textContent = "دخول";
+        return;
+      }
+
+      const { data: staff, error: staffErr } = await supabase
+        .from("staff_accounts")
+        .select("role, is_active, full_name")
+        .eq("id", authData.user.id)
+        .maybeSingle();
+
+      if (staffErr || !staff) {
+        setStatus("🚫 هذا الحساب غير مصرح له بالدخول");
+        await supabase.auth.signOut();
+        loginBtn.disabled    = false;
+        loginBtn.textContent = "دخول";
+        return;
+      }
+
+      if (!staff.is_active) {
+        setStatus("🚫 هذا الحساب معطّل، تواصل مع المسؤول");
+        await supabase.auth.signOut();
+        loginBtn.disabled    = false;
+        loginBtn.textContent = "دخول";
+        return;
+      }
+
+      if (staff.role !== "seller") {
+        setStatus("🚫 هذا الحساب ليس حساب بائع");
+        await supabase.auth.signOut();
+        loginBtn.disabled    = false;
+        loginBtn.textContent = "دخول";
+        return;
+      }
+
+      setStatus("✅ مرحباً " + (staff.full_name || ""), true);
+      setTimeout(() => { window.location.href = "books.html"; }, 600);
+
+    } catch (err) {
+      console.error("Seller login error:", err);
+      setStatus("❌ حدث خطأ أثناء تسجيل الدخول");
+      loginBtn.disabled    = false;
+      loginBtn.textContent = "دخول";
+    }
+  });
+})();
+</script>
+</body>
+</html>

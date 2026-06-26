@@ -1451,9 +1451,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         btn.classList.add("active");
         document.getElementById("tab-" + tab).classList.add("active");
         document.getElementById("pageTitle").textContent =
-          tab === "orders"   ? "📦 إدارة الطلبات"
-        : tab === "messages" ? "✉️ الرسائل الواردة"
-        : tab === "reviews"  ? "⭐ إدارة التقييمات"
+          tab === "orders"      ? "📦 إدارة الطلبات"
+        : tab === "messages"    ? "✉️ الرسائل الواردة"
+        : tab === "reviews"     ? "⭐ إدارة التقييمات"
+        : tab === "bestsellers" ? "📚 الكتب المباعة"
         : "📚 إدارة المنتجات";
 
         /* فتح التبويب يصفّر عداد "غير مُشاهد" الخاص به */
