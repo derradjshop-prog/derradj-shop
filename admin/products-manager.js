@@ -362,6 +362,51 @@
       .pm-grid .full { grid-column:1; }
       .pm-mbody { padding:16px; }
     }
+
+    /* ── Mobile product cards ────────────────────────────── */
+    .pm-mobile-cards { display:none; }
+
+    @media (max-width:768px) {
+      .pm-tbl-wrap { display:none; }
+      .pm-mobile-cards {
+        display:flex; flex-direction:column; gap:12px;
+      }
+      .pm-mcard {
+        display:flex; align-items:flex-start; gap:12px;
+        background:var(--white,#fff); border-radius:14px;
+        box-shadow:var(--shadow-sm,0 1px 3px rgba(0,0,0,.08));
+        padding:12px;
+      }
+      .pm-mcard-img {
+        width:64px; height:64px; object-fit:cover;
+        border-radius:10px; border:1px solid var(--border,#e2e8f0);
+        flex-shrink:0; background:#f1f5f9;
+      }
+      .pm-mcard-img-ph {
+        width:64px; height:64px; border-radius:10px;
+        border:1px solid var(--border,#e2e8f0); background:#f1f5f9;
+        display:flex; align-items:center; justify-content:center;
+        font-size:24px; flex-shrink:0;
+      }
+      .pm-mcard-body { flex:1; min-width:0; display:flex; flex-direction:column; gap:10px; }
+      .pm-mcard-name {
+        font-size:14px; font-weight:800; line-height:1.35;
+        color:#1e293b; word-break:break-word;
+      }
+      .pm-mcard-row {
+        display:flex; align-items:center; justify-content:space-between; gap:8px;
+      }
+      .pm-mcard-reorder { display:flex; gap:6px; }
+      .pm-mcard-reorder button {
+        width:34px; height:34px; border-radius:9px;
+        border:1px solid var(--border,#e2e8f0); background:#f8fafc;
+        color:#475569; font-size:14px; cursor:pointer;
+        display:flex; align-items:center; justify-content:center;
+        font-family:'Cairo',sans-serif;
+      }
+      .pm-mcard-reorder button:disabled { opacity:.4; cursor:default; }
+      .pm-mcard-reorder button:active:not(:disabled) { background:#eef2ff; }
+    }
     `;
     document.head.appendChild(s);
   }
@@ -421,6 +466,8 @@
             </tbody>
           </table>
         </div>
+
+        <div class="pm-mobile-cards" id="pmMobileCards"></div>
       </div>
     `;
     tab.insertBefore(wrap, tab.firstChild);
@@ -707,7 +754,7 @@
       const btn = e.target.closest('button[data-pma="avail"]');
       if (!btn || btn.disabled) return;
       const next = btn.classList.contains('is-on') ? 'out_of_stock' : 'available';
-      setAvailability(btn.dataset.pmid, next, btn);
+      setAvailability(btn.dataset.pmid, next);
     });
 
     /* Modal stock toggle — flips the hidden #pmStock value, saved on form submit */
@@ -728,6 +775,24 @@
 
     /* Drag & drop reordering */
     bindDragEvents(pmTbody);
+
+    /* ── Mobile cards: only availability toggle + reorder are interactive ── */
+    const pmMobileCards = document.getElementById('pmMobileCards');
+    pmMobileCards?.addEventListener('click', e => {
+      const moveBtn = e.target.closest('button[data-pma="moveup"], button[data-pma="movedown"]');
+      if (moveBtn) {
+        if (moveBtn.disabled) return;
+        moveProductStep(moveBtn.dataset.pmid, moveBtn.dataset.pma === 'moveup' ? -1 : 1);
+        return;
+      }
+
+      const availBtn = e.target.closest('button[data-pma="avail"]');
+      if (availBtn) {
+        if (availBtn.disabled) return;
+        const next = availBtn.classList.contains('is-on') ? 'out_of_stock' : 'available';
+        setAvailability(availBtn.dataset.pmid, next);
+      }
+    });
 
     /* Delete — only reachable from inside the edit modal */
     document.getElementById('pmDeleteBtn')?.addEventListener('click', async function () {
@@ -984,8 +1049,37 @@
       </tr>`;
   }
 
+  /* ── Mobile card: image, name, availability switch, reorder controls only ── */
+  function mobileCardHtml(p) {
+    const imgHtml = p.main_image
+      ? `<img src="${esc(p.main_image)}" class="pm-mcard-img" alt="" onerror="this.outerHTML='<div class=pm-mcard-img-ph>📦</div>'">`
+      : `<div class="pm-mcard-img-ph">📦</div>`;
+
+    const reorderDisabled = DISPLAY_ORDER_SUPPORTED === false;
+    const order = p.display_order ?? null;
+    const isFirst = order !== null && order <= 1;
+    const isLast  = order !== null && order >= ALL_PM_PRODUCTS.length;
+
+    return `<div class="pm-mcard" data-pmid="${esc(p.id)}">
+        ${imgHtml}
+        <div class="pm-mcard-body">
+          <div class="pm-mcard-name">${esc(p.product_name)}</div>
+          <div class="pm-mcard-row">
+            ${availToggleHtml(p.id, p.stock_status)}
+            <div class="pm-mcard-reorder">
+              <button type="button" data-pma="moveup" data-pmid="${esc(p.id)}"
+                      title="نقل للأعلى" ${reorderDisabled || isFirst ? 'disabled' : ''}>▲</button>
+              <button type="button" data-pma="movedown" data-pmid="${esc(p.id)}"
+                      title="نقل للأسفل" ${reorderDisabled || isLast ? 'disabled' : ''}>▼</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
   function renderTable() {
-    const tbody = document.getElementById('pmTbody');
+    const tbody  = document.getElementById('pmTbody');
+    const mcards = document.getElementById('pmMobileCards');
     if (!tbody) return;
 
     updateSubfilterBadges();
@@ -1000,6 +1094,7 @@
         <button id="pmRetryBtn" style="margin-top:12px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-family:'Cairo',sans-serif;">🔄 إعادة التحميل</button>
       </td></tr>`;
       document.getElementById('pmRetryBtn')?.addEventListener('click', loadProducts);
+      if (mcards) mcards.innerHTML = `<div class="pm-empty">لا توجد منتجات بعد.</div>`;
       return;
     }
 
@@ -1012,22 +1107,31 @@
 
     if (!list.length) {
       tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">لا توجد منتجات مطابقة</td></tr>`;
+      if (mcards) mcards.innerHTML = `<div class="pm-empty">لا توجد منتجات مطابقة</div>`;
       return;
     }
 
     tbody.innerHTML = list.map(rowHtml).join('');
+    if (mcards) mcards.innerHTML = list.map(mobileCardHtml).join('');
   }
 
   /* ══════════════════════════════════════════════════════════
      AVAILABILITY — AJAX save, optimistic UI, rollback on failure
   ══════════════════════════════════════════════════════════ */
-  async function setAvailability(id, status, btnEl) {
+  /* Table row + mobile card both render a toggle for the same product —
+     keep them in sync so switching views never shows stale state. */
+  function allAvailToggles(id) {
+    return document.querySelectorAll(`button[data-pma="avail"][data-pmid="${id}"]`);
+  }
+
+  async function setAvailability(id, status) {
     const product  = ALL_PM_PRODUCTS.find(p => p.id === id);
     const previous = product?.stock_status ?? 'available';
-    if (btnEl) { btnEl.disabled = true; btnEl.classList.add('is-disabled'); }
+    const toggles  = allAvailToggles(id);
+    toggles.forEach(b => { b.disabled = true; b.classList.add('is-disabled'); });
 
     if (product) product.stock_status = status;
-    applyToggleState(btnEl, status !== 'out_of_stock');
+    toggles.forEach(b => applyToggleState(b, status !== 'out_of_stock'));
 
     try {
       const { error } = await sb.from('admin_products_catalog')
@@ -1037,10 +1141,10 @@
       showToast(status === 'out_of_stock' ? '✅ تم تعليم المنتج كنفذت الكمية' : '✅ المنتج متوفر الآن');
     } catch (err) {
       if (product) product.stock_status = previous;
-      applyToggleState(btnEl, previous !== 'out_of_stock');
+      toggles.forEach(b => applyToggleState(b, previous !== 'out_of_stock'));
       showToast('❌ فشل تحديث التوفر: ' + err.message, 'error');
     } finally {
-      if (btnEl) { btnEl.disabled = false; btnEl.classList.remove('is-disabled'); }
+      toggles.forEach(b => { b.disabled = false; b.classList.remove('is-disabled'); });
     }
   }
 
@@ -1089,6 +1193,15 @@
       showToast('❌ فشل حفظ الترتيب: ' + err.message, 'error');
       await loadProducts(); /* resync truth from DB */
     }
+  }
+
+  /* Mobile reorder buttons — swap with the adjacent item in global order */
+  async function moveProductStep(id, direction) {
+    const current = ALL_PM_PRODUCTS.find(p => p.id === id);
+    if (!current || current.display_order == null) return;
+    const target = current.display_order + direction;
+    if (target < 1 || target > ALL_PM_PRODUCTS.length) return;
+    await persistOrder(moveToPosition(id, target));
   }
 
   async function commitOrderInput(inp) {
