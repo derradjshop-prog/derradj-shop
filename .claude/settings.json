@@ -102,7 +102,14 @@
       "Bash(which supabase *)",
       "Bash(curl -s \"https://jbmcbjzcedqpvnhbmrhk.supabase.co/rest/v1/admin_products_catalog?select=stock_status&limit=1\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\" -X PATCH -d '{\"stock_status\":\"available\"}')",
       "Bash(curl -s \"https://jbmcbjzcedqpvnhbmrhk.supabase.co/rest/v1/admin_products_catalog?select=*&catalog_id=eq.201\" -H \"apikey: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\" -H \"Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk\")",
-      "Bash(node --check \"admin/products-manager.js\")"
+      "Bash(node --check \"admin/products-manager.js\")",
+      "Bash(node -e \"try{require.resolve\\('jsdom'\\);console.log\\('jsdom available'\\)}catch\\(e\\){console.log\\('no jsdom'\\)}\")",
+      "Bash(node -e \"console.log\\(require.resolve\\('jsdom'\\)\\)\")",
+      "Bash(node test-mobile.js)",
+      "Bash(node -e \"console.log\\(require\\('jsdom/package.json'\\).version\\)\")",
+      "Bash(node test-mobile-css.js)",
+      "Bash(node --check \"admin/bestsellers.js\")",
+      "Bash(node test-bestsellers.js)"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",

@@ -51,6 +51,30 @@
       .sort((a, b) => b.sold - a.sold);
   }
 
+  function injectStyles() {
+    const s = document.createElement('style');
+    s.id = 'bs-styles';
+    s.textContent = `
+    .m-bs-card {
+      display:flex; align-items:center; gap:12px;
+      background:#fff; border:1px solid #e2e8f0; border-radius:14px;
+      padding:12px 14px; box-shadow:0 1px 3px rgba(0,0,0,.08);
+    }
+    .m-bs-rank {
+      flex-shrink:0; width:28px; height:28px; border-radius:50%;
+      background:#eff6ff; color:#1d4ed8; font-weight:800; font-size:13px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .m-bs-name { flex:1; min-width:0; font-size:14px; font-weight:700; color:#1e293b; word-break:break-word; }
+    .m-bs-sold {
+      flex-shrink:0; background:#eff6ff; color:#1d4ed8;
+      font-weight:800; font-size:13px; padding:4px 10px; border-radius:99px;
+      white-space:nowrap;
+    }
+    `;
+    document.head.appendChild(s);
+  }
+
   function injectHTML() {
     const tab = document.getElementById('tab-bestsellers');
     if (!tab) return;
@@ -72,17 +96,20 @@
             <tr><td colspan="3" class="empty">⏳ جاري التحميل...</td></tr>
           </tbody>
         </table>
-      </div>`;
+      </div>
+      <div class="mobile-cards-list" id="bsMobileCards"></div>`;
     document.getElementById('bsRefreshBtn').addEventListener('click', load);
   }
 
   function render(list) {
-    const tbody = document.getElementById('bsTbody');
+    const tbody  = document.getElementById('bsTbody');
+    const mcards = document.getElementById('bsMobileCards');
     if (!tbody) return;
     document.getElementById('bsCount').textContent = list.length + ' كتاب';
 
     if (!list.length) {
       tbody.innerHTML = `<tr><td colspan="3" class="empty">لا توجد مبيعات بعد</td></tr>`;
+      if (mcards) mcards.innerHTML = `<div class="empty">لا توجد مبيعات بعد</div>`;
       return;
     }
 
@@ -92,6 +119,15 @@
         <td>${esc(row.product_name)}</td>
         <td><strong>${row.sold.toLocaleString('en-US')}</strong></td>
       </tr>`).join('');
+
+    if (mcards) {
+      mcards.innerHTML = list.map((row, i) => `
+        <div class="m-bs-card">
+          <span class="m-bs-rank">${i + 1}</span>
+          <span class="m-bs-name">${esc(row.product_name)}</span>
+          <span class="m-bs-sold">${row.sold.toLocaleString('en-US')}</span>
+        </div>`).join('');
+    }
   }
 
   async function load() {
@@ -108,6 +144,7 @@
   }
 
   async function init() {
+    injectStyles();
     injectHTML();
     load();
   }
