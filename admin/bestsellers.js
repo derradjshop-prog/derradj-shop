@@ -7,11 +7,10 @@
 (function () {
   'use strict';
 
-  const SUPABASE_URL     = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
-
-  if (!window.supabase?.createClient) return;
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  /* Shared client (see supabase-client.js) — reused instead of creating a
+     third GoTrueClient instance on this page (see admin.js for why). */
+  if (!window.sbClient) return;
+  const sb = window.sbClient;
 
   function esc(v) {
     return String(v ?? '')

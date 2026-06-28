@@ -13,11 +13,12 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   "use strict";
 
   /* ── Supabase ──────────────────────────────────────────── */
-  if (!window.supabase?.createClient) { alert("❌ Supabase غير محمّل."); return; }
-
-  const SUPABASE_URL      = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
-  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
-  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  /* Shared client (see supabase-client.js) — admin.js, products-manager.js
+     and bestsellers.js all run on this page, so they must reuse the same
+     GoTrueClient instance instead of each creating their own (multiple
+     instances racing on token refresh silently breaks auth/session). */
+  if (!window.sbClient) { alert("❌ Supabase غير محمّل."); return; }
+  const supabase = window.sbClient;
 
   /* ── State ─────────────────────────────────────────────── */
   let ALL_ORDERS   = [];

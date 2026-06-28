@@ -1,0 +1,13 @@
+# Supabase CLI project config — only used for deploying Edge Functions
+# from this repo (no local DB/Studio stack is run from here).
+#
+# project_id is this project's ref (the same value baked into every
+# SUPABASE_URL across the codebase: https://jbmcbjzcedqpvnhbmrhk.supabase.co).
+project_id = "jbmcbjzcedqpvnhbmrhk"
+
+[functions.trigger-page-rebuild]
+# Default (JWT verification ON) — the function requires a valid
+# Supabase Authorization header (anon key or user session) just to be
+# invoked at all. The function itself then additionally checks that the
+# caller is a logged-in, active staff_accounts row before doing anything.
+verify_jwt = true

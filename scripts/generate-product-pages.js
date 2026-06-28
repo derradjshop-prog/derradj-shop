@@ -100,6 +100,33 @@ async function probeImageDims(url, cache) {
   }
 }
 
+/* ── Slug-collision guard ──────────────────────────────────────
+   Legacy redirect stubs (hand-authored <meta http-equiv="refresh">
+   pages left behind after a slug rename, e.g. books/la-anam/) sit
+   on disk at a fixed path with no awareness of Supabase. If a brand
+   new product is ever given that exact slug again (auto-slugify is
+   deterministic from the title, so re-using an old title — even
+   unintentionally — reproduces its old slug), the stub would
+   silently keep redirecting visitors to the wrong, unrelated
+   product until this script's next scheduled run closed the gap.
+   Supabase is always the source of truth and this script already
+   overwrites unconditionally, so the data is never wrong for long —
+   but a collision like that should be loud, not silent, the moment
+   it's caught here. ── */
+function warnIfReplacingLegacyRedirect(dir, slug, kind) {
+  const existing = path.join(dir, 'index.html');
+  if (!fs.existsSync(existing)) return;
+  const content = fs.readFileSync(existing, 'utf8');
+  const m = content.match(/<meta http-equiv="refresh"[^>]*url=([^"]+)"/i);
+  if (!m) return;
+  console.warn(
+    `[generate-product-pages] ⚠️  SLUG COLLISION: ${kind}/${slug}/ was a legacy redirect stub ` +
+    `pointing to ${m[1]} — a new active product now claims this exact slug and is overwriting ` +
+    `it with its own page. If that product was meant to be distinct from whatever this slug used ` +
+    `to redirect to, double-check the new product's slug is actually intentional.`
+  );
+}
+
 /* ── Local book cover dims — these are repo files, not remote
    Supabase Storage URLs, so a plain fs read is enough (no
    network probe / cache needed). Tries webp → png → jpg. ── */
@@ -485,6 +512,7 @@ async function main() {
 
     const dir = path.join(PRODUCT_DIR, p.slug);
     fs.mkdirSync(dir, { recursive: true });
+    warnIfReplacingLegacyRedirect(dir, p.slug, 'product');
     fs.writeFileSync(path.join(dir, 'index.html'), html);
     writtenSlugs.add(p.slug);
     console.log(`[generate-product-pages] wrote product/${p.slug}/index.html (${dims ? dims.width + 'x' + dims.height : 'no dims'})`);
@@ -516,6 +544,7 @@ async function main() {
 
     const dir = path.join(BOOKS_DIR, slug);
     fs.mkdirSync(dir, { recursive: true });
+    warnIfReplacingLegacyRedirect(dir, slug, 'books');
     fs.writeFileSync(path.join(dir, 'index.html'), html);
     console.log(`[generate-product-pages] wrote books/${slug}/index.html (${dims ? dims.width + 'x' + dims.height : 'no dims'})`);
   }

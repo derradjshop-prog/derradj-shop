@@ -1,18 +1,29 @@
 name: Generate product pages
 
-# Regenerates static /product/{slug}/ pages (with real OG/Twitter/
-# JSON-LD meta tags baked in from Supabase) plus sitemap.xml, then
-# commits the result back to main so GitHub Pages republishes it.
+# Regenerates static /product/{slug}/ and /books/{slug}/ pages (with real
+# OG/Twitter/JSON-LD meta tags baked in from Supabase) plus sitemap.xml,
+# then commits the result back to main so GitHub Pages republishes it.
 #
 # This exists because WhatsApp/Facebook/Telegram/X/Discord crawlers
-# don't execute JavaScript — the product meta tags must already be
-# in the raw HTML on every push/schedule run for link previews and
-# Google rich results to work.
+# don't execute JavaScript — the product meta tags must already be in
+# the raw HTML for link previews and Google rich results to work.
+#
+# No cron schedule — this used to run on a timer (was every 2h, then
+# every 15m), which meant a newly created/edited/deleted product could
+# sit behind stale static content for up to that long. It's now fired
+# on demand, immediately after a successful write to admin_products_catalog,
+# by the Supabase Edge Function in supabase/functions/trigger-page-rebuild/
+# (called from admin/products-manager.js right after insert/update/delete).
+# `workflow_dispatch` is also still available for a manual "Run workflow"
+# click in the Actions tab.
 
 on:
-  schedule:
-    - cron: '0 */2 * * *'   # every 2 hours
-  workflow_dispatch: {}      # manual "Run workflow" button
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'What triggered this run (e.g. "add product: <name>")'
+        required: false
+        default: 'manual'
 
 permissions:
   contents: write
@@ -25,6 +36,9 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
+      - name: Log trigger reason
+        run: 'echo "Triggered by: ${{ github.event.inputs.reason }}"'
+
       - name: Checkout
         uses: actions/checkout@v4
 

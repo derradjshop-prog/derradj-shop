@@ -5,11 +5,10 @@
 (function () {
   'use strict';
 
-  const SUPABASE_URL     = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
-
-  if (!window.supabase?.createClient) return;
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  /* Shared client (see supabase-client.js) — reused instead of creating a
+     second GoTrueClient instance on this page (see admin.js for why). */
+  if (!window.sbClient) return;
+  const sb = window.sbClient;
 
   /* ── Categories ── */
   const CATEGORIES = [
@@ -45,7 +44,7 @@
     return Number(n || 0).toLocaleString('fr-DZ') + ' دج';
   }
 
-  function showToast(msg, type = 'success') {
+  function showToast(msg, type = 'success', opts = {}) {
     const old = document.getElementById('pm-toast');
     if (old) old.remove();
     const el = document.createElement('div');
@@ -57,11 +56,62 @@
       'color:#fff', 'box-shadow:0 4px 20px rgba(0,0,0,.28)',
       "font-family:'Cairo',sans-serif", 'max-width:340px',
       'line-height:1.4', 'direction:rtl',
-      'background:' + (type === 'error' ? '#dc2626' : '#059669'),
+      'background:' + (type === 'error' ? '#dc2626' : type === 'info' ? '#1d4ed8' : '#059669'),
     ].join(';');
-    el.textContent = msg;
+    if (opts.linkUrl && /^https:\/\/github\.com\//.test(opts.linkUrl)) {
+      el.textContent = msg + ' — ';
+      const a = document.createElement('a');
+      a.href = opts.linkUrl;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = opts.linkLabel || 'تتبع التقدم';
+      a.style.cssText = 'color:#fff;text-decoration:underline;';
+      el.appendChild(a);
+    } else {
+      el.textContent = msg;
+    }
     document.body.appendChild(el);
-    setTimeout(() => el.remove(), 4000);
+    setTimeout(() => el.remove(), opts.duration || 4000);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     STATIC PAGE REBUILD — fires the GitHub Actions workflow that
+     regenerates /product/{slug}/ and /books/{slug}/ from Supabase,
+     right after a successful create/update/delete. Replaces the old
+     fixed cron schedule (see .github/workflows/generate-product-pages.yml)
+     so the live site never sits behind stale pages for up to 2 hours.
+
+     This must go through a Supabase Edge Function — the GitHub token
+     needed to dispatch the workflow can never be embedded in this
+     client-side file. A failure here is always non-fatal: the DB
+     write this follows has already succeeded, so the admin is only
+     ever told the rebuild itself didn't fire and should be run
+     manually from the Actions tab. ══════════════════════════════ */
+  async function triggerPageRebuild(reason) {
+    try {
+      const { data, error } = await sb.functions.invoke('trigger-page-rebuild', {
+        body: { reason },
+      });
+      if (error) throw error;
+      if (data?.ok === false) throw new Error(data.error || 'فشل غير معروف');
+
+      if (data?.run?.html_url) {
+        showToast('🚀 جاري تحديث صفحات الموقع', 'info', {
+          linkUrl: data.run.html_url,
+          linkLabel: 'تتبع التقدم على GitHub',
+          duration: 8000,
+        });
+      } else {
+        showToast('🚀 تم تشغيل تحديث صفحات الموقع — ستظهر التغييرات خلال دقيقة تقريباً', 'info', { duration: 6000 });
+      }
+    } catch (err) {
+      console.warn('[PM] triggerPageRebuild failed:', err);
+      showToast(
+        '⚠️ تم الحفظ بنجاح، لكن التحديث التلقائي لصفحات الموقع فشل — شغّله يدوياً من تبويب Actions في GitHub',
+        'error',
+        { duration: 7000 },
+      );
+    }
   }
 
   function slugify(text) {
@@ -1495,6 +1545,7 @@
         }
         console.log('[PM] UPDATE succeeded for id:', EDIT_PRODUCT_ID);
         showToast('✅ تم تحديث المنتج بنجاح');
+        triggerPageRebuild('تعديل منتج: ' + payload.product_name);
       } else {
         payload.created_at = new Date().toISOString();
         const { data: insertedData, error } = await sb.from('admin_products_catalog').insert(payload).select('id, slug, catalog_id');
@@ -1507,6 +1558,7 @@
         }
         console.log('[PM] INSERT succeeded:', insertedData);
         showToast('✅ تم إضافة المنتج ونشره في المتجر');
+        triggerPageRebuild('إضافة منتج: ' + payload.product_name);
       }
 
       closeModal();
@@ -1527,10 +1579,12 @@
   ══════════════════════════════════════════════════════════ */
   async function deleteProduct(id, btn) {
     if (btn) btn.disabled = true;
+    const deletedName = ALL_PM_PRODUCTS.find(p => p.id === id)?.product_name || id;
     try {
       const { error } = await sb.from('admin_products_catalog').delete().eq('id', id);
       if (error) throw error;
       showToast('✅ تم حذف المنتج');
+      triggerPageRebuild('حذف منتج: ' + deletedName);
       await loadProducts();
       return true;
     } catch (err) {
