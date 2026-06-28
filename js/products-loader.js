@@ -157,7 +157,7 @@
         entry.shortName = p.product_name;
         entry.price     = p.price;
         entry.available = p.stock_status !== 'out_of_stock';
-        if (p.main_image) entry.image = p.main_image;
+        if (p.main_image) entry.image = resolveImage(p);
         if (p.slug)       entry.slug  = p.slug;
         entry.supabaseId = p.id;
       } else {
@@ -167,7 +167,7 @@
           name:       p.product_name,
           shortName:  p.product_name,
           price:      p.price,
-          image:      p.main_image || '',
+          image:      resolveImage(p),
           available:  p.stock_status !== 'out_of_stock',
           supabaseId: p.id,
           slug:       p.slug,
