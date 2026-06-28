@@ -982,13 +982,11 @@
       const warning = document.getElementById('pmOrderWarning');
       if (warning) warning.style.display = DISPLAY_ORDER_SUPPORTED ? 'none' : 'block';
 
-      /* Self-heal: fix gaps/duplicates in display_order so it's always
-         a clean 1..N sequence (requirement: no gaps, no duplicates). */
+      /* Self-heal: fix gaps/duplicates in display_order so each category
+         is always a clean 1..N sequence (requirement: no gaps, no dupes). */
       if (DISPLAY_ORDER_SUPPORTED !== false && needsRenumber(ALL_PM_PRODUCTS)) {
-        const sorted = sortedByOrder(ALL_PM_PRODUCTS);
-        await persistOrder(sorted, /* silent */ true);
+        await renumberAllCategories(ALL_PM_PRODUCTS);
       } else {
-        ALL_PM_PRODUCTS = sortedByOrder(ALL_PM_PRODUCTS);
         renderTable();
       }
     } catch (err) {
@@ -1002,7 +1000,14 @@
     }
   }
 
-  /* ── Sort helper: display_order ASC, NULLs last, then created_at ASC ── */
+  /* ── display_order is scoped PER CATEGORY (electronics: 1..N, books: 1..N
+     independently) — not one global sequence across the whole catalog. ── */
+  const CATEGORY_ORDER = ['electronics', 'books'];
+  function categoryKey(p) { return isElec(p) ? 'electronics' : 'books'; }
+
+  /* ── Sort helper: display_order ASC, NULLs last, then created_at ASC.
+     Only meaningful within a single category — display_order values
+     repeat across categories (e.g. both have a "1"). ── */
   function sortedByOrder(products) {
     return [...products].sort((a, b) => {
       const ao = a.display_order ?? Infinity;
@@ -1012,15 +1017,25 @@
     });
   }
 
-  /* ── True if display_order isn't a clean, gap-free 1..N sequence ───── */
+  /* ── Full list grouped by category (electronics first, then books),
+     each group internally sorted by its own display_order. Used for
+     rendering so categories never interleave. ── */
+  function sortedGrouped(products) {
+    return CATEGORY_ORDER.flatMap(cat =>
+      sortedByOrder(products.filter(p => categoryKey(p) === cat)));
+  }
+
+  /* ── True if any category's display_order isn't a clean 1..N sequence ── */
   function needsRenumber(products) {
-    const sorted = sortedByOrder(products);
-    return sorted.some((p, i) => p.display_order !== i + 1);
+    return CATEGORY_ORDER.some(cat => {
+      const sorted = sortedByOrder(products.filter(p => categoryKey(p) === cat));
+      return sorted.some((p, i) => p.display_order !== i + 1);
+    });
   }
 
   function getFilteredProducts() {
     const q = PROD_SEARCH_QUERY.toLowerCase();
-    return ALL_PM_PRODUCTS.filter(p => {
+    return sortedGrouped(ALL_PM_PRODUCTS).filter(p => {
       if (PROD_FILTER === 'books'       &&  isElec(p)) return false;
       if (PROD_FILTER === 'electronics' && !isElec(p)) return false;
       if (q && !String(p.product_name || '').toLowerCase().includes(q) &&
@@ -1107,8 +1122,9 @@
 
     const reorderDisabled = DISPLAY_ORDER_SUPPORTED === false;
     const order = p.display_order ?? null;
+    const groupSize = ALL_PM_PRODUCTS.filter(x => categoryKey(x) === categoryKey(p)).length;
     const isFirst = order !== null && order <= 1;
-    const isLast  = order !== null && order >= ALL_PM_PRODUCTS.length;
+    const isLast  = order !== null && order >= groupSize;
 
     return `<div class="pm-mcard" data-pmid="${esc(p.id)}">
         ${imgHtml}
@@ -1202,42 +1218,53 @@
      ORDERING — inline edit, drag & drop, auto-renumber
   ══════════════════════════════════════════════════════════ */
 
-  /* Moves product `id` to 1-based position `pos` within the full,
-     globally-ordered catalog and returns the new ordered array. */
+  /* Moves product `id` to 1-based position `pos` WITHIN ITS OWN CATEGORY
+     and returns that category's new ordered subset (other categories are
+     untouched — ranking is per-category, not catalog-wide). */
   function moveToPosition(id, pos) {
-    const sorted = sortedByOrder(ALL_PM_PRODUCTS);
-    const idx = sorted.findIndex(p => p.id === id);
-    if (idx === -1) return sorted;
-    const [item] = sorted.splice(idx, 1);
-    const clamped = Math.max(1, Math.min(pos, sorted.length + 1));
-    sorted.splice(clamped - 1, 0, item);
-    return sorted;
+    const item = ALL_PM_PRODUCTS.find(p => p.id === id);
+    if (!item) return [];
+    const group = sortedByOrder(ALL_PM_PRODUCTS.filter(p => categoryKey(p) === categoryKey(item)));
+    const idx = group.findIndex(p => p.id === id);
+    if (idx === -1) return group;
+    const [moved] = group.splice(idx, 1);
+    const clamped = Math.max(1, Math.min(pos, group.length + 1));
+    group.splice(clamped - 1, 0, moved);
+    return group;
   }
 
-  /* Persists a fully-ordered product array as display_order = 1..N,
-     only writing rows whose order actually changed. Re-renders
-     immediately (optimistic) and reloads from DB if the save fails. */
-  async function persistOrder(orderedProducts, silent) {
+  /* Mutates display_order = 1..N in place over an ordered subset (normally
+     one category's products) and returns just the rows that changed. */
+  function diffOrder(orderedSubset) {
     const changed = [];
-    orderedProducts.forEach((p, i) => {
+    orderedSubset.forEach((p, i) => {
       const newOrder = i + 1;
       if (p.display_order !== newOrder) changed.push({ id: p.id, display_order: newOrder });
       p.display_order = newOrder;
     });
+    return changed;
+  }
 
-    ALL_PM_PRODUCTS = orderedProducts;
+  async function saveOrderChanges(changed) {
+    const results = await Promise.all(changed.map(c =>
+      sb.from('admin_products_catalog')
+        .update({ display_order: c.display_order })
+        .eq('id', c.id)
+    ));
+    const failed = results.find(r => r.error);
+    if (failed) throw failed.error;
+  }
+
+  /* Persists one category's ordered subset as display_order = 1..N,
+     only writing rows whose order actually changed. Re-renders
+     immediately (optimistic) and reloads from DB if the save fails. */
+  async function persistOrder(orderedSubset, silent) {
+    const changed = diffOrder(orderedSubset);
     renderTable();
-
     if (!changed.length) return;
 
     try {
-      const results = await Promise.all(changed.map(c =>
-        sb.from('admin_products_catalog')
-          .update({ display_order: c.display_order })
-          .eq('id', c.id)
-      ));
-      const failed = results.find(r => r.error);
-      if (failed) throw failed.error;
+      await saveOrderChanges(changed);
       if (!silent) showToast(`✅ تم تحديث الترتيب (${changed.length} منتج)`);
     } catch (err) {
       showToast('❌ فشل حفظ الترتيب: ' + err.message, 'error');
@@ -1245,12 +1272,29 @@
     }
   }
 
-  /* Mobile reorder buttons — swap with the adjacent item in global order */
+  /* Self-heal: renumbers EVERY category's display_order to a clean 1..N
+     sequence in one pass (used on load when gaps/duplicates are found). */
+  async function renumberAllCategories(products) {
+    const changed = CATEGORY_ORDER.flatMap(cat =>
+      diffOrder(sortedByOrder(products.filter(p => categoryKey(p) === cat))));
+    renderTable();
+    if (!changed.length) return;
+
+    try {
+      await saveOrderChanges(changed);
+    } catch (err) {
+      showToast('❌ فشل إصلاح الترتيب: ' + err.message, 'error');
+      await loadProducts();
+    }
+  }
+
+  /* Mobile reorder buttons — swap with the adjacent item within the same category */
   async function moveProductStep(id, direction) {
     const current = ALL_PM_PRODUCTS.find(p => p.id === id);
     if (!current || current.display_order == null) return;
+    const groupSize = ALL_PM_PRODUCTS.filter(p => categoryKey(p) === categoryKey(current)).length;
     const target = current.display_order + direction;
-    if (target < 1 || target > ALL_PM_PRODUCTS.length) return;
+    if (target < 1 || target > groupSize) return;
     await persistOrder(moveToPosition(id, target));
   }
 
@@ -1266,16 +1310,16 @@
     await persistOrder(moveToPosition(id, pos));
   }
 
-  /* Merges a re-ordered visible subset back into the full catalog order:
-     items outside the current filter/search keep their absolute position;
-     the dragged subset is re-inserted, in its new order, into the slots
-     it used to occupy. */
-  function applyDragReorder(newVisibleIds) {
-    const globalSorted = sortedByOrder(ALL_PM_PRODUCTS);
-    const visibleSet = new Set(newVisibleIds);
-    const queue = newVisibleIds.slice();
-    let qi = 0;
-    return globalSorted.map(p => visibleSet.has(p.id) ? ALL_PM_PRODUCTS.find(x => x.id === queue[qi++]) : p);
+  /* Visible rows can mix categories (the "all" filter shows electronics
+     then books). Reordering only ever applies within the dragged item's
+     own category — other-category rows in `newVisibleIds` are ignored. */
+  function applyDragReorder(newVisibleIds, draggedId) {
+    const draggedItem = ALL_PM_PRODUCTS.find(p => p.id === draggedId);
+    if (!draggedItem) return [];
+    const cat = categoryKey(draggedItem);
+    return newVisibleIds
+      .map(id => ALL_PM_PRODUCTS.find(p => p.id === id))
+      .filter(p => p && categoryKey(p) === cat);
   }
 
   function bindDragEvents(tbody) {
@@ -1307,9 +1351,10 @@
     tbody.addEventListener('drop', async e => {
       e.preventDefault();
       if (!DRAG_SRC_ID) return;
+      const draggedId = DRAG_SRC_ID;
       const ids = Array.from(tbody.querySelectorAll('tr[data-pmid]')).map(tr => tr.dataset.pmid);
       DRAG_SRC_ID = null;
-      await persistOrder(applyDragReorder(ids));
+      await persistOrder(applyDragReorder(ids, draggedId));
     });
   }
 
