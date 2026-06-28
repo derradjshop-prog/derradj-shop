@@ -8,16 +8,19 @@ name: Generate product pages
 # don't execute JavaScript — the product meta tags must already be in
 # the raw HTML for link previews and Google rich results to work.
 #
-# No cron schedule — this used to run on a timer (was every 2h, then
-# every 15m), which meant a newly created/edited/deleted product could
-# sit behind stale static content for up to that long. It's now fired
-# on demand, immediately after a successful write to admin_products_catalog,
-# by the Supabase Edge Function in supabase/functions/trigger-page-rebuild/
-# (called from admin/products-manager.js right after insert/update/delete).
-# `workflow_dispatch` is also still available for a manual "Run workflow"
-# click in the Actions tab.
+# Fires on demand, immediately after a successful write to
+# admin_products_catalog, via the Supabase Edge Function in
+# supabase/functions/trigger-page-rebuild/ (called from
+# admin/products-manager.js right after insert/update/delete).
+# The cron schedule below is a safety net: that Edge Function call is
+# best-effort and non-fatal (it must never block the admin's save), so
+# this still runs every 2h to catch any product the on-demand trigger
+# silently missed. `workflow_dispatch` is also available for a manual
+# "Run workflow" click in the Actions tab.
 
 on:
+  schedule:
+    - cron: '0 */2 * * *'
   workflow_dispatch:
     inputs:
       reason:
