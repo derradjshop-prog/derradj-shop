@@ -14,7 +14,7 @@
   const SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
 
-  const { esc, escAttr, buildProductView } = window.ProductTemplate;
+  const { esc, escAttr, buildProductView, pickNames } = window.ProductTemplate;
 
   /* ── Same admin_products_catalog → book-shape mapping the build-time
      generator uses (scripts/generate-product-pages.js's toBookRow),
@@ -230,7 +230,7 @@
         products = window.SUPABASE_PRODUCTS.slice();
       } else {
         const HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
-        const SELECT = 'id,catalog_id,product_name,category,price,old_price,stock_status,main_image,slug';
+        const SELECT = 'id,catalog_id,product_name,product_name_ar,category,price,old_price,stock_status,main_image,slug';
         const BASE = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true&limit=50`;
         let res = await fetch(BASE + '&order=display_order.asc.nullslast,created_at.desc', { headers: HEADERS });
         if (!res.ok && res.status === 400) {
@@ -276,11 +276,13 @@
           ? `<span class="rp-stock rp-avail">✅ متوفر</span>`
           : `<span class="rp-stock rp-unavail">🔴 نفذت الكمية</span>`;
 
+        const rpName = isBook ? p.product_name : pickNames(p).ar;
+
         return `<a href="${url}" class="rp-card">
-          <img src="${escAttr(imgSrc)}" alt="${escAttr(p.product_name)}"
+          <img src="${escAttr(imgSrc)}" alt="${escAttr(rpName)} — Derradj Shop"
                class="rp-img" loading="lazy" onerror="this.src='/Logo.jpg'">
           <div class="rp-body">
-            <div class="rp-name">${esc(p.product_name)}</div>
+            <div class="rp-name">${esc(rpName)}</div>
             <div class="rp-price-row">${priceRow}${discTag}</div>
             ${stockBadgeHtml}
             <span class="rp-btn">عرض المنتج</span>

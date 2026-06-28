@@ -24,6 +24,28 @@
     other:       '📦',
   };
 
+  /* ── `product_name` / `product_name_ar` aren't consistently
+     Arabic-vs-English per row (legacy data entry varies), so detect
+     by script rather than trusting the field name — mirrors the
+     same logic in js/product-template.js so cards, search and the
+     product page always agree on which name is Arabic. ── */
+  const AR_RE = /[؀-ۿ]/;
+  function isArabic(s) { return AR_RE.test(s || ''); }
+  function arName(p) {
+    const a = p.product_name, b = p.product_name_ar;
+    const aIsAr = isArabic(a), bIsAr = isArabic(b);
+    if (aIsAr && !bIsAr) return a;
+    if (!aIsAr && bIsAr) return b;
+    return a || b || '';
+  }
+  function otherName(p) {
+    const a = p.product_name, b = p.product_name_ar;
+    const aIsAr = isArabic(a), bIsAr = isArabic(b);
+    if (aIsAr && !bIsAr) return b || '';
+    if (!aIsAr && bIsAr) return a || '';
+    return '';
+  }
+
   function catIcon(cat) { return CAT_ICON[cat] || '📦'; }
   function catLabelAr(cat) {
     const m = {
@@ -79,17 +101,18 @@
       ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
       : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 
+    const name = arName(p);
     return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}">
       <div class="${badgeCls}" data-avail-badge="${p.catalog_id}">${badgeTxt}</div>
       <a href="${url}" class="product-img-area" style="text-decoration:none;">
-        <img src="${imgSrc}" alt="${escAttr(p.product_name)}"
+        <img src="${imgSrc}" alt="${escAttr(name)} — Derradj Shop"
              loading="lazy" decoding="async" width="400" height="400"
              onerror="this.src='/Logo.jpg'">
       </a>
       <div class="product-info">
         <div class="product-cat-label">${icon} ${escAttr(catAr)}</div>
         <a href="${url}" style="text-decoration:none;color:inherit;">
-          <h3 class="product-name">${esc(p.product_name)}</h3>
+          <h3 class="product-name">${esc(name)}</h3>
         </a>
         ${summary ? `<p class="product-card-summary">${esc(summary)}</p>` : ''}
         <div class="product-prices">${priceHTML(p.price, p.old_price)}</div>
@@ -153,8 +176,8 @@
       if (byId[p.catalog_id] !== undefined) {
         /* Update existing entry — admin_products_catalog is authoritative */
         const entry = window.SHOP_CATALOG[byId[p.catalog_id]];
-        entry.name      = p.product_name;
-        entry.shortName = p.product_name;
+        entry.name      = arName(p);
+        entry.shortName = arName(p);
         entry.price     = p.price;
         entry.available = p.stock_status !== 'out_of_stock';
         if (p.main_image) entry.image = resolveImage(p);
@@ -164,8 +187,8 @@
         /* Add new entry */
         window.SHOP_CATALOG.push({
           catalogId:  p.catalog_id,
-          name:       p.product_name,
-          shortName:  p.product_name,
+          name:       arName(p),
+          shortName:  arName(p),
           price:      p.price,
           image:      resolveImage(p),
           available:  p.stock_status !== 'out_of_stock',
@@ -216,8 +239,8 @@
       if (!p.slug || existingSlugs.has(p.slug)) return;
       const isBook = p.category === 'books';
       window.SEARCH_PRODUCTS.push({
-        name:        p.product_name,
-        nameEn:      p.product_name_ar || '',
+        name:        arName(p),
+        nameEn:      otherName(p),
         nameFr:      p.product_name_fr || '',
         category:    catLabelAr(p.category),
         subcategory: p.subcategory || '',
