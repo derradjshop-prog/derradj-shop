@@ -845,6 +845,15 @@
     </image:image>
   </url>
   <url>
+    <loc>https://derradjshop.com/books/goodbye-to-shyness/</loc>
+    <lastmod>2026-07-02</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783016481105-3uexz1v.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
     <loc>https://derradjshop.com/product/arduino-r3-830/</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
