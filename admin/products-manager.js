@@ -128,6 +128,21 @@
     return CATEGORIES.find(c => c.value === val)?.label || val || '—';
   }
 
+  /* ── Resolve a stored main_image into a displayable URL — same rule
+     js/products-loader.js's resolveImage() uses on the storefront:
+     electronics store full Supabase Storage URLs already; legacy books
+     store a path relative to /books/ and prefer the webp sibling.
+     Without this, book thumbnails 404 here because the raw relative
+     path resolves against /admin/ instead of /books/. ── */
+  function resolveThumbSrc(p) {
+    let img = p.main_image || '';
+    if (!img) return '';
+    if (p.category === 'books' && !/^https?:\/\//.test(img)) {
+      img = '/books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    }
+    return img;
+  }
+
   function getValue(id) {
     return document.getElementById(id)?.value?.trim() || '';
   }
@@ -1084,8 +1099,9 @@
   }
 
   function rowHtml(p) {
-    const imgHtml = p.main_image
-      ? `<img src="${esc(p.main_image)}" class="pm-thumb" alt="" onerror="this.outerHTML='<div class=pm-thumb-ph>📦</div>'">`
+    const thumbSrc = resolveThumbSrc(p);
+    const imgHtml = thumbSrc
+      ? `<img src="${esc(thumbSrc)}" class="pm-thumb" alt="" onerror="this.outerHTML='<div class=pm-thumb-ph>📦</div>'">`
       : `<div class="pm-thumb-ph">📦</div>`;
 
     return `<tr draggable="true" data-pmid="${esc(p.id)}">
@@ -1116,8 +1132,9 @@
 
   /* ── Mobile card: image, name, availability switch, reorder controls only ── */
   function mobileCardHtml(p) {
-    const imgHtml = p.main_image
-      ? `<img src="${esc(p.main_image)}" class="pm-mcard-img" alt="" onerror="this.outerHTML='<div class=pm-mcard-img-ph>📦</div>'">`
+    const thumbSrc = resolveThumbSrc(p);
+    const imgHtml = thumbSrc
+      ? `<img src="${esc(thumbSrc)}" class="pm-mcard-img" alt="" onerror="this.outerHTML='<div class=pm-mcard-img-ph>📦</div>'">`
       : `<div class="pm-mcard-img-ph">📦</div>`;
 
     const reorderDisabled = DISPLAY_ORDER_SUPPORTED === false;
@@ -1399,7 +1416,7 @@
       setValue('pmKeywords',  product.keywords);
       setValue('pmOrder',     product.display_order ?? '');
 
-      if (product.main_image) showMainPreview(product.main_image);
+      if (product.main_image) showMainPreview(resolveThumbSrc(product));
 
       if (Array.isArray(product.gallery_images)) {
         product.gallery_images.forEach(url => addGalleryThumb(url));
