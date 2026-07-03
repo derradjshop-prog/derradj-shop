@@ -11,3 +11,11 @@ project_id = "jbmcbjzcedqpvnhbmrhk"
 # invoked at all. The function itself then additionally checks that the
 # caller is a logged-in, active staff_accounts row before doing anything.
 verify_jwt = true
+
+[functions.notify-new-order]
+# JWT verification OFF — this function is called by a Database Webhook,
+# which has no Supabase Auth session to attach as an Authorization
+# header. Instead it checks its own shared-secret header
+# (x-webhook-secret, compared against ORDER_NOTIFY_WEBHOOK_SECRET) —
+# see the function's own header comment for the full explanation.
+verify_jwt = false
