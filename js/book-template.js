@@ -19,6 +19,17 @@
       : `<span class="pd-stock unavail">🔴 نفذت الكمية</span>`;
   }
 
+  /* ── Trims to a Google-safe SERP snippet length without cutting a
+     word in half. Only meta name="description" needs this — og:/
+     twitter:/JSON-LD description keep the full text since link
+     previews and rich results have more room. ── */
+  function truncateAtWord(str, max) {
+    if (!str || str.length <= max) return str;
+    const cut = str.slice(0, max);
+    const lastSpace = cut.lastIndexOf(' ');
+    return (lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trim() + '…';
+  }
+
   /* ── Build the full view-model for a book row from
      `public.books` — used to fill <head> meta tags, JSON-LD,
      and the visible book markup. ── */
@@ -29,9 +40,10 @@
     const priceFmt  = fmtPrice(b.price);
     const priceSpaced = String(b.price).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-    const title = `${b.title} — ${priceSpaced} دج | شراء كتب الجزائر توصيل 58 ولاية | Derradj Shop`;
+    const title = `${b.title} | Derradj Shop`;
     const ogTitle = `${b.title}${b.titleEn ? ' — ' + b.titleEn : ''} | ${priceSpaced} دج | Derradj Shop الجزائر`;
-    const desc = b.seo_description || b.description || `اطلب كتاب ${b.title} من Derradj Shop`;
+    const fullDesc = b.seo_description || b.description || `اطلب كتاب ${b.title} من Derradj Shop`;
+    const desc = truncateAtWord(fullDesc, 155);
     const imgAlt = `غلاف كتاب ${b.title}${b.author ? ' لـ' + b.author : ''}`;
     /* Absolute URL or absolute site path — generator resolves legacy
        relative paths ('slug/main.webp') and Supabase Storage URLs
@@ -232,12 +244,12 @@
         keywords: b.keywords || '',
         canonical: pageUrl,
         ogTitle,
-        ogDescription: desc,
+        ogDescription: fullDesc,
         ogUrl: pageUrl,
         ogImage: mainImage,
         ogImageAlt: imgAlt,
         twitterTitle: ogTitle,
-        twitterDescription: desc,
+        twitterDescription: fullDesc,
         twitterImage: mainImage,
         twitterImageAlt: imgAlt,
       },
