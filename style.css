@@ -1309,7 +1309,7 @@ input, select, textarea { font-family: inherit; }
 .status-msg { margin-top: 12px; font-size: 14px; font-weight: 600; text-align: center; }
 
 /* === 15. FOOTER === */
-.main-footer { background: var(--bg-dark); color: rgba(255,255,255,0.7); }
+.main-footer { background: #1B2A4A; color: rgba(255,255,255,0.7); }
 
 .footer-top {
   max-width: 1200px;
@@ -1333,7 +1333,7 @@ input, select, textarea { font-family: inherit; }
 .footer-brand p {
   font-size: 14px;
   line-height: 1.8;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.62);
   margin-bottom: 20px;
 }
 
@@ -1341,7 +1341,7 @@ input, select, textarea { font-family: inherit; }
 .footer-contact-list a,
 .footer-contact-list span {
   font-size: 13px;
-  color: rgba(255,255,255,0.55);
+  color: rgba(255,255,255,0.65);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1353,7 +1353,7 @@ input, select, textarea { font-family: inherit; }
 .footer-links-col ul { display: flex; flex-direction: column; gap: 10px; }
 .footer-links-col ul li a {
   font-size: 14px;
-  color: rgba(255,255,255,0.5);
+  color: rgba(255,255,255,0.62);
   transition: var(--transition);
 }
 .footer-links-col ul li a:hover { color: white; }
@@ -1377,7 +1377,7 @@ input, select, textarea { font-family: inherit; }
   padding: 20px;
   text-align: center;
   font-size: 13px;
-  color: rgba(255,255,255,0.3);
+  color: rgba(255,255,255,0.55);
 }
 
 /* === 16. INNER PAGES === */

@@ -71,7 +71,7 @@
     </div>
 
     <div class="footer-bottom">
-      <p>© 2025 Derradj Shop — جميع الحقوق محفوظة | المتجر الجزائري أونلاين</p>
+      <p>© ${new Date().getFullYear()} Derradj Shop — جميع الحقوق محفوظة | المتجر الجزائري أونلاين</p>
     </div>
   `;
 
