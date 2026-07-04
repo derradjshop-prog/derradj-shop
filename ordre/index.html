@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
@@ -36,6 +36,16 @@
        CHECKOUT PAGE — Styles exclusifs à cette page uniquement
     ================================================================ */
 
+    /* توحيد لون الأزرق مع الأزرق الكحلي (navy) المستخدم في رأس الموقع —
+       يُعيد تعريف متغيرات style.css محلياً لهذه الصفحة فقط */
+    :root {
+      --primary:       #1B2A4A;
+      --primary-dark:  #12203a;
+      --primary-light: #2f4166;
+      --primary-bg:    rgba(27,42,74,0.08);
+      --shadow-blue:   0 8px 24px rgba(27,42,74,0.28);
+    }
+
     /* === بانر التوصيل === */
     .shipping-banner {
       background: linear-gradient(135deg, #059669, #047857);
@@ -58,7 +68,7 @@
 
     /* === رأس الصفحة === */
     .checkout-header {
-      background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #1B2A4A 100%);
       border-radius: var(--radius-lg);
       padding: 14px 20px;
       margin-bottom: 14px;
@@ -156,7 +166,7 @@
       outline: none;
       border-color: var(--primary);
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
     }
     .phone-row.phone-valid input[type="tel"] {
       border-color: #059669;
@@ -199,7 +209,7 @@
       outline: none;
       border-color: var(--primary);
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
     }
 
     /* === Dropdown ثنائي اللغة (ولاية / بلدية) — نسخة متجددة === */
@@ -230,7 +240,7 @@
     .cs-trigger:focus-visible {
       border-color: var(--primary);
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
     }
     .cs-trigger.disabled {
       background: var(--bg-alt);
@@ -344,11 +354,11 @@
     }
     .cs-item:last-child { border-bottom: none; }
     .cs-item:hover, .cs-item.focused { background: var(--primary-bg); }
-    .cs-item.is-selected { background: rgba(29,78,216,.06); }
+    .cs-item.is-selected { background: rgba(27,42,74,.06); }
     .cs-item-ar { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.4; }
     .cs-item-fr { font-size: 11px; color: var(--text-muted); font-weight: 600; }
     .cs-item.is-selected .cs-item-ar { color: var(--primary); }
-    .cs-item.is-selected .cs-item-fr { color: rgba(29,78,216,.55); }
+    .cs-item.is-selected .cs-item-fr { color: rgba(27,42,74,.55); }
     .cs-empty { padding: 20px 16px; text-align: center; color: var(--text-muted); font-size: 14px; direction: rtl; transition: color .2s; }
     .cs-empty.cs-empty-alert { color: #dc2626; font-weight: 700; }
     @keyframes csShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
@@ -425,7 +435,7 @@
     }
     .product-row:hover {
       box-shadow: 0 4px 18px rgba(0,0,0,.09);
-      border-color: rgba(29,78,216,.22);
+      border-color: rgba(27,42,74,.22);
     }
 
     /* رأس البطاقة: رقم المنتج + زر الحذف */
@@ -480,7 +490,7 @@
     .pr-select:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
       background: #fff;
     }
     .pr-select.has-value {
@@ -533,7 +543,7 @@
     .pr-qty-input:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 2px rgba(29,78,216,.1);
+      box-shadow: 0 0 0 2px rgba(27,42,74,.1);
     }
 
     /* قيم السعر والإجمالي */
@@ -584,7 +594,7 @@
       box-sizing: border-box;
       background: #fff;
       color: var(--primary);
-      border: 1.5px dashed rgba(29,78,216,.35);
+      border: 1.5px dashed rgba(27,42,74,.35);
       padding: 9px 16px;
       border-radius: var(--radius-lg);
       font-size: 13px;
@@ -602,8 +612,8 @@
 
     /* مجموع المنتجات + التوصيل + المجموع الكلي */
     .products-footer {
-      background: linear-gradient(135deg, var(--primary-bg), rgba(29,78,216,.03));
-      border: 1.5px solid rgba(29,78,216,.18);
+      background: linear-gradient(135deg, var(--primary-bg), rgba(27,42,74,.03));
+      border: 1.5px solid rgba(27,42,74,.18);
       border-radius: var(--radius-lg);
       padding: 10px 14px;
       margin-top: 10px;
@@ -620,7 +630,7 @@
     .pf-line > strong { font-size: 13px; font-weight: 800; color: var(--text); direction: ltr; }
     .pf-total > span   { font-size: 13px; font-weight: 800; color: var(--text); }
     .pf-total > strong { font-size: 16px; font-weight: 900; color: var(--primary); direction: ltr; }
-    .pf-sep { border: none; border-top: 1px solid rgba(29,78,216,.2); margin: 3px 0; }
+    .pf-sep { border: none; border-top: 1px solid rgba(27,42,74,.2); margin: 3px 0; }
 
     /* ── Currency layout: دج LEFT · number RIGHT ────────── */
     .checkout-price-fixed {
@@ -645,7 +655,7 @@
     /* === صندوق الدفع المدمج (prepay) === */
     .pm-detail-prepay {
       background: linear-gradient(135deg, #eff6ff, #ecfdf5);
-      border: 1.5px solid #93c5fd;
+      border: 1.5px solid rgba(27,42,74,.35);
     }
     .pm-method-sub-header {
       font-size: 13px;
@@ -655,7 +665,7 @@
       gap: 5px;
       margin: 0 0 6px;
     }
-    .pm-method-sub-header.blue  { color: #1e40af; }
+    .pm-method-sub-header.blue  { color: #1B2A4A; }
     .pm-method-sub-header.green { color: #065f46; }
     .pm-divider {
       border: none;
@@ -692,11 +702,11 @@
       position: relative;
     }
     .pm-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
-    .pm-card:hover { border-color: var(--primary-light); background: rgba(29,78,216,.03); }
+    .pm-card:hover { border-color: var(--primary-light); background: rgba(27,42,74,.03); }
     .pm-card.selected {
       border-color: var(--primary);
       background: var(--primary-bg);
-      box-shadow: 0 4px 16px rgba(29,78,216,.18);
+      box-shadow: 0 4px 16px rgba(27,42,74,.18);
     }
     .pm-card .pm-icon { font-size: 19px; line-height: 1; }
     .pm-card .pm-name { font-size: 13px; font-weight: 800; color: var(--text); }
@@ -732,13 +742,13 @@
       background: linear-gradient(135deg, #eff6ff, #fefce8);
       border: 1.5px solid rgba(180,83,9,.25);
     }
-    .pm-detail-carte p { font-size: 14px; color: #1e3a8a; line-height: 1.8; margin: 0 0 16px; }
+    .pm-detail-carte p { font-size: 14px; color: #1B2A4A; line-height: 1.8; margin: 0 0 16px; }
     .carte-note {
-      background: rgba(29,78,216,.08);
+      background: rgba(27,42,74,.08);
       border-radius: 8px;
       padding: 10px 14px;
       font-size: 13px;
-      color: #1e40af;
+      color: #1B2A4A;
       font-weight: 600;
       margin-top: 12px;
     }
@@ -802,7 +812,7 @@
       gap: 5px;
       background: var(--primary-bg);
       color: var(--primary);
-      border: 1px solid rgba(29,78,216,.2);
+      border: 1px solid rgba(27,42,74,.2);
       padding: 8px 16px;
       border-radius: 8px;
       font-size: 13px;
@@ -896,7 +906,7 @@
 
     /* === منطقة رفع وصل الدفع === */
     .receipt-zone {
-      border: 2px dashed rgba(29,78,216,.3);
+      border: 2px dashed rgba(27,42,74,.3);
       border-radius: var(--radius-lg);
       padding: 16px 16px;
       text-align: center;
@@ -905,7 +915,7 @@
       transition: border-color .2s, background .2s;
       position: relative;
     }
-    .receipt-zone:hover { border-color: var(--primary); background: rgba(29,78,216,.08); }
+    .receipt-zone:hover { border-color: var(--primary); background: rgba(27,42,74,.08); }
     .receipt-zone input[type="file"] {
       position: absolute;
       inset: 0;
@@ -1255,7 +1265,7 @@
     .pr-cs-trigger:focus-visible {
       border-color: var(--primary);
       background: #fff;
-      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
     }
     .pr-cs-trigger.has-value {
       border-color: #10b981;
@@ -1314,7 +1324,7 @@
     .pr-cs-item:last-child { border-bottom: none; }
     .pr-cs-item:hover { background: var(--primary-bg); }
     .pr-cs-item.is-selected {
-      background: rgba(29,78,216,.06);
+      background: rgba(27,42,74,.06);
       color: var(--primary);
       font-weight: 700;
     }

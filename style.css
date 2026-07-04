@@ -224,7 +224,7 @@ input, select, textarea { font-family: inherit; }
   flex-shrink: 0;
 }
 
-.logo-accent { color: #6366f1; }
+.logo-accent { color: #2d2da2; }
 
 .main-nav {
   display: flex;
@@ -246,9 +246,9 @@ input, select, textarea { font-family: inherit; }
 .nav-link:hover { color: #1e293b; background: #f1f5f9; }
 
 .btn-header-cta {
-  background: #ffffff;
-  color: #6366f1;
-  border: 1.5px solid #6366f1;
+  background: transparent;
+  color: #1B2A4A;
+  border: 1.5px solid #1B2A4A;
   padding: 0 16px;
   height: 38px;
   border-radius: 99px;
@@ -260,13 +260,13 @@ input, select, textarea { font-family: inherit; }
   justify-content: center;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+  transition: background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
 }
 .btn-header-cta:hover {
-  background: #eef2ff;
-  border-color: #4f46e5;
-  color: #4f46e5;
-  box-shadow: 0 2px 10px rgba(99,102,241,0.2);
+  background: #1B2A4A;
+  border-color: #1B2A4A;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(27,42,74,0.3);
 }
 
 .mobile-menu-btn {
@@ -319,7 +319,7 @@ input, select, textarea { font-family: inherit; }
 }
 .mobile-menu a:hover { color: #1e293b; background: #f1f5f9; }
 .mobile-menu .mobile-cta-link {
-  background: #6366f1;
+  background: #1B2A4A;
   color: white;
   margin-top: 10px;
   text-align: center;
@@ -700,7 +700,7 @@ input, select, textarea { font-family: inherit; }
 .product-cat-label {
   font-size: 10px;
   font-weight: 700;
-  color: #7c3aed;
+  color: #1B2A4A;
   text-transform: uppercase;
   letter-spacing: 0.7px;
   text-align: center;
@@ -1230,19 +1230,19 @@ input, select, textarea { font-family: inherit; }
 
 .contact-grid {
   display: grid;
-  grid-template-columns: 1fr 1.2fr;
-  gap: 48px;
+  grid-template-columns: minmax(0, 340px) 1fr;
+  gap: 40px;
   align-items: start;
 }
 
-.contact-info h2 { font-size: 28px; font-weight: 900; color: var(--text); margin-bottom: 14px; }
-.contact-info > p { color: var(--text-light); font-size: 15px; margin-bottom: 28px; line-height: 1.75; }
+.contact-info h2 { font-size: 25px; font-weight: 900; color: var(--text); margin-bottom: 12px; }
+.contact-info > p { color: var(--text-light); font-size: 15px; margin-bottom: 22px; line-height: 1.7; }
 
 .contact-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 0;
+  padding: 13px 0;
   border-bottom: 1px solid var(--border);
   font-size: 14px;
   color: var(--text);
@@ -1254,11 +1254,14 @@ input, select, textarea { font-family: inherit; }
   background: white;
   border: 1px solid var(--border);
   border-radius: var(--radius-xl);
-  padding: 36px;
+  padding: 28px;
+  max-width: 480px;
+  width: 100%;
+  margin: 0 auto;
 }
-.contact-form-card h3 { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 24px; }
+.contact-form-card h3 { font-size: 20px; font-weight: 900; color: var(--text); margin-bottom: 18px; }
 
-.form-group { margin-bottom: 18px; }
+.form-group { margin-bottom: 14px; }
 .form-group label {
   display: block;
   font-size: 14px;
@@ -1270,7 +1273,7 @@ input, select, textarea { font-family: inherit; }
 .form-group select,
 .form-group textarea {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   border: 1.5px solid var(--border);
   border-radius: var(--radius);
   font-size: 15px;
@@ -1288,19 +1291,19 @@ input, select, textarea { font-family: inherit; }
   background: white;
   box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
 }
-.form-group textarea { min-height: 120px; resize: vertical; }
+.form-group textarea { min-height: 100px; resize: vertical; }
 
 .form-submit {
   width: 100%;
-  background: var(--primary);
+  background: #1B2A4A;
   color: white;
-  padding: 14px;
+  padding: 12px;
   border-radius: var(--radius);
   font-size: 16px;
   font-weight: 700;
   transition: var(--transition);
 }
-.form-submit:hover { background: var(--primary-dark); }
+.form-submit:hover { background: #12203a; }
 
 /* Status messages */
 .status-msg { margin-top: 12px; font-size: 14px; font-weight: 600; text-align: center; }
@@ -1752,7 +1755,7 @@ input, select, textarea { font-family: inherit; }
 /* === 19. PRODUCT DETAIL PAGE === */
 .product-page {
   padding: 18px 0 24px;
-  background: var(--pd-paper);
+  background: var(--bg);
 
   /* Editorial palette — scoped to the product page only, so the
      rest of the site keeps its existing blue theme. */
@@ -2097,6 +2100,7 @@ input, select, textarea { font-family: inherit; }
   .savings-card    { display: none; }
   .banner-checks   { justify-content: center; }
   .contact-grid    { grid-template-columns: 1fr; gap: 28px; }
+  .contact-form-card { max-width: 100%; }
 
   /* Product detail */
   .product-hero-grid   { grid-template-columns: 1fr; }
@@ -2484,9 +2488,9 @@ img { max-width: 100%; height: auto; }
 /* ── زر السلة في الهيدر — pill/label design ─────────────── */
 .cart-btn {
   position: relative;
-  background: #ffffff;
-  border: 1.5px solid #6366f1;
-  color: #6366f1;
+  background: transparent;
+  border: 1.5px solid #1B2A4A;
+  color: #1B2A4A;
   height: 38px;
   width: auto;
   border-radius: 99px;
@@ -2498,7 +2502,7 @@ img { max-width: 100%; height: auto; }
   justify-content: center;
   gap: 6px;
   cursor: pointer;
-  transition: background .2s, border-color .2s, color .2s, box-shadow .2s;
+  transition: background .2s ease, border-color .2s ease, color .2s ease, box-shadow .2s ease;
   flex-shrink: 0;
   white-space: nowrap;
 }
@@ -2513,10 +2517,10 @@ img { max-width: 100%; height: auto; }
 }
 
 .cart-btn:hover {
-  background: #eef2ff;
-  border-color: #4f46e5;
-  color: #4f46e5;
-  box-shadow: 0 2px 10px rgba(99,102,241,0.2);
+  background: #1B2A4A;
+  border-color: #1B2A4A;
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(27,42,74,0.3);
 }
 
 .cart-btn--bounce { animation: cartIconBounce .55s ease; }
@@ -2724,7 +2728,7 @@ img { max-width: 100%; height: auto; }
   -webkit-box-orient: vertical;
 }
 .cart-item-price { font-size: 12px; color: var(--text-muted); }
-.cart-item-sub   { font-size: 14px; font-weight: 900; color: var(--primary); direction: ltr; text-align: right; }
+.cart-item-sub   { font-size: 14px; font-weight: 900; color: #1B2A4A; direction: ltr; text-align: right; }
 
 /* أزرار الكمية والحذف */
 .cart-item-actions {
@@ -2805,7 +2809,7 @@ img { max-width: 100%; height: auto; }
 .cart-total-row strong {
   font-size: 21px;
   font-weight: 900;
-  color: var(--primary);
+  color: #1B2A4A;
   direction: ltr;
 }
 .cart-free-ship {
@@ -2819,7 +2823,7 @@ img { max-width: 100%; height: auto; }
 }
 .cart-checkout-btn {
   width: 100%;
-  background: var(--primary);
+  background: #1B2A4A;
   color: #fff;
   padding: 14px;
   border-radius: var(--radius);
@@ -2835,7 +2839,7 @@ img { max-width: 100%; height: auto; }
   gap: 8px;
 }
 .cart-checkout-btn:hover:not([disabled]) {
-  background: var(--primary-dark);
+  background: #12203a;
   transform: translateY(-1px);
 }
 .cart-checkout-btn[disabled] {
@@ -3131,15 +3135,15 @@ img { max-width: 100%; height: auto; }
   gap: 14px;
   transition: color 0.18s;
 }
-.product-faq-question:hover { color: #6366f1; }
-.product-faq-question.open  { color: #6366f1; background: #fafafa; }
+.product-faq-question:hover { color: #1B2A4A; }
+.product-faq-question.open  { color: #1B2A4A; background: #fafafa; }
 
 .product-faq-icon {
   font-size: 22px;
   font-weight: 300;
   flex-shrink: 0;
   transition: transform 0.25s ease;
-  color: #6366f1;
+  color: #1B2A4A;
   line-height: 1;
   font-style: normal;
 }
@@ -3198,7 +3202,7 @@ img { max-width: 100%; height: auto; }
 
 /* ─── Info column improvements ───────────────────────────── */
 .product-hero-grid.has-purchase-box .product-details .product-cat-label {
-  color: #7c3aed;
+  color: #1B2A4A;
   font-size: 12px;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -3716,7 +3720,7 @@ img { max-width: 100%; height: auto; }
   gap: 8px;
   padding: 14px 28px;
   min-height: 50px;
-  background: #0F5132;
+  background: #1B2A4A;
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -3726,7 +3730,7 @@ img { max-width: 100%; height: auto; }
   font-family: 'Cairo', sans-serif;
   transition: background .2s;
 }
-.btn-add-cart-sb:hover { background: #0a3d26; }
+.btn-add-cart-sb:hover { background: #12203a; }
 .btn-add-cart-sb:disabled { background: #94a3b8; cursor: not-allowed; }
 
 .btn-whatsapp-sb {
@@ -3736,9 +3740,9 @@ img { max-width: 100%; height: auto; }
   gap: 8px;
   padding: 14px 28px;
   min-height: 50px;
-  background: transparent;
-  color: #1B2A4A;
-  border: 1.5px solid #1B2A4A;
+  background: #1B2A4A;
+  color: #fff;
+  border: none;
   border-radius: 12px;
   font-size: 13.5px;
   font-weight: 800;
@@ -3747,7 +3751,7 @@ img { max-width: 100%; height: auto; }
   text-decoration: none;
   transition: background .2s, color .2s;
 }
-.btn-whatsapp-sb:hover { background: #1B2A4A; color: #fff; text-decoration: none; }
+.btn-whatsapp-sb:hover { background: #12203a; color: #fff; text-decoration: none; }
 
 .product-cta-buttons { flex-wrap: nowrap; }
 .btn-buy-now-sb,
@@ -3837,7 +3841,7 @@ img { max-width: 100%; height: auto; }
 }
 .product-page .rp-name { color: var(--pd-ink); }
 .rp-price-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-.rp-price  { font-size: 14px; font-weight: 900; color: #1d4ed8; }
+.rp-price  { font-size: 14px; font-weight: 900; color: #1B2A4A; }
 .product-page .rp-price { color: var(--pd-gold-dark); }
 .rp-old-price { font-size: 11px; color: #94a3b8; text-decoration: line-through; }
 .rp-discount {
