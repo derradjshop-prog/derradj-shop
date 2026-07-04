@@ -162,7 +162,7 @@
       </div>
 
       <div class="product-hero-grid">
-        <div class="product-img-gallery" style="grid-template-columns:1fr;max-width:260px;">
+        <div class="product-img-gallery" style="grid-template-columns:1fr;max-width:clamp(180px,50vw,320px);">
           <div class="product-main-image-box" style="aspect-ratio:3/4;cursor:default;">
             <img id="pdMainImg" src="${escAttr(mainImage)}"
                  alt="${escAttr(imgAlt)}"

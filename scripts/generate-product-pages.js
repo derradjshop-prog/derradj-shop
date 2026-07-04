@@ -331,7 +331,7 @@ function renderBookPage(view, dims) {
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/style.css"/>
   <style>
-    .product-img-gallery { grid-template-columns: 1fr; max-width: 260px; }
+    .product-img-gallery { grid-template-columns: 1fr; max-width: clamp(180px, 50vw, 320px); }
     .product-main-image-box { aspect-ratio: 3 / 4; cursor: default; }
     .product-main-image { object-fit: contain; padding: 0; }
     .zoom-hint { display: none; }

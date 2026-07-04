@@ -41,7 +41,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="/style.css"/>
   <style>
-    .product-img-gallery { grid-template-columns: 1fr; max-width: 260px; }
+    .product-img-gallery { grid-template-columns: 1fr; max-width: clamp(180px, 50vw, 320px); }
     .product-main-image-box { aspect-ratio: 3 / 4; cursor: default; }
     .product-main-image { object-fit: contain; padding: 0; }
     .zoom-hint { display: none; }
@@ -113,7 +113,7 @@
       </div>
 
       <div class="product-hero-grid">
-        <div class="product-img-gallery" style="grid-template-columns:1fr;max-width:260px;">
+        <div class="product-img-gallery" style="grid-template-columns:1fr;max-width:clamp(180px,50vw,320px);">
           <div class="product-main-image-box" style="aspect-ratio:3/4;cursor:default;">
             <img id="pdMainImg" src="https://derradjshop.com/books/6-sales-skills/main.webp"
                  alt="غلاف كتاب 6 مهارات لتحقيق مبيعات مختلفة مذهلة لـديل ميريل، جينيفر كولوسيمو، سكوت سافاج، راندي إلينج"

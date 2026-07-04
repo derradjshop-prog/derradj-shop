@@ -2,6 +2,7 @@
    DERRADJ SHOP — متجر كتب أونلاين في الجزائر
    Professional CSS Theme | Arabic RTL | Online Bookstore
    ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Naskh+Arabic:wght@400;500;600;700&display=swap');
 
 /* === 1. VARIABLES === */
 :root {
@@ -767,7 +768,7 @@ input, select, textarea { font-family: inherit; }
   margin: 4px 0;
   flex-wrap: wrap;
 }
-.price-current { font-size: 17px; font-weight: 900; color: #059669; }
+.price-current { font-size: 17px; font-weight: 900; color: #13201A; }
 .price-old     { font-size: 12px; color: #94a3b8; text-decoration: line-through; }
 .price-old .price-value { text-decoration: inherit; }
 .discount-tag  {
@@ -1418,6 +1419,22 @@ input, select, textarea { font-family: inherit; }
   position: relative;
   line-height: 1.7;
 }
+.product-page .info-card {
+  background: #fff;
+  border: 1px solid var(--pd-border);
+  border-top: 3px solid var(--pd-emerald);
+}
+.product-page .info-card h2 {
+  font-family: var(--pd-serif);
+  font-weight: 700;
+  color: var(--pd-ink);
+  border-bottom: 1px solid var(--pd-border);
+}
+.product-page .info-card p,
+.product-page .info-card ul li,
+.product-page .pd-full-desc { color: var(--pd-ink-light); }
+.product-page .info-card ul li::before { color: var(--pd-emerald); }
+
 .info-card ul li::before {
   content: '✓';
   position: absolute;
@@ -1733,7 +1750,25 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* === 19. PRODUCT DETAIL PAGE === */
-.product-page { padding: 40px 0 24px; background: var(--bg); }
+.product-page {
+  padding: 18px 0 24px;
+  background: var(--pd-paper);
+
+  /* Editorial palette — scoped to the product page only, so the
+     rest of the site keeps its existing blue theme. */
+  --pd-emerald:      #0F5132;
+  --pd-emerald-dark: #0a3d26;
+  --pd-emerald-tint: #e6efe9;
+  --pd-gold:         #C9A227;
+  --pd-gold-dark:    #a3811d;
+  --pd-navy:         #1B2A4A;
+  --pd-navy-dark:    #12203a;
+  --pd-ink:          #13201A;
+  --pd-ink-light:    #55645c;
+  --pd-border:       #e6e3d8;
+  --pd-paper:        #fbfaf7;
+  --pd-serif: 'Noto Naskh Arabic', 'Amiri', Georgia, serif;
+}
 
 .breadcrumb {
   font-size: 13px;
@@ -1746,6 +1781,8 @@ input, select, textarea { font-family: inherit; }
 }
 .breadcrumb a { color: var(--primary); }
 .breadcrumb a:hover { text-decoration: underline; }
+.product-page .breadcrumb { margin-bottom: 10px; }
+.product-page .breadcrumb a { color: var(--pd-emerald); font-weight: 700; }
 
 .product-hero-grid {
   display: grid;
@@ -1755,6 +1792,84 @@ input, select, textarea { font-family: inherit; }
 }
 
 .product-img-gallery { position: sticky; top: 88px; }
+
+.product-page .product-main-image-box {
+  border: 1px solid var(--pd-border);
+  box-shadow: 0 16px 40px rgba(19, 32, 26, 0.10);
+  background: #fff;
+}
+
+/* Book covers: the inline max-width on .product-img-gallery (set in
+   js/book-template.js) uses clamp(220px,55vw,400px) so the cover
+   shrinks on short/narrow screens instead of eating the whole first
+   viewport — see ISSUE 2/3 fix. */
+
+/* ── Reorder .product-details so the CTAs and trust row land above
+   the fold before the longer description/feature list — content
+   stays in the same reading order in the DOM (SEO/accessibility
+   unaffected), only the visual stacking order changes. ── */
+.product-details {
+  display: flex;
+  flex-direction: column;
+}
+.product-details .product-cat-label  { order: 1; }
+.product-details h1                  { order: 2; }
+.product-details .pd-stock           { order: 3; align-self: flex-start; width: fit-content; }
+.product-details .product-price-box  { order: 4; }
+.product-details .product-cta-buttons{ order: 5; }
+.product-details .trust-badges       { order: 6; }
+.product-details .book-en-title      { order: 7; margin-top: -4px; }
+.product-details .product-short-desc { order: 8; }
+.product-details .product-features   { order: 9; }
+
+/* ── Keep the CTA row + trust badges compact (single row) on small
+   screens too, instead of stacking into tall columns — that's what
+   was pushing them below the fold on mobile. Higher specificity than
+   the generic @media rules further down, so it wins regardless of
+   source order. ── */
+@media (max-width: 900px) {
+  .product-page .trust-badges { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .product-page .trust-badge  { padding: 8px 4px; font-size: 10.5px; }
+  .product-page .trust-badge strong { font-size: 11px; }
+}
+@media (max-width: 640px) {
+  /* Electronics gallery has no inline cap like the book cover does —
+     without this it renders near full-viewport-width/square and
+     pushes the buy buttons far below the fold. */
+  .product-page .product-img-gallery { max-width: min(240px, 62vw); margin: 0 auto 6px; }
+  .product-page .product-thumbnails-vertical { gap: 6px; padding-bottom: 4px; }
+  .product-page .product-thumb { min-width: 46px; width: 46px; height: 46px; }
+  .product-page .product-details .product-cat-label { margin-bottom: 4px; }
+  .product-page .product-details h1 { margin-bottom: 4px; }
+  .product-page .pd-stock { margin-bottom: 6px; }
+  .product-page .product-price-box { margin-bottom: 8px; }
+  .product-page .product-cta-buttons { margin-bottom: 10px; }
+  .product-page .product-cta-buttons {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 6px;
+  }
+  .product-page .btn-buy-now-sb,
+  .product-page .btn-whatsapp-sb,
+  .product-page .btn-add-cart-sb {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    min-height: 44px;
+    padding: 8px 4px;
+    font-size: 11px;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    gap: 4px;
+  }
+  .product-page .btn-whatsapp-sb svg {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+}
 
 .product-main-img {
   width: 100%;
@@ -1770,6 +1885,12 @@ input, select, textarea { font-family: inherit; }
 }
 
 .product-details .product-cat-label { font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px; }
+.product-page .product-details .product-cat-label {
+  color: var(--pd-emerald);
+  font-size: 12px;
+  letter-spacing: .03em;
+  margin-bottom: 6px;
+}
 
 .product-details h1 {
   font-size: clamp(22px, 3vw, 30px);
@@ -1777,6 +1898,14 @@ input, select, textarea { font-family: inherit; }
   color: var(--text);
   margin-bottom: 14px;
   line-height: 1.3;
+}
+.product-page .product-details h1 {
+  font-family: var(--pd-serif);
+  font-size: clamp(19px, 2.8vw, 29px);
+  font-weight: 700;
+  color: var(--pd-ink);
+  line-height: 1.3;
+  margin-bottom: 8px;
 }
 
 .product-details .product-rating { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
@@ -1798,6 +1927,19 @@ input, select, textarea { font-family: inherit; }
   color: #dc2626;
 }
 .product-price-box .stock-msg { font-size: 14px; }
+.product-page .product-price-box {
+  padding: 0;
+  background: transparent;
+  border: none;
+  margin-bottom: 14px;
+}
+.product-page .product-price-box .price-current,
+.product-page .product-price-box .price-current.price-sale {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--pd-ink);
+  font-family: var(--font);
+}
 
 .discount-tag {
   background: var(--accent);
@@ -1808,8 +1950,15 @@ input, select, textarea { font-family: inherit; }
   border-radius: 99px;
   margin-right: auto;
 }
+.product-page .discount-tag { background: var(--pd-navy); }
 
 .product-short-desc { font-size: 15px; color: var(--text-light); line-height: 1.8; margin-bottom: 24px; }
+.product-page .product-short-desc {
+  font-size: 15.5px;
+  color: var(--pd-ink-light);
+  line-height: 1.9;
+  margin-bottom: 26px;
+}
 
 .product-features { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
 
@@ -1832,6 +1981,8 @@ input, select, textarea { font-family: inherit; }
   font-weight: 800;
   flex-shrink: 0;
 }
+.product-page .product-feature { color: var(--pd-ink); }
+.product-page .feature-check { background: var(--pd-emerald); }
 
 .product-cta-buttons {
   display: flex;
@@ -1839,6 +1990,8 @@ input, select, textarea { font-family: inherit; }
   gap: 12px;
   margin-bottom: 24px;
 }
+.product-page .product-cta-buttons { margin-bottom: 16px; }
+.product-page .trust-badges { margin-bottom: 20px; }
 
 .btn-buy-now {
   flex: 1;
@@ -1904,6 +2057,13 @@ input, select, textarea { font-family: inherit; }
   color: var(--text-light);
 }
 .trust-badge strong { display: block; font-size: 13px; font-weight: 800; color: var(--text); margin-bottom: 2px; }
+.product-page .trust-badge {
+  background: #fff;
+  border: 1px solid var(--pd-border);
+  color: var(--pd-ink-light);
+  font-size: 10.5px;
+}
+.product-page .trust-badge strong { color: var(--pd-ink); font-size: 11.5px; }
 
 /* === 20. RESPONSIVE === */
 @media (max-width: 1200px) {
@@ -2047,6 +2207,7 @@ input, select, textarea { font-family: inherit; }
   .product-price-box   { flex-direction: column; align-items: flex-start; gap: 8px; }
   .discount-tag        { margin-right: 0; }
   .product-price-box .price-current { font-size: 28px; }
+  .product-page .product-price-box .price-current { font-size: 28px; }
 
   /* Footer */
   .footer-pay-badge { width: 100%; justify-content: center; text-align: center; }
@@ -3517,6 +3678,8 @@ img { max-width: 100%; height: auto; }
 .pd-stock.avail   { background: #d1fae5; color: #065f46; }
 .pd-stock.limited { background: #fef3c7; color: #92400e; }
 .pd-stock.unavail { background: #fee2e2; color: #991b1b; }
+.product-page .pd-stock.avail { background: var(--pd-emerald-tint); color: var(--pd-emerald); }
+.product-page .pd-stock { margin-bottom: 10px; }
 
 .pd-full-desc {
   line-height: 1.9;
@@ -3532,18 +3695,19 @@ img { max-width: 100%; height: auto; }
   justify-content: center;
   gap: 8px;
   padding: 14px 28px;
-  background: #1d4ed8;
+  min-height: 50px;
+  background: #1B2A4A;
   color: #fff;
   border: none;
   border-radius: 12px;
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 800;
   cursor: pointer;
   font-family: 'Cairo', sans-serif;
   text-decoration: none;
   transition: background .2s;
 }
-.btn-buy-now-sb:hover { background: #1e40af; }
+.btn-buy-now-sb:hover { background: #12203a; }
 
 .btn-add-cart-sb {
   display: inline-flex;
@@ -3551,17 +3715,18 @@ img { max-width: 100%; height: auto; }
   justify-content: center;
   gap: 8px;
   padding: 14px 28px;
-  background: #059669;
+  min-height: 50px;
+  background: #0F5132;
   color: #fff;
   border: none;
   border-radius: 12px;
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 800;
   cursor: pointer;
   font-family: 'Cairo', sans-serif;
   transition: background .2s;
 }
-.btn-add-cart-sb:hover { background: #047857; }
+.btn-add-cart-sb:hover { background: #0a3d26; }
 .btn-add-cart-sb:disabled { background: #94a3b8; cursor: not-allowed; }
 
 .btn-whatsapp-sb {
@@ -3570,18 +3735,19 @@ img { max-width: 100%; height: auto; }
   justify-content: center;
   gap: 8px;
   padding: 14px 28px;
-  background: #059669;
-  color: #fff;
-  border: none;
+  min-height: 50px;
+  background: transparent;
+  color: #1B2A4A;
+  border: 1.5px solid #1B2A4A;
   border-radius: 12px;
-  font-size: 15px;
+  font-size: 13.5px;
   font-weight: 800;
   cursor: pointer;
   font-family: 'Cairo', sans-serif;
   text-decoration: none;
-  transition: background .2s;
+  transition: background .2s, color .2s;
 }
-.btn-whatsapp-sb:hover { background: #047857; color: #fff; text-decoration: none; }
+.btn-whatsapp-sb:hover { background: #1B2A4A; color: #fff; text-decoration: none; }
 
 .product-cta-buttons { flex-wrap: nowrap; }
 .btn-buy-now-sb,
@@ -3617,6 +3783,7 @@ img { max-width: 100%; height: auto; }
   color: #1e293b;
   margin-bottom: 20px;
 }
+.product-page .rp-title { font-family: var(--pd-serif); font-weight: 700; color: var(--pd-ink); }
 .rp-outer { overflow: hidden; direction: ltr; cursor: grab; }
 .rp-outer:active { cursor: grabbing; }
 .rp-track {
@@ -3642,6 +3809,8 @@ img { max-width: 100%; height: auto; }
   box-shadow: 0 8px 28px rgba(30,64,175,.13);
   transform: translateY(-3px);
 }
+.product-page .rp-card { border-color: var(--pd-border); }
+.product-page .rp-card:hover { box-shadow: 0 10px 28px rgba(19,32,26,.14); }
 .rp-img {
   width: 100%;
   height: 155px;
@@ -3666,8 +3835,10 @@ img { max-width: 100%; height: auto; }
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
+.product-page .rp-name { color: var(--pd-ink); }
 .rp-price-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .rp-price  { font-size: 14px; font-weight: 900; color: #1d4ed8; }
+.product-page .rp-price { color: var(--pd-gold-dark); }
 .rp-old-price { font-size: 11px; color: #94a3b8; text-decoration: line-through; }
 .rp-discount {
   background: #fee2e2; color: #dc2626;
@@ -3681,6 +3852,7 @@ img { max-width: 100%; height: auto; }
 }
 .rp-avail   { background: #d1fae5; color: #065f46; }
 .rp-unavail { background: #fee2e2; color: #991b1b; }
+.product-page .rp-avail { background: var(--pd-emerald-tint); color: var(--pd-emerald); }
 .rp-btn {
   display: block;
   background: #1d4ed8; color: #fff;
@@ -3691,3 +3863,13 @@ img { max-width: 100%; height: auto; }
   font-family: 'Cairo', sans-serif;
 }
 .rp-card:hover .rp-btn { background: #1e40af; }
+.rp-btn.rp-add-cart {
+  background: var(--pd-emerald);
+  cursor: pointer;
+}
+.rp-card:hover .rp-btn.rp-add-cart { background: var(--pd-emerald-dark); }
+.rp-btn.rp-add-cart--disabled,
+.rp-card:hover .rp-btn.rp-add-cart--disabled {
+  background: #94a3b8;
+  cursor: not-allowed;
+}

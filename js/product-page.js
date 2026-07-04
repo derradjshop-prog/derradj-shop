@@ -278,6 +278,13 @@
 
         const rpName = isBook ? p.product_name : pickNames(p).ar;
 
+        /* أضف إلى السلة مباشرة من البطاقة — يعتمد على نفس نظام
+           التفويض بالحدث في cart.js ([data-add-to-cart] على مستوى
+           document)، فلا حاجة لأي منطق سلة إضافي هنا. */
+        const cartBtnHtml = (isAvail && p.catalog_id)
+          ? `<span class="rp-btn rp-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</span>`
+          : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
+
         return `<a href="${url}" class="rp-card">
           <img src="${escAttr(imgSrc)}" alt="${escAttr(rpName)} — Derradj Shop"
                class="rp-img" loading="lazy" onerror="this.src='/Logo.jpg'">
@@ -285,7 +292,7 @@
             <div class="rp-name">${esc(rpName)}</div>
             <div class="rp-price-row">${priceRow}${discTag}</div>
             ${stockBadgeHtml}
-            <span class="rp-btn">عرض المنتج</span>
+            ${cartBtnHtml}
           </div>
         </a>`;
       }
