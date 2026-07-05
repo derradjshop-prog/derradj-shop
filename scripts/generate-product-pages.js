@@ -70,8 +70,11 @@ function toBookRow(p) {
     available: p.stock_status !== 'out_of_stock',
     description: p.short_description || null,
     full_description: p.full_description || null,
+    seo_title: p.seo_title || null,
     seo_description: p.seo_description || null,
     keywords: p.keywords || null,
+    gallery_images: Array.isArray(p.gallery_images) ? p.gallery_images : [],
+    brand: p.brand || null,
     updated_at: p.updated_at || null,
   };
 }
@@ -315,6 +318,7 @@ function renderBookPage(view, dims) {
   <meta property="og:image"       content="${ProductTemplate.escAttr(m.ogImage)}">
   ${imgW ? `<meta property="og:image:width" content="${imgW}">` : ''}
   ${imgH ? `<meta property="og:image:height" content="${imgH}">` : ''}
+  <meta property="og:image:alt"   content="${ProductTemplate.escAttr(m.ogImageAlt)}">
   <meta property="product:price:amount" content="${view.price}">
   <meta property="product:price:currency" content="DZD">
 
@@ -322,6 +326,7 @@ function renderBookPage(view, dims) {
   <meta name="twitter:title"       content="${ProductTemplate.escAttr(m.twitterTitle)}">
   <meta name="twitter:description" content="${ProductTemplate.escAttr(m.twitterDescription)}">
   <meta name="twitter:image"       content="${ProductTemplate.escAttr(m.twitterImage)}">
+  <meta name="twitter:image:alt"   content="${ProductTemplate.escAttr(m.twitterImageAlt)}">
 
   <link rel="canonical" href="${ProductTemplate.escAttr(m.canonical)}">
   <link rel="icon" type="image/png" href="/Logo.png"/>

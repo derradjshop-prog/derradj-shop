@@ -40,8 +40,11 @@
       available: p.stock_status !== 'out_of_stock',
       description: p.short_description || null,
       full_description: p.full_description || null,
+      seo_title: p.seo_title || null,
       seo_description: p.seo_description || null,
       keywords: p.keywords || null,
+      gallery_images: Array.isArray(p.gallery_images) ? p.gallery_images : [],
+      brand: p.brand || null,
     };
   }
 

@@ -26,6 +26,33 @@
 
   function fmtPrice(n) { return Number(n).toLocaleString('en-US'); }
 
+  /* ── Trims to a Google-safe SERP snippet length without cutting a
+     word in half. Only meta name="description" needs this — og:/
+     twitter:/JSON-LD description keep the full text since link
+     previews and rich results have more room. ── */
+  function truncateAtWord(str, max) {
+    if (!str || str.length <= max) return str;
+    const cut = str.slice(0, max);
+    const lastSpace = cut.lastIndexOf(' ');
+    return (lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trim() + '…';
+  }
+
+  /* ── Ensures a keywords string always covers the product's own
+     name and "الجزائر" (shoppers rarely search a product name
+     without it), while preserving whatever the admin already
+     entered — appends only the terms that are missing instead of
+     overwriting. ── */
+  function buildKeywords(existing, ...mustHave) {
+    const parts = String(existing || '').split(',').map(s => s.trim()).filter(Boolean);
+    const seen = new Set(parts.map(s => s.toLowerCase()));
+    for (const term of [...mustHave, 'الجزائر']) {
+      if (!term) continue;
+      const t = String(term).trim();
+      if (t && !seen.has(t.toLowerCase())) { parts.push(t); seen.add(t.toLowerCase()); }
+    }
+    return parts.join(', ');
+  }
+
   function stockBadge(status) {
     if (status === 'out_of_stock') return `<span class="pd-stock unavail">🔴 نفذت الكمية</span>`;
     return `<span class="pd-stock avail">🟢 متوفر — يمكن الطلب الآن</span>`;
@@ -63,19 +90,28 @@
     const slug      = p.slug || String(p.id || p.catalog_id || '');
     const isAvail   = p.stock_status !== 'out_of_stock';
     const pageUrl   = `${SITE_URL}/product/${encodeURIComponent(slug)}/`;
-    const imgSrc    = p.main_image || `${SITE_URL}/Logo.jpg`;
-    const gallery   = Array.isArray(p.gallery_images) ? p.gallery_images : [];
+    const gallery   = Array.isArray(p.gallery_images) ? p.gallery_images.filter(Boolean) : [];
+    /* og:image must always be an absolute URL — fall back to the first
+       gallery image, then the logo, if main_image is missing. */
+    const imgSrc    = p.main_image || gallery[0] || `${SITE_URL}/Logo.jpg`;
     const allImgs   = [imgSrc, ...gallery.filter(u => u && u !== imgSrc)];
     const catAr     = catLabelAr(p.category);
     const { ar: arName, other: otherName } = pickNames(p);
-    const titleNameRaw = p.seo_title || arName;
-    const titleName    = String(titleNameRaw || '').replace(/\s*\|\s*Derradj Shop\s*$/i, '');
-    const title        = `${titleName} | Derradj Shop`;
+    const titleNameRaw = (p.seo_title && p.seo_title.trim()) || arName;
+    const titleName    = String(titleNameRaw || '').replace(/\s*\|\s*Derradj Shop\s*$/i, '').trim();
+    const title        = `${titleName || arName} | توصيل لكل الجزائر - Derradj Shop`;
     /* og/twitter titles have more room than the SERP <title> — fold
        in the English/French name when one exists, mirroring how
        book-template.js's ogTitle includes titleEn. */
     const ogTitle    = `${arName}${otherName ? ' | ' + otherName : ''} | Derradj Shop`;
-    const desc      = p.seo_description || p.short_description || `اطلب ${arName} من Derradj Shop`;
+    /* Meta description: prefer admin-entered seo_description; otherwise
+       build one from short_description that naturally mentions the
+       product name and "الجزائر" — never blank, never the homepage's copy. */
+    const fallbackDesc = p.short_description
+      ? `${p.short_description} — اطلب ${arName} من Derradj Shop مع توصيل سريع لكل الجزائر.`
+      : `اطلب ${arName} من Derradj Shop بأفضل سعر، متوفر الآن مع توصيل سريع لجميع ولايات الجزائر.`;
+    const fullDesc  = (p.seo_description && p.seo_description.trim()) || fallbackDesc;
+    const desc      = truncateAtWord(fullDesc, 155);
     const imgAlt    = `${arName} — Derradj Shop`;
     const schemaName = arName;
 
@@ -127,11 +163,12 @@
       '@context': 'https://schema.org',
       '@type': 'Product',
       'name': schemaName,
-      'description': p.seo_description || p.short_description || p.full_description || '',
+      'description': fullDesc,
       'image': allImgs,
-      'sku': p.slug || String(p.catalog_id || ''),
+      'sku': String(p.catalog_id || p.slug || ''),
       'url': pageUrl,
       'brand': { '@type': 'Brand', 'name': p.brand || 'Derradj Shop' },
+      'areaServed': 'DZ',
       'offers': {
         '@type': 'Offer',
         'price': String(p.price),
@@ -270,15 +307,15 @@
       meta: {
         title,
         description: desc,
-        keywords: p.keywords || '',
+        keywords: buildKeywords(p.keywords, arName, otherName, catAr),
         canonical: pageUrl,
         ogTitle,
-        ogDescription: desc,
+        ogDescription: fullDesc,
         ogUrl: pageUrl,
         ogImage: imgSrc,
         ogImageAlt: imgAlt,
         twitterTitle: ogTitle,
-        twitterDescription: desc,
+        twitterDescription: fullDesc,
         twitterImage: imgSrc,
         twitterImageAlt: imgAlt,
       },
@@ -291,7 +328,7 @@
   const API = {
     esc, escAttr, fmtPrice, stockBadge, catLabelAr, buildProductView, SITE_URL,
     SHIPPING_NOTICE_AR, SHIPPING_NOTICE_AR_SHORT, SHIPPING_NOTICE_EN,
-    isArabic, pickNames,
+    isArabic, pickNames, truncateAtWord, buildKeywords,
   };
 
   if (typeof module !== 'undefined' && module.exports) {

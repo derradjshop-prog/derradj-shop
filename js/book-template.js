@@ -11,23 +11,12 @@
   'use strict';
 
   const SITE_URL = 'https://derradjshop.com';
-  const { esc, escAttr, fmtPrice } = ProductTemplate;
+  const { esc, escAttr, fmtPrice, truncateAtWord, buildKeywords } = ProductTemplate;
 
   function availBadge(available) {
     return available
       ? `<span class="pd-stock avail">🟢 متوفر — يمكن الطلب الآن</span>`
       : `<span class="pd-stock unavail">🔴 نفذت الكمية</span>`;
-  }
-
-  /* ── Trims to a Google-safe SERP snippet length without cutting a
-     word in half. Only meta name="description" needs this — og:/
-     twitter:/JSON-LD description keep the full text since link
-     previews and rich results have more room. ── */
-  function truncateAtWord(str, max) {
-    if (!str || str.length <= max) return str;
-    const cut = str.slice(0, max);
-    const lastSpace = cut.lastIndexOf(' ');
-    return (lastSpace > max * 0.6 ? cut.slice(0, lastSpace) : cut).trim() + '…';
   }
 
   /* ── Build the full view-model for a book row from
@@ -40,15 +29,25 @@
     const priceFmt  = fmtPrice(b.price);
     const priceSpaced = String(b.price).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 
-    const title = `${b.title} | Derradj Shop`;
+    const titleBase = String((b.seo_title && b.seo_title.trim()) || b.title || '')
+      .replace(/\s*\|\s*Derradj Shop\s*$/i, '').trim();
+    const title = `${titleBase || b.title} | توصيل لكل الجزائر - Derradj Shop`;
     const ogTitle = `${b.title}${b.titleEn ? ' — ' + b.titleEn : ''} | ${priceSpaced} دج | Derradj Shop الجزائر`;
-    const fullDesc = b.seo_description || b.description || `اطلب كتاب ${b.title} من Derradj Shop`;
+    /* Meta description: prefer admin-entered seo_description; otherwise
+       build one from the short description that naturally mentions the
+       book's title and "الجزائر" — never blank, never generic boilerplate. */
+    const fallbackDesc = b.description
+      ? `${b.description} — اطلب كتاب ${b.title} من Derradj Shop مع توصيل سريع لكل الجزائر.`
+      : `اطلب كتاب ${b.title}${b.author ? ' لـ' + b.author : ''} من Derradj Shop، متوفر الآن مع توصيل سريع لجميع ولايات الجزائر.`;
+    const fullDesc = (b.seo_description && b.seo_description.trim()) || fallbackDesc;
     const desc = truncateAtWord(fullDesc, 155);
     const imgAlt = `غلاف كتاب ${b.title}${b.author ? ' لـ' + b.author : ''}`;
-    /* Absolute URL or absolute site path — generator resolves legacy
-       relative paths ('slug/main.webp') and Supabase Storage URLs
-       (new books) into this before calling buildBookView(). */
-    const mainImage = b.image || '/Logo.jpg';
+    /* og:image must always be an absolute URL — fall back to the first
+       gallery image, then the logo, if the main image is missing.
+       (The generator already resolves legacy relative paths and
+       Supabase Storage URLs into an absolute b.image before this runs.) */
+    const gallery = Array.isArray(b.gallery_images) ? b.gallery_images.filter(Boolean) : [];
+    const mainImage = b.image || gallery[0] || `${SITE_URL}/Logo.jpg`;
 
     /* ── Structured data — Book (preserves existing indexing) +
        Product/Offer (so Merchant Center sees a Product node in
@@ -63,7 +62,7 @@
           'author': { '@type': 'Person', 'name': b.author || 'غير معروف' },
           'inLanguage': 'ar',
           'genre': b.category || '',
-          'description': b.description || '',
+          'description': fullDesc,
           'image': { '@type': 'ImageObject', 'url': mainImage },
           'url': pageUrl,
           'offers': {
@@ -81,12 +80,13 @@
         {
           '@type': 'Product',
           'name': b.title,
-          'description': b.description || '',
+          'description': fullDesc,
           'category': 'Media > Books',
           'image': [mainImage],
           'sku': `BOOK-${b.id}-DZ`,
           'url': pageUrl,
-          'brand': { '@type': 'Brand', 'name': 'Derradj Shop' },
+          'brand': { '@type': 'Brand', 'name': b.brand || 'Derradj Shop' },
+          'areaServed': 'DZ',
           'offers': {
             '@type': 'Offer',
             'price': String(b.price),
@@ -241,7 +241,7 @@
       meta: {
         title,
         description: desc,
-        keywords: b.keywords || '',
+        keywords: buildKeywords(b.keywords, b.title, b.author, b.category),
         canonical: pageUrl,
         ogTitle,
         ogDescription: fullDesc,
