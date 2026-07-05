@@ -1847,30 +1847,51 @@ input, select, textarea { font-family: inherit; }
   .product-page .pd-stock { margin-bottom: 6px; }
   .product-page .product-price-box { margin-bottom: 8px; }
   .product-page .product-cta-buttons { margin-bottom: 10px; }
+  /* Squeezing all three CTAs into one row kept forcing a trade-off —
+     widening/shrinking one button's share always broke another's label.
+     Two rows instead: cart + whatsapp share row 1, buy-now spans full
+     width on row 2. grid-area placement means this doesn't depend on
+     each template's DOM order (buy-now/whatsapp/cart vs other orders). */
   .product-page .product-cta-buttons {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 6px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      "cart wa"
+      "buy  buy";
+    gap: 8px;
   }
+  .product-page .btn-add-cart-sb  { grid-area: cart; }
+  .product-page .btn-whatsapp-sb  { grid-area: wa; }
+  .product-page .btn-buy-now-sb   { grid-area: buy; }
   .product-page .btn-buy-now-sb,
   .product-page .btn-whatsapp-sb,
   .product-page .btn-add-cart-sb {
-    flex: 1 1 0;
     min-width: 0;
-    width: auto;
-    min-height: 44px;
-    padding: 8px 4px;
-    font-size: 11px;
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 8px;
+    font-size: 12.5px;
     line-height: 1.2;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    gap: 4px;
+    gap: 6px;
   }
   .product-page .btn-whatsapp-sb svg {
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     flex-shrink: 0;
+  }
+}
+/* Very narrow phones: even half-width can be tight for the longer
+   labels, so stack row 1 too rather than shrinking text further. */
+@media (max-width: 380px) {
+  .product-page .product-cta-buttons {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "cart"
+      "wa"
+      "buy";
   }
 }
 
@@ -3788,16 +3809,64 @@ img { max-width: 100%; height: auto; }
   margin-bottom: 20px;
 }
 .product-page .rp-title { font-family: var(--pd-serif); font-weight: 700; color: var(--pd-ink); }
-.rp-outer { overflow: hidden; direction: ltr; cursor: grab; }
+/* overflow-x:auto (not hidden) so the row is a real scroll container —
+   a manual-scroll fallback for whenever the auto-scroll JS is paused
+   (on hover) or hasn't kicked in yet — instead of just clipping any
+   card that doesn't fit inside the viewport. Scrollbar hidden purely
+   cosmetically; the row still auto-scrolls via JS as before.
+
+   direction stays ltr here on purpose, even though the page is RTL:
+   `scrollLeft` range/sign for a `direction:rtl` element is inconsistent
+   across browsers (0..max vs 0..-max), and the JS auto-scroll
+   (js/product-page.js loadRelatedProducts -> animate()) does plain
+   `pos += SPEED; outer.scrollLeft = pos;` math that assumes the
+   standard 0..max LTR range — flipping this to rtl would desync or
+   freeze the marquee depending on browser. The natural right-to-left
+   feel is instead achieved below via `flex-direction: row-reverse` on
+   .rp-track, which reorders the cards visually without touching the
+   scroll coordinate system.
+
+   Edge padding lives on .rp-outer (the scroll viewport), not on
+   .rp-track: the JS reads `track.scrollWidth` to find the midpoint
+   between its two duplicated card sets (`half = track.scrollWidth/2`,
+   used to loop the marquee seamlessly). Any padding added inside
+   .rp-track would inflate that scrollWidth and throw the halfway
+   point off, causing a visible jump/seam once per loop. Padding on
+   the separate .rp-outer wrapper reserves the same visual clearance
+   at both ends without touching .rp-track's own size. */
+.rp-outer {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  direction: ltr;
+  /* No scroll-snap-type here: verified live (Playwright) that ANY
+     non-`none` scroll-snap-type on this axis — even `proximity` —
+     makes Chromium continuously re-snap scrollLeft back to the
+     nearest snap point (the padding-inline offset below) every
+     single frame, fighting and completely freezing the JS
+     auto-scroll (js/product-page.js animate(), which sets
+     outer.scrollLeft = pos every RAF tick). That's what was causing
+     the marquee to sit frozen with a cropped trailing card — not a
+     containment/overflow issue, which was already fine. */
+  padding-inline: 16px;
+  cursor: grab;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.rp-outer::-webkit-scrollbar { display: none; }
 .rp-outer:active { cursor: grabbing; }
 .rp-track {
   display: flex;
+  flex-direction: row-reverse;
   gap: 16px;
   width: max-content;
   padding-bottom: 8px;
 }
 .rp-card {
   width: 190px;
+  min-width: 190px;
   flex-shrink: 0;
   background: #fff;
   border: 1px solid #e2e8f0;
@@ -3818,7 +3887,7 @@ img { max-width: 100%; height: auto; }
 .rp-img {
   width: 100%;
   height: 155px;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
   background: #f8fafc;
 }
@@ -3842,7 +3911,7 @@ img { max-width: 100%; height: auto; }
 .product-page .rp-name { color: var(--pd-ink); }
 .rp-price-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
 .rp-price  { font-size: 14px; font-weight: 900; color: #1B2A4A; }
-.product-page .rp-price { color: var(--pd-gold-dark); }
+.product-page .rp-price { color: var(--pd-ink); }
 .rp-old-price { font-size: 11px; color: #94a3b8; text-decoration: line-through; }
 .rp-discount {
   background: #fee2e2; color: #dc2626;
