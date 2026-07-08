@@ -133,6 +133,8 @@
     .stat-card.s-ord-total    { border-right-color: #1d4ed8; }
     .stat-card.s-ord-progress { border-right-color: #f59e0b; }
     .stat-card.s-ord-done     { border-right-color: #10b981; }
+    .stat-card.s-ord-profit   { border-right-color: #C9A227; background: linear-gradient(135deg,#FBF7EF,#ffffff); }
+    .stat-card.s-ord-profit .stat-num { color: #0F5132; }
     .stat-num   { font-size: 30px; font-weight: 900; line-height: 1; }
     .stat-label { font-size: 12px; color: var(--text-light); font-weight: 700; }
 
@@ -338,6 +340,7 @@
       pointer-events: none;
     }
     .live-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .live-toast.error { background: #dc2626; }
 
     /* ━━ BADGES (orders / messages status) ━━━━━━━━━━━━━━━━━━━ */
     .badge {
@@ -373,6 +376,18 @@
     }
     .btn-confirm:hover:not(:disabled) { background: var(--green); color: #fff; border-color: var(--green); }
     .btn-confirm:disabled { background: #f1f5f9; color: var(--text-muted); border-color: var(--border); cursor: default; }
+
+    /* تراجع عن "تسليم" بالخطأ — لون محايد/رمادي، مغاير عن الأخضر (تسليم) */
+    .btn-undo {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; background: #f1f5f9; color: #475569;
+      border: 1.5px solid #cbd5e1; border-radius: 8px;
+      font-size: 12px; font-weight: 800; cursor: pointer;
+      font-family: var(--font); transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .btn-undo:hover:not(:disabled) { background: #64748b; color: #fff; border-color: #64748b; }
+    .btn-undo:disabled { opacity: .6; cursor: default; }
 
     /* ━━ MODAL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .modal-overlay {
@@ -461,6 +476,34 @@
       background: var(--primary-bg); padding: 2px 9px; border-radius: 99px;
     }
     .product-price { font-size: 13px; font-weight: 800; color: var(--text); direction: ltr; }
+    .product-profit-row {
+      display: flex; flex-wrap: wrap; gap: 8px 14px;
+      margin-top: 8px; padding: 8px 10px;
+      background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px;
+      font-size: 12px; color: #14532d;
+    }
+    .product-profit-row strong { color: #0F5132; }
+
+    /* ── Purchase cost input (per book) — partner can edit ── */
+    .product-cost-row { display: flex; align-items: center; gap: 6px; margin-top: 8px; }
+    .product-cost-lbl { font-size: 11px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
+    .product-cost-input {
+      flex: 1; min-width: 0; padding: 5px 8px;
+      border: 1.5px solid var(--border); border-radius: 6px;
+      font-size: 12px; font-family: var(--font); color: var(--text);
+      direction: ltr; text-align: right;
+    }
+    .product-cost-input:focus { outline: none; border-color: #C9A227; box-shadow: 0 0 0 3px rgba(201,162,39,.15); }
+    .product-cost-input:disabled { background: #f1f5f9; color: var(--text-muted); }
+    .btn-save-cost {
+      padding: 5px 10px; background: #FBF7EF; color: #1B2A4A;
+      border: 1.5px solid #C9A227; border-radius: 6px;
+      font-size: 11px; font-weight: 800; cursor: pointer;
+      font-family: var(--font); white-space: nowrap;
+      transition: background .15s, color .15s;
+    }
+    .btn-save-cost:hover:not(:disabled) { background: #1B2A4A; color: #FBF7EF; border-color: #1B2A4A; }
+    .btn-save-cost:disabled { opacity: .6; cursor: default; }
 
     .price-summary-box {
       background: linear-gradient(135deg, var(--primary-bg), #eef2ff);
@@ -473,6 +516,11 @@
       font-size: 17px; font-weight: 900; color: var(--text);
     }
     .price-row.grand .pv { color: #1d4ed8; }
+
+    .profit-pending-box {
+      background: var(--bg); border: 1px dashed var(--border);
+      border-radius: var(--radius-lg); padding: 14px 16px;
+    }
 
     .completed-note {
       margin-top: 10px; padding: 10px 14px; background: var(--green-light); color: #065f46;
@@ -591,11 +639,20 @@
         <span class="stat-num" id="stat-ord-done">—</span>
         <span class="stat-label">✅ مكتملة</span>
       </div>
+      <div class="stat-card s-ord-profit">
+        <span class="stat-num" id="stat-ord-profit">—</span>
+        <span class="stat-label">🤝 إجمالي ربحك</span>
+      </div>
     </div>
 
     <div class="controls-bar">
       <input type="text" class="search-input" id="ordSearchInput"
              placeholder="🔍 بحث بالاسم، الهاتف، أو المنتج..."/>
+      <select class="filter-select" id="ordStatusFilter">
+        <option value="">📋 الكل</option>
+        <option value="new" selected>🆕 طلبات جديدة</option>
+        <option value="done">✅ مكتملة</option>
+      </select>
       <button class="btn-refresh" id="ordRefreshBtn">↻ تحديث</button>
       <span class="items-count" id="ordCount"></span>
     </div>
@@ -719,6 +776,9 @@
     completed:     "✅ مكتمل",
   };
 
+  /* حصتك من الربح على كل كتاب — الإدارة تُدخل تكلفة الشراء */
+  const PARTNER_SHARE_RATE = 0.65;
+
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
     return String(v ?? "")
@@ -806,7 +866,7 @@
         delivery_type, shipping_fee, subtotal, total_price,
         payment_method, receipt_url, is_confirmed, notes, created_at,
         assignment_status, assigned_at, completed_at,
-        order_items ( product_name, quantity, unit_price, subtotal )
+        order_items ( id, product_name, quantity, unit_price, subtotal, purchase_cost )
       `)
       .eq("assigned_to", CURRENT_STAFF_ID)
       .order("created_at", { ascending: false })
@@ -829,15 +889,29 @@
 
   /* ── The ONLY write a seller is allowed to make — mark an
      assigned item completed. Anything else is rejected by the
-     guard_assignment_columns() trigger on the database. ── */
+     guard_assignment_columns() trigger on the database.
+     completed_by/completed_at are stamped BY THAT TRIGGER, not sent
+     from here — see supabase-order-delivery-fix.sql. Sending them
+     from the client used to trip the (older) column guard and make
+     every "تسليم" click fail silently-looking (error alert, no
+     visible change) — this is that fix. ── */
   async function markOrderCompleted(orderId) {
     const { error } = await supabase
       .from("orders")
-      .update({
-        assignment_status: "completed",
-        completed_by: CURRENT_STAFF_ID,
-        completed_at: new Date().toISOString(),
-      })
+      .update({ assignment_status: "completed" })
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  /* ── تراجع — إرجاع طلب مكتمل بالخطأ إلى "معيّن لك". نفس آلية
+     "تسليم" بالضبط، بعكس القيمة فقط — والتراجع مسموح للبائع على
+     مستوى القاعدة (guard_assignment_columns() في
+     supabase-order-delivery-fix.sql)، والذي يُصفّر completed_by/
+     completed_at تلقائياً عند هذا الانتقال. ── */
+  async function revertOrderToAssigned(orderId) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ assignment_status: "assigned" })
       .eq("id", orderId);
     if (error) throw error;
   }
@@ -850,13 +924,24 @@
     if (error) throw error;
   }
 
-  /* ── Order stats (Total / In progress / Completed) ─────── */
+  /* ── Order stats (Total / In progress / Completed / My total profit share) ── */
   function renderOrderStats(orders) {
     const inProgress = orders.filter(o => o.assignment_status === "assigned").length;
     const done        = orders.filter(o => o.assignment_status === "completed").length;
     document.getElementById("stat-ord-total").textContent    = orders.length;
     document.getElementById("stat-ord-progress").textContent = inProgress;
     document.getElementById("stat-ord-done").textContent     = done;
+
+    /* إجمالي ربحك — مجموع حصتك (65%) عبر كل الكتب التي أُدخلت تكلفتها،
+       وفقط للطلبات المؤكد تسليمها (is_confirmed === true) من الأدمن. */
+    let totalProfit = 0;
+    orders.filter(o => o.is_confirmed === true).forEach(o => {
+      (o.order_items || []).forEach(it => {
+        if (it.purchase_cost === null || it.purchase_cost === undefined || it.purchase_cost === "") return;
+        totalProfit += Number(it.subtotal || 0) - Number(it.purchase_cost);
+      });
+    });
+    document.getElementById("stat-ord-profit").textContent = fmtMoney(totalProfit * PARTNER_SHARE_RATE);
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -873,9 +958,14 @@
      MY ASSIGNED ORDERS
   ═══════════════════════════════════════════════════════════ */
   function getFilteredOrders() {
-    const q = (document.getElementById("ordSearchInput")?.value || "").trim().toLowerCase();
-    if (!q) return ALL_ORDERS;
+    const q  = (document.getElementById("ordSearchInput")?.value || "").trim().toLowerCase();
+    const st = document.getElementById("ordStatusFilter")?.value || ""; /* "" | "new" | "done" */
     return ALL_ORDERS.filter(o => {
+      /* "طلبات جديدة" = لم تُسلَّم بعد، "مكتملة" = تم التسليم */
+      if (st === "new"  && o.assignment_status === "completed") return false;
+      if (st === "done" && o.assignment_status !== "completed") return false;
+
+      if (!q) return true;
       const products = (o.order_items || []).map(it => it.product_name || "").join(" ").toLowerCase();
       return (o.full_name || "").toLowerCase().includes(q) ||
              (o.phone     || "").includes(q) ||
@@ -910,6 +1000,7 @@
           <div style="display:flex;gap:8px;">
             <button class="btn-receipt" data-id="${esc(o.id)}" data-action="ord-details" style="flex:1;justify-content:center;">عرض التفاصيل</button>
             ${o.assignment_status === "assigned" ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="ord-complete" style="flex:1;justify-content:center;" ${disabledInPreview()}>✅ تسليم</button>` : ""}
+            ${o.assignment_status === "completed" ? `<button class="btn-undo" data-id="${esc(o.id)}" data-action="ord-revert" style="flex:1;justify-content:center;" ${disabledInPreview()}>↩️ تراجع</button>` : ""}
           </div>
         </div>`;
     }).join("");
@@ -937,6 +1028,9 @@
       const completeBtn = o.assignment_status === "assigned"
         ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="ord-complete" ${disabledInPreview()}>✅ تسليم</button>`
         : "";
+      const revertBtn = o.assignment_status === "completed"
+        ? `<button class="btn-undo" data-id="${esc(o.id)}" data-action="ord-revert" ${disabledInPreview()}>↩️ تراجع</button>`
+        : "";
 
       return `
         <tr data-id="${esc(o.id)}">
@@ -951,6 +1045,7 @@
             <div style="display:flex;gap:6px;">
               <button class="btn-receipt" data-id="${esc(o.id)}" data-action="ord-details">تفاصيل</button>
               ${completeBtn}
+              ${revertBtn}
             </div>
           </td>
         </tr>`;
@@ -965,18 +1060,61 @@
     const isHome = o.delivery_type === "home";
 
     const productsHTML = items.length
-      ? `<div class="product-cards">${items.map(it => `
-          <div class="product-card">
-            <div class="product-icon">📦</div>
-            <div class="product-info">
-              <div class="product-name">${esc(it.product_name)}</div>
-              <div class="product-meta">
-                <span class="product-qty">× ${esc(it.quantity)}</span>
-                <span class="product-price">${esc(fmtMoney(it.unit_price))}</span>
+      ? `<div class="product-cards">${items.map(it => {
+          const hasCost = it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "";
+          const cost    = hasCost ? Number(it.purchase_cost) : null;
+          const profit  = hasCost ? Number(it.subtotal || 0) - cost : null;
+          /* حقل التكلفة والأرقام المحسوبة (الربح/حصتك) يظهران دائماً بمجرد
+             إدخال/حفظ التكلفة — بغض النظر عن حالة تسليم الطلب. */
+          const costAndProfitHTML = `
+            <div class="product-cost-row">
+              <label class="product-cost-lbl" for="cost-${esc(it.id)}">تكلفة الشراء</label>
+              <input type="number" min="0" step="1" class="product-cost-input" id="cost-${esc(it.id)}"
+                     data-item-id="${esc(it.id)}" data-order-id="${esc(o.id)}"
+                     value="${hasCost ? esc(cost) : ""}" placeholder="0" ${disabledInPreview()}>
+              <button class="btn-save-cost" data-action="save-cost" data-item-id="${esc(it.id)}" data-order-id="${esc(o.id)}" ${disabledInPreview()}>💾 حفظ</button>
+            </div>
+            ${hasCost ? `
+              <div class="product-profit-row">
+                <span>الربح: <strong>${esc(fmtMoney(profit))}</strong></span>
+                <span>حصتك (65%): <strong>${esc(fmtMoney(profit * PARTNER_SHARE_RATE))}</strong></span>
+              </div>` : ``}`;
+          return `
+          <div class="product-card" style="flex-direction:column;align-items:stretch;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div class="product-icon">📦</div>
+              <div class="product-info">
+                <div class="product-name">${esc(it.product_name)}</div>
+                <div class="product-meta">
+                  <span class="product-qty">× ${esc(it.quantity)}</span>
+                  <span class="product-price">${esc(fmtMoney(it.unit_price))}</span>
+                </div>
               </div>
             </div>
-          </div>`).join("")}</div>`
+            ${costAndProfitHTML}
+          </div>`;
+        }).join("")}</div>`
       : `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:10px 0;">لا توجد منتجات</p>`;
+
+    /* ── حصتك من الربح — يُحسب فوراً بمجرد إدخال التكلفة، بغض النظر عن
+       حالة التسليم. الرسالة البديلة تظهر فقط إن لم تُدخَل أي تكلفة بعد. ── */
+    const itemsWithCost = items.filter(it => it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
+    const totalProfit   = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
+    const profitSummaryHTML = !itemsWithCost.length ? `
+      <div class="modal-section">
+        <div class="modal-section-title">🤝 حصتك من الربح</div>
+        <div class="price-summary-box profit-pending-box">
+          <p style="margin:0;font-size:13px;color:var(--text-light);text-align:center;">⏳ أدخل تكلفة الشراء أعلاه لعرض الربح</p>
+        </div>
+      </div>`
+      : `
+      <div class="modal-section">
+        <div class="modal-section-title">🤝 حصتك من الربح</div>
+        <div class="price-summary-box" style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border-color:#bbf7d0;">
+          <div class="price-row"><span>الربح الكلي${itemsWithCost.length < items.length ? " (جزئي)" : ""}</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span></div>
+          <div class="price-row grand"><span>حصتك (65%)</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(totalProfit * PARTNER_SHARE_RATE))}</span></div>
+        </div>
+      </div>`;
 
     const receiptHTML = o.receipt_url
       ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" class="btn-receipt" style="display:inline-flex;margin-top:10px;">🧾 فتح وصل الدفع</a>`
@@ -1023,6 +1161,8 @@
         </div>
       </div>
 
+      ${profitSummaryHTML}
+
       ${o.notes ? `
       <div class="modal-section">
         <div class="modal-section-title">📝 ملاحظات الزبون</div>
@@ -1065,7 +1205,74 @@
       if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
     } catch (err) {
       console.error("Complete order error:", err);
-      alert("❌ فشل تحديث الطلب:\n" + (err.message || ""));
+      showToast("❌ فشل تحديث الطلب: " + (err.message || ""), "error");
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  async function handleOrderRevert(orderId, btn) {
+    if (PREVIEW_MODE) return;
+    if (!confirm('هل تريد التراجع عن هذا الطلب وإرجاعه إلى "معيّن لك"؟')) return;
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳...";
+    try {
+      await revertOrderToAssigned(orderId);
+      const o = ALL_ORDERS.find(x => x.id === orderId);
+      if (o) {
+        o.assignment_status = "assigned";
+        o.completed_by      = null;
+        o.completed_at      = null;
+      }
+      renderOrdersTable(getFilteredOrders());
+      if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
+    } catch (err) {
+      console.error("Revert order error:", err);
+      showToast("❌ فشل التراجع: " + (err.message || ""), "error");
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  /* ── تكلفة الشراء لكل كتاب — يُحفظ في order_items.purchase_cost.
+     الصلاحية والتحقق (order_id يعود لطلب مُعيَّن لك) مفروضان على
+     القاعدة (RLS + guard_order_items_cost_edit()) — حفظ الأدمن لاحقاً
+     يطغى دائماً على ما أدخلتَه هنا، بدون أي تعارض. ── */
+  async function handleSaveCost(itemId, orderId, btn) {
+    if (PREVIEW_MODE) return;
+    const input = document.getElementById(`cost-${itemId}`);
+    if (!input) return;
+
+    const raw  = input.value.trim();
+    const cost = raw === "" ? null : Number(raw);
+    if (raw !== "" && (isNaN(cost) || cost < 0)) {
+      alert("❌ أدخل قيمة رقمية صحيحة للتكلفة.");
+      return;
+    }
+
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳";
+
+    try {
+      const { data, error } = await supabase
+        .from("order_items")
+        .update({ purchase_cost: cost })
+        .eq("id", itemId)
+        .select("purchase_cost")
+        .single();
+      if (error) throw error;
+
+      const order = ALL_ORDERS.find(o => o.id === orderId);
+      const item  = order?.order_items?.find(it => it.id === itemId);
+      if (item) item.purchase_cost = data.purchase_cost;
+
+      renderOrderStats(ALL_ORDERS);
+      if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
+    } catch (err) {
+      console.error("Save purchase cost error:", err);
+      alert("❌ فشل حفظ التكلفة:\n" + (err.message || ""));
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -1187,9 +1394,9 @@
   /* ═══════════════════════════════════════════════════════════
      LIVE NOTIFICATIONS — Supabase Realtime، تظهر فقط لما يُعيَّن لهذا البائع
   ═══════════════════════════════════════════════════════════ */
-  function showToast(message) {
+  function showToast(message, type) {
     const el = document.createElement("div");
-    el.className = "live-toast";
+    el.className = "live-toast" + (type === "error" ? " error" : "");
     el.textContent = message;
     document.body.appendChild(el);
     requestAnimationFrame(() => el.classList.add("show"));
@@ -1265,8 +1472,17 @@
     });
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
 
+    document.getElementById("modalBody").addEventListener("click", async e => {
+      const btn = e.target.closest("[data-action='save-cost']");
+      if (!btn) return;
+      await handleSaveCost(btn.dataset.itemId, btn.dataset.orderId, btn);
+    });
+
     /* ── My Orders ───────────────────────────────────────────── */
     document.getElementById("ordSearchInput").addEventListener("input",
+      () => renderOrdersTable(getFilteredOrders()));
+
+    document.getElementById("ordStatusFilter").addEventListener("change",
       () => renderOrdersTable(getFilteredOrders()));
 
     document.getElementById("ordRefreshBtn").addEventListener("click", async () => {
@@ -1290,6 +1506,7 @@
       if (!btn) return;
       if (btn.dataset.action === "ord-details")  showOrderModal(btn.dataset.id);
       if (btn.dataset.action === "ord-complete")  await handleOrderComplete(btn.dataset.id, btn);
+      if (btn.dataset.action === "ord-revert")    await handleOrderRevert(btn.dataset.id, btn);
     });
 
     document.getElementById("ordersMobileCards").addEventListener("click", async e => {
@@ -1297,6 +1514,7 @@
       if (!btn) return;
       if (btn.dataset.action === "ord-details")  showOrderModal(btn.dataset.id);
       if (btn.dataset.action === "ord-complete")  await handleOrderComplete(btn.dataset.id, btn);
+      if (btn.dataset.action === "ord-revert")    await handleOrderRevert(btn.dataset.id, btn);
     });
 
     /* ── My Messages ─────────────────────────────────────────── */

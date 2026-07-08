@@ -296,6 +296,26 @@
     .btn-delete:hover { background: var(--red); color: #fff; border-color: var(--red); }
     .btn-delete:disabled { background: #f1f5f9; color: var(--text-muted); border-color: var(--border); cursor: default; }
 
+    /* إرجاع الطلب لقيد المعالجة — لون محايد/برتقالي، مغاير عن الأخضر (تأكيد) والأحمر (حذف) */
+    .btn-revert {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      background: #fef3c7;
+      color: #92400e;
+      border: 1.5px solid #fcd34d;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .btn-revert:hover:not(:disabled) { background: #f59e0b; color: #fff; border-color: #f59e0b; }
+    .btn-revert:disabled { background: #f1f5f9; color: var(--text-muted); border-color: var(--border); cursor: default; }
+
     /* نسخ رسالة تأكيد الطلب — ألوان الهوية: Navy / Emerald / Gold / Paper */
     .btn-copy-msg {
       display: inline-flex;
@@ -416,15 +436,14 @@
 
     /* ── Product rows ── */
     .modal-products { margin-bottom: 14px; }
+    .prod-item-block { padding: 8px 0; border-bottom: 1px solid var(--bg); }
+    .prod-item-block:last-child { border-bottom: none; }
     .prod-row {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 8px 0;
-      border-bottom: 1px solid var(--bg);
       font-size: 13px;
     }
-    .prod-row:last-child { border-bottom: none; }
     .prod-name { flex: 1; color: var(--text); font-weight: 600; line-height: 1.3; word-break: break-word; }
     .prod-qty {
       background: #eff6ff;
@@ -444,6 +463,65 @@
       font-size: 13px;
       flex-shrink: 0;
       min-width: 68px;
+    }
+
+    /* ── Purchase cost input (per book) ── */
+    .prod-cost-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+    }
+    .prod-cost-lbl { font-size: 11px; color: var(--text-muted); font-weight: 700; white-space: nowrap; }
+    .prod-cost-input {
+      flex: 1;
+      min-width: 0;
+      padding: 5px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: var(--font);
+      color: var(--text);
+      direction: ltr;
+      text-align: right;
+    }
+    .prod-cost-input:focus { outline: none; border-color: #C9A227; box-shadow: 0 0 0 3px rgba(201,162,39,.15); }
+    .btn-save-cost {
+      padding: 5px 10px;
+      background: #FBF7EF;
+      color: #1B2A4A;
+      border: 1.5px solid #C9A227;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: var(--font);
+      white-space: nowrap;
+      transition: background .15s, color .15s;
+    }
+    .btn-save-cost:hover:not(:disabled) { background: #1B2A4A; color: #FBF7EF; border-color: #1B2A4A; }
+    .btn-save-cost:disabled { opacity: .6; cursor: default; }
+    .prod-cost-meta { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+    /* ── Per-book profit split ── */
+    .prod-profit-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      margin-top: 8px;
+      padding: 8px 10px;
+      background: #f0fdf4;
+      border: 1px solid #bbf7d0;
+      border-radius: 8px;
+      font-size: 12px;
+      color: #14532d;
+    }
+    .prod-profit-row strong { color: #0F5132; }
+
+    /* ── Order-level profit summary ── */
+    .modal-totals.profit-summary {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
     }
 
     /* ── Totals block ── */
@@ -485,6 +563,7 @@
     }
     .modal-actions .btn-confirm,
     .modal-actions .btn-delete,
+    .modal-actions .btn-revert,
     .modal-actions .btn-copy-msg { flex: 1; justify-content: center; }
 
     /* ── Keep old styles for messages modal ── */
@@ -532,6 +611,7 @@
       /* الأزرار في الجدول أصغر */
       .btn-confirm,
       .btn-delete,
+      .btn-revert,
       .btn-receipt,
       .btn-copy-msg { padding: 5px 8px; font-size: 11px; gap: 3px; }
 
@@ -830,6 +910,7 @@
   /* Compact action buttons inside orders table */
   .orders-tbl .btn-confirm,
   .orders-tbl .btn-delete,
+  .orders-tbl .btn-revert,
   .orders-tbl .btn-receipt,
   .orders-tbl .btn-copy-msg {
     padding: 5px 7px;
@@ -952,7 +1033,7 @@
 
     <div class="stat-card s-confirmed">
       <span class="stat-num" id="stat-confirmed">—</span>
-      <span class="stat-label">✅ تم التأكيد</span>
+      <span class="stat-label">✅ تم التسليم</span>
     </div>
   </div>
 
@@ -963,7 +1044,7 @@
     <select class="filter-select" id="statusFilter">
       <option value="">📋 كل الطلبات</option>
       <option value="pending" selected>⏳ قيد المعالجة / غير مؤكدة</option>
-      <option value="confirmed">✅ تم التأكيد</option>
+      <option value="confirmed">✅ تم التسليم</option>
     </select>
     <select class="filter-select" id="assignFilter">
       <option value="">📋 كل حالات التعيين</option>

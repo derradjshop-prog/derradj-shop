@@ -1,6 +1,6 @@
 /* ==========================================================
    admin.js — Derradj Shop | Admin Dashboard
-   is_confirmed: NULL = قيد المعالجة | true = تم التأكيد
+   is_confirmed: NULL = قيد المعالجة | true = تم التسليم (زر "تم الاستلام"، قابل للإرجاع)
    BUILD: 2026-06-01-v6
    - Reads category + price FROM Supabase (after running SQL setup)
    - Products tab (admin_products_catalog) is fully owned by
@@ -60,6 +60,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     office: "📮 استلام من أقرب نقطة توصيل",
   };
 
+  /* حصص الأرباح — الشريك (البائع) 65% ، الإدارة 35% */
+  const PARTNER_SHARE_RATE = 0.65;
+  const MY_SHARE_RATE      = 0.35;
+
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
     return String(v ?? "")
@@ -84,13 +88,13 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
-     حالة التأكيد — boolean
+     حالة الطلب — is_confirmed (boolean)
      NULL  → قيد المعالجة
-     true  → تم التأكيد
+     true  → تم التسليم (زر "تم الاستلام" / قابل للإرجاع بزر "إرجاع لقيد المعالجة")
   ───────────────────────────────────────────────────────── */
   function confirmBadge(isConfirmed) {
     if (isConfirmed === true) {
-      return `<span class="badge badge-confirmed">✅ تم التأكيد</span>`;
+      return `<span class="badge badge-confirmed">✅ تم التسليم</span>`;
     }
     return `<span class="badge badge-pending">⏳ قيد المعالجة</span>`;
   }
@@ -146,7 +150,11 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         assigned_to, assigned_by, assigned_at, assignment_status,
         completed_by, completed_at,
         assigned_staff:staff_accounts!orders_assigned_to_fkey ( id, full_name, email ),
-        order_items ( product_name, quantity, unit_price, subtotal )
+        order_items (
+          id, product_name, quantity, unit_price, subtotal, purchase_cost,
+          updated_at, updated_by,
+          updated_by_staff:staff_accounts!order_items_updated_by_fkey ( full_name )
+        )
       `)
       .order("created_at", { ascending: false })
       .limit(500);
@@ -284,12 +292,25 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
-     CONFIRM — تحديث is_confirmed إلى true
+     CONFIRM — تحديث is_confirmed إلى true (زر "✅ تم الاستلام")
   ───────────────────────────────────────────────────────── */
   async function confirmOrder(orderId) {
     const { error } = await supabase
       .from("orders")
       .update({ is_confirmed: true })
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     REVERT — إرجاع is_confirmed إلى NULL (قيد المعالجة)
+     نفس عمود is_confirmed الحالي — NULL يعني "قيد المعالجة" أصلاً
+     (راجع الملاحظة أعلى الملف)، فلا حاجة لأي عمود/قيمة حالة جديدة.
+  ───────────────────────────────────────────────────────── */
+  async function revertOrderToPending(orderId) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ is_confirmed: null })
       .eq("id", orderId);
     if (error) throw error;
   }
@@ -778,12 +799,15 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" class="btn-receipt">🧾 عرض الوصل</a>`
         : `<span style="color:var(--text-muted);font-size:11px;">لا يوجد وصل</span>`;
 
-      /* زر التأكيد */
+      /* زر تم الاستلام / زر الإرجاع لقيد المعالجة */
       const confirmBtn = confirmed
-        ? `<button class="btn-confirm" disabled>✔ تم التأكيد</button>`
+        ? `<button class="btn-confirm" disabled>✔ تم الاستلام</button>`
         : isAdmin()
-          ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`
+          ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تم الاستلام</button>`
           : ``;
+      const revertBtn = confirmed && isAdmin()
+        ? `<button class="btn-revert" data-id="${esc(o.id)}" data-action="revert">↩️ إرجاع لقيد المعالجة</button>`
+        : ``;
 
       const assignCell = `
         ${assignBadge(o.assignment_status)}
@@ -810,6 +834,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
               ${receiptBtn}
               <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
               ${confirmBtn}
+              ${revertBtn}
               ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
             </div>
           </td>
@@ -818,11 +843,11 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
-     HANDLE CONFIRM
+     HANDLE CONFIRM (تم الاستلام)
   ───────────────────────────────────────────────────────── */
   async function handleConfirm(orderId, btn) {
     btn.disabled    = true;
-    btn.textContent = "⏳ جاري التأكيد...";
+    btn.textContent = "⏳ جاري التحديث...";
 
     try {
       await confirmOrder(orderId);
@@ -847,9 +872,41 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
     } catch (err) {
       console.error("Confirm error:", err);
-      alert("❌ خطأ في تأكيد الطلب:\n" + (err.message || ""));
+      alert("❌ خطأ في تحديث الطلب:\n" + (err.message || ""));
       btn.disabled    = false;
-      btn.textContent = "✅ تأكيد الطلب";
+      btn.textContent = "✅ تم الاستلام";
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     HANDLE REVERT (إرجاع لقيد المعالجة)
+  ───────────────────────────────────────────────────────── */
+  async function handleRevert(orderId, btn) {
+    if (!confirm("هل تريد إرجاع هذا الطلب لحالة \"قيد المعالجة\"؟")) return;
+
+    btn.disabled    = true;
+    btn.textContent = "⏳ جاري الإرجاع...";
+
+    try {
+      await revertOrderToPending(orderId);
+
+      /* تحديث الكاش */
+      const order = ALL_ORDERS.find(o => o.id === orderId);
+      if (order) order.is_confirmed = null;
+
+      renderStats(ALL_ORDERS);
+      renderTable(getFiltered());
+
+      if (ACTIVE_ORDER?.id === orderId) {
+        ACTIVE_ORDER.is_confirmed = null;
+        document.getElementById("modalBody").innerHTML = buildModalHTML(ACTIVE_ORDER);
+      }
+
+    } catch (err) {
+      console.error("Revert error:", err);
+      alert("❌ خطأ في إرجاع الطلب:\n" + (err.message || ""));
+      btn.disabled    = false;
+      btn.textContent = "↩️ إرجاع لقيد المعالجة";
     }
   }
 
@@ -927,6 +984,57 @@ ${itemsText}
   }
 
   /* ─────────────────────────────────────────────────────────
+     تكلفة الشراء لكل كتاب — يُحفظ في order_items.purchase_cost
+  ───────────────────────────────────────────────────────── */
+  async function handleSaveCost(itemId, orderId, btn) {
+    const input = document.getElementById(`cost-${itemId}`);
+    if (!input) return;
+
+    const raw  = input.value.trim();
+    const cost = raw === "" ? null : Number(raw);
+    if (raw !== "" && (isNaN(cost) || cost < 0)) {
+      alert("❌ أدخل قيمة رقمية صحيحة للتكلفة.");
+      return;
+    }
+
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳";
+
+    try {
+      /* .select() يُرجع updated_by/updated_at كما وُضِعا فعلياً بواسطة
+         guard_order_items_cost_edit() على القاعدة — الأدمن يملك دائماً
+         الكلمة الأخيرة، لا حاجة لأي فحص تعارض من جهة العميل. */
+      const { data, error } = await supabase
+        .from("order_items")
+        .update({ purchase_cost: cost })
+        .eq("id", itemId)
+        .select("purchase_cost, updated_at, updated_by, updated_by_staff:staff_accounts!order_items_updated_by_fkey ( full_name )")
+        .single();
+      if (error) throw error;
+
+      /* تحديث الكاش المحلي */
+      const order = ALL_ORDERS.find(o => o.id === orderId);
+      const item  = order?.order_items?.find(it => it.id === itemId);
+      if (item) {
+        item.purchase_cost    = data.purchase_cost;
+        item.updated_at       = data.updated_at;
+        item.updated_by       = data.updated_by;
+        item.updated_by_staff = data.updated_by_staff;
+      }
+
+      if (ACTIVE_ORDER?.id === orderId) {
+        document.getElementById("modalBody").innerHTML = buildModalHTML(ACTIVE_ORDER);
+      }
+    } catch (err) {
+      console.error("Save purchase cost error:", err);
+      alert("❌ فشل حفظ التكلفة:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
      MODAL — تفاصيل كاملة
   ───────────────────────────────────────────────────────── */
   function openModal()  { document.getElementById("modal").classList.add("open"); }
@@ -949,15 +1057,52 @@ ${itemsText}
     const confirmed = o.is_confirmed === true;
     const isHome    = o.delivery_type === "home";
 
-    /* ── Products rows ── */
+    /* ── Products rows (+ per-book purchase cost / profit split) ── */
     const productsHTML = items.length
-      ? items.map(it => `
-          <div class="prod-row">
-            <span class="prod-name">${esc(it.product_name)}</span>
-            <span class="prod-qty">× ${esc(it.quantity)}</span>
-            <span class="prod-sub">${esc(fmtMoney(it.subtotal))}</span>
-          </div>`).join("")
+      ? items.map(it => {
+          const hasCost = it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "";
+          const cost    = hasCost ? Number(it.purchase_cost) : null;
+          const profit  = hasCost ? Number(it.subtotal || 0) - cost : null;
+          const profitHTML = hasCost ? `
+              <div class="prod-profit-row">
+                <span>💰 الربح: <strong>${esc(fmtMoney(profit))}</strong></span>
+                <span>🤝 الشريك (65%): <strong>${esc(fmtMoney(profit * PARTNER_SHARE_RATE))}</strong></span>
+                <span>👤 نصيبي (35%): <strong>${esc(fmtMoney(profit * MY_SHARE_RATE))}</strong></span>
+              </div>` : ``;
+          const editMetaHTML = it.updated_at ? `
+              <div class="prod-cost-meta" title="آخر تعديل">✏️ آخر تعديل: ${esc(it.updated_by_staff?.full_name || "—")} · ${esc(fmtDate(it.updated_at))}</div>` : ``;
+          return `
+            <div class="prod-item-block">
+              <div class="prod-row">
+                <span class="prod-name">${esc(it.product_name)}</span>
+                <span class="prod-qty">× ${esc(it.quantity)}</span>
+                <span class="prod-sub">${esc(fmtMoney(it.subtotal))}</span>
+              </div>
+              <div class="prod-cost-row">
+                <label class="prod-cost-lbl" for="cost-${esc(it.id)}">تكلفة الشراء</label>
+                <input type="number" min="0" step="1" class="prod-cost-input" id="cost-${esc(it.id)}"
+                       data-item-id="${esc(it.id)}" data-order-id="${esc(o.id)}"
+                       value="${hasCost ? esc(cost) : ""}" placeholder="0">
+                <button class="btn-save-cost" data-action="save-cost" data-item-id="${esc(it.id)}" data-order-id="${esc(o.id)}">💾 حفظ</button>
+              </div>
+              ${editMetaHTML}
+              ${profitHTML}
+            </div>`;
+        }).join("")
       : `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:10px 0;">لا توجد منتجات</p>`;
+
+    /* ── Order-level profit summary (only counts items with a cost entered) ── */
+    const itemsWithCost = items.filter(it => it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
+    const totalProfit   = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
+    const profitSummaryHTML = itemsWithCost.length ? `
+      <div class="modal-totals profit-summary">
+        <div class="total-row">
+          <span>💰 الربح الكلي${itemsWithCost.length < items.length ? " (جزئي — التكلفة غير مدخلة لكل المنتجات)" : ""}</span>
+          <span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span>
+        </div>
+        <div class="total-row"><span>🤝 نصيب الشريك (65%)</span><span class="total-val">${esc(fmtMoney(totalProfit * PARTNER_SHARE_RATE))}</span></div>
+        <div class="total-row grand"><span>👤 نصيبي (35%)</span><span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit * MY_SHARE_RATE))}</span></div>
+      </div>` : ``;
 
     /* ── Receipt ── */
     const receiptHTML = o.receipt_url
@@ -967,10 +1112,13 @@ ${itemsText}
 
     /* ── Action buttons ── */
     const confirmBtn = confirmed
-      ? `<button class="btn-confirm" disabled>✔ تم التأكيد</button>`
+      ? `<button class="btn-confirm" disabled>✔ تم الاستلام</button>`
       : isAdmin()
-        ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تأكيد الطلب</button>`
+        ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تم الاستلام</button>`
         : ``;
+    const revertBtn = confirmed && isAdmin()
+      ? `<button class="btn-revert" data-id="${esc(o.id)}" data-action="revert">↩️ إرجاع لقيد المعالجة</button>`
+      : ``;
 
     return `
       <!-- Customer & delivery info -->
@@ -1030,6 +1178,8 @@ ${itemsText}
         </div>
       </div>
 
+      ${profitSummaryHTML}
+
       ${receiptHTML}
 
       ${o.notes ? `
@@ -1043,6 +1193,7 @@ ${itemsText}
       <div class="modal-actions">
         <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
         ${confirmBtn}
+        ${revertBtn}
         ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
       </div>
 
@@ -1566,8 +1717,9 @@ ${itemsText}
     document.getElementById("ordersTbody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
-      if ((btn.dataset.action === "confirm" || btn.dataset.action === "delete") && !isAdmin()) return;
+      if (["confirm", "delete", "revert"].includes(btn.dataset.action) && !isAdmin()) return;
       if (btn.dataset.action === "confirm")       await handleConfirm(btn.dataset.id, btn);
+      if (btn.dataset.action === "revert")        await handleRevert(btn.dataset.id, btn);
       if (btn.dataset.action === "delete")        await handleDelete(btn.dataset.id, btn);
       if (btn.dataset.action === "details")       showOrderModal(btn.dataset.id);
       if (btn.dataset.action === "copy-message")  await handleCopyMessage(btn.dataset.id, btn);
@@ -1577,9 +1729,10 @@ ${itemsText}
     document.getElementById("modalBody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
-      if (["confirm", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message", "start-impersonation"]
+      if (["confirm", "revert", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message", "start-impersonation"]
             .includes(btn.dataset.action) && !isAdmin()) return;
       if (btn.dataset.action === "confirm")          await handleConfirm(btn.dataset.id, btn);
+      if (btn.dataset.action === "revert")           await handleRevert(btn.dataset.id, btn);
       if (btn.dataset.action === "delete")           await handleDelete(btn.dataset.id, btn);
       if (btn.dataset.action === "delete-msg")       await handleDeleteMessage(btn.dataset.msgId, btn);
       if (btn.dataset.action === "assign-order")     await handleAssign("order", btn.dataset.entityId, btn);
@@ -1589,6 +1742,7 @@ ${itemsText}
       if (btn.dataset.action === "show-history")     await handleShowHistory(btn.dataset.entityType, btn.dataset.entityId, btn);
       if (btn.dataset.action === "start-impersonation") await handleStartImpersonation(btn);
       if (btn.dataset.action === "copy-message")     await handleCopyMessage(btn.dataset.id, btn);
+      if (btn.dataset.action === "save-cost")        await handleSaveCost(btn.dataset.itemId, btn.dataset.orderId, btn);
     });
 
     /* ── Mobile: Orders cards ──────────────────────────────── */
