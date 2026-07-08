@@ -676,7 +676,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
             <span class="m-order-total">${esc(fmtMoney(o.total_price))}</span>
             <span class="m-order-count">${totalQty} كتب</span>
           </div>
-          <button class="btn-details" data-id="${esc(o.id)}" data-action="details">عرض التفاصيل الكاملة</button>
+          <div class="m-card-actions">
+            <button class="btn-details" data-id="${esc(o.id)}" data-action="details">عرض التفاصيل الكاملة</button>
+            <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
+          </div>
         </div>`;
     }).join("");
   }
@@ -805,6 +808,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
           <td class="td-actions">
             <div class="actions-col">
               ${receiptBtn}
+              <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
               ${confirmBtn}
               ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
             </div>
@@ -878,6 +882,47 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       alert("❌ خطأ في الحذف:\n" + (err.message || ""));
       btn.disabled    = false;
       btn.textContent = "🗑 حذف الطلب";
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     رسالة تأكيد الطلب — نسخ للحافظة (واتساب / تيليغرام)
+  ───────────────────────────────────────────────────────── */
+  function buildConfirmationMessage(o) {
+    const items = o.order_items || [];
+    const itemsText = items.length
+      ? items.map(it => `- ${it.product_name} : ${fmtMoney(it.subtotal)}`).join("\n")
+      : "-";
+
+    return `مرحبا ${o.full_name || ""}
+طلبيتك:
+${itemsText}
+توصيل: ${fmtMoney(o.shipping_fee)}
+المجموع الكلي: ${fmtMoney(o.total_price)}
+
+للتأكيد، رجاء الرد بـ "نعم" لتأكيد الطلبية او "لا" لالغائها`;
+  }
+
+  async function handleCopyMessage(orderId, btn) {
+    const order = ALL_ORDERS.find(o => o.id === orderId);
+    if (!order) return;
+
+    const text = buildConfirmationMessage(order);
+    const original = btn ? btn.innerHTML : null;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      if (btn) {
+        btn.classList.add("copied");
+        btn.innerHTML = "✅ تم النسخ!";
+        setTimeout(() => {
+          btn.classList.remove("copied");
+          btn.innerHTML = original;
+        }, 1800);
+      }
+    } catch (err) {
+      console.error("Copy error:", err);
+      alert("❌ فشل نسخ الرسالة:\n" + (err.message || ""));
     }
   }
 
@@ -996,6 +1041,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
       <!-- Actions -->
       <div class="modal-actions">
+        <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
         ${confirmBtn}
         ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
       </div>
@@ -1521,9 +1567,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
       if ((btn.dataset.action === "confirm" || btn.dataset.action === "delete") && !isAdmin()) return;
-      if (btn.dataset.action === "confirm") await handleConfirm(btn.dataset.id, btn);
-      if (btn.dataset.action === "delete")  await handleDelete(btn.dataset.id, btn);
-      if (btn.dataset.action === "details") showOrderModal(btn.dataset.id);
+      if (btn.dataset.action === "confirm")       await handleConfirm(btn.dataset.id, btn);
+      if (btn.dataset.action === "delete")        await handleDelete(btn.dataset.id, btn);
+      if (btn.dataset.action === "details")       showOrderModal(btn.dataset.id);
+      if (btn.dataset.action === "copy-message")  await handleCopyMessage(btn.dataset.id, btn);
     });
 
     /* Event delegation — المودال */
@@ -1541,12 +1588,15 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       if (btn.dataset.action === "unassign-message") await handleUnassign("message", btn.dataset.entityId, btn);
       if (btn.dataset.action === "show-history")     await handleShowHistory(btn.dataset.entityType, btn.dataset.entityId, btn);
       if (btn.dataset.action === "start-impersonation") await handleStartImpersonation(btn);
+      if (btn.dataset.action === "copy-message")     await handleCopyMessage(btn.dataset.id, btn);
     });
 
     /* ── Mobile: Orders cards ──────────────────────────────── */
     document.getElementById("ordersMobileCards").addEventListener("click", async e => {
       const detailsBtn = e.target.closest("[data-action='details']");
       if (detailsBtn) { showOrderModal(detailsBtn.dataset.id); return; }
+      const copyBtn = e.target.closest("[data-action='copy-message']");
+      if (copyBtn) { await handleCopyMessage(copyBtn.dataset.id, copyBtn); return; }
     });
 
     /* ── Mobile: Messages cards ─────────────────────────────── */

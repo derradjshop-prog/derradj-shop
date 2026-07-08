@@ -296,6 +296,26 @@
     .btn-delete:hover { background: var(--red); color: #fff; border-color: var(--red); }
     .btn-delete:disabled { background: #f1f5f9; color: var(--text-muted); border-color: var(--border); cursor: default; }
 
+    /* نسخ رسالة تأكيد الطلب — ألوان الهوية: Navy / Emerald / Gold / Paper */
+    .btn-copy-msg {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 6px 12px;
+      background: #FBF7EF;
+      color: #1B2A4A;
+      border: 1.5px solid #C9A227;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .15s, color .15s, border-color .15s;
+      white-space: nowrap;
+    }
+    .btn-copy-msg:hover  { background: #1B2A4A; color: #FBF7EF; border-color: #1B2A4A; }
+    .btn-copy-msg.copied { background: #0F5132; color: #FBF7EF; border-color: #0F5132; }
+
     /* ━━ MODAL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .modal-overlay {
       position: fixed; inset: 0;
@@ -464,7 +484,8 @@
       margin-top: 2px;
     }
     .modal-actions .btn-confirm,
-    .modal-actions .btn-delete  { flex: 1; justify-content: center; }
+    .modal-actions .btn-delete,
+    .modal-actions .btn-copy-msg { flex: 1; justify-content: center; }
 
     /* ── Keep old styles for messages modal ── */
     .m-section { margin-bottom: 22px; }
@@ -511,7 +532,8 @@
       /* الأزرار في الجدول أصغر */
       .btn-confirm,
       .btn-delete,
-      .btn-receipt { padding: 5px 8px; font-size: 11px; gap: 3px; }
+      .btn-receipt,
+      .btn-copy-msg { padding: 5px 8px; font-size: 11px; gap: 3px; }
 
       /* رأس الأدمن */
       .header-logo  { font-size: 15px; }
@@ -596,6 +618,12 @@
         font-family: var(--font); transition: background .2s; text-align: center;
       }
       .btn-details:hover { background: #1e40af; }
+
+      .m-card-actions { display: flex; flex-direction: column; gap: 8px; }
+      .m-card-actions .btn-details,
+      .m-card-actions .btn-copy-msg {
+        width: 100%; justify-content: center; padding: 11px; font-size: 14px;
+      }
 
       /* ── Product Card ────────────────────────────────────── */
       .m-product-card {
@@ -802,7 +830,8 @@
   /* Compact action buttons inside orders table */
   .orders-tbl .btn-confirm,
   .orders-tbl .btn-delete,
-  .orders-tbl .btn-receipt {
+  .orders-tbl .btn-receipt,
+  .orders-tbl .btn-copy-msg {
     padding: 5px 7px;
     font-size: 11px;
     gap: 3px;
