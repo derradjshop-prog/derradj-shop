@@ -581,8 +581,52 @@
     }
     .btn-return-admin:hover { background: rgba(255,255,255,.3); }
 
+    /* ── Quick-add book tab ──────────────────────────────────── */
+    .qadd-form {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      max-width: 460px;
+      margin-bottom: 26px;
+    }
+    .qadd-fld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .qadd-fld label { font-size: 13px; font-weight: 700; color: var(--text-light); }
+    .qadd-fld input[type="text"], .qadd-fld textarea {
+      padding: 11px 14px; border: 1.5px solid var(--border); border-radius: 10px;
+      font-size: 14px; font-family: var(--font); color: var(--text); background: var(--white);
+    }
+    .qadd-fld textarea { resize: vertical; min-height: 70px; }
+    .qadd-fld input:focus, .qadd-fld textarea:focus { outline: none; border-color: #1B2A4A; }
+
+    .qadd-upload-box {
+      border: 1.5px dashed var(--border); border-radius: 10px;
+      padding: 18px; text-align: center; cursor: pointer; transition: border-color .2s;
+    }
+    .qadd-upload-box:hover { border-color: #C9A227; }
+    .qadd-upload-box.loaded { border-style: solid; border-color: #0F5132; }
+    .qadd-upload-box img { max-width: 100%; max-height: 160px; border-radius: 8px; display: block; margin: 0 auto 8px; }
+
+    .btn-qadd-submit {
+      width: 100%; padding: 13px; background: #1B2A4A; color: #fff;
+      border: none; border-radius: 10px; font-size: 14px; font-weight: 800;
+      cursor: pointer; font-family: var(--font); transition: background .2s;
+    }
+    .btn-qadd-submit:hover:not(:disabled) { background: #12203a; }
+    .btn-qadd-submit:disabled { background: #94a3b8; cursor: default; }
+
+    .qadd-list { display: flex; flex-direction: column; gap: 10px; max-width: 460px; }
+    .qadd-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px;
+    }
+    .qadd-item img { width: 44px; height: 58px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+    .qadd-item-name { font-size: 13px; font-weight: 700; color: var(--text); }
+    .badge-status-published { background: #d1fae5; color: #065f46; }
+
     @media (max-width: 480px) {
       .preview-banner { padding: 8px 12px; font-size: 12px; }
+      .qadd-form { max-width: 100%; }
     }
   </style>
 </head>
@@ -618,6 +662,9 @@
       ✉️ رسائلي
       <span class="tab-badge" id="tab-badge-messages">—</span>
       <span class="live-badge-dot" id="liveBadgeMessages">0</span>
+    </button>
+    <button class="tab-btn" data-tab="addbook">
+      ➕ إضافة كتاب
     </button>
     <button class="tab-btn" data-tab="profile">
       👤 الملف الشخصي
@@ -710,6 +757,40 @@
     </div>
 
     <div class="mobile-cards" id="msgMobileCards"></div>
+  </div>
+
+  <!-- ══ Tab: Quick-add book (pending admin review) ════════ -->
+  <div class="tab-content" id="tab-addbook">
+    <form class="qadd-form" id="qaddForm" autocomplete="off">
+      <div class="qadd-fld">
+        <label for="qaddTitle">عنوان الكتاب (عربي) *</label>
+        <input type="text" id="qaddTitle" placeholder="مثال: عادات ذرية" required>
+      </div>
+
+      <div class="qadd-fld">
+        <label>صورة الغلاف *</label>
+        <div class="qadd-upload-box" id="qaddUploadBox">
+          <div id="qaddUploadPrev">
+            <div>📷 انقر لرفع صورة الغلاف</div>
+          </div>
+          <input type="file" id="qaddImageInput" accept="image/*" style="display:none;">
+        </div>
+        <input type="hidden" id="qaddImageUrl">
+      </div>
+
+      <div class="qadd-fld">
+        <label for="qaddNote">ملاحظة للأدمن (اختياري)</label>
+        <textarea id="qaddNote" placeholder="مثال: الطبعة الجديدة"></textarea>
+      </div>
+
+      <button type="submit" class="btn-qadd-submit" id="qaddSubmitBtn">📤 إرسال للمراجعة</button>
+      <p class="status-msg" id="qaddStatusMsg" style="text-align:center;font-size:13px;font-weight:700;margin-top:12px;min-height:18px;"></p>
+    </form>
+
+    <div class="page-header"><h2 style="font-size:15px;font-weight:800;color:var(--text);">📚 كتبي المُرسلة</h2></div>
+    <div class="qadd-list" id="qaddListWrap">
+      <div class="empty">⏳ جاري التحميل...</div>
+    </div>
   </div>
 
   <!-- ══ Tab: Profile ══════════════════════════════════════ -->
@@ -883,6 +964,18 @@
       .eq("assigned_to", CURRENT_STAFF_ID)
       .order("created_at", { ascending: false })
       .limit(500);
+    if (error) throw error;
+    return data || [];
+  }
+
+  /* ── My quick-added books (pending admin review or already published) ── */
+  async function fetchMySubmissions() {
+    const { data, error } = await supabase
+      .from("admin_products_catalog")
+      .select("id, product_name, main_image, status, submitted_at")
+      .eq("submitted_by", CURRENT_STAFF_ID)
+      .order("submitted_at", { ascending: false })
+      .limit(200);
     if (error) throw error;
     return data || [];
   }
@@ -1341,6 +1434,108 @@
       </tr>`).join("");
   }
 
+  /* ── Quick-add book (pending admin review) ───────────────── */
+  let MY_SUBMISSIONS = [];
+
+  function submissionStatusBadge(status) {
+    return status === "published"
+      ? `<span class="badge badge-status-published">✅ منشور</span>`
+      : `<span class="badge badge-pending">⏳ بانتظار المراجعة</span>`;
+  }
+
+  function renderMySubmissions(list) {
+    const wrap = document.getElementById("qaddListWrap");
+    if (!wrap) return;
+    if (!list.length) {
+      wrap.innerHTML = `<div class="empty">لم ترسل أي كتاب بعد.</div>`;
+      return;
+    }
+    wrap.innerHTML = list.map(p => `
+      <div class="qadd-item">
+        ${p.main_image ? `<img src="${esc(p.main_image)}" alt="">` : `<div class="qadd-item-name">📦</div>`}
+        <div style="flex:1;">
+          <div class="qadd-item-name">${esc(p.product_name || "—")}</div>
+          <div style="font-size:11px;color:var(--text-light);margin-top:2px;">${esc(fmtDate(p.submitted_at))}</div>
+        </div>
+        ${submissionStatusBadge(p.status)}
+      </div>`).join("");
+  }
+
+  /* Same bucket/path convention as admin/products-manager.js uploadMainImage() */
+  async function uploadQaddImage(file) {
+    const box  = document.getElementById("qaddUploadBox");
+    const prev = document.getElementById("qaddUploadPrev");
+    prev.innerHTML = `<div>⏳ جاري الرفع...</div>`;
+    try {
+      const ext  = file.name.split(".").pop();
+      const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
+
+      const { error: upErr } = await supabase.storage.from("admin-product-images").upload(path, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+
+      const { data: { publicUrl } } = supabase.storage.from("admin-product-images").getPublicUrl(path);
+      document.getElementById("qaddImageUrl").value = publicUrl;
+      prev.innerHTML = `<img src="${esc(publicUrl)}" alt=""><div>✅ تم رفع الصورة</div>`;
+      box.classList.add("loaded");
+    } catch (err) {
+      prev.innerHTML = `<div>📷 انقر لرفع صورة الغلاف</div>`;
+      showToast("❌ فشل رفع الصورة: " + (err.message || ""), "error");
+    }
+  }
+
+  /* The only columns sent here are product_name/main_image/category/status/
+     is_active/submitted_by/submitted_at/submission_note — everything else
+     (price, stock, slug, SEO...) is forced server-side by
+     guard_seller_product_insert() regardless of what's sent, so there is
+     nothing to smuggle in even from a modified client. */
+  async function submitQuickAddBook(e) {
+    e.preventDefault();
+    if (PREVIEW_MODE) return;
+
+    const btn        = document.getElementById("qaddSubmitBtn");
+    const statusMsg   = document.getElementById("qaddStatusMsg");
+    const title       = document.getElementById("qaddTitle").value.trim();
+    const imageUrl    = document.getElementById("qaddImageUrl").value;
+    const note        = document.getElementById("qaddNote").value.trim();
+
+    statusMsg.textContent = "";
+    if (!title || !imageUrl) {
+      statusMsg.textContent = "❌ العنوان وصورة الغلاف مطلوبان";
+      statusMsg.style.color = "#b91c1c";
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = "⏳ جاري الإرسال...";
+    try {
+      const { error } = await supabase.from("admin_products_catalog").insert({
+        product_name:    title,
+        main_image:      imageUrl,
+        category:        "books",
+        status:          "pending_review",
+        is_active:       false,
+        submitted_by:    CURRENT_STAFF_ID,
+        submitted_at:    new Date().toISOString(),
+        submission_note: note || null,
+      });
+      if (error) throw error;
+
+      statusMsg.textContent = "تم إرسال الكتاب للمراجعة، سيقوم الأدمن بإكمال باقي التفاصيل قبل نشره.";
+      statusMsg.style.color = "#0F5132";
+      document.getElementById("qaddForm").reset();
+      document.getElementById("qaddImageUrl").value = "";
+      document.getElementById("qaddUploadBox").classList.remove("loaded");
+      document.getElementById("qaddUploadPrev").innerHTML = `<div>📷 انقر لرفع صورة الغلاف</div>`;
+
+      MY_SUBMISSIONS = await fetchMySubmissions();
+      renderMySubmissions(MY_SUBMISSIONS);
+    } catch (err) {
+      statusMsg.textContent = "❌ فشل الإرسال: " + (err.message || "");
+      statusMsg.style.color = "#b91c1c";
+    } finally {
+      btn.disabled = false; btn.textContent = "📤 إرسال للمراجعة";
+    }
+  }
+
   function showMessageModal(msgId) {
     const m = ALL_MESSAGES.find(x => x.id === msgId);
     if (!m) return;
@@ -1457,6 +1652,7 @@
         document.getElementById("pageTitle").textContent =
           tab === "orders"   ? "📦 طلباتي المعيّنة" :
           tab === "messages" ? "✉️ رسائلي المعيّنة" :
+          tab === "addbook"  ? "➕ إضافة كتاب" :
                                "👤 الملف الشخصي";
 
         if (tab === "orders")   { UNSEEN_ORDERS   = 0; }
@@ -1550,6 +1746,17 @@
       const card = e.target.closest(".m-msg-card");
       if (card) showMessageModal(card.dataset.msgId);
     });
+
+    /* ── Quick-add book ──────────────────────────────────────── */
+    document.getElementById("qaddUploadBox").addEventListener("click", () => {
+      if (PREVIEW_MODE) return;
+      document.getElementById("qaddImageInput").click();
+    });
+    document.getElementById("qaddImageInput").addEventListener("change", e => {
+      const file = e.target.files?.[0];
+      if (file) uploadQaddImage(file);
+    });
+    document.getElementById("qaddForm").addEventListener("submit", submitQuickAddBook);
 
     /* ── Modal footer — actions that stay pinned at the bottom ── */
     document.getElementById("modalFooter").addEventListener("click", async e => {
@@ -1682,12 +1889,13 @@
 
       renderProfile(staff);
 
-      [ALL_ORDERS, ALL_MESSAGES] = await Promise.all([
-        fetchMyOrders(), fetchMyMessages(),
+      [ALL_ORDERS, ALL_MESSAGES, MY_SUBMISSIONS] = await Promise.all([
+        fetchMyOrders(), fetchMyMessages(), fetchMySubmissions(),
       ]);
 
       renderOrdersTable(getFilteredOrders());
       renderMessagesTable(getFilteredMyMessages());
+      renderMySubmissions(MY_SUBMISSIONS);
       bindEvents();
       setupRealtime();
 

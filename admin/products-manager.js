@@ -26,7 +26,7 @@
   let EDIT_PRODUCT_ID = null;
   /* null = unknown yet, true = column exists in DB, false = column missing */
   let DISPLAY_ORDER_SUPPORTED = null;
-  let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' */
+  let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' | 'pending' */
   let PROD_SEARCH_QUERY = '';
   let DRAG_SRC_ID = null;
 
@@ -42,6 +42,38 @@
 
   function fmtPrice(n) {
     return Number(n || 0).toLocaleString('fr-DZ') + ' دج';
+  }
+
+  function fmtDate(v) {
+    if (!v) return '—';
+    return new Date(v).toLocaleString('ar-DZ', {
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit',
+    });
+  }
+
+  /* Same copy-to-clipboard pattern as admin.js's handleCopyMessage()
+     (.btn-copy-msg / .copied are defined once, globally, in admin.html). */
+  async function copyFieldValue(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const value = input?.value?.trim();
+    if (!value) { showToast('❌ لا يوجد رابط لنسخه', 'error'); return; }
+
+    const original = btn ? btn.innerHTML : null;
+    try {
+      await navigator.clipboard.writeText(value);
+      if (btn) {
+        btn.classList.add('copied');
+        btn.innerHTML = '✅ تم النسخ';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = original;
+        }, 1500);
+      }
+    } catch (err) {
+      console.error('Copy error:', err);
+      showToast('❌ فشل نسخ الرابط: ' + (err.message || ''), 'error');
+    }
   }
 
   function showToast(msg, type = 'success', opts = {}) {
@@ -290,6 +322,23 @@
       font-size:11px; font-weight:900; background:rgba(255,255,255,.25);
     }
     .prod-sf-btn:not(.active) .prod-sf-badge { background:#e2e8f0; color:#64748b; }
+    .prod-sf-pending {
+      font-size:11px; font-weight:800; color:#92400e;
+      background:#fef3c7; border-radius:99px; padding:1px 8px; margin-inline-start:4px;
+    }
+    .prod-sf-btn.active .prod-sf-pending { background:rgba(255,255,255,.85); }
+
+    /* "⏳ بانتظار المراجعة" sub-filter — amber at rest (same tone as
+       .prod-sf-pending/.badge-pending), emerald when active like every
+       other .prod-sf-btn. */
+    .prod-sf-btn.prod-sf-pending-btn:not(.active) { background:#fef3c7; color:#92400e; }
+    .prod-sf-btn.prod-sf-pending-btn:not(.active):hover { background:#fde68a; color:#78350f; }
+    .prod-sf-btn.prod-sf-pending-btn:not(.active) .prod-sf-badge { background:#fde68a; color:#78350f; }
+
+    /* ── Pending-review rows (seller quick-add awaiting admin) ───── */
+    .pm-tbl tbody tr.pm-row-pending  { border-right:4px solid #f59e0b; background:#fffbeb; }
+    .pm-mcard.pm-row-pending         { border-right:4px solid #f59e0b; background:#fffbeb; }
+    .pm-pending-meta { font-size:11px; color:#92400e; margin-top:3px; }
     @media (max-width:480px) {
       .prod-subfilter-bar { flex-wrap:wrap; }
       .prod-sf-btn { padding:8px; font-size:12px; }
@@ -355,6 +404,8 @@
     .pm-fld textarea:focus { outline:none; border-color:#059669; }
     .pm-fld textarea { min-height:90px; }
     .pm-fld .hint { font-size:11px; color:#94a3b8; margin-top:3px; }
+    .pm-url-row { display:flex; gap:6px; align-items:center; }
+    .pm-url-row input { flex:1; min-width:0; }
 
     .pm-divider {
       grid-column:1 / -1; border:none;
@@ -503,8 +554,9 @@
         </div>
 
         <div class="prod-subfilter-bar" id="prodSubfilterBar">
+          <button class="prod-sf-btn prod-sf-pending-btn" data-pfilter="pending" id="prodSfPendingBtn" style="display:none;">⏳ بانتظار المراجعة <span class="prod-sf-badge" id="psb-pending">—</span></button>
           <button class="prod-sf-btn active" data-pfilter="all">🗂 الكل <span class="prod-sf-badge" id="psb-all">—</span></button>
-          <button class="prod-sf-btn" data-pfilter="books">📚 الكتب <span class="prod-sf-badge" id="psb-books">—</span></button>
+          <button class="prod-sf-btn" data-pfilter="books">📚 الكتب <span class="prod-sf-badge" id="psb-books">—</span><span class="prod-sf-pending" id="psb-books-pending" style="display:none;"></span></button>
           <button class="prod-sf-btn" data-pfilter="electronics">💻 إلكترونيات <span class="prod-sf-badge" id="psb-electronics">—</span></button>
         </div>
         <div class="controls-bar">
@@ -548,6 +600,7 @@
           <button class="pm-mclose" id="pmMClose">✕</button>
         </div>
         <div class="pm-mbody" id="pmMBody">
+          <div id="pmPendingBanner" style="display:none;background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e;line-height:1.7;"></div>
           ${buildForm()}
         </div>
       </div>
@@ -691,7 +744,10 @@
             <input type="file" id="pmMainFile" class="pm-upload-inp" accept="image/*">
           </div>
           <span class="hint" style="font-size:11px;color:#94a3b8;margin-top:4px;">أو ادخل رابط الصورة مباشرة:</span>
-          <input type="url" id="pmMainUrl" placeholder="https://... (اختياري إذا رفعت الصورة)">
+          <div class="pm-url-row">
+            <input type="url" id="pmMainUrl" placeholder="https://... (اختياري إذا رفعت الصورة)">
+            <button type="button" class="btn-copy-msg" data-pma="copy-url" data-copy-target="pmMainUrl">📋 نسخ</button>
+          </div>
         </div>
 
         <div class="pm-fld full">
@@ -776,6 +832,13 @@
     document.getElementById('pmMainFile')?.addEventListener('change', e => {
       const f = e.target.files[0];
       if (f) uploadMainImage(f);
+    });
+
+    /* Copy image URL to clipboard — main field (+ any future .pm-url-row fields) */
+    document.getElementById('pmMBody')?.addEventListener('click', e => {
+      const btn = e.target.closest('[data-pma="copy-url"]');
+      if (!btn) return;
+      copyFieldValue(btn.dataset.copyTarget, btn);
     });
 
     /* Gallery area click */
@@ -951,7 +1014,7 @@
       /* ── First attempt: order by display_order ─────────────────── */
       ({ data, error: queryError } = await sb
         .from('admin_products_catalog')
-        .select('*')
+        .select('*, submitted_by_staff:staff_accounts!admin_products_catalog_submitted_by_fkey(full_name)')
         .order('display_order', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: true }));
 
@@ -962,7 +1025,7 @@
 
         ({ data, error: queryError } = await sb
           .from('admin_products_catalog')
-          .select('*')
+          .select('*, submitted_by_staff:staff_accounts!admin_products_catalog_submitted_by_fkey(full_name)')
           .order('created_at', { ascending: true }));
       }
 
@@ -1053,6 +1116,7 @@
     return sortedGrouped(ALL_PM_PRODUCTS).filter(p => {
       if (PROD_FILTER === 'books'       &&  isElec(p)) return false;
       if (PROD_FILTER === 'electronics' && !isElec(p)) return false;
+      if (PROD_FILTER === 'pending'     && p.status !== 'pending_review') return false;
       if (q && !String(p.product_name || '').toLowerCase().includes(q) &&
                !String(p.category || '').toLowerCase().includes(q)) return false;
       return true;
@@ -1060,14 +1124,38 @@
   }
 
   function updateSubfilterBadges() {
-    const elecCount  = ALL_PM_PRODUCTS.filter(isElec).length;
-    const booksCount = ALL_PM_PRODUCTS.length - elecCount;
+    const elecCount    = ALL_PM_PRODUCTS.filter(isElec).length;
+    const booksCount   = ALL_PM_PRODUCTS.length - elecCount;
+    const pendingBooks = ALL_PM_PRODUCTS.filter(p => !isElec(p) && p.status === 'pending_review').length;
+    const pendingTotal = ALL_PM_PRODUCTS.filter(p => p.status === 'pending_review').length;
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set('psb-all', ALL_PM_PRODUCTS.length);
     set('psb-books', booksCount);
     set('psb-electronics', elecCount);
     set('tab-badge-products', ALL_PM_PRODUCTS.length);
     set('pmProductCount', ALL_PM_PRODUCTS.length);
+
+    const pendingEl = document.getElementById('psb-books-pending');
+    if (pendingEl) {
+      pendingEl.style.display = pendingBooks > 0 ? '' : 'none';
+      pendingEl.textContent = `· ${pendingBooks} بانتظار المراجعة`;
+    }
+
+    /* "⏳ بانتظار المراجعة" sub-filter — hidden entirely when there's
+       nothing pending across any category. */
+    set('psb-pending', pendingTotal);
+    const pendingBtn = document.getElementById('prodSfPendingBtn');
+    if (pendingBtn) {
+      pendingBtn.style.display = pendingTotal > 0 ? '' : 'none';
+      /* If it disappears while it was the active filter (last pending
+         item just got published), fall back to "الكل" instead of
+         leaving the table stuck on a filter with no visible button. */
+      if (pendingTotal === 0 && PROD_FILTER === 'pending') {
+        PROD_FILTER = 'all';
+        document.querySelectorAll('.prod-sf-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector('.prod-sf-btn[data-pfilter="all"]')?.classList.add('active');
+      }
+    }
   }
 
   function availToggleHtml(id, status) {
@@ -1098,18 +1186,28 @@
     applyToggleState(document.getElementById('pmStockToggle'), isAvail);
   }
 
+  /* Pending-review rows come from a seller's quick-add — surface who and when. */
+  function pendingMetaHtml(p) {
+    if (p.status !== 'pending_review') return '';
+    const who = p.submitted_by_staff?.full_name || 'بائع';
+    return `<div class="pm-pending-meta">⏳ أرسله ${esc(who)} — ${esc(fmtDate(p.submitted_at))}</div>
+      ${p.submission_note ? `<div class="pm-pending-meta">📝 ${esc(p.submission_note)}</div>` : ''}`;
+  }
+
   function rowHtml(p) {
     const thumbSrc = resolveThumbSrc(p);
     const imgHtml = thumbSrc
       ? `<img src="${esc(thumbSrc)}" class="pm-thumb" alt="" onerror="this.outerHTML='<div class=pm-thumb-ph>📦</div>'">`
       : `<div class="pm-thumb-ph">📦</div>`;
+    const isPending = p.status === 'pending_review';
 
-    return `<tr draggable="true" data-pmid="${esc(p.id)}">
+    return `<tr draggable="true" data-pmid="${esc(p.id)}" class="${isPending ? 'pm-row-pending' : ''}">
         <td>${imgHtml}</td>
         <td>
           <strong style="font-size:13px;display:block;">${esc(p.product_name)}</strong>
           ${p.product_name_ar ? `<span style="font-size:12px;color:#64748b;">${esc(p.product_name_ar)}</span><br>` : ''}
           ${p.slug ? `<span style="font-size:11px;color:#94a3b8;direction:ltr;">/product/${esc(p.slug)}/</span>` : ''}
+          ${isPending ? `<span class="badge badge-pending">⏳ بانتظار المراجعة</span>${pendingMetaHtml(p)}` : ''}
         </td>
         <td style="font-size:13px;font-weight:600;">${esc(catLabel(p.category))}</td>
         <td>
@@ -1142,11 +1240,13 @@
     const groupSize = ALL_PM_PRODUCTS.filter(x => categoryKey(x) === categoryKey(p)).length;
     const isFirst = order !== null && order <= 1;
     const isLast  = order !== null && order >= groupSize;
+    const isPending = p.status === 'pending_review';
 
-    return `<div class="pm-mcard" data-pmid="${esc(p.id)}">
+    return `<div class="pm-mcard ${isPending ? 'pm-row-pending' : ''}" data-pmid="${esc(p.id)}">
         ${imgHtml}
         <div class="pm-mcard-body">
           <div class="pm-mcard-name">${esc(p.product_name)}</div>
+          ${isPending ? `<span class="badge badge-pending">⏳ بانتظار المراجعة</span>${pendingMetaHtml(p)}` : ''}
           <div class="pm-mcard-row">
             ${availToggleHtml(p.id, p.stock_status)}
             <div class="pm-mcard-reorder">
@@ -1387,9 +1487,25 @@
   function openModal(product) {
     EDIT_PRODUCT_ID = product?.id || null;
     const isEdit = !!product;
+    const isPending = isEdit && product.status === 'pending_review';
 
-    document.getElementById('pmModalTitle').textContent = isEdit ? '✏️ تعديل المنتج' : '➕ إضافة منتج جديد';
-    document.getElementById('pmSaveBtn').textContent    = isEdit ? '💾 حفظ التعديلات' : '🚀 نشر المنتج';
+    document.getElementById('pmModalTitle').textContent =
+      isPending ? '📝 مراجعة كتاب مُرسل من بائع' : isEdit ? '✏️ تعديل المنتج' : '➕ إضافة منتج جديد';
+    document.getElementById('pmSaveBtn').textContent =
+      isPending ? '🚀 نشر' : isEdit ? '💾 حفظ التعديلات' : '🚀 نشر المنتج';
+
+    const banner = document.getElementById('pmPendingBanner');
+    if (banner) {
+      if (isPending) {
+        const who = product.submitted_by_staff?.full_name || 'بائع';
+        banner.style.display = '';
+        banner.innerHTML = `⏳ <strong>بانتظار المراجعة</strong> — أرسله ${esc(who)} بتاريخ ${esc(fmtDate(product.submitted_at))}.
+          ${product.submission_note ? `<br>📝 ملاحظة البائع: ${esc(product.submission_note)}` : ''}
+          <br>أكمل باقي التفاصيل (السعر، التوفر، الرابط...) ثم اضغط "🚀 نشر".`;
+      } else {
+        banner.style.display = 'none';
+      }
+    }
 
     resetForm();
 
@@ -1567,6 +1683,7 @@
         seo_description:   getValue('pmSeoDesc')    || null,
         keywords:          getValue('pmKeywords')   || null,
         is_active:         true,
+        status:            'published',
         updated_at:        new Date().toISOString(),
       };
 
