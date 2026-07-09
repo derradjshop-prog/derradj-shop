@@ -839,7 +839,7 @@
   /* ── Auth guard — seller role only ────────────────────── */
   async function authGuard() {
     const { data: { session } } = await supabase.auth.getSession();
-    if (!session) { location.href = "../admin/login.html"; return null; }
+    if (!session) { location.href = "../seller/login.html"; return null; }
 
     const { data: staff, error } = await supabase
       .from("staff_accounts")
@@ -849,7 +849,7 @@
 
     if (error || !staff || !staff.is_active || staff.role !== "seller") {
       await supabase.auth.signOut();
-      location.href = "../admin/login.html";
+      location.href = "../seller/login.html";
       return null;
     }
     return staff;
@@ -1443,7 +1443,7 @@
   function bindEvents() {
     document.getElementById("logoutBtn").addEventListener("click", async () => {
       await supabase.auth.signOut();
-      location.href = "../admin/login.html";
+      location.href = "../seller/login.html";
     });
 
     /* ── Tab switching ──────────────────────────────────────── */

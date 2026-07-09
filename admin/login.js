@@ -19,7 +19,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusText = document.getElementById("statusText");
   const forgotBtn = document.getElementById("forgotBtn");
 
-  const originalText = loginButton ? loginButton.textContent : "Log In";
+  const originalText = loginButton ? loginButton.textContent : "دخول";
 
   if (!form) {
     console.error("⚠️ لم يتم العثور على الفورم #adminLoginForm");
@@ -29,7 +29,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setStatus(text, ok = false) {
     if (!statusText) return;
     statusText.textContent = text || "";
-    statusText.style.color = ok ? "#166534" : "#b91c1c";
+    statusText.style.color = ok ? "#0F5132" : "#b91c1c";
   }
 
   // ✅ تحويل رقم/بريد إلى email مستعمل في Auth
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setStatus("");
     loginButton.disabled = true;
-    loginButton.textContent = "Logging in...";
+    loginButton.textContent = "⏳ جاري الدخول...";
 
     const contactInput = document.getElementById("contact");
     const passwordInput = document.getElementById("password");
