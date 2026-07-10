@@ -446,7 +446,7 @@ function buildSitemap(products, books) {
     { loc: `${SITE_URL}/faq`,          freq: 'monthly', pri: '0.5' },
     { loc: `${SITE_URL}/delivery`,     freq: 'monthly', pri: '0.6' },
     { loc: `${SITE_URL}/payment`,      freq: 'monthly', pri: '0.5' },
-    { loc: `${SITE_URL}/return-policy.html`,freq: 'monthly', pri: '0.5' },
+    { loc: `${SITE_URL}/return-policy`,freq: 'monthly', pri: '0.5' },
     { loc: `${SITE_URL}/terms`,        freq: 'yearly',  pri: '0.3' },
   ];
   STATIC.forEach(u => urls.push({ ...u, lastmod: today }));

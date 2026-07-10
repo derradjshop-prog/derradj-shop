@@ -13,5 +13,6 @@ https://www.derradjshop.com/*  https://derradjshop.com/:splat  301!
 /faq.html              /faq            301
 /payment.html          /payment        301
 /terms.html            /terms          301
+/return-policy.html    /return-policy  301
 /books/index.html      /books/         301
 /ordre/index.html      /ordre/         301

@@ -31,7 +31,18 @@
       "Bash(rm -f /tmp/_check*.js 2>/dev/null; true)",
       "Bash(grep -i \"\\\\.css$\")",
       "Bash(rm -rf \"ordre/Essai\")",
-      "Bash(git check-ignore *)"
+      "Bash(git check-ignore *)",
+      "PowerShell($bytes = [System.IO.File]::ReadAllBytes\\(\"about.html\"\\); $bytes[0..3] -join \",\")",
+      "PowerShell(& \"C:\\\\Users\\\\SOCIAL~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Social-Media-Desktop-derradj-shop---Copie\\\\c6c362cf-d8ee-421e-ac63-948dc800d77e\\\\scratchpad\\\\fix-return-policy-links.ps1\")",
+      "Bash(git diff *)",
+      "Bash(uniq -c -w2)",
+      "Bash(awk '{print $1}')",
+      "Bash(awk '/^@@/{h=$0} /return-policy/{print h}')",
+      "Bash(awk '/^@@/{h=$0; print_next=1} print_next && /return-policy/{print h; print_next=0}')",
+      "Bash(xxd)",
+      "Bash(echo \"exit code: $?\")",
+      "Bash(grep -Ff \"C:/Users/SOCIAL~1/AppData/Local/Temp/claude/c--Users-Social-Media-Desktop-derradj-shop---Copie/c6c362cf-d8ee-421e-ac63-948dc800d77e/scratchpad/mixed-books.txt\")",
+      "Bash(git commit -m ' *)"
     ],
     "additionalDirectories": [
       "\\tmp",

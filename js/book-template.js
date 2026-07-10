@@ -112,7 +112,7 @@
               'merchantReturnDays': 7,
               'returnMethod': 'https://schema.org/ReturnByMail',
               'returnFees': 'https://schema.org/FreeReturn',
-              'returnPolicyLink': `${SITE_URL}/return-policy.html`,
+              'returnPolicyLink': `${SITE_URL}/return-policy`,
             },
           },
         },

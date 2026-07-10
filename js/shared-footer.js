@@ -50,7 +50,7 @@
           <li><a href="/payment">الدفع والضمان</a></li>
           <li><a href="/faq">الأسئلة الشائعة</a></li>
           <li><a href="/contact">تواصل معنا</a></li>
-          <li><a href="/return-policy.html">سياسة الإرجاع</a></li>
+          <li><a href="/return-policy">سياسة الإرجاع</a></li>
           <li><a href="/terms">الشروط والأحكام</a></li>
         </ul>
       </div>
