@@ -29,10 +29,13 @@
       "Bash(node --check admin/products-manager.js)",
       "Bash(node --check seller/dashboard.html)",
       "Bash(rm -f /tmp/_check*.js 2>/dev/null; true)",
-      "Bash(grep -i \"\\\\.css$\")"
+      "Bash(grep -i \"\\\\.css$\")",
+      "Bash(rm -rf \"ordre/Essai\")",
+      "Bash(git check-ignore *)"
     ],
     "additionalDirectories": [
-      "\\tmp"
+      "\\tmp",
+      "c:\\Users\\Social Media\\Desktop\\derradj-shop - Copie\\ordre\\Essai"
     ]
   }
 }

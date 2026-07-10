@@ -1810,16 +1810,16 @@
         { loc: 'https://derradjshop.com/',                                                          lastmod: today,        freq: 'weekly',  pri: '1.0' },
         { loc: 'https://derradjshop.com/books/',                                                    lastmod: today,        freq: 'weekly',  pri: '0.9' },
         { loc: 'https://derradjshop.com/Electronique/',                                             lastmod: today,        freq: 'weekly',  pri: '0.9' },
-        { loc: 'https://derradjshop.com/Electronique/laptop/adjustable-laptop-stand.html',          lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
+        { loc: 'https://derradjshop.com/product/adjustable-laptop-stand/',                          lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
         { loc: 'https://derradjshop.com/Electronique/smart-watch/modio-st11-smart-watch/',          lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
         { loc: 'https://derradjshop.com/Electronique/earbuds/anker-soundcore-r50i-vg/',             lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
         { loc: 'https://derradjshop.com/Electronique/earbuds/airpods-4-type-c-vrac/',               lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
         { loc: 'https://derradjshop.com/Electronique/power-bank/hoco-j132a-20000mah-power-bank/',   lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
-        { loc: 'https://derradjshop.com/about.html',                                                lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
-        { loc: 'https://derradjshop.com/contact.html',                                              lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
-        { loc: 'https://derradjshop.com/faq.html',                                                  lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
-        { loc: 'https://derradjshop.com/delivery.html',                                             lastmod: '2026-06-02', freq: 'monthly', pri: '0.6' },
-        { loc: 'https://derradjshop.com/return-policy.html',                                        lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
+        { loc: 'https://derradjshop.com/about',                                                     lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
+        { loc: 'https://derradjshop.com/contact',                                                   lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
+        { loc: 'https://derradjshop.com/faq',                                                       lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
+        { loc: 'https://derradjshop.com/delivery',                                                  lastmod: '2026-06-02', freq: 'monthly', pri: '0.6' },
+        { loc: 'https://derradjshop.com/return-policy',                                             lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
       ];
 
       function urlBlock(u) {

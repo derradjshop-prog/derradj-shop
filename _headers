@@ -22,13 +22,6 @@
 /books/*/main.png
   Cache-Control: public, max-age=31536000, immutable
 
-# Product photos — 1-year immutable cache
-/products/*/pictures/*.jpg
-  Cache-Control: public, max-age=31536000, immutable
-
-/products/*/pictures/*.webp
-  Cache-Control: public, max-age=31536000, immutable
-
 # Logo files — 1-day cache (rarely changes, but allows updates)
 /Logo.png
   Cache-Control: public, max-age=86400
