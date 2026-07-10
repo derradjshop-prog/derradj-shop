@@ -42,7 +42,10 @@
       "Bash(xxd)",
       "Bash(echo \"exit code: $?\")",
       "Bash(grep -Ff \"C:/Users/SOCIAL~1/AppData/Local/Temp/claude/c--Users-Social-Media-Desktop-derradj-shop---Copie/c6c362cf-d8ee-421e-ac63-948dc800d77e/scratchpad/mixed-books.txt\")",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(node scripts/generate-product-pages.js)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
     ],
     "additionalDirectories": [
       "\\tmp",

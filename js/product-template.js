@@ -175,7 +175,26 @@
         'priceCurrency': 'DZD',
         'availability': isAvail ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
         'url': pageUrl,
-        'seller': { '@type': 'Organization', 'name': 'Derradj Shop', 'url': SITE_URL }
+        'seller': { '@type': 'Organization', 'name': 'Derradj Shop', 'url': SITE_URL },
+        'shippingDetails': {
+          '@type': 'OfferShippingDetails',
+          'shippingRate': { '@type': 'MonetaryAmount', 'value': '500', 'currency': 'DZD' },
+          'deliveryTime': {
+            '@type': 'ShippingDeliveryTime',
+            'handlingTime': { '@type': 'QuantitativeValue', 'minValue': 1, 'maxValue': 1, 'unitCode': 'DAY' },
+            'transitTime': { '@type': 'QuantitativeValue', 'minValue': 1, 'maxValue': 3, 'unitCode': 'DAY' },
+          },
+          'shippingDestination': { '@type': 'DefinedRegion', 'addressCountry': 'DZ' },
+        },
+        'hasMerchantReturnPolicy': {
+          '@type': 'MerchantReturnPolicy',
+          'applicableCountry': 'DZ',
+          'returnPolicyCategory': 'https://schema.org/MerchantReturnFiniteReturnWindow',
+          'merchantReturnDays': 7,
+          'returnMethod': 'https://schema.org/ReturnByMail',
+          'returnFees': 'https://schema.org/FreeReturn',
+          'returnPolicyLink': `${SITE_URL}/return-policy`,
+        },
       }
     };
 
