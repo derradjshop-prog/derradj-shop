@@ -60,9 +60,9 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     office: "📮 استلام من أقرب نقطة توصيل",
   };
 
-  /* حصص الأرباح — الشريك (البائع) 65% ، الإدارة 35% */
-  const PARTNER_SHARE_RATE = 0.65;
-  const MY_SHARE_RATE      = 0.35;
+  /* حصص الأرباح — الشريك (البائع) 70% ، الإدارة 30% */
+  const PARTNER_SHARE_RATE = 0.70;
+  const MY_SHARE_RATE      = 0.30;
 
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
@@ -1066,8 +1066,8 @@ ${itemsText}
           const profitHTML = hasCost ? `
               <div class="prod-profit-row">
                 <span>💰 الربح: <strong>${esc(fmtMoney(profit))}</strong></span>
-                <span>🤝 الشريك (65%): <strong>${esc(fmtMoney(profit * PARTNER_SHARE_RATE))}</strong></span>
-                <span>👤 نصيبي (35%): <strong>${esc(fmtMoney(profit * MY_SHARE_RATE))}</strong></span>
+                <span>🤝 حصتك (70%): <strong style="color:#0F5132;">${esc(fmtMoney(profit * PARTNER_SHARE_RATE))}</strong></span>
+                <span>👤 نصيبي (30%): <strong>${esc(fmtMoney(profit * MY_SHARE_RATE))}</strong></span>
               </div>` : ``;
           const editMetaHTML = it.updated_at ? `
               <div class="prod-cost-meta" title="آخر تعديل">✏️ آخر تعديل: ${esc(it.updated_by_staff?.full_name || "—")} · ${esc(fmtDate(it.updated_at))}</div>` : ``;
@@ -1100,8 +1100,8 @@ ${itemsText}
           <span>💰 الربح الكلي${itemsWithCost.length < items.length ? " (جزئي — التكلفة غير مدخلة لكل المنتجات)" : ""}</span>
           <span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span>
         </div>
-        <div class="total-row"><span>🤝 نصيب الشريك (65%)</span><span class="total-val">${esc(fmtMoney(totalProfit * PARTNER_SHARE_RATE))}</span></div>
-        <div class="total-row grand"><span>👤 نصيبي (35%)</span><span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit * MY_SHARE_RATE))}</span></div>
+        <div class="total-row"><span>🤝 Mehdi (70%)</span><span class="total-val">${esc(fmtMoney(totalProfit * PARTNER_SHARE_RATE))}</span></div>
+        <div class="total-row grand"><span>👤 أنا (30%)</span><span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit * MY_SHARE_RATE))}</span></div>
       </div>` : ``;
 
     /* ── Receipt ── */

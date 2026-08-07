@@ -3,7 +3,7 @@
 --
 -- Profit-sharing feature: admin enters the purchase cost per book
 -- (order_items line), profit = subtotal - purchase_cost is computed
--- client-side, split 65% partner (seller) / 35% admin.
+-- client-side, split 70% partner (seller) / 30% admin.
 --
 -- 1. Adds order_items.purchase_cost (NULL = not entered yet).
 -- 2. Lets admin UPDATE order_items (only "order_items_admin_select"

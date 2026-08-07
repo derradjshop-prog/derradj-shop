@@ -857,8 +857,8 @@
     completed:     "✅ مكتمل",
   };
 
-  /* حصتك من الربح على كل كتاب — الإدارة تُدخل تكلفة الشراء */
-  const PARTNER_SHARE_RATE = 0.65;
+  /* حصّة Mehdi من الربح على كل كتاب — الإدارة تُدخل تكلفة الشراء */
+  const PARTNER_SHARE_RATE = 0.70;
 
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
@@ -1025,7 +1025,7 @@
     document.getElementById("stat-ord-progress").textContent = inProgress;
     document.getElementById("stat-ord-done").textContent     = done;
 
-    /* إجمالي ربحك — مجموع حصتك (65%) عبر كل الكتب التي أُدخلت تكلفتها،
+    /* إجمالي ربح Mehdi — مجموع حصّته (70%) عبر كل الكتب التي أُدخلت تكلفتها،
        وفقط للطلبات المؤكد تسليمها (is_confirmed === true) من الأدمن. */
     let totalProfit = 0;
     orders.filter(o => o.is_confirmed === true).forEach(o => {
@@ -1170,7 +1170,7 @@
             ${hasCost ? `
               <div class="product-profit-row">
                 <span>الربح: <strong>${esc(fmtMoney(profit))}</strong></span>
-                <span>حصتك (65%): <strong>${esc(fmtMoney(profit * PARTNER_SHARE_RATE))}</strong></span>
+                <span>حصتك (70%): <strong style="color:#0F5132;">${esc(fmtMoney(profit * PARTNER_SHARE_RATE))}</strong></span>
               </div>` : ``}`;
           return `
           <div class="product-card" style="flex-direction:column;align-items:stretch;">
@@ -1205,7 +1205,7 @@
         <div class="modal-section-title">🤝 حصتك من الربح</div>
         <div class="price-summary-box" style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border-color:#bbf7d0;">
           <div class="price-row"><span>الربح الكلي${itemsWithCost.length < items.length ? " (جزئي)" : ""}</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span></div>
-          <div class="price-row grand"><span>حصتك (65%)</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(totalProfit * PARTNER_SHARE_RATE))}</span></div>
+          <div class="price-row grand"><span>حصتك (70%)</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(totalProfit * PARTNER_SHARE_RATE))}</span></div>
         </div>
       </div>`;
 
