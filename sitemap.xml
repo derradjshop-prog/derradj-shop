@@ -62,17 +62,35 @@
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://derradjshop.com/books/art-of-seduction/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <loc>https://derradjshop.com/books/know-yourself/</loc>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://derradjshop.com/books/art-of-seduction/main.webp</image:loc>
+      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783017665512-3z7wshn.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/books/7-habits/</loc>
+    <lastmod>2026-08-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/books/7-habits/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/books/surrounded-by-setbacks/</loc>
+    <lastmod>2026-08-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783015501065-7m9v73o.webp</image:loc>
     </image:image>
   </url>
   <url>
     <loc>https://derradjshop.com/books/the-power-of-failure/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -81,17 +99,26 @@
     </image:image>
   </url>
   <url>
-    <loc>https://derradjshop.com/books/7-habits/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <loc>https://derradjshop.com/books/power-of-now/</loc>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://derradjshop.com/books/7-habits/main.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/power-of-now/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/books/art-of-seduction/</loc>
+    <lastmod>2026-08-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/books/art-of-seduction/main.webp</image:loc>
     </image:image>
   </url>
   <url>
     <loc>https://derradjshop.com/books/atomic-habits/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -100,7 +127,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/sell-anything/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -109,7 +136,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/the-first-20-hours/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -118,7 +145,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/the-law-of-success/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -127,7 +154,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/the-industry-of-greats/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -136,7 +163,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/surrounded-by-idiots/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -145,7 +172,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/the-power-of-your-subconscious-mind/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -154,7 +181,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/think-and-act-like-a-cat/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -163,7 +190,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/a-journey-into-the-customers-mind/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -172,7 +199,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/blink-the-power-of-thinking-without-thinking/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -180,17 +207,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://derradjshop.com/books/know-yourself/</loc>
-    <lastmod>2026-07-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783017665512-3z7wshn.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://derradjshop.com/books/your-mind-and-how-to-use-it/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -199,7 +217,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/goodbye-to-shyness/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -208,7 +226,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/secrets-of-the-millionaire-mind/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -217,7 +235,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/you-are-a-badass/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -225,17 +243,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://derradjshop.com/books/surrounded-by-setbacks/</loc>
-    <lastmod>2026-07-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783015501065-7m9v73o.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://derradjshop.com/books/man-unknown/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -244,7 +253,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/comfort-zone/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -253,7 +262,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/the-secret-of-success/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -262,7 +271,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/moments-that-could-change-your-life/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -271,7 +280,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/eat-that-frog/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -280,7 +289,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/eat-to-live/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -289,7 +298,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/the-bomber-mafia/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -298,7 +307,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/today-matters/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -307,7 +316,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/unfuk-yourself/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -316,7 +325,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/the-art-of-charisma/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -325,7 +334,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/subtle-art/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -334,7 +343,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/tiktok-syndrome/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -343,7 +352,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/emotional-intelligence/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -352,7 +361,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/subconscious-mind/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -361,20 +370,11 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/richest-man-in-babylon/</loc>
-    <lastmod>2026-07-09</lastmod>
+    <lastmod>2026-08-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://derradjshop.com/books/richest-man-in-babylon/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/books/power-of-now/</loc>
-    <lastmod>2026-07-09</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/books/power-of-now/main.webp</image:loc>
     </image:image>
   </url>
   <url>
