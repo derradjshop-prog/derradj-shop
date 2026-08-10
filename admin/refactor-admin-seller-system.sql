@@ -13,7 +13,7 @@
 -- ──────────────────────────────────────────────────────────────
 -- 1. Fix names on the two accounts this system now exclusively uses.
 -- ──────────────────────────────────────────────────────────────
-UPDATE public.staff_accounts SET full_name = 'Abdou' WHERE email = '0555491316@derradjshop.com';
+UPDATE public.staff_accounts SET full_name = 'Abdou' WHERE email = '0542949967@derradjshop.com';
 UPDATE public.staff_accounts SET full_name = 'Mehdi' WHERE email = '0696234484@derradjshop.com';
 
 

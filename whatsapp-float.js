@@ -1,7 +1,7 @@
 (function () {
   'use strict';
 
-  var WHATSAPP_NUMBER = '213555491316';
+  var WHATSAPP_NUMBER = '213542949967';
   var BRAND = 'Derradj Shop';
 
   // Resolve social.png relative to this script, so it works from any page depth.

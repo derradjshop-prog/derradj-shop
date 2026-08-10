@@ -18,7 +18,7 @@
   'use strict';
 
   /* ── Config ───────────────────────────────────────────── */
-  var WA_NUMBER = '213555491316';
+  var WA_NUMBER = '213542949967';
   var path      = (window.location.pathname || '').toLowerCase();
 
   /* Only run on individual product pages (not listing pages) */
