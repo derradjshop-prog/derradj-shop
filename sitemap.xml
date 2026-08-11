@@ -118,7 +118,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/books/atomic-habits/</loc>
-    <lastmod>2026-08-09</lastmod>
+    <lastmod>2026-08-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -1026,21 +1026,21 @@
     </image:image>
   </url>
   <url>
-    <loc>https://derradjshop.com/product/anker-soundcore-r50i-vg/</loc>
-    <lastmod>2026-06-29</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/anker-soundcore-r50i-vg/main.png</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://derradjshop.com/product/airpods-4-type-c-vrac/</loc>
-    <lastmod>2026-06-29</lastmod>
+    <lastmod>2026-08-11</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/airpods-4-type-c-vrac/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/anker-soundcore-r50i-vg/</loc>
+    <lastmod>2026-08-11</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/anker-soundcore-r50i-vg/main.png</image:loc>
     </image:image>
   </url>
   <url>
