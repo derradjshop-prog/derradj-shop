@@ -133,12 +133,23 @@
       if (pct > 0) priceHtml += `<span class="discount-tag">-${pct}%</span>`;
     }
 
-    /* ── Gallery thumbs ── */
+    /* ── Gallery thumbs ──
+       Use a tiny inline placeholder for non-active thumbs so the
+       browser does not immediately download every full-size gallery
+       image. The real URL remains available in `data-src` and is
+       populated by an IntersectionObserver in product-page.js when
+       the thumb becomes relevant (visible / near-viewport) or on
+       user interaction. The active (first) thumb keeps its real
+       `src` for no-JS crawlers and immediate visual correctness. */
+    const __PLACEHOLDER_1PX = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
     const thumbsHtml = allImgs.length > 1
       ? `<div class="product-thumbnails-vertical" id="pdGallery">
           ${allImgs.map((u, i) =>
             `<div class="product-thumb${i === 0 ? ' active' : ''}" data-src="${escAttr(u)}">
-               <img src="${escAttr(u)}" alt="${escAttr(imgAlt)}" loading="lazy">
+               <img src="${i === 0 ? escAttr(u) : __PLACEHOLDER_1PX}"
+                    data-src="${escAttr(u)}"
+                    alt="${escAttr(imgAlt)}"
+                    ${i === 0 ? '' : 'loading="lazy"'} decoding="async">
              </div>`
           ).join('')}
         </div>`

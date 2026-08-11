@@ -166,12 +166,48 @@
         const thumb = e.target.closest('.product-thumb');
         if (!thumb) return;
         const newSrc = thumb.dataset.src;
+        /* Ensure the clicked thumb's <img> is loaded (may still be placeholder). */
+        const thumbImg = thumb.querySelector('img');
+        if (thumbImg && thumbImg.dataset && thumbImg.dataset.src && thumbImg.src !== thumbImg.dataset.src) {
+          thumbImg.src = thumbImg.dataset.src;
+          thumbImg.removeAttribute('data-src');
+        }
         if (mainImg) mainImg.src = newSrc;
         galleryEl.querySelectorAll('.product-thumb').forEach(t => t.classList.remove('active'));
         thumb.classList.add('active');
         const idx = allImgs.indexOf(newSrc);
         currentZoomIdx = idx < 0 ? 0 : idx;
       });
+
+      /* Lazy-load thumbnail images only when they're near the viewport.
+         This prevents downloading full-size gallery images on page load
+         while preserving the existing UX. */
+      try {
+        const thumbImgs = Array.from(galleryEl.querySelectorAll('.product-thumb img'));
+        if ('IntersectionObserver' in window && thumbImgs.length) {
+          const io = new IntersectionObserver((entries, obs) => {
+            entries.forEach(ent => {
+              if (!ent.isIntersecting) return;
+              const img = ent.target;
+              const real = img.dataset && img.dataset.src;
+              if (real && img.src !== real) img.src = real;
+              if (img.dataset) img.removeAttribute('data-src');
+              obs.unobserve(img);
+            });
+          }, { rootMargin: '200px 0px' });
+          thumbImgs.forEach(img => { if (img.dataset && img.dataset.src) io.observe(img); });
+        } else {
+          /* Fallback: load thumbs during idle to avoid blocking critical
+             resources on older browsers without IntersectionObserver. */
+          if (window.requestIdleCallback) {
+            requestIdleCallback(() => thumbImgs.forEach(img => { if (img.dataset && img.dataset.src) img.src = img.dataset.src; }));
+          } else {
+            setTimeout(() => thumbImgs.forEach(img => { if (img.dataset && img.dataset.src) img.src = img.dataset.src; }), 1000);
+          }
+        }
+      } catch (err) {
+        console.warn('[product-page] thumb lazy-loader failed:', err && err.message ? err.message : err);
+      }
     }
 
     const modal = document.getElementById('pdZoomModal');

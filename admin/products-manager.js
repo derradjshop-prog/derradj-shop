@@ -29,6 +29,7 @@
   let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' | 'pending' */
   let PROD_SEARCH_QUERY = '';
   let DRAG_SRC_ID = null;
+  let BOOK_SORT_MODE = 'manual';
 
   /* إلكتروني = كل ما ليس كتاباً */
   function isElec(p) { return p.category !== 'books'; }
@@ -523,6 +524,15 @@
       .pm-mcard-reorder button:disabled { opacity:.4; cursor:default; }
       .pm-mcard-reorder button:active:not(:disabled) { background:#eef2ff; }
     }
+
+    .pm-book-sort-row {
+      display:none; align-items:center; justify-content:space-between; gap:12px;
+      background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;
+      padding:12px 14px; margin-bottom:14px; flex-wrap:wrap;
+    }
+    .pm-book-sort-title { font-size:13px; font-weight:900; color:#1e293b; }
+    .pm-book-sort-active { color:#1d4ed8; }
+    .pm-book-sort-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
     `;
     document.head.appendChild(s);
   }
@@ -558,6 +568,18 @@
           <button class="prod-sf-btn active" data-pfilter="all">🗂 الكل <span class="prod-sf-badge" id="psb-all">—</span></button>
           <button class="prod-sf-btn" data-pfilter="books">📚 الكتب <span class="prod-sf-badge" id="psb-books">—</span><span class="prod-sf-pending" id="psb-books-pending" style="display:none;"></span></button>
           <button class="prod-sf-btn" data-pfilter="electronics">💻 إلكترونيات <span class="prod-sf-badge" id="psb-electronics">—</span></button>
+        </div>
+        <div class="pm-book-sort-row" id="pmBookSortRow">
+          <div>
+            <div class="pm-book-sort-title">Book Sorting: <span class="pm-book-sort-active" id="pmBookSortLabel">Manual Order</span></div>
+          </div>
+          <div class="pm-book-sort-actions">
+            <button type="button" class="pm-toggle" id="pmBookSortToggle"
+                    role="switch" aria-checked="false" title="Switch book sorting mode">
+              <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
+              <span class="pm-toggle-label" id="pmBookSortToggleLabel">Manual Order</span>
+            </button>
+          </div>
         </div>
         <div class="controls-bar">
           <input type="text" class="search-input" id="prodSearchInput" placeholder="🔍 بحث في المنتجات بالاسم أو التصنيف...">
@@ -824,6 +846,7 @@
 
     /* Show book-specific fields (author/translator/year) only for category=books */
     document.getElementById('pmCat')?.addEventListener('change', toggleBookFields);
+    document.getElementById('pmBookSortToggle')?.addEventListener('click', toggleBookSortMode);
 
     /* Main image area click */
     document.getElementById('pmMainBox')?.addEventListener('click', e => {
@@ -937,6 +960,7 @@
       PROD_FILTER = btn.dataset.pfilter || 'all';
       document.querySelectorAll('.prod-sf-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
+      updateBookSortUi();
       renderTable();
     });
 
@@ -1155,6 +1179,77 @@
         document.querySelectorAll('.prod-sf-btn').forEach(b => b.classList.remove('active'));
         document.querySelector('.prod-sf-btn[data-pfilter="all"]')?.classList.add('active');
       }
+    }
+    updateBookSortUi();
+  }
+
+  function normalizeBookSortMode(mode) {
+    return mode === 'best_selling' ? 'best_selling' : 'manual';
+  }
+
+  function bookSortModeLabel(mode) {
+    return normalizeBookSortMode(mode) === 'best_selling' ? 'Best-Selling' : 'Manual Order';
+  }
+
+  function applyBookSortUi() {
+    const isBest = BOOK_SORT_MODE === 'best_selling';
+    const toggle = document.getElementById('pmBookSortToggle');
+    const label = document.getElementById('pmBookSortLabel');
+    const toggleLabel = document.getElementById('pmBookSortToggleLabel');
+    if (toggle) {
+      toggle.classList.toggle('is-on', isBest);
+      toggle.setAttribute('aria-checked', String(isBest));
+    }
+    if (label) label.textContent = bookSortModeLabel(BOOK_SORT_MODE);
+    if (toggleLabel) toggleLabel.textContent = bookSortModeLabel(BOOK_SORT_MODE);
+  }
+
+  function updateBookSortUi() {
+    const row = document.getElementById('pmBookSortRow');
+    if (row) row.style.display = PROD_FILTER === 'books' ? 'flex' : 'none';
+    applyBookSortUi();
+  }
+
+  async function loadBookSortMode() {
+    try {
+      const { data, error } = await sb
+        .from('site_settings')
+        .select('value')
+        .eq('key', 'book_sort_mode')
+        .maybeSingle();
+      if (error) throw error;
+      BOOK_SORT_MODE = normalizeBookSortMode(data?.value?.mode);
+    } catch (err) {
+      console.warn('[PM] book_sort_mode setting unavailable; using manual order:', err.message || err);
+      BOOK_SORT_MODE = 'manual';
+    }
+    applyBookSortUi();
+  }
+
+  async function toggleBookSortMode() {
+    const next = BOOK_SORT_MODE === 'best_selling' ? 'manual' : 'best_selling';
+    const previous = BOOK_SORT_MODE;
+    BOOK_SORT_MODE = next;
+    applyBookSortUi();
+
+    const btn = document.getElementById('pmBookSortToggle');
+    if (btn) btn.disabled = true;
+    try {
+      const { error } = await sb
+        .from('site_settings')
+        .upsert({
+          key: 'book_sort_mode',
+          value: { mode: next },
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'key' });
+      if (error) throw error;
+      showToast('Book Sorting: ' + bookSortModeLabel(next));
+    } catch (err) {
+      BOOK_SORT_MODE = previous;
+      applyBookSortUi();
+      showToast('Failed to save book sorting mode: ' + (err.message || ''), 'error');
+    } finally {
+      if (btn) btn.disabled = false;
     }
   }
 
@@ -1862,6 +1957,7 @@
     injectStyles();
     injectHTML();
     bindEvents();
+    loadBookSortMode();
     /* Load on first render if products tab is visible */
     if (document.getElementById('tab-products')?.classList.contains('active')) {
       loadProducts();

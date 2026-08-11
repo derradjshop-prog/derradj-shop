@@ -9,6 +9,7 @@
 
   const SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
+  const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
 
   /* ── Shared products cache (also used by search, cart) ── */
   window.SUPABASE_PRODUCTS = window.SUPABASE_PRODUCTS || [];
@@ -143,8 +144,66 @@
   }
 
   /* ── Fetch products from Supabase REST API ── */
+  function normalizeBookSortMode(mode) {
+    return mode === 'best_selling' ? 'best_selling' : 'manual';
+  }
+
+  async function fetchBookSortMode() {
+    try {
+      const url = SB_URL + '/rest/v1/site_settings?select=value&key=eq.book_sort_mode&limit=1';
+      const res = await fetch(url, { headers: HEADERS });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      return normalizeBookSortMode(rows?.[0]?.value?.mode);
+    } catch (err) {
+      console.warn('[products-loader] book_sort_mode unavailable; using manual order:', err.message || err);
+      return 'manual';
+    }
+  }
+
+  async function fetchBookSales() {
+    try {
+      const url = SB_URL + '/rest/v1/book_sales_summary?select=product_name,sold';
+      const res = await fetch(url, { headers: HEADERS });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      const sales = new Map();
+      (rows || []).forEach(row => {
+        sales.set(String(row.product_name || '').trim(), Number(row.sold) || 0);
+      });
+      return sales;
+    } catch (err) {
+      console.warn('[products-loader] book sales unavailable; using zero sales:', err.message || err);
+      return new Map();
+    }
+  }
+
+  function manualOrderValue(p) {
+    return p.display_order ?? Number.MAX_SAFE_INTEGER;
+  }
+
+  function sortProductsForBookMode(products, mode, sales) {
+    if (mode !== 'best_selling') return products;
+    const sortedBooks = products
+      .filter(p => p.category === 'books')
+      .sort((a, b) => {
+        const as = sales.get(String(arName(a) || '').trim()) || 0;
+        const bs = sales.get(String(arName(b) || '').trim()) || 0;
+        if (as !== bs) return bs - as;
+
+        const ao = manualOrderValue(a);
+        const bo = manualOrderValue(b);
+        if (ao !== bo) return ao - bo;
+        return 0;
+      });
+    let bookIndex = 0;
+    return products.map(p => {
+      if (p.category !== 'books') return p;
+      return sortedBooks[bookIndex++] || p;
+    });
+  }
+
   async function fetchProducts() {
-    const HEADERS = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY };
     const SELECT  = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active,display_order';
     const BASE    = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true`;
 
@@ -260,8 +319,11 @@
   /* ── Main loader ── */
   async function load() {
     try {
-      const products = await fetchProducts();
+      let products = await fetchProducts();
       if (!Array.isArray(products) || !products.length) return;
+      const bookSortMode = await fetchBookSortMode();
+      const bookSales = bookSortMode === 'best_selling' ? await fetchBookSales() : new Map();
+      products = sortProductsForBookMode(products, bookSortMode, bookSales);
 
       window.SUPABASE_PRODUCTS = products;
 
