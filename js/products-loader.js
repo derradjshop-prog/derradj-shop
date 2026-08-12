@@ -82,6 +82,12 @@
     if (!img) return '/Logo.jpg';
     if (p.category === 'books' && !/^https?:\/\//.test(img)) {
       img = '/books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    } else if (p.category !== 'books') {
+      const sub = String(p.subcategory || 'other');
+      const slug = p.slug || String(p.catalog_id || p.id || '');
+      function filenameFromUrl(u) { try { return String(u || '').split('/').filter(Boolean).pop() || 'main.webp'; } catch { return 'main.webp'; } }
+      const mainFilename = (p.main_image && filenameFromUrl(p.main_image)) || 'main.webp';
+      img = `/Electronique/${encodeURIComponent(sub)}/${encodeURIComponent(slug)}/${encodeURIComponent(mainFilename)}`;
     }
     return img;
   }

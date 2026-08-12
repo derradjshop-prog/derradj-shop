@@ -145,6 +145,24 @@ function probeLocalBookImageDims(slug) {
   return null;
 }
 
+/* ── Local electronics image dims (repo files) ── */
+function probeLocalElectronicsImageDims(subcategory, slug, filename) {
+  const folder = path.join(ROOT, 'Electronique', subcategory || 'other', slug || '');
+  const tryFiles = [];
+  if (filename) tryFiles.push(path.join(folder, filename));
+  tryFiles.push(path.join(folder, 'main.webp'));
+  tryFiles.push(path.join(folder, 'main.png'));
+  tryFiles.push(path.join(folder, 'main.jpg'));
+  for (const file of tryFiles) {
+    if (!fs.existsSync(file)) continue;
+    try {
+      const dims = getImageSize(fs.readFileSync(file));
+      if (dims) return dims;
+    } catch (_) { continue; }
+  }
+  return null;
+}
+
 /* ── HTML page shell (absolute paths — safe at any folder depth) ── */
 function renderPage(view, dims) {
   const m = view.meta;
@@ -468,13 +486,24 @@ function buildSitemap(products, books) {
   /* Electronics products — from Supabase */
   products.forEach(p => {
     if (!p.slug) return;
-    urls.push({
-      loc: `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`,
-      lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : today,
-      freq: 'weekly',
-      pri: '0.8',
-      image: p.main_image || null,
-    });
+    try {
+      const view = ProductTemplate.buildProductView(p);
+      urls.push({
+        loc: `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`,
+        lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : today,
+        freq: 'weekly',
+        pri: '0.8',
+        image: view.meta && view.meta.ogImage ? view.meta.ogImage : null,
+      });
+    } catch (err) {
+      urls.push({
+        loc: `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`,
+        lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : today,
+        freq: 'weekly',
+        pri: '0.8',
+        image: p.main_image || null,
+      });
+    }
   });
 
   const urlBlock = u => `  <url>
@@ -512,7 +541,21 @@ async function main() {
       continue;
     }
     const view = ProductTemplate.buildProductView(p);
-    const dims = await probeImageDims(view.mainImage, cache);
+    let dims = null;
+    try {
+      if (view.mainImage && !/^https?:\/\//.test(view.mainImage) && view.mainImage.startsWith('/')) {
+        /* local repo path like /Electronique/{sub}/{slug}/filename */
+        const parts = view.mainImage.split('/').filter(Boolean);
+        const sub = parts[1] || 'other';
+        const slug = parts[2] || p.slug || '';
+        const filename = parts.slice(3).join('/') || '';
+        dims = probeLocalElectronicsImageDims(sub, slug, filename);
+      } else {
+        dims = await probeImageDims(view.mainImage, cache);
+      }
+    } catch (err) {
+      dims = null;
+    }
     const html = renderPage(view, dims);
 
     const dir = path.join(PRODUCT_DIR, p.slug);

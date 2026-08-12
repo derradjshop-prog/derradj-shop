@@ -300,6 +300,12 @@
         let imgSrc = p.main_image || '/Logo.jpg';
         if (isBook && imgSrc && !/^https?:\/\//.test(imgSrc)) {
           imgSrc = '/books/' + imgSrc.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+        } else if (!isBook) {
+          const sub = String(p.subcategory || 'other');
+          const slug = p.slug || String(p.catalog_id || p.id || '');
+          function filenameFromUrl(u) { try { return String(u || '').split('/').filter(Boolean).pop() || 'main.webp'; } catch { return 'main.webp'; } }
+          const mainFilename = (p.main_image && filenameFromUrl(p.main_image)) || 'main.webp';
+          imgSrc = `/Electronique/${encodeURIComponent(sub)}/${encodeURIComponent(slug)}/${encodeURIComponent(mainFilename)}`;
         }
         const fmt = n => Number(n).toLocaleString('en-US');
 
