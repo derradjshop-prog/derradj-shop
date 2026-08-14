@@ -22,10 +22,11 @@
      so it optimistically prefers the webp sibling and relies on the
      existing onerror fallback if it doesn't exist. ── */
   function mapToBookShape(p) {
-    let image = p.main_image || null;
-    if (image && !/^https?:\/\//.test(image)) {
-      image = location.origin + '/books/' + image.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-    }
+    /* Always serve the deterministic local cover — never Supabase
+       Storage, which is uncached and was the dominant egress source. */
+    const image = p.slug
+      ? location.origin + '/books/' + encodeURIComponent(p.slug) + '/main.webp'
+      : (p.main_image || null);
     return {
       id: p.catalog_id,
       title: p.product_name,
@@ -85,7 +86,12 @@
 
     try {
       const field = !presetSlug && params.get('id') && !params.get('slug') ? 'id' : 'slug';
-      const apiUrl = `${SB_URL}/rest/v1/admin_products_catalog?${field}=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=*&limit=1`;
+      /* Explicit column list — this fetch fires on every single visit to
+         every product/book page (the static HTML is already pre-rendered;
+         this is just a live refresh), so select(*) here meant re-pulling
+         every text/gallery column on every pageview site-wide. */
+      const SELECT = 'id,catalog_id,product_name,product_name_ar,category,subcategory,price,old_price,stock_status,main_image,short_description,full_description,seo_title,seo_description,keywords,gallery_images,brand,slug,author,translator,year,updated_at';
+      const apiUrl = `${SB_URL}/rest/v1/admin_products_catalog?${field}=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=${SELECT}&limit=1`;
 
       const res = await fetch(apiUrl, {
         headers: { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY },
@@ -258,16 +264,38 @@
     });
   }
 
+  /* products-loader.js fetches (and caches) the same active-product list
+     this widget needs, in parallel with this page's own load. Waiting
+     briefly for it — instead of racing window.SUPABASE_PRODUCTS and
+     firing a fresh 50-row fetch whenever we lose the race — avoids a
+     duplicate Supabase read on a meaningful fraction of page loads. */
+  function getCatalogProducts(timeoutMs) {
+    return new Promise(resolve => {
+      if (window.SUPABASE_PRODUCTS && window.SUPABASE_PRODUCTS.length > 0) {
+        resolve(window.SUPABASE_PRODUCTS.slice());
+        return;
+      }
+      let done = false;
+      const finish = products => {
+        if (done) return;
+        done = true;
+        document.removeEventListener('derradj:catalog-loaded', onLoaded);
+        resolve(products);
+      };
+      const onLoaded = e => finish((e.detail && e.detail.products) || window.SUPABASE_PRODUCTS || []);
+      document.addEventListener('derradj:catalog-loaded', onLoaded);
+      setTimeout(() => finish(window.SUPABASE_PRODUCTS && window.SUPABASE_PRODUCTS.length > 0 ? window.SUPABASE_PRODUCTS : null), timeoutMs);
+    });
+  }
+
   async function loadRelatedProducts(currentSlug, currentCatalogId) {
     const container = document.getElementById('relatedProducts');
     if (!container) return;
 
     try {
-      let products = [];
+      let products = await getCatalogProducts(2500);
 
-      if (window.SUPABASE_PRODUCTS && window.SUPABASE_PRODUCTS.length > 0) {
-        products = window.SUPABASE_PRODUCTS.slice();
-      } else {
+      if (!products) {
         const HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
         const SELECT = 'id,catalog_id,product_name,product_name_ar,category,price,old_price,stock_status,main_image,slug';
         const BASE = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true&limit=50`;
@@ -277,6 +305,8 @@
         }
         if (!res.ok) return;
         products = await res.json();
+      } else {
+        products = products.slice();
       }
 
       products = products.filter(p =>
@@ -298,9 +328,9 @@
         const url = `${isBook ? '/books/' : '/product/'}${encodeURIComponent(p.slug)}/`;
         const isAvail = p.stock_status !== 'out_of_stock';
         let imgSrc = p.main_image || '/Logo.jpg';
-        if (isBook && imgSrc && !/^https?:\/\//.test(imgSrc)) {
-          imgSrc = '/books/' + imgSrc.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-        } else if (!isBook) {
+        if (isBook) {
+          imgSrc = p.slug ? `/books/${encodeURIComponent(p.slug)}/main.webp` : imgSrc;
+        } else {
           const sub = String(p.subcategory || 'other');
           const slug = p.slug || String(p.catalog_id || p.id || '');
           function filenameFromUrl(u) { try { return String(u || '').split('/').filter(Boolean).pop() || 'main.webp'; } catch { return 'main.webp'; } }

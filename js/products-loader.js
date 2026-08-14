@@ -74,21 +74,24 @@
     return html;
   }
 
-  /* ── Resolve an image src for either category — electronics store
-     full Supabase Storage URLs already; legacy books store a path
-     relative to /books/ and prefer the webp sibling. ── */
+  /* ── Resolve an image src for either category. Both categories are
+     always served from the repo (never from Supabase Storage, which
+     is uncached and was the dominant source of egress) — electronics
+     images live at a deterministic /Electronique/ path, book covers
+     are always converted to /books/{slug}/main.webp regardless of
+     whatever URL happens to be stored in main_image. ── */
   function resolveImage(p) {
+    if (p.category === 'books') {
+      const slug = p.slug || '';
+      return slug ? `/books/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
+    }
     let img = p.main_image || '';
     if (!img) return '/Logo.jpg';
-    if (p.category === 'books' && !/^https?:\/\//.test(img)) {
-      img = '/books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-    } else if (p.category !== 'books') {
-      const sub = String(p.subcategory || 'other');
-      const slug = p.slug || String(p.catalog_id || p.id || '');
-      function filenameFromUrl(u) { try { return String(u || '').split('/').filter(Boolean).pop() || 'main.webp'; } catch { return 'main.webp'; } }
-      const mainFilename = (p.main_image && filenameFromUrl(p.main_image)) || 'main.webp';
-      img = `/Electronique/${encodeURIComponent(sub)}/${encodeURIComponent(slug)}/${encodeURIComponent(mainFilename)}`;
-    }
+    const sub = String(p.subcategory || 'other');
+    const slug = p.slug || String(p.catalog_id || p.id || '');
+    function filenameFromUrl(u) { try { return String(u || '').split('/').filter(Boolean).pop() || 'main.webp'; } catch { return 'main.webp'; } }
+    const mainFilename = (p.main_image && filenameFromUrl(p.main_image)) || 'main.webp';
+    img = `/Electronique/${encodeURIComponent(sub)}/${encodeURIComponent(slug)}/${encodeURIComponent(mainFilename)}`;
     return img;
   }
 
@@ -322,14 +325,38 @@
     });
   }
 
+  /* ── Short-lived sessionStorage cache — this loader runs on every
+     single page (home, every product/book page, category pages), and
+     without it a visitor browsing a few pages re-downloads the whole
+     active catalog from Supabase on every navigation. A few minutes
+     of staleness is an acceptable trade for cutting that egress. ── */
+  const CATALOG_CACHE_KEY = 'derradj_catalog_v1';
+  const CATALOG_CACHE_TTL = 3 * 60 * 1000;
+  function cacheGet(key, ttlMs) {
+    try {
+      const raw = sessionStorage.getItem(key);
+      if (!raw) return null;
+      const { t, d } = JSON.parse(raw);
+      if (!t || Date.now() - t > ttlMs) return null;
+      return d;
+    } catch (_) { return null; }
+  }
+  function cacheSet(key, data) {
+    try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch (_) {}
+  }
+
   /* ── Main loader ── */
   async function load() {
     try {
-      let products = await fetchProducts();
-      if (!Array.isArray(products) || !products.length) return;
-      const bookSortMode = await fetchBookSortMode();
-      const bookSales = bookSortMode === 'best_selling' ? await fetchBookSales() : new Map();
-      products = sortProductsForBookMode(products, bookSortMode, bookSales);
+      let products = cacheGet(CATALOG_CACHE_KEY, CATALOG_CACHE_TTL);
+      if (!Array.isArray(products) || !products.length) {
+        products = await fetchProducts();
+        if (!Array.isArray(products) || !products.length) return;
+        const bookSortMode = await fetchBookSortMode();
+        const bookSales = bookSortMode === 'best_selling' ? await fetchBookSales() : new Map();
+        products = sortProductsForBookMode(products, bookSortMode, bookSales);
+        cacheSet(CATALOG_CACHE_KEY, products);
+      }
 
       window.SUPABASE_PRODUCTS = products;
 

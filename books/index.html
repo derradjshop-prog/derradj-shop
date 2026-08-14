@@ -652,7 +652,9 @@ document.addEventListener('derradj:catalog-loaded', function (e) {
       author: p.author || '',
       category: p.subcategory || 'كتب',
       price: p.price,
-      image: p.main_image || '',
+      /* Always the deterministic local cover — never Supabase Storage
+         (uncached, was the dominant source of egress). */
+      image: p.slug ? `/books/${encodeURIComponent(p.slug)}/main.webp` : (p.main_image || ''),
       url: (p.slug || '') + '/',
       available: p.stock_status !== 'out_of_stock',
       description: p.short_description || '',

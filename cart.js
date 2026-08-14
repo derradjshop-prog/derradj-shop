@@ -105,20 +105,42 @@
        الافتراضية (available: true) وتُفعَّل الأزرار — أفضل من
        إبقائها معطلة إلى الأبد
   ══════════════════════════════════════════════════════════ */
+  /* ── Short-lived cache: this fetch fires on every single page load
+     site-wide. A 60s cache still catches stock changes quickly while
+     cutting the repeated full-table read on fast navigation/refreshes. ── */
+  const AVAIL_CACHE_KEY = 'derradj_availability_v1';
+  const AVAIL_CACHE_TTL = 60 * 1000;
+  function availCacheGet() {
+    try {
+      const raw = sessionStorage.getItem(AVAIL_CACHE_KEY);
+      if (!raw) return null;
+      const { t, d } = JSON.parse(raw);
+      if (!t || Date.now() - t > AVAIL_CACHE_TTL) return null;
+      return d;
+    } catch (_) { return null; }
+  }
+  function availCacheSet(rows) {
+    try { sessionStorage.setItem(AVAIL_CACHE_KEY, JSON.stringify({ t: Date.now(), d: rows })); } catch (_) {}
+  }
+
   async function fetchAndApplyAvailability () {
     try {
-      const res = await fetch(
-        SB_URL + '/rest/v1/product_availability?select=catalog_id,available',
-        {
-          headers: {
-            'apikey':        SB_KEY,
-            'Authorization': 'Bearer ' + SB_KEY,
-          },
-        }
-      );
-      if (!res.ok) return;
-      const rows = await res.json();
-      if (!Array.isArray(rows)) return;
+      let rows = availCacheGet();
+      if (!rows) {
+        const res = await fetch(
+          SB_URL + '/rest/v1/product_availability?select=catalog_id,available',
+          {
+            headers: {
+              'apikey':        SB_KEY,
+              'Authorization': 'Bearer ' + SB_KEY,
+            },
+          }
+        );
+        if (!res.ok) return;
+        rows = await res.json();
+        if (!Array.isArray(rows)) return;
+        availCacheSet(rows);
+      }
 
       /* تطبيق حالة التوفر على SHOP_CATALOG */
       rows.forEach(row => {

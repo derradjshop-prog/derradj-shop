@@ -48,13 +48,14 @@ async function fetchActiveProducts() {
    same table now — this is the only place the two schemas meet. ── */
 function toBookRow(p) {
   const dir = path.join(BOOKS_DIR, p.slug || '');
+  /* Always point at the deterministic local cover — never Supabase
+     Storage (uncached, was the dominant source of egress). Falls back
+     to whatever is in main_image only if the local file truly isn't
+     there yet, so a freshly-added book doesn't silently 404. */
   let image = p.main_image || null;
-  if (image && !/^https?:\/\//.test(image)) {
-    /* Legacy local file ('7-habits/main.png') — resolve to a full
-       absolute URL (required for OG/Twitter image tags to work in
-       link previews), preferring the webp sibling if present. */
-    const webp = image.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-    image = `${SITE_URL}/books/` + (fs.existsSync(path.join(ROOT, 'books', webp)) ? webp : image);
+  if (p.slug) {
+    const localWebp = path.join(BOOKS_DIR, p.slug, 'main.webp');
+    image = fs.existsSync(localWebp) ? `${SITE_URL}/books/${p.slug}/main.webp` : image;
   }
   return {
     id: p.catalog_id,
@@ -143,6 +144,39 @@ function probeLocalBookImageDims(slug) {
     } catch (_) { /* try next extension */ }
   }
   return null;
+}
+
+/* ── Auto-localize a book cover the first time it's seen ──
+   Admin/seller uploads always land in Supabase Storage (main_image
+   becomes an absolute URL) — without this, every future book added
+   through the admin panel would silently keep serving its cover
+   straight from Supabase Storage (uncached, ~1-2MB per file) to every
+   visitor forever, exactly like the 27 books this script's prior
+   version missed. Runs once per book, here at build time — not on
+   every pageview — so the one-off Storage read cost is negligible. */
+function downloadToFile(url) {
+  return new Promise((resolve, reject) => {
+    require('https').get(url, res => {
+      if (res.statusCode !== 200) { reject(new Error('HTTP ' + res.statusCode)); return; }
+      const chunks = [];
+      res.on('data', c => chunks.push(c));
+      res.on('end', () => resolve(Buffer.concat(chunks)));
+      res.on('error', reject);
+    }).on('error', reject);
+  });
+}
+async function localizeBookCoverIfMissing(p) {
+  if (!p.slug || !p.main_image || !/^https?:\/\//.test(p.main_image)) return;
+  const dest = path.join(BOOKS_DIR, p.slug, 'main.webp');
+  if (fs.existsSync(dest)) return;
+  try {
+    const buf = await downloadToFile(p.main_image);
+    fs.mkdirSync(path.join(BOOKS_DIR, p.slug), { recursive: true });
+    fs.writeFileSync(dest, buf);
+    console.log(`[generate-product-pages] localized cover for books/${p.slug}/ (${(buf.length / 1024).toFixed(0)}KB from Supabase Storage, one-time)`);
+  } catch (err) {
+    console.warn(`[generate-product-pages] could not localize cover for books/${p.slug}/: ${err.message} — will keep serving it from Supabase Storage until this succeeds.`);
+  }
 }
 
 /* ── Local electronics image dims (repo files) ── */
@@ -584,10 +618,15 @@ async function main() {
       console.warn(`[generate-product-pages] skipping book without slug: catalog_id=${p.catalog_id}`);
       continue;
     }
+    await localizeBookCoverIfMissing(p);
     const b = toBookRow(p);
     const slug = p.slug;
     const view = BookTemplate.buildBookView(b);
-    const dims = /^https?:\/\//.test(b.image || '') ? await probeImageDims(b.image, cache) : probeLocalBookImageDims(slug);
+    /* Prefer the local file (now the deterministic path for all books) — only
+       fall back to a network probe for an actual remote (Supabase) URL when
+       no local cover exists yet, e.g. a brand new book pending its cover. */
+    const dims = probeLocalBookImageDims(slug)
+      || (/^https?:\/\//.test(b.image || '') ? await probeImageDims(b.image, cache) : null);
     const html = renderBookPage(view, dims);
 
     const dir = path.join(BOOKS_DIR, slug);

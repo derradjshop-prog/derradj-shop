@@ -1909,11 +1909,26 @@ window.PRODUCTS_CATALOG = [
   var SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
 
-  fetch(SB_URL + '/rest/v1/product_availability?select=catalog_id,available', {
-    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-  })
-  .then(function (r) { return r.ok ? r.json() : []; })
-  .then(function (rows) {
+  /* Shares its sessionStorage cache key with cart.js's availability fetch
+     (same table/columns) — a visitor who viewed a product page just
+     before checking out reuses that read instead of firing a fresh one,
+     and either way this cuts the full-table read on every page refresh. */
+  var AVAIL_CACHE_KEY = 'derradj_availability_v1';
+  var AVAIL_CACHE_TTL = 60 * 1000;
+  function availCacheGet() {
+    try {
+      var raw = sessionStorage.getItem(AVAIL_CACHE_KEY);
+      if (!raw) return null;
+      var parsed = JSON.parse(raw);
+      if (!parsed.t || Date.now() - parsed.t > AVAIL_CACHE_TTL) return null;
+      return parsed.d;
+    } catch (_) { return null; }
+  }
+  function availCacheSet(rows) {
+    try { sessionStorage.setItem(AVAIL_CACHE_KEY, JSON.stringify({ t: Date.now(), d: rows })); } catch (_) {}
+  }
+
+  function applyAvailabilityRows(rows) {
     if (!Array.isArray(rows)) return;
     rows.forEach(function (row) {
       var entry = (window.PRODUCTS_CATALOG || [])[row.catalog_id];
@@ -1923,8 +1938,22 @@ window.PRODUCTS_CATALOG = [
     if (typeof window._refreshProductRowsAvailability === 'function') {
       window._refreshProductRowsAvailability();
     }
-  })
-  .catch(function () { /* نتجاهل الأخطاء — نكمل بالقيم الافتراضية */ });
+  }
+
+  var cachedAvail = availCacheGet();
+  if (cachedAvail) {
+    applyAvailabilityRows(cachedAvail);
+  } else {
+    fetch(SB_URL + '/rest/v1/product_availability?select=catalog_id,available', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    })
+    .then(function (r) { return r.ok ? r.json() : []; })
+    .then(function (rows) {
+      if (Array.isArray(rows)) availCacheSet(rows);
+      applyAvailabilityRows(rows);
+    })
+    .catch(function () { /* نتجاهل الأخطاء — نكمل بالقيم الافتراضية */ });
+  }
 }());
 /* ── Sticky header ──────────────────────────────────────────── */
 window.addEventListener('scroll', () => {
@@ -2453,26 +2482,51 @@ function initProductRows() {
   var SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
   var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
 
-  fetch(SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,product_name,price,stock_status,display_order&is_active=eq.true&order=display_order.asc.nullslast,created_at.desc', {
-    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-  })
-  .then(function(r) { return r.ok ? r.json() : []; })
-  .then(function(products) {
-    if (Array.isArray(products)) {
-      products.forEach(function(p) {
-        if (!p.catalog_id) return;
-        /* admin_products_catalog is authoritative — always override */
-        window.PRODUCTS_CATALOG[p.catalog_id] = {
-          name:      p.product_name,
-          shortName: p.product_name,
-          price:     Number(p.price) || 0,
-          available: p.stock_status !== 'out_of_stock',
-        };
-      });
+  /* Short cache (order totals depend on this, so kept tight at 60s) —
+     avoids re-pulling the full active catalog on every load/refresh of
+     the order page, which sees far more views than completed orders. */
+  var CATALOG_CACHE_KEY = 'derradj_ordre_catalog_v1';
+  var CATALOG_CACHE_TTL = 60 * 1000;
+  function applyCatalogRows(products) {
+    if (!Array.isArray(products)) return;
+    products.forEach(function(p) {
+      if (!p.catalog_id) return;
+      /* admin_products_catalog is authoritative — always override */
+      window.PRODUCTS_CATALOG[p.catalog_id] = {
+        name:      p.product_name,
+        shortName: p.product_name,
+        price:     Number(p.price) || 0,
+        available: p.stock_status !== 'out_of_stock',
+      };
+    });
+  }
+
+  var cachedCatalog = null;
+  try {
+    var rawCatalog = sessionStorage.getItem(CATALOG_CACHE_KEY);
+    if (rawCatalog) {
+      var parsedCatalog = JSON.parse(rawCatalog);
+      if (parsedCatalog.t && Date.now() - parsedCatalog.t <= CATALOG_CACHE_TTL) cachedCatalog = parsedCatalog.d;
     }
-  })
-  .catch(function() { /* إذا فشل الاتصال نكمل بالكتالوج الأصلي فقط */ })
-  .finally(function() { initProductRows(); });
+  } catch (_) {}
+
+  if (cachedCatalog) {
+    applyCatalogRows(cachedCatalog);
+    initProductRows();
+  } else {
+    fetch(SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,product_name,price,stock_status,display_order&is_active=eq.true&order=display_order.asc.nullslast,created_at.desc', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    })
+    .then(function(r) { return r.ok ? r.json() : []; })
+    .then(function(products) {
+      if (Array.isArray(products)) {
+        try { sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ t: Date.now(), d: products })); } catch (_) {}
+        applyCatalogRows(products);
+      }
+    })
+    .catch(function() { /* إذا فشل الاتصال نكمل بالكتالوج الأصلي فقط */ })
+    .finally(function() { initProductRows(); });
+  }
 }());
 
 function getProductsTotal() {

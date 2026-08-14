@@ -23,6 +23,19 @@
 
   /* ── State ── */
   let ALL_PM_PRODUCTS = [];
+  let PM_LAST_LOADED = 0;
+  const PM_CACHE_TTL = 60 * 1000;
+  /* Passive triggers (tab click, boot retry) should reuse an already-fresh
+     catalog instead of re-pulling every column (incl. descriptions/gallery
+     arrays) for the whole table again — loadProducts() itself stays a hard
+     refresh for the manual button and for post-save/delete/reorder calls. */
+  function loadProductsIfStale() {
+    if (ALL_PM_PRODUCTS.length && Date.now() - PM_LAST_LOADED < PM_CACHE_TTL) {
+      renderTable();
+      return;
+    }
+    loadProducts();
+  }
   let EDIT_PRODUCT_ID = null;
   /* null = unknown yet, true = column exists in DB, false = column missing */
   let DISPLAY_ORDER_SUPPORTED = null;
@@ -977,9 +990,9 @@
       this.disabled = false; this.textContent = '↻ تحديث';
     });
 
-    /* Reload when tab is clicked */
+    /* Reload when tab is clicked — reuses the cache if still fresh */
     document.querySelectorAll('.tab-btn[data-tab="products"]').forEach(b => {
-      b.addEventListener('click', () => setTimeout(loadProducts, 200));
+      b.addEventListener('click', () => setTimeout(loadProductsIfStale, 200));
     });
 
     /* Sitemap modal open/close */
@@ -1079,6 +1092,7 @@
       }
 
       ALL_PM_PRODUCTS = data || [];
+      PM_LAST_LOADED = Date.now();
 
       /* Show/hide the "column missing" warning banner */
       const warning = document.getElementById('pmOrderWarning');
@@ -1958,12 +1972,16 @@
     injectHTML();
     bindEvents();
     loadBookSortMode();
-    /* Load on first render if products tab is visible */
+    /* Only load the full catalog (select *, incl. descriptions/gallery
+       arrays for every row) when the Products tab is actually visible —
+       it isn't the default tab, so most admin sessions never need this. */
     if (document.getElementById('tab-products')?.classList.contains('active')) {
       loadProducts();
+      /* Retry after a delay in case admin boot/auth wasn't ready yet. */
+      setTimeout(() => {
+        if (document.getElementById('tab-products')?.classList.contains('active')) loadProductsIfStale();
+      }, 600);
     }
-    /* Also load after a delay (admin boot might not be done yet) */
-    setTimeout(loadProducts, 600);
   }
 
   if (document.readyState === 'loading') {

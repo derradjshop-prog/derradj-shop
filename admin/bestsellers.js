@@ -129,7 +129,10 @@
     }
   }
 
+  let loadedOnce = false;
+
   async function load() {
+    loadedOnce = true;
     const btn = document.getElementById('bsRefreshBtn');
     if (btn) { btn.disabled = true; btn.textContent = '⏳ جاري التحديث...'; }
     try {
@@ -142,10 +145,16 @@
     if (btn) { btn.disabled = false; btn.textContent = '↻ تحديث'; }
   }
 
+  /* order_items grows with every order ever placed, and this reads the
+     WHOLE table (paginated) — only worth doing when the admin actually
+     opens this tab, not unconditionally on every admin.html load. */
   async function init() {
     injectStyles();
     injectHTML();
-    load();
+    document.querySelectorAll('.tab-btn[data-tab="bestsellers"]').forEach(b => {
+      b.addEventListener('click', () => { if (!loadedOnce) load(); });
+    });
+    if (document.getElementById('tab-bestsellers')?.classList.contains('active')) load();
   }
 
   if (document.readyState === 'loading') {
