@@ -3,61 +3,61 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://derradjshop.com/</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/books/</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/Electronique/</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/about</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/contact</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/faq</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/delivery</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/payment</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/return-policy</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://derradjshop.com/terms</loc>
-    <lastmod>2026-08-12</lastmod>
+    <lastmod>2026-08-14</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
@@ -67,7 +67,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783017665512-3z7wshn.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/know-yourself/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -85,7 +85,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783015501065-7m9v73o.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/surrounded-by-setbacks/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -94,8 +94,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/gallery/1783246984748-mak026d.webp
-</image:loc>
+      <image:loc>https://derradjshop.com/books/the-power-of-failure/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -131,7 +130,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783162784132-bnsisgg.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/sell-anything/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -140,7 +139,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783264328827-q0mv2b2.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-first-20-hours/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -149,7 +148,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783246791475-2wvx1so.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-law-of-success/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -158,7 +157,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783247178714-435m4of.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-industry-of-greats/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -167,7 +166,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1782681022772-lkrcony.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/surrounded-by-idiots/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -176,7 +175,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1782672976023-xkvdq9u.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-power-of-your-subconscious-mind/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -185,7 +184,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783017785251-l8rvqg1.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/think-and-act-like-a-cat/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -194,7 +193,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783017897026-w2vxb56.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/a-journey-into-the-customers-mind/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -203,7 +202,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783247359966-rn5ev3l.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/blink-the-power-of-thinking-without-thinking/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -212,7 +211,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783016590023-jp88sk3.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/your-mind-and-how-to-use-it/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -221,7 +220,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783016481105-3uexz1v.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/goodbye-to-shyness/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -230,7 +229,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783016118290-eygsje1.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/secrets-of-the-millionaire-mind/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -239,7 +238,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783015065719-55fsrg6.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/you-are-a-badass/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -257,7 +256,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783018101258-gws7bfu.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/comfort-zone/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -266,7 +265,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783018482867-oywne46.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-secret-of-success/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -275,7 +274,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783018295993-4fd9my9.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/moments-that-could-change-your-life/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -284,7 +283,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783015925125-n77cqp3.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/eat-that-frog/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -302,7 +301,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1782677602307-ga28u09.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-bomber-mafia/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -311,7 +310,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1782678454822-lm7q6z9.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/today-matters/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -320,7 +319,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1782680329708-ci8pwrp.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/unfuk-yourself/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -329,7 +328,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1782681536402-bn1n833.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-art-of-charisma/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -968,7 +967,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783247520973-1kmo7nh.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-tipping-point/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -977,7 +976,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783248044052-59r6sz7.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/how-to-win-friends-and-influence-people/main.webp</image:loc>
     </image:image>
   </url>
   <url>
@@ -986,7 +985,7 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1783262929139-xptfdar.webp</image:loc>
+      <image:loc>https://derradjshop.com/books/the-art-of-public-speaking/main.webp</image:loc>
     </image:image>
   </url>
   <url>
