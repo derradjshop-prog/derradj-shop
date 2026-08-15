@@ -97,68 +97,17 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     جلب حالة التوفر من Supabase وتطبيقها على SHOP_CATALOG
+     حالة التوفر تُقرأ حصراً من admin_products_catalog.stock_status
+     عبر products-loader.js (نفس المصدر المستخدم في لوحة الإدارة
+     وصفحة تفاصيل المنتج) — راجع updateAddToCartButtons() أدناه
+     التي تُستدعى عند اكتمال ذلك الكتالوج (derradj:catalog-loaded).
 
-     finally يضمن استدعاء updateAddToCartButtons دائماً:
-     - عند النجاح: تُطبَّق البيانات الحقيقية من Supabase
-     - عند الفشل (خطأ شبكة / Supabase متوقف): تبقى القيم
-       الافتراضية (available: true) وتُفعَّل الأزرار — أفضل من
-       إبقائها معطلة إلى الأبد
+     كان هنا سابقاً نظام قديم منفصل يقرأ من جدول product_availability
+     (لم يعد أي جزء من لوحة الإدارة يكتب إليه) ويُطبّق بياناته القديمة
+     فوق SHOP_CATALOG بشكل غير متزامن — ما يُنشئ سباقاً بين مصدرين
+     مختلفين لنفس البيانات ويُفسّر عدم تطابق حالة التوفر بين الصفحات.
+     أُزيل بالكامل بدل إبقائه كمصدر ثانٍ يمكن أن يفوز في السباق.
   ══════════════════════════════════════════════════════════ */
-  /* ── Short-lived cache: this fetch fires on every single page load
-     site-wide. A 60s cache still catches stock changes quickly while
-     cutting the repeated full-table read on fast navigation/refreshes. ── */
-  const AVAIL_CACHE_KEY = 'derradj_availability_v1';
-  const AVAIL_CACHE_TTL = 60 * 1000;
-  function availCacheGet() {
-    try {
-      const raw = sessionStorage.getItem(AVAIL_CACHE_KEY);
-      if (!raw) return null;
-      const { t, d } = JSON.parse(raw);
-      if (!t || Date.now() - t > AVAIL_CACHE_TTL) return null;
-      return d;
-    } catch (_) { return null; }
-  }
-  function availCacheSet(rows) {
-    try { sessionStorage.setItem(AVAIL_CACHE_KEY, JSON.stringify({ t: Date.now(), d: rows })); } catch (_) {}
-  }
-
-  async function fetchAndApplyAvailability () {
-    try {
-      let rows = availCacheGet();
-      if (!rows) {
-        const res = await fetch(
-          SB_URL + '/rest/v1/product_availability?select=catalog_id,available',
-          {
-            headers: {
-              'apikey':        SB_KEY,
-              'Authorization': 'Bearer ' + SB_KEY,
-            },
-          }
-        );
-        if (!res.ok) return;
-        rows = await res.json();
-        if (!Array.isArray(rows)) return;
-        availCacheSet(rows);
-      }
-
-      /* تطبيق حالة التوفر على SHOP_CATALOG */
-      rows.forEach(row => {
-        const entry = window.SHOP_CATALOG.find(c => c.catalogId === row.catalog_id);
-        if (entry) entry.available = row.available;
-      });
-
-      /* إطلاق حدث لإعلام الصفحات الأخرى (مثل books/index.html) */
-      document.dispatchEvent(new CustomEvent('derradj:availability-loaded', {
-        detail: { rows },
-      }));
-
-    } catch (_) { /* تجاهل الأخطاء — finally تُفعِّل الأزرار بالقيم الافتراضية */ }
-    finally {
-      /* يعمل دائماً — نجاح أو فشل — لا يبقى الزر معطلاً إلى الأبد */
-      updateAddToCartButtons();
-    }
-  }
 
   /* ══════════════════════════════════════════════════════════
      تحديث أزرار "أضف إلى السلة" وشارات التوفر بناءً على Supabase
@@ -541,6 +490,7 @@
   /* ══════════════════════════════════════════════════════════
      تهيئة الصفحة
   ══════════════════════════════════════════════════════════ */
+  let catalogLoaded = false;
   function init () {
     /* إنشاء Sidebar السلة */
     const sidebar = document.createElement('aside');
@@ -668,18 +618,42 @@
        الذي يُطلقه products-loader.js عند اكتمال الكتالوج الحقيقي،
        فلا تُحذف عناصر صحيحة بالخطأ بعد الآن.
     ══════════════════════════════════════════════════════════ */
-    document.addEventListener('derradj:catalog-loaded', function () {
+    function onCatalogLoaded () {
+      if (catalogLoaded) return;
+      catalogLoaded = true;
       Cart.sanitize();
       updateBadge();
       renderCart();
-    });
+      /* products-loader.js وضع الآن قيم available الحقيقية (من
+         stock_status) في SHOP_CATALOG — طبّقها على الأزرار والشارات */
+      updateAddToCartButtons();
+    }
+    document.addEventListener('derradj:catalog-loaded', onCatalogLoaded);
 
-    /* حالة تحميل آمنة: تعطيل الأزرار وإخفاء الشارات قبل استعلام Supabase
-       يمنع الـ flash الذي يُظهر المنتج "متوفر" قبل معرفة الحقيقة */
-    setAvailabilityLoadingState();
+    /* ── سباق تسجيل المستمع مقابل إطلاق الحدث ──
+       عندما تكون ذاكرة products-loader.js التخزينية دافئة (تصفح/تحديث
+       الصفحة خلال 3 دقائق)، يكتمل load() هناك بشكل متزامن بالكامل —
+       بما في ذلك إطلاق derradj:catalog-loaded — قبل أن يبدأ init()
+       هنا أصلاً (مستمعا الحدثين DOMContentLoaded يُنفَّذان بترتيب
+       التسجيل، فيسبقنا products-loader.js دائماً). في تلك الحالة يفوت
+       المستمع أعلاه الحدث تماماً، وتبقى الأزرار معطلة "..." حتى مهلة
+       الأمان أدناه — حتى لو كانت البيانات الصحيحة جاهزة فعلاً. تحقّق
+       هنا مباشرة: إن كان window.SUPABASE_PRODUCTS مملوءًا بالفعل، فقد
+       فات الحدث ويجب تطبيق الحالة الصحيحة فوراً بدل الانتظار. ── */
+    if (window.SUPABASE_PRODUCTS && window.SUPABASE_PRODUCTS.length > 0) {
+      onCatalogLoaded();
+    } else {
+      /* حالة تحميل آمنة: تعطيل الأزرار وإخفاء الشارات قبل اكتمال الكتالوج
+         يمنع الـ flash الذي يُظهر المنتج "متوفر" قبل معرفة الحقيقة */
+      setAvailabilityLoadingState();
 
-    /* جلب حالة التوفر من Supabase — يُحدِّث الأزرار والشارات في finally */
-    fetchAndApplyAvailability();
+      /* شبكة بطيئة أو معطّلة: لا تُبقِ الأزرار معطلة "..." إلى الأبد —
+         فعّلها بالقيم الافتراضية (available: true) إن لم يصل الكتالوج
+         الحقيقي خلال مهلة معقولة. */
+      setTimeout(function () {
+        if (!catalogLoaded) updateAddToCartButtons();
+      }, 6000);
+    }
   }
 
   if (document.readyState === 'loading') {

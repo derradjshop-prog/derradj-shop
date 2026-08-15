@@ -1904,57 +1904,13 @@ window.PRODUCTS_CATALOG = [
   { name: "Hoco J132A 20000mAh Power Bank USB-A 15W + USB-C PD20W with Built-in Type-C 22.5W Cable and iP 12W Cable", shortName: "Hoco J132A Power Bank", price: 3950, available: true, paymentUrl: null },
 ];
 
-/* ── جلب حالة التوفر من Supabase وتطبيقها على PRODUCTS_CATALOG ── */
-(function () {
-  var SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
-  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
-
-  /* Shares its sessionStorage cache key with cart.js's availability fetch
-     (same table/columns) — a visitor who viewed a product page just
-     before checking out reuses that read instead of firing a fresh one,
-     and either way this cuts the full-table read on every page refresh. */
-  var AVAIL_CACHE_KEY = 'derradj_availability_v1';
-  var AVAIL_CACHE_TTL = 60 * 1000;
-  function availCacheGet() {
-    try {
-      var raw = sessionStorage.getItem(AVAIL_CACHE_KEY);
-      if (!raw) return null;
-      var parsed = JSON.parse(raw);
-      if (!parsed.t || Date.now() - parsed.t > AVAIL_CACHE_TTL) return null;
-      return parsed.d;
-    } catch (_) { return null; }
-  }
-  function availCacheSet(rows) {
-    try { sessionStorage.setItem(AVAIL_CACHE_KEY, JSON.stringify({ t: Date.now(), d: rows })); } catch (_) {}
-  }
-
-  function applyAvailabilityRows(rows) {
-    if (!Array.isArray(rows)) return;
-    rows.forEach(function (row) {
-      var entry = (window.PRODUCTS_CATALOG || [])[row.catalog_id];
-      if (entry) entry.available = row.available;
-    });
-    /* إعادة بناء الصفوف المحملة من السلة لتعكس التوفر الحديث */
-    if (typeof window._refreshProductRowsAvailability === 'function') {
-      window._refreshProductRowsAvailability();
-    }
-  }
-
-  var cachedAvail = availCacheGet();
-  if (cachedAvail) {
-    applyAvailabilityRows(cachedAvail);
-  } else {
-    fetch(SB_URL + '/rest/v1/product_availability?select=catalog_id,available', {
-      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
-    })
-    .then(function (r) { return r.ok ? r.json() : []; })
-    .then(function (rows) {
-      if (Array.isArray(rows)) availCacheSet(rows);
-      applyAvailabilityRows(rows);
-    })
-    .catch(function () { /* نتجاهل الأخطاء — نكمل بالقيم الافتراضية */ });
-  }
-}());
+/* حالة التوفر تُقرأ حصراً من admin_products_catalog.stock_status —
+   راجع applyCatalogRows() أدناه (نفس المصدر الذي تكتب إليه لوحة
+   الإدارة وتقرأ منه صفحة تفاصيل المنتج). كان هنا سابقاً نظام قديم
+   منفصل يقرأ من جدول product_availability (لم تعد لوحة الإدارة
+   تكتب إليه) ويُطبّق بياناته فوق PRODUCTS_CATALOG بشكل غير متزامن،
+   ما يُنشئ سباقاً بين مصدرين مختلفين لنفس البيانات ويُفسّر عدم
+   تطابق حالة التوفر بين صفحة الطلب وباقي الموقع. أُزيل بالكامل. */
 /* ── Sticky header ──────────────────────────────────────────── */
 window.addEventListener('scroll', () => {
   document.getElementById('mainHeader')
