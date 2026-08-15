@@ -74,6 +74,14 @@
      Arabic name regardless of which column it landed in. ── */
   const AR_RE = /[؀-ۿ]/;
   function isArabic(s) { return AR_RE.test(s || ''); }
+
+  /* ── Turns an arbitrary subcategory value into a safe single
+     filesystem path segment (used by buildProductView below, and
+     mirrored in js/products-loader.js + js/product-page.js so all
+     three agree on the same folder name for a given product). ── */
+  function sanitizeSubdir(sub) {
+    return String(sub || 'other').replace(/[\/\\?%*:|"<>]/g, '-').trim() || 'other';
+  }
   function pickNames(p) {
     const a = p.product_name, b = p.product_name_ar;
     const aIsAr = isArabic(a), bIsAr = isArabic(b);
@@ -103,7 +111,14 @@
        on disk use hyphens — every other subcategory's folder matches
        its value as-is. */
     const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
-    const subdir = SUBCATEGORY_DIR[p.subcategory] || String(p.subcategory || 'other');
+    /* Some rows have free-text subcategory values (e.g. "Arduino /
+       Composants électroniques") containing characters that are illegal
+       in a filesystem path segment — "/" in particular can never resolve
+       as a static file on disk, which silently forced every visitor's
+       browser to fall back to fetching the image straight from Supabase
+       Storage on every single page load (the dominant Cached Egress
+       source). Strip those before using the value as a folder name. */
+    const subdir = sanitizeSubdir(SUBCATEGORY_DIR[p.subcategory] || p.subcategory);
     const folderBase = (isElectronics
       ? `/Electronique/${encodeURIComponent(subdir)}/${encodeURIComponent(slug)}`
       : null);

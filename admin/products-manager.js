@@ -175,16 +175,27 @@
   }
 
   /* ── Resolve a stored main_image into a displayable URL — same rule
-     js/products-loader.js's resolveImage() uses on the storefront:
-     electronics store full Supabase Storage URLs already; legacy books
+     js/products-loader.js's resolveImage() uses on the storefront: books
      store a path relative to /books/ and prefer the webp sibling.
-     Without this, book thumbnails 404 here because the raw relative
-     path resolves against /admin/ instead of /books/. ── */
+     Electronics: prefer the local mirror under /Electronique/ (this
+     table renders one full-resolution image per product row on every
+     admin page load — serving it straight from the raw Supabase Storage
+     URL was a real Cached Egress source). If a product was added since
+     the last scheduled page-generation run and has no local mirror yet,
+     rowHtml()/mobileCardHtml() fall back to the original Supabase URL
+     via onerror, so nothing breaks in the meantime. ── */
   function resolveThumbSrc(p) {
     let img = p.main_image || '';
     if (!img) return '';
-    if (p.category === 'books' && !/^https?:\/\//.test(img)) {
-      img = '/books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    if (p.category === 'books') {
+      if (!/^https?:\/\//.test(img)) img = '/books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    } else if (/^https?:\/\//.test(img)) {
+      const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
+      const subdir = String(SUBCATEGORY_DIR[p.subcategory] || p.subcategory || 'other')
+        .replace(/[\/\\?%*:|"<>]/g, '-').trim() || 'other';
+      const slug = p.slug || String(p.catalog_id || p.id || '');
+      const filename = img.split('/').filter(Boolean).pop() || 'main.webp';
+      img = `/Electronique/${encodeURIComponent(subdir)}/${encodeURIComponent(slug)}/${encodeURIComponent(filename)}`;
     }
     return img;
   }
@@ -1305,8 +1316,9 @@
 
   function rowHtml(p) {
     const thumbSrc = resolveThumbSrc(p);
+    const rawFallback = p.category !== 'books' && thumbSrc !== p.main_image ? esc(p.main_image || '') : '';
     const imgHtml = thumbSrc
-      ? `<img src="${esc(thumbSrc)}" class="pm-thumb" alt="" onerror="this.outerHTML='<div class=pm-thumb-ph>📦</div>'">`
+      ? `<img src="${esc(thumbSrc)}" class="pm-thumb" alt="" ${rawFallback ? `data-fallback="${rawFallback}" ` : ''}onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.outerHTML='<div class=pm-thumb-ph>📦</div>'}">`
       : `<div class="pm-thumb-ph">📦</div>`;
     const isPending = p.status === 'pending_review';
 
@@ -1340,8 +1352,9 @@
   /* ── Mobile card: image, name, availability switch, reorder controls only ── */
   function mobileCardHtml(p) {
     const thumbSrc = resolveThumbSrc(p);
+    const rawFallback = p.category !== 'books' && thumbSrc !== p.main_image ? esc(p.main_image || '') : '';
     const imgHtml = thumbSrc
-      ? `<img src="${esc(thumbSrc)}" class="pm-mcard-img" alt="" onerror="this.outerHTML='<div class=pm-mcard-img-ph>📦</div>'">`
+      ? `<img src="${esc(thumbSrc)}" class="pm-mcard-img" alt="" ${rawFallback ? `data-fallback="${rawFallback}" ` : ''}onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.outerHTML='<div class=pm-mcard-img-ph>📦</div>'}">`
       : `<div class="pm-mcard-img-ph">📦</div>`;
 
     const reorderDisabled = DISPLAY_ORDER_SUPPORTED === false;

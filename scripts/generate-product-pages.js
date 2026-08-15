@@ -179,6 +179,55 @@ async function localizeBookCoverIfMissing(p) {
   }
 }
 
+/* ── Auto-localize electronics product images the first time they're
+   seen ── mirrors localizeBookCoverIfMissing() above. Admin/seller
+   uploads always land in Supabase Storage (main_image/gallery_images
+   become absolute URLs); without this, any electronics product whose
+   images were never manually mirrored — including any row with a
+   subcategory value that used to contain characters illegal in a path
+   (e.g. "Arduino / Composants électroniques", which could never resolve
+   to a real file on disk) — kept serving every image straight from
+   Supabase Storage to every visitor on every pageview, forever. That
+   was the actual dominant source of Cached Egress: those two Arduino
+   products appear in the "related products" carousel on all ~110
+   product/book pages plus the homepage and category pages, each
+   re-fetching the uncached Supabase Storage image on every page load.
+   Runs once per missing file, here at build time, not on every
+   pageview, so the one-off Storage read cost is negligible. */
+function electronicsFolderBase(p) {
+  const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
+  const subdir = String(SUBCATEGORY_DIR[p.subcategory] || p.subcategory || 'other')
+    .replace(/[\/\\?%*:|"<>]/g, '-').trim() || 'other';
+  return path.join(ROOT, 'Electronique', subdir, p.slug || '');
+}
+async function localizeElectronicsImagesIfMissing(p) {
+  if (!p.slug) return;
+  const folder = electronicsFolderBase(p);
+  const sources = [];
+  if (p.main_image && /^https?:\/\//.test(p.main_image)) {
+    sources.push({ url: p.main_image, filename: (p.main_image.split('/').filter(Boolean).pop()) || 'main.webp' });
+  }
+  const galleryRaw = Array.isArray(p.gallery_images) ? p.gallery_images.filter(Boolean) : [];
+  galleryRaw.forEach(u => {
+    if (!/^https?:\/\//.test(u)) return;
+    const filename = (u.split('/').filter(Boolean).pop()) || 'gallery-1.png';
+    if (!sources.find(s => s.filename === filename)) sources.push({ url: u, filename });
+  });
+
+  for (const { url, filename } of sources) {
+    const dest = path.join(folder, filename);
+    if (fs.existsSync(dest)) continue;
+    try {
+      const buf = await downloadToFile(url);
+      fs.mkdirSync(folder, { recursive: true });
+      fs.writeFileSync(dest, buf);
+      console.log(`[generate-product-pages] localized ${p.slug}/${filename} (${(buf.length / 1024).toFixed(0)}KB from Supabase Storage, one-time)`);
+    } catch (err) {
+      console.warn(`[generate-product-pages] could not localize ${filename} for ${p.slug}: ${err.message} — will keep serving it from Supabase Storage until this succeeds.`);
+    }
+  }
+}
+
 /* ── Local electronics image dims (repo files) ── */
 function probeLocalElectronicsImageDims(subcategory, slug, filename) {
   const folder = path.join(ROOT, 'Electronique', subcategory || 'other', slug || '');
@@ -574,6 +623,7 @@ async function main() {
       console.warn(`[generate-product-pages] skipping product without slug: catalog_id=${p.catalog_id}`);
       continue;
     }
+    await localizeElectronicsImagesIfMissing(p);
     const view = ProductTemplate.buildProductView(p);
     let dims = null;
     try {

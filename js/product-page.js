@@ -332,9 +332,15 @@
           imgSrc = p.slug ? `/books/${encodeURIComponent(p.slug)}/main.webp` : imgSrc;
         } else {
           /* subcategory → folder name: power_bank/smart_watch use
-             underscores in Supabase but hyphens on disk. */
+             underscores in Supabase but hyphens on disk. Free-text values
+             (e.g. "Arduino / Composants électroniques") can contain "/"
+             which is illegal in a path segment — sanitize the same way
+             js/product-template.js and js/products-loader.js do, or this
+             image 404s locally and falls back to Supabase Storage on
+             every render. */
           const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
-          const sub = SUBCATEGORY_DIR[p.subcategory] || String(p.subcategory || 'other');
+          const sub = String(SUBCATEGORY_DIR[p.subcategory] || p.subcategory || 'other')
+            .replace(/[\/\\?%*:|"<>]/g, '-').trim() || 'other';
           const slug = p.slug || String(p.catalog_id || p.id || '');
           function filenameFromUrl(u) { try { return String(u || '').split('/').filter(Boolean).pop() || 'main.webp'; } catch { return 'main.webp'; } }
           const mainFilename = (p.main_image && filenameFromUrl(p.main_image)) || 'main.webp';

@@ -81,7 +81,18 @@
      this map the built path 404s and the card silently falls back to
      the generic logo even though the real photo exists in the repo. ── */
   const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
-  function subcategoryDir(sub) { return SUBCATEGORY_DIR[sub] || sub; }
+  /* Some rows have free-text subcategory values (e.g. "Arduino /
+     Composants électroniques") containing characters illegal in a
+     filesystem path segment — "/" in particular can never resolve as a
+     static file, which silently forced every visitor's browser to fall
+     back to fetching the image straight from Supabase Storage on every
+     page load (the dominant Cached Egress source). Sanitize before
+     using it as a folder name — mirrored in js/product-template.js and
+     js/product-page.js so all three agree on the same path. */
+  function sanitizeSubdir(sub) {
+    return String(sub || 'other').replace(/[\/\\?%*:|"<>]/g, '-').trim() || 'other';
+  }
+  function subcategoryDir(sub) { return sanitizeSubdir(SUBCATEGORY_DIR[sub] || sub); }
 
   /* ── Resolve an image src for either category. Both categories are
      always served from the repo (never from Supabase Storage, which
