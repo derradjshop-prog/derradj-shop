@@ -365,6 +365,29 @@
     try { sessionStorage.setItem(key, JSON.stringify({ t: Date.now(), d: data })); } catch (_) {}
   }
 
+  /* ── Live stock_status overlay — the cached catalog above can lag up
+     to CATALOG_CACHE_TTL behind Supabase (e.g. right after an admin
+     flips a product out of stock), while the product detail page has
+     no cache and is always live. That gap is exactly what let the
+     homepage badge/Add-to-cart disagree with the product page. Fetch
+     just catalog_id+stock_status (tiny payload) on every cache hit so
+     availability is always current regardless of cache age, without
+     giving up caching for the heavier fields. ── */
+  async function fetchLiveStockStatuses() {
+    try {
+      const url = SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,stock_status&is_active=eq.true';
+      const res = await fetch(url, { headers: HEADERS });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      const map = new Map();
+      rows.forEach(r => { if (r.catalog_id != null) map.set(r.catalog_id, r.stock_status); });
+      return map;
+    } catch (err) {
+      console.warn('[products-loader] live stock_status refresh failed:', err.message || err);
+      return null;
+    }
+  }
+
   /* ── Main loader ── */
   async function load() {
     try {
@@ -376,6 +399,13 @@
         const bookSales = bookSortMode === 'best_selling' ? await fetchBookSales() : new Map();
         products = sortProductsForBookMode(products, bookSortMode, bookSales);
         cacheSet(CATALOG_CACHE_KEY, products);
+      } else {
+        const liveStock = await fetchLiveStockStatuses();
+        if (liveStock) {
+          products.forEach(p => {
+            if (liveStock.has(p.catalog_id)) p.stock_status = liveStock.get(p.catalog_id);
+          });
+        }
       }
 
       window.SUPABASE_PRODUCTS = products;
