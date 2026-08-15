@@ -137,11 +137,11 @@
           <div class="product-main-image-box" id="pdMainImgBox">
             <span class="zoom-hint">🔍 انقر للتكبير</span>
             <img id="pdMainImg" src="/Electronique/earbuds/anker-soundcore-r50i-vg/main.png"
-                 alt="سماعات أنكر ساوندكور R50i VG بلوتوث – أسود — Derradj Shop"
+                 data-fallback="https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/product-images/electronics/anker-soundcore-r50i-vg/main.png" alt="سماعات أنكر ساوندكور R50i VG بلوتوث – أسود — Derradj Shop"
                  class="product-main-image"
                  fetchpriority="high"
                  width="400" height="400"
-                 onerror="this.src='/Logo.jpg'">
+                 onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}">
           </div>
         </div>
 

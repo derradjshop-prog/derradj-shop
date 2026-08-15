@@ -331,7 +331,10 @@
         if (isBook) {
           imgSrc = p.slug ? `/books/${encodeURIComponent(p.slug)}/main.webp` : imgSrc;
         } else {
-          const sub = String(p.subcategory || 'other');
+          /* subcategory → folder name: power_bank/smart_watch use
+             underscores in Supabase but hyphens on disk. */
+          const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
+          const sub = SUBCATEGORY_DIR[p.subcategory] || String(p.subcategory || 'other');
           const slug = p.slug || String(p.catalog_id || p.id || '');
           function filenameFromUrl(u) { try { return String(u || '').split('/').filter(Boolean).pop() || 'main.webp'; } catch { return 'main.webp'; } }
           const mainFilename = (p.main_image && filenameFromUrl(p.main_image)) || 'main.webp';
@@ -361,8 +364,8 @@
           : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
 
         return `<a href="${url}" class="rp-card">
-          <img src="${escAttr(imgSrc)}" alt="${escAttr(rpName)} — Derradj Shop"
-               class="rp-img" loading="lazy" onerror="this.src='/Logo.jpg'">
+          <img src="${escAttr(imgSrc)}" ${!isBook && p.main_image ? `data-fallback="${escAttr(p.main_image)}" ` : ''}alt="${escAttr(rpName)} — Derradj Shop"
+               class="rp-img" loading="lazy" onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}">
           <div class="rp-body">
             <div class="rp-name">${esc(rpName)}</div>
             <div class="rp-price-row">${priceRow}${discTag}</div>

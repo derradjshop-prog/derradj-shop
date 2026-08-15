@@ -74,6 +74,15 @@
     return html;
   }
 
+  /* ── Electronics subcategory → actual /Electronique/ folder name.
+     admin_products_catalog.subcategory uses underscores (power_bank,
+     smart_watch) but those two folders on disk use hyphens — every
+     other subcategory's folder name matches its value as-is. Without
+     this map the built path 404s and the card silently falls back to
+     the generic logo even though the real photo exists in the repo. ── */
+  const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
+  function subcategoryDir(sub) { return SUBCATEGORY_DIR[sub] || sub; }
+
   /* ── Resolve an image src for either category. Both categories are
      always served from the repo (never from Supabase Storage, which
      is uncached and was the dominant source of egress) — electronics
@@ -87,13 +96,24 @@
     }
     let img = p.main_image || '';
     if (!img) return '/Logo.jpg';
-    const sub = String(p.subcategory || 'other');
+    const sub = subcategoryDir(String(p.subcategory || 'other'));
     const slug = p.slug || String(p.catalog_id || p.id || '');
     function filenameFromUrl(u) { try { return String(u || '').split('/').filter(Boolean).pop() || 'main.webp'; } catch { return 'main.webp'; } }
     const mainFilename = (p.main_image && filenameFromUrl(p.main_image)) || 'main.webp';
     img = `/Electronique/${encodeURIComponent(sub)}/${encodeURIComponent(slug)}/${encodeURIComponent(mainFilename)}`;
     return img;
   }
+
+  /* ── data-fallback + onerror pair for a product <img>: if the local
+     repo copy 404s (never mirrored, or mirrored under a different
+     filename), fall back to the real Supabase Storage URL before
+     giving up on the generic logo — so a missing local mirror shows
+     the actual product photo instead of silently degrading. ── */
+  function imgFallbackAttrs(p) {
+    if (p.category === 'books' || !p.main_image) return '';
+    return `data-fallback="${escAttr(p.main_image)}" `;
+  }
+  const IMG_ONERROR = `onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}"`;
 
   /* ── Build a product card HTML ── */
   function buildCard(p) {
@@ -115,9 +135,9 @@
     return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}">
       <div class="${badgeCls}" data-avail-badge="${p.catalog_id}">${badgeTxt}</div>
       <a href="${url}" class="product-img-area" style="text-decoration:none;">
-        <img src="${imgSrc}" alt="${escAttr(name)} — Derradj Shop"
+        <img src="${imgSrc}" ${imgFallbackAttrs(p)}alt="${escAttr(name)} — Derradj Shop"
              loading="lazy" decoding="async" width="400" height="400"
-             onerror="this.src='/Logo.jpg'">
+             ${IMG_ONERROR}>
       </a>
       <div class="product-info">
         <div class="product-cat-label">${icon} ${escAttr(catAr)}</div>

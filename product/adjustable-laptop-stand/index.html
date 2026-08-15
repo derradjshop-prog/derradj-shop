@@ -137,11 +137,11 @@
           <div class="product-main-image-box" id="pdMainImgBox">
             <span class="zoom-hint">🔍 انقر للتكبير</span>
             <img id="pdMainImg" src="/Electronique/laptop/adjustable-laptop-stand/1782472767626-na0lytm.jpeg"
-                 alt="حامل اللابتوب القابل للتعديل — Derradj Shop"
+                 data-fallback="https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1782472767626-na0lytm.jpeg" alt="حامل اللابتوب القابل للتعديل — Derradj Shop"
                  class="product-main-image"
                  fetchpriority="high"
                  width="400" height="400"
-                 onerror="this.src='/Logo.jpg'">
+                 onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}">
           </div>
         </div>
 

@@ -147,11 +147,11 @@
           <div class="product-main-image-box" id="pdMainImgBox">
             <span class="zoom-hint">🔍 انقر للتكبير</span>
             <img id="pdMainImg" src="/Electronique/Arduino%20Kits/arduino-uno-r3-super-starter-kit-with-200-components/1782473068872-pbl7hu6.jpeg"
-                 alt="عدة أردوينو UNO R3 للمبتدئين مع أكثر من 200 قطعة — Derradj Shop"
+                 data-fallback="https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1782473068872-pbl7hu6.jpeg" alt="عدة أردوينو UNO R3 للمبتدئين مع أكثر من 200 قطعة — Derradj Shop"
                  class="product-main-image"
                  fetchpriority="high"
                  width="400" height="400"
-                 onerror="this.src='/Logo.jpg'">
+                 onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}">
           </div>
         </div>
 

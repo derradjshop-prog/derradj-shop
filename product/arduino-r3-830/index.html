@@ -157,11 +157,11 @@
           <div class="product-main-image-box" id="pdMainImgBox">
             <span class="zoom-hint">🔍 انقر للتكبير</span>
             <img id="pdMainImg" src="/Electronique/Arduino%20%2F%20Composants%20%C3%A9lectroniques/arduino-r3-830/1781815095537-3vnhwwj.jpg"
-                 alt="طقم Arduino R3 كامل 830 قطعة مع علبة — Derradj Shop"
+                 data-fallback="https://jbmcbjzcedqpvnhbmrhk.supabase.co/storage/v1/object/public/admin-product-images/products/1781815095537-3vnhwwj.jpg" alt="طقم Arduino R3 كامل 830 قطعة مع علبة — Derradj Shop"
                  class="product-main-image"
                  fetchpriority="high"
                  width="400" height="400"
-                 onerror="this.src='/Logo.jpg'">
+                 onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}">
           </div>
         </div>
 

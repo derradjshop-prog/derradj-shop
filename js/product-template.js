@@ -98,7 +98,12 @@
        main image is always `main.webp` in that folder; gallery
        images reuse their original filename (last path segment).
        For books we preserve the existing behaviour. */
-    const subdir = String(p.subcategory || 'other');
+    /* subcategory → folder name: admin_products_catalog stores
+       power_bank/smart_watch with underscores, but those two folders
+       on disk use hyphens — every other subcategory's folder matches
+       its value as-is. */
+    const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
+    const subdir = SUBCATEGORY_DIR[p.subcategory] || String(p.subcategory || 'other');
     const folderBase = (isElectronics
       ? `/Electronique/${encodeURIComponent(subdir)}/${encodeURIComponent(slug)}`
       : null);
@@ -271,11 +276,11 @@
           <div class="product-main-image-box" id="pdMainImgBox">
             <span class="zoom-hint">🔍 انقر للتكبير</span>
             <img id="pdMainImg" src="${escAttr(imgSrc)}"
-                 alt="${escAttr(imgAlt)}"
+                 ${isElectronics && p.main_image ? `data-fallback="${escAttr(p.main_image)}" ` : ''}alt="${escAttr(imgAlt)}"
                  class="product-main-image"
                  fetchpriority="high"
                  width="400" height="400"
-                 onerror="this.src='/Logo.jpg'">
+                 onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}">
           </div>
         </div>
 
