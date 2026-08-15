@@ -43,9 +43,23 @@
   let PROD_SEARCH_QUERY = '';
   let DRAG_SRC_ID = null;
   let BOOK_SORT_MODE = 'manual';
+  let BOOK_SALES = new Map();
+  let BOOK_SALES_LOADED = false;
 
   /* إلكتروني = كل ما ليس كتاباً */
   function isElec(p) { return p.category !== 'books'; }
+
+  /* ── Prefer the Arabic name for matching against book_sales_summary,
+     which keys rows by whatever name order_items/checkout stored
+     (mirrors js/products-loader.js's arName so admin and public agree). ── */
+  function isArabic(s) { return /[؀-ۿ]/.test(String(s || '')); }
+  function arName(p) {
+    const a = p.product_name, b = p.product_name_ar;
+    const aIsAr = isArabic(a), bIsAr = isArabic(b);
+    if (aIsAr && !bIsAr) return a;
+    if (!aIsAr && bIsAr) return b;
+    return a || b || '';
+  }
 
   /* ── Helpers ── */
   function esc(v) {
@@ -325,6 +339,11 @@
     .pm-order-input:focus { outline:none; border-color:#059669; }
     .pm-tbl tbody tr[draggable="true"] { cursor:default; }
     .pm-tbl tbody tr.pm-row-dragging { opacity:.4; background:#f0fdf4; }
+    .pm-sales-badge {
+      display:inline-flex; align-items:center; gap:3px;
+      background:#eff6ff; color:#1d4ed8; font-weight:800; font-size:12px;
+      padding:4px 10px; border-radius:99px; white-space:nowrap;
+    }
 
     /* ── Sub-filter bar (الكل / الكتب / إلكترونيات) ───────── */
     .prod-subfilter-bar {
@@ -1144,12 +1163,34 @@
     });
   }
 
+  /* ── Books-only: sales DESC, manual display_order ASC as a stable
+     tiebreaker for equal (including zero) sales — mirrors
+     sortProductsForBookMode() in js/products-loader.js so admin and
+     public agree on the ranking. ── */
+  function sortedBySales(products) {
+    return [...products].sort((a, b) => {
+      const as = bookSalesFor(a);
+      const bs = bookSalesFor(b);
+      if (as !== bs) return bs - as;
+      const ao = a.display_order ?? Infinity;
+      const bo = b.display_order ?? Infinity;
+      if (ao !== bo) return ao - bo;
+      return new Date(a.created_at) - new Date(b.created_at);
+    });
+  }
+
   /* ── Full list grouped by category (electronics first, then books),
-     each group internally sorted by its own display_order. Used for
-     rendering so categories never interleave. ── */
+     each group internally sorted by its own display_order — except
+     books while Best-Selling mode is on, which sort by real sales
+     instead (electronics is never affected by the book toggle). Used
+     for rendering so categories never interleave. ── */
   function sortedGrouped(products) {
-    return CATEGORY_ORDER.flatMap(cat =>
-      sortedByOrder(products.filter(p => categoryKey(p) === cat)));
+    return CATEGORY_ORDER.flatMap(cat => {
+      const group = products.filter(p => categoryKey(p) === cat);
+      return (cat === 'books' && BOOK_SORT_MODE === 'best_selling')
+        ? sortedBySales(group)
+        : sortedByOrder(group);
+    });
   }
 
   /* ── True if any category's display_order isn't a clean 1..N sequence ── */
@@ -1235,6 +1276,38 @@
     applyBookSortUi();
   }
 
+  /* ── Real sales data — reads the same public.book_sales_summary view
+     that the public site sorts by (SUM(order_items.quantity), grouped by
+     product_name; see admin/book-sorting-mode.sql). Same source the
+     existing "📚 الكتب المباعة" tab uses (admin/bestsellers.js), so this
+     doesn't invent a new sales-counting rule. ── */
+  async function fetchBookSales() {
+    try {
+      const { data, error } = await sb
+        .from('book_sales_summary')
+        .select('product_name, sold');
+      if (error) throw error;
+      const sales = new Map();
+      (data || []).forEach(row => {
+        sales.set(String(row.product_name || '').trim(), Number(row.sold) || 0);
+      });
+      BOOK_SALES = sales;
+    } catch (err) {
+      console.warn('[PM] book sales unavailable; using zero sales:', err.message || err);
+      BOOK_SALES = new Map();
+    }
+    BOOK_SALES_LOADED = true;
+  }
+
+  function bookSalesFor(p) {
+    const key = String(arName(p) || '').trim();
+    if (BOOK_SALES.has(key)) return BOOK_SALES.get(key);
+    const pn = String(p.product_name || '').trim();
+    if (BOOK_SALES.has(pn)) return BOOK_SALES.get(pn);
+    const pnAr = String(p.product_name_ar || '').trim();
+    return BOOK_SALES.get(pnAr) || 0;
+  }
+
   async function loadBookSortMode() {
     try {
       const { data, error } = await sb
@@ -1248,18 +1321,31 @@
       console.warn('[PM] book_sort_mode setting unavailable; using manual order:', err.message || err);
       BOOK_SORT_MODE = 'manual';
     }
+    if (BOOK_SORT_MODE === 'best_selling' && !BOOK_SALES_LOADED) {
+      await fetchBookSales();
+    }
     applyBookSortUi();
+    /* loadProducts() may already have rendered with the default 'manual'
+       mode before this async settings fetch resolved — re-render now
+       that the real mode (and its sales data) is known. renderTable()
+       is a no-op if the table hasn't loaded yet. */
+    renderTable();
   }
 
   async function toggleBookSortMode() {
     const next = BOOK_SORT_MODE === 'best_selling' ? 'manual' : 'best_selling';
     const previous = BOOK_SORT_MODE;
-    BOOK_SORT_MODE = next;
-    applyBookSortUi();
 
     const btn = document.getElementById('pmBookSortToggle');
     if (btn) btn.disabled = true;
     try {
+      if (next === 'best_selling') {
+        await fetchBookSales(); /* always refresh so the ranking shown is current */
+      }
+      BOOK_SORT_MODE = next;
+      applyBookSortUi();
+      renderTable();
+
       const { error } = await sb
         .from('site_settings')
         .upsert({
@@ -1272,6 +1358,7 @@
     } catch (err) {
       BOOK_SORT_MODE = previous;
       applyBookSortUi();
+      renderTable();
       showToast('Failed to save book sorting mode: ' + (err.message || ''), 'error');
     } finally {
       if (btn) btn.disabled = false;
@@ -1321,8 +1408,13 @@
       ? `<img src="${esc(thumbSrc)}" class="pm-thumb" alt="" ${rawFallback ? `data-fallback="${rawFallback}" ` : ''}onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.outerHTML='<div class=pm-thumb-ph>📦</div>'}">`
       : `<div class="pm-thumb-ph">📦</div>`;
     const isPending = p.status === 'pending_review';
+    /* Best-Selling mode drives the visible order from sales, not
+       display_order — dragging/editing position here would silently
+       overwrite the manual order with whatever the sales ranking
+       happens to be (see applyDragReorder), so lock it while active. */
+    const salesMode = !isElec(p) && BOOK_SORT_MODE === 'best_selling';
 
-    return `<tr draggable="true" data-pmid="${esc(p.id)}" class="${isPending ? 'pm-row-pending' : ''}">
+    return `<tr draggable="${salesMode ? 'false' : 'true'}" data-pmid="${esc(p.id)}" class="${isPending ? 'pm-row-pending' : ''}">
         <td>${imgHtml}</td>
         <td>
           <strong style="font-size:13px;display:block;">${esc(p.product_name)}</strong>
@@ -1339,9 +1431,11 @@
           <div class="pm-avail-cell">${availToggleHtml(p.id, p.stock_status)}</div>
         </td>
         <td style="text-align:center;white-space:nowrap;">
-          <span class="pm-drag-handle" title="اسحب لإعادة الترتيب">⠿</span>
+          ${salesMode
+            ? `<span class="pm-sales-badge" title="مرتّب حسب المبيعات الفعلية — الترتيب اليدوي معطّل">🏆 ${bookSalesFor(p)}</span>`
+            : `<span class="pm-drag-handle" title="اسحب لإعادة الترتيب">⠿</span>
           <input type="number" class="pm-order-input" min="1" step="1"
-                 value="${p.display_order ?? ''}" data-pma="order" data-pmid="${esc(p.id)}">
+                 value="${p.display_order ?? ''}" data-pma="order" data-pmid="${esc(p.id)}">`}
         </td>
         <td>
           <button class="btn-pm-edit" data-pma="edit" data-pmid="${esc(p.id)}">✏️ تعديل</button>
@@ -1357,7 +1451,8 @@
       ? `<img src="${esc(thumbSrc)}" class="pm-mcard-img" alt="" ${rawFallback ? `data-fallback="${rawFallback}" ` : ''}onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.outerHTML='<div class=pm-mcard-img-ph>📦</div>'}">`
       : `<div class="pm-mcard-img-ph">📦</div>`;
 
-    const reorderDisabled = DISPLAY_ORDER_SUPPORTED === false;
+    const salesMode = !isElec(p) && BOOK_SORT_MODE === 'best_selling';
+    const reorderDisabled = DISPLAY_ORDER_SUPPORTED === false || salesMode;
     const order = p.display_order ?? null;
     const groupSize = ALL_PM_PRODUCTS.filter(x => categoryKey(x) === categoryKey(p)).length;
     const isFirst = order !== null && order <= 1;
@@ -1369,6 +1464,7 @@
         <div class="pm-mcard-body">
           <div class="pm-mcard-name">${esc(p.product_name)}</div>
           ${isPending ? `<span class="badge badge-pending">⏳ بانتظار المراجعة</span>${pendingMetaHtml(p)}` : ''}
+          ${salesMode ? `<span class="pm-sales-badge" title="مرتّب حسب المبيعات الفعلية — الترتيب اليدوي معطّل">🏆 ${bookSalesFor(p)} مبيعات</span>` : ''}
           <div class="pm-mcard-row">
             ${availToggleHtml(p.id, p.stock_status)}
             <div class="pm-mcard-reorder">
@@ -1528,9 +1624,18 @@
   }
 
   /* Mobile reorder buttons — swap with the adjacent item within the same category */
+  /* Manual reordering is meaningless while Best-Selling mode is on (the
+     visible position reflects sales, not display_order) — the UI already
+     hides/disables these controls for books in that mode, this is just a
+     backstop against stale-DOM edge cases. */
+  function manualReorderLocked(p) {
+    return p && !isElec(p) && BOOK_SORT_MODE === 'best_selling';
+  }
+
   async function moveProductStep(id, direction) {
     const current = ALL_PM_PRODUCTS.find(p => p.id === id);
     if (!current || current.display_order == null) return;
+    if (manualReorderLocked(current)) return;
     const groupSize = ALL_PM_PRODUCTS.filter(p => categoryKey(p) === categoryKey(current)).length;
     const target = current.display_order + direction;
     if (target < 1 || target > groupSize) return;
@@ -1541,6 +1646,10 @@
     const id  = inp.dataset.pmid;
     const pos = parseInt(inp.value, 10);
     const current = ALL_PM_PRODUCTS.find(p => p.id === id);
+    if (manualReorderLocked(current)) {
+      inp.value = current?.display_order ?? '';
+      return;
+    }
     if (!Number.isFinite(pos) || pos < 1) {
       inp.value = current?.display_order ?? '';
       return;
@@ -1567,6 +1676,8 @@
     tbody.addEventListener('dragstart', e => {
       const tr = e.target.closest('tr[draggable="true"]');
       if (!tr) return;
+      const item = ALL_PM_PRODUCTS.find(p => p.id === tr.dataset.pmid);
+      if (manualReorderLocked(item)) return;
       DRAG_SRC_ID = tr.dataset.pmid;
       tr.classList.add('pm-row-dragging');
       e.dataTransfer.effectAllowed = 'move';
