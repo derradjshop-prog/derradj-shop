@@ -67,7 +67,16 @@
       "Bash(node \"C:\\\\Users\\\\pc\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-pc-Desktop-derradj-shop\\\\a50ff652-69a6-45db-84b5-f67bdc919ab3\\\\scratchpad\\\\optimize-images.js\")",
       "Bash(curl -sI https://derradjshop.com/_headers)",
       "Bash(curl -sI https://derradjshop.com/_redirects)",
-      "Bash(curl -sI https://derradjshop.com/)"
+      "Bash(curl -sI https://derradjshop.com/)",
+      "Bash(npx --yes serve -l 8791 .)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8791/index.html)",
+      "Bash(curl -s -L -o /tmp/homepage.html -w \"%{http_code}\\\\n\" http://localhost:8791/)",
+      "Bash(chromium-cli --help)",
+      "Bash(npm ls *)",
+      "Bash(node -e \"require\\('playwright'\\)\")",
+      "Bash(node -e \"require\\('puppeteer'\\)\")",
+      "Bash(npx --yes serve -l 8792 .)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8792/)"
     ],
     "additionalDirectories": [
       "\\tmp",

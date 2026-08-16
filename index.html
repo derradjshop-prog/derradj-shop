@@ -11,6 +11,7 @@
     gtag('js', new Date());
     gtag('config', 'G-N4NME3KN9N');
   </script>
+  
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -64,6 +65,14 @@
 
 <body>
 
+<!-- ===================== VACATION ANNOUNCEMENT BANNER ===================== -->
+<div class="vacation-banner" id="vacationBanner" role="status">
+  <div class="vacation-banner-track">
+    <span>نحن في عطلة حاليًا 🌴 — فريق Derradj Shop في عطلة، وسيتم التواصل مع زبائننا وتسليم طلباتهم ابتداءً من الأسبوع المقبل إن شاء الله. — شكرًا جزيلًا لتفهمكم.</span>
+    <span aria-hidden="true">نحن في عطلة حاليًا 🌴 — فريق Derradj Shop في عطلة، وسيتم التواصل مع زبائننا وتسليم طلباتهم ابتداءً من الأسبوع المقبل إن شاء الله. — شكرًا جزيلًا لتفهمكم.</span>
+  </div>
+</div>
+
 <!-- ===================== HEADER ===================== -->
 <header class="main-header" id="mainHeader">
   <div class="header-inner">
@@ -97,6 +106,34 @@
     </div>
   </div>
 </header>
+
+<!-- Reserve space below the fixed header for the vacation banner above it -->
+<script>
+(function () {
+  var banner = document.getElementById('vacationBanner');
+  var header = document.getElementById('mainHeader');
+  if (!banner || !header) return;
+
+  function positionForBanner() {
+    var bannerHeight = banner.offsetHeight;
+    var headerHeight = header.offsetHeight;
+    header.style.top = bannerHeight + 'px';
+    document.body.style.paddingTop = (bannerHeight + headerHeight) + 'px';
+
+    var mobileMenu = document.getElementById('mobileMenu');
+    if (mobileMenu) mobileMenu.style.top = (bannerHeight + headerHeight) + 'px';
+
+    var gsOverlay = document.getElementById('gsOverlay');
+    if (gsOverlay) gsOverlay.style.top = (bannerHeight + headerHeight) + 'px';
+
+    var gsBackdrop = document.getElementById('gsBackdrop');
+    if (gsBackdrop) gsBackdrop.style.top = (bannerHeight + headerHeight) + 'px';
+  }
+
+  positionForBanner();
+  window.addEventListener('resize', positionForBanner);
+})();
+</script>
 
 <!-- Search Overlay -->
 <div class="gs-overlay" id="gsOverlay" role="search" aria-label="بحث في المنتجات">

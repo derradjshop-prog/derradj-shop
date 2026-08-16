@@ -289,6 +289,46 @@ input, select, textarea { font-family: inherit; }
 .mobile-menu-btn.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
 .mobile-menu-btn.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
+/* ===================== VACATION ANNOUNCEMENT BANNER ===================== */
+.vacation-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1001;
+  background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+  color: #ffffff;
+  overflow: hidden;
+  white-space: nowrap;
+  padding: 10px 0;
+  font-size: 14px;
+  line-height: 1.5;
+  direction: ltr;
+}
+
+.vacation-banner-track {
+  display: inline-flex;
+  width: max-content;
+  animation: vacation-banner-scroll 28s linear infinite;
+  will-change: transform;
+}
+
+.vacation-banner-track span {
+  display: inline-block;
+  white-space: nowrap;
+  margin-inline-end: 64px;
+  unicode-bidi: plaintext;
+}
+
+@keyframes vacation-banner-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vacation-banner-track { animation: none; }
+}
+
 .mobile-menu {
   display: none;
   position: fixed;
