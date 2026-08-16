@@ -17,10 +17,31 @@
   Permissions-Policy: geolocation=(), camera=(), microphone=()
   Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
 
-# Book cover images — 1-year immutable cache
-# Path pattern: /books/<slug>/main.png
+# Product/book images — same URL can get new bytes on a re-upload
+# (admin edits overwrite the file in place; the path doesn't change),
+# so these must NOT be "immutable" — that would lock visitors into a
+# stale photo for a year after every edit. 1-day cache matches the
+# Logo policy below: still cuts repeat-view bandwidth a lot, but a
+# revalidation happens within a day of any real change.
+# Path patterns: /books/<slug>/main.webp (the actual served file —
+# main.png is kept only as a rare-browser <picture> fallback).
+/books/*/main.webp
+  Cache-Control: public, max-age=86400, must-revalidate
+
 /books/*/main.png
-  Cache-Control: public, max-age=31536000, immutable
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/Electronique/*.webp
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/Electronique/*.png
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/Electronique/*.jpg
+  Cache-Control: public, max-age=86400, must-revalidate
+
+/Electronique/*.jpeg
+  Cache-Control: public, max-age=86400, must-revalidate
 
 # Logo files — 1-day cache (rarely changes, but allows updates)
 /Logo.png

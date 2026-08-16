@@ -37,6 +37,11 @@
     loadProducts();
   }
   let EDIT_PRODUCT_ID = null;
+  /* main_image + gallery_images as they were when the edit modal opened —
+     diffed against the saved payload after a successful UPDATE so old
+     Storage files that are no longer referenced can be cleaned up. Never
+     read before a save actually succeeds. */
+  let EDIT_ORIGINAL_IMAGES = [];
   /* null = unknown yet, true = column exists in DB, false = column missing */
   let DISPLAY_ORDER_SUPPORTED = null;
   let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' | 'pending' */
@@ -1719,6 +1724,7 @@
 
   function openModal(product) {
     EDIT_PRODUCT_ID = product?.id || null;
+    EDIT_ORIGINAL_IMAGES = product ? collectImageUrls(product) : [];
     const isEdit = !!product;
     const isPending = isEdit && product.status === 'pending_review';
 
@@ -1807,6 +1813,131 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     STORAGE CLEANUP — helpers shared by save (image replace) and
+     delete. An image is only ever removed from Storage after the
+     database row that stops referencing it has already been
+     committed successfully, and only after confirming no other
+     product row still points at the same URL.
+  ══════════════════════════════════════════════════════════ */
+  const STORAGE_BUCKET = 'admin-product-images';
+
+  /* Pull the object path (e.g. "products/123-abc.webp") out of a public
+     Storage URL for admin-product-images. Returns null for anything
+     that is NOT actually an object in that bucket — local repo paths
+     (/Electronique/..., /books/...), /Logo.jpg, and null/empty values
+     must never reach storage.remove(). */
+  function storagePathFromUrl(url) {
+    if (!url || typeof url !== 'string') return null;
+    const marker = `/storage/v1/object/public/${STORAGE_BUCKET}/`;
+    const idx = url.indexOf(marker);
+    if (idx === -1) return null;
+    const rest = url.slice(idx + marker.length).split('?')[0].split('#')[0];
+    if (!rest) return null;
+    try { return decodeURIComponent(rest); } catch { return rest; }
+  }
+
+  function collectImageUrls(product) {
+    const urls = [];
+    if (product?.main_image) urls.push(product.main_image);
+    if (Array.isArray(product?.gallery_images)) {
+      product.gallery_images.forEach(u => { if (u) urls.push(u); });
+    }
+    return urls;
+  }
+
+  /* Straight DB check (not the up-to-60s-stale ALL_PM_PRODUCTS cache) —
+     never delete a Storage object another product row still points at. */
+  async function isImageStillReferenced(url) {
+    const [main, gallery] = await Promise.all([
+      sb.from('admin_products_catalog').select('id', { count: 'exact', head: true }).eq('main_image', url),
+      sb.from('admin_products_catalog').select('id', { count: 'exact', head: true }).contains('gallery_images', [url]),
+    ]);
+    return (main.count || 0) > 0 || (gallery.count || 0) > 0;
+  }
+
+  /* Remove every URL in `urls` that is a real admin-product-images object
+     and is no longer referenced by any product row. Never throws — a
+     cleanup miss is reported back, not raised, so it can never affect
+     the product record that already saved/deleted successfully. */
+  async function cleanupOrphanedImages(urls) {
+    const unique = [...new Set((urls || []).filter(Boolean))];
+    const result = { removed: 0, failed: [] };
+    for (const url of unique) {
+      const objectPath = storagePathFromUrl(url);
+      if (!objectPath) continue; /* not a Storage object — leave it alone */
+      try {
+        if (await isImageStillReferenced(url)) continue; /* shared — keep it */
+        const { error } = await sb.storage.from(STORAGE_BUCKET).remove([objectPath]);
+        if (error) { result.failed.push(url); continue; }
+        result.removed++;
+      } catch (_) {
+        result.failed.push(url);
+      }
+    }
+    return result;
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     IMAGE OPTIMIZATION — resize + re-encode before upload. Uploads
+     previously went to Storage byte-for-byte, so a multi-MB phone
+     photo cost that much on every future page view even displayed
+     as a small thumbnail. Canvas-based, no new dependency.
+  ══════════════════════════════════════════════════════════ */
+  const IMG_MAX_EDGE = 1600;
+  const IMG_WEBP_QUALITY = 0.82;
+
+  function loadImageElement(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => resolve({ img, url });
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('الملف ليس صورة صالحة')); };
+      img.src = url;
+    });
+  }
+
+  /* Resizes to at most IMG_MAX_EDGE on the long edge (never upscales) and
+     re-encodes as WebP. Falls back to the original file whenever that's
+     the safer/smaller choice: SVG/GIF (would lose vector precision or
+     animation), a decode failure, or a re-encode that didn't actually
+     end up smaller than the original. */
+  async function optimizeImageForUpload(file) {
+    if (!file || !file.type || !file.type.startsWith('image/')) {
+      throw new Error('الملف المختار ليس صورة');
+    }
+    if (file.type === 'image/svg+xml' || file.type === 'image/gif') return file;
+
+    let loaded;
+    try {
+      loaded = await loadImageElement(file);
+    } catch {
+      return file; /* let the actual upload fail with a clearer Storage error instead */
+    }
+
+    try {
+      const { img, url } = loaded;
+      const scale = Math.min(1, IMG_MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
+      const w = Math.max(1, Math.round(img.naturalWidth * scale));
+      const h = Math.max(1, Math.round(img.naturalHeight * scale));
+
+      const canvas = document.createElement('canvas');
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+
+      const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', IMG_WEBP_QUALITY));
+      if (!blob || blob.size >= file.size) return file; /* optimization didn't help — keep original */
+
+      const newName = file.name.replace(/\.[^.]+$/, '') + '.webp';
+      return new File([blob], newName, { type: 'image/webp' });
+    } catch {
+      return file;
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
      IMAGE UPLOAD
   ══════════════════════════════════════════════════════════ */
   function randName(ext) {
@@ -1818,10 +1949,11 @@
     if (prev) prev.innerHTML = `<div class="pm-upload-lbl">⏳ جاري الرفع...</div>`;
 
     try {
-      const ext  = file.name.split('.').pop();
+      const optimized = await optimizeImageForUpload(file);
+      const ext  = optimized.name.split('.').pop();
       const path = randName(ext);
 
-      const { error: upErr } = await sb.storage.from('admin-product-images').upload(path, file, { cacheControl: '3600', upsert: false });
+      const { error: upErr } = await sb.storage.from('admin-product-images').upload(path, optimized, { cacheControl: '3600', upsert: false });
       if (upErr) throw upErr;
 
       const { data: { publicUrl } } = sb.storage.from('admin-product-images').getPublicUrl(path);
@@ -1850,10 +1982,11 @@
     showToast(`⏳ جاري رفع ${files.length} صورة...`);
     for (const file of files) {
       try {
-        const ext  = file.name.split('.').pop();
+        const optimized = await optimizeImageForUpload(file);
+        const ext  = optimized.name.split('.').pop();
         const path = `products/gallery/${randName(ext).split('/').pop()}`;
 
-        const { error: upErr } = await sb.storage.from('admin-product-images').upload(path, file, { cacheControl: '3600', upsert: false });
+        const { error: upErr } = await sb.storage.from('admin-product-images').upload(path, optimized, { cacheControl: '3600', upsert: false });
         if (upErr) throw upErr;
 
         const { data: { publicUrl } } = sb.storage.from('admin-product-images').getPublicUrl(path);
@@ -1955,6 +2088,19 @@
         throw new Error('الوصف الكامل مطلوب لنشر منتج جديد (20 حرفاً على الأقل) — لتفادي صفحة منتج فارغة');
       }
 
+      /* Friendly pre-check only — a UX nicety, NOT the real guard against
+         a duplicate slug. Two saves racing each other can both pass this
+         and still both reach the insert/update below; the database's own
+         UNIQUE constraint on `slug` (see supabase/migrations) is what
+         actually rejects the loser, and the catch block below turns that
+         rejection into the same friendly message. */
+      let dupCheck = sb.from('admin_products_catalog').select('id').eq('slug', payload.slug).limit(1);
+      if (EDIT_PRODUCT_ID) dupCheck = dupCheck.neq('id', EDIT_PRODUCT_ID);
+      const { data: dupRows } = await dupCheck;
+      if (dupRows && dupRows.length) {
+        throw new Error('هذا الرابط (slug) مستخدم من قبل لمنتج آخر — الرجاء اختيار رابط مختلف');
+      }
+
       console.log('[PM] saveProduct —', EDIT_PRODUCT_ID ? 'UPDATE id=' + EDIT_PRODUCT_ID : 'INSERT new', '| slug:', payload.slug, '| is_active:', payload.is_active);
 
       if (EDIT_PRODUCT_ID) {
@@ -1966,6 +2112,18 @@
         console.log('[PM] UPDATE succeeded for id:', EDIT_PRODUCT_ID);
         showToast('✅ تم تحديث المنتج بنجاح');
         triggerPageRebuild('تعديل منتج: ' + payload.product_name);
+
+        /* Only now — after the row that stopped referencing them has
+           committed — clean up any old images the edit replaced/removed. */
+        const stillUsed = new Set(collectImageUrls(payload));
+        const droppedImages = EDIT_ORIGINAL_IMAGES.filter(u => !stillUsed.has(u));
+        if (droppedImages.length) {
+          const { failed } = await cleanupOrphanedImages(droppedImages);
+          if (failed.length) {
+            console.warn('[PM] could not remove old image(s) from Storage:', failed);
+            showToast(`⚠️ تم الحفظ، لكن تعذّر حذف ${failed.length} صورة قديمة من التخزين — يمكن إعادة المحاولة لاحقاً`, 'error');
+          }
+        }
       } else {
         payload.created_at = new Date().toISOString();
         const { data: insertedData, error } = await sb.from('admin_products_catalog').insert(payload).select('id, slug, catalog_id');
@@ -1985,7 +2143,13 @@
       await loadProducts();
 
     } catch (err) {
-      showToast('❌ فشل الحفظ: ' + (err.message || 'خطأ غير معروف'), 'error');
+      /* Postgres unique_violation (23505) — the real guard against a slug
+         race that the pre-check above can't fully close on its own. */
+      const isDupSlug = err?.code === '23505' || /duplicate key|unique constraint/i.test(err?.message || '');
+      const msg = isDupSlug
+        ? 'هذا الرابط (slug) مستخدم من قبل لمنتج آخر — الرجاء اختيار رابط مختلف'
+        : (err.message || 'خطأ غير معروف');
+      showToast('❌ فشل الحفظ: ' + msg, 'error');
     } finally {
       if (saveBtn) {
         saveBtn.disabled = false;
@@ -1999,12 +2163,23 @@
   ══════════════════════════════════════════════════════════ */
   async function deleteProduct(id, btn) {
     if (btn) btn.disabled = true;
-    const deletedName = ALL_PM_PRODUCTS.find(p => p.id === id)?.product_name || id;
+    const deletedProduct = ALL_PM_PRODUCTS.find(p => p.id === id);
+    const deletedName = deletedProduct?.product_name || id;
     try {
       const { error } = await sb.from('admin_products_catalog').delete().eq('id', id);
       if (error) throw error;
       showToast('✅ تم حذف المنتج');
       triggerPageRebuild('حذف منتج: ' + deletedName);
+
+      /* Only now — after the row is actually gone — clean up its images. */
+      if (deletedProduct) {
+        const { failed } = await cleanupOrphanedImages(collectImageUrls(deletedProduct));
+        if (failed.length) {
+          console.warn('[PM] could not remove image(s) from Storage after delete:', failed);
+          showToast(`⚠️ تم حذف المنتج، لكن تعذّر حذف ${failed.length} صورة من التخزين`, 'error');
+        }
+      }
+
       await loadProducts();
       return true;
     } catch (err) {

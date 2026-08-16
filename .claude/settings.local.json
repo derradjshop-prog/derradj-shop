@@ -76,7 +76,10 @@
       "Bash(node -e \"require\\('playwright'\\)\")",
       "Bash(node -e \"require\\('puppeteer'\\)\")",
       "Bash(npx --yes serve -l 8792 .)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8792/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8792/)",
+      "Bash(node -c scripts/generate-product-pages.js)",
+      "Bash(node -c admin/products-manager.js)",
+      "Bash(git rm *)"
     ],
     "additionalDirectories": [
       "\\tmp",

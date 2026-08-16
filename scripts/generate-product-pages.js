@@ -31,10 +31,26 @@ const PRODUCT_DIR = path.join(ROOT, 'product');
 const BOOKS_DIR = path.join(ROOT, 'books');
 const CACHE_FILE = path.join(__dirname, '.image-dims-cache.json');
 
-/* ── Supabase REST ── */
+/* ── Supabase REST ──
+   Column list is exactly what this file (plus js/product-template.js and
+   js/book-template.js, which it feeds) actually reads from a row — keep
+   it in sync if either template starts using a new field. Admin-only
+   workflow columns (is_active, status, quantity, discount_enabled,
+   created_at, product_name_fr, display_order) are deliberately left out;
+   is_active is still applied as a filter below and display_order is
+   still used in `order=`, neither requires being in `select=`. */
+const PRODUCT_COLUMNS = [
+  'id', 'catalog_id', 'slug', 'category', 'subcategory',
+  'product_name', 'product_name_ar', 'price', 'old_price',
+  'main_image', 'gallery_images', 'stock_status',
+  'short_description', 'full_description',
+  'seo_title', 'seo_description', 'keywords', 'brand',
+  'author', 'translator', 'year', 'updated_at',
+].join(',');
+
 async function fetchActiveProducts() {
   const headers = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
-  const base = `${SB_URL}/rest/v1/admin_products_catalog?select=*&is_active=eq.true`;
+  const base = `${SB_URL}/rest/v1/admin_products_catalog?select=${PRODUCT_COLUMNS}&is_active=eq.true`;
   let res = await fetch(base + '&order=display_order.asc.nullslast,created_at.desc', { headers });
   if (!res.ok && res.status === 400) {
     res = await fetch(base + '&order=created_at.desc', { headers });
@@ -200,6 +216,19 @@ function electronicsFolderBase(p) {
     .replace(/[\/\\?%*:|"<>]/g, '-').trim() || 'other';
   return path.join(ROOT, 'Electronique', subdir, p.slug || '');
 }
+/* Cheap HEAD-only check so two Storage URLs that happen to hold the
+   exact same bytes (e.g. the same photo re-uploaded into two different
+   gallery slots, each getting its own random filename) don't cost two
+   full downloads — Supabase Storage returns an ETag per object. */
+async function fetchEtag(url) {
+  try {
+    const res = await fetch(url, { method: 'HEAD' });
+    return res.ok ? (res.headers.get('etag') || null) : null;
+  } catch {
+    return null;
+  }
+}
+
 async function localizeElectronicsImagesIfMissing(p) {
   if (!p.slug) return;
   const folder = electronicsFolderBase(p);
@@ -214,14 +243,24 @@ async function localizeElectronicsImagesIfMissing(p) {
     if (!sources.find(s => s.filename === filename)) sources.push({ url: u, filename });
   });
 
+  /* etag -> already-downloaded bytes, scoped to this one product's
+     sources so a matching later source reuses the buffer instead of
+     issuing a second GET. Falls straight through to a normal download
+     whenever an ETag isn't available or doesn't match anything seen
+     yet in this call. */
+  const byEtag = new Map();
+
   for (const { url, filename } of sources) {
     const dest = path.join(folder, filename);
     if (fs.existsSync(dest)) continue;
     try {
-      const buf = await downloadToFile(url);
+      const etag = await fetchEtag(url);
+      const cached = etag ? byEtag.get(etag) : null;
+      const buf = cached || await downloadToFile(url);
+      if (etag && !cached) byEtag.set(etag, buf);
       fs.mkdirSync(folder, { recursive: true });
       fs.writeFileSync(dest, buf);
-      console.log(`[generate-product-pages] localized ${p.slug}/${filename} (${(buf.length / 1024).toFixed(0)}KB from Supabase Storage, one-time)`);
+      console.log(`[generate-product-pages] localized ${p.slug}/${filename} (${(buf.length / 1024).toFixed(0)}KB${cached ? ', reused — identical to another image in this product' : ' from Supabase Storage'}, one-time)`);
     } catch (err) {
       console.warn(`[generate-product-pages] could not localize ${filename} for ${p.slug}: ${err.message} — will keep serving it from Supabase Storage until this succeeds.`);
     }
