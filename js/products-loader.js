@@ -298,7 +298,14 @@
     });
   }
 
-  /* ── Render products into homepage or electronics category page ── */
+  /* ── Render products into homepage or electronics category page ──
+     Clears the grid first: the static HTML shipped by
+     scripts/generate-product-pages.js pre-fills these containers with
+     a crawlable server-rendered fallback (same .product-card markup)
+     so search engines and no-JS visitors see real product links
+     immediately. Once live data loads, this replaces that fallback
+     entirely instead of appending after it — otherwise every product
+     would render twice. ── */
   function renderHomepageProducts(products) {
     /* Support both the homepage grid and the Electronique category page grid */
     const grid = document.getElementById('homeElectronicsGrid')
@@ -309,6 +316,7 @@
     const elec = products.filter(p => p.category !== 'books');
     if (!elec.length) return;
 
+    grid.innerHTML = '';
     elec.forEach(p => {
       grid.insertAdjacentHTML('beforeend', buildCard(p));
     });
@@ -325,6 +333,7 @@
     const books = products.filter(p => p.category === 'books');
     if (!books.length) return;
 
+    grid.innerHTML = '';
     books.forEach(p => {
       grid.insertAdjacentHTML('beforeend', buildCard(p));
     });

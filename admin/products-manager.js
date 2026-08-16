@@ -792,7 +792,7 @@
           <textarea id="pmShortDesc" rows="2" placeholder="وصف قصير يظهر في بطاقة المنتج..."></textarea>
         </div>
         <div class="pm-fld full">
-          <label>وصف كامل (لصفحة المنتج)</label>
+          <label>وصف كامل (لصفحة المنتج) — مطلوب عند إضافة منتج جديد</label>
           <textarea id="pmFullDesc" rows="5" placeholder="وصف مفصل: المميزات، محتوى الصندوق، حالات الاستخدام، التوصيل، الدفع..."></textarea>
         </div>
 
@@ -1946,6 +1946,14 @@
       if (!payload.product_name) throw new Error('اسم المنتج مطلوب');
       if (!payload.slug)         throw new Error('Slug المنتج مطلوب');
       if (!payload.price)        throw new Error('سعر المنتج مطلوب');
+      /* New products only — require a real full description so a
+         product page is never published with an empty "تفاصيل المنتج"
+         section (thin content for both visitors and Google). Existing
+         products already published without one can still be edited
+         and saved without being forced to backfill this now. */
+      if (!EDIT_PRODUCT_ID && (!payload.full_description || payload.full_description.trim().length < 20)) {
+        throw new Error('الوصف الكامل مطلوب لنشر منتج جديد (20 حرفاً على الأقل) — لتفادي صفحة منتج فارغة');
+      }
 
       console.log('[PM] saveProduct —', EDIT_PRODUCT_ID ? 'UPDATE id=' + EDIT_PRODUCT_ID : 'INSERT new', '| slug:', payload.slug, '| is_active:', payload.is_active);
 

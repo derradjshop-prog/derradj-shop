@@ -607,6 +607,247 @@ ${urls.map(urlBlock).join('\n')}
 `;
 }
 
+/* ── Static crawlable product-grid fallback ── homepage/Electronique
+   grids are otherwise only filled client-side by js/products-loader.js
+   (raw HTML ships an empty container), so crawlers that don't execute
+   JS see no product links there at all. Mirrors buildCard() in
+   js/products-loader.js exactly (same markup/classes) so there is no
+   visual flash when the live JS render replaces it — it now clears
+   the container before appending (see products-loader.js) specifically
+   so this fallback is fully replaced, never duplicated. ── */
+const STATIC_CARD_CAT_ICON = {
+  books: '📚', electronics: '💻', earbuds: '🎧', laptop: '💻',
+  smart_watch: '⌚', power_bank: '🔋', other: '📦',
+};
+const STATIC_CARD_AR_RE = /[؀-ۿ]/;
+function staticCardArName(p) {
+  const a = p.product_name, b = p.product_name_ar;
+  const aIsAr = STATIC_CARD_AR_RE.test(a || ''), bIsAr = STATIC_CARD_AR_RE.test(b || '');
+  if (aIsAr && !bIsAr) return a;
+  if (!aIsAr && bIsAr) return b;
+  return a || b || '';
+}
+function staticCardResolveImage(p) {
+  if (p.category === 'books') {
+    const slug = p.slug || '';
+    return slug ? `/books/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
+  }
+  if (!p.main_image) return '/Logo.jpg';
+  const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
+  const subdir = String(SUBCATEGORY_DIR[p.subcategory] || p.subcategory || 'other')
+    .replace(/[\/\\?%*:|"<>]/g, '-').trim() || 'other';
+  const slug = p.slug || String(p.catalog_id || p.id || '');
+  const mainFilename = String(p.main_image).split('/').filter(Boolean).pop() || 'main.webp';
+  return `/Electronique/${encodeURIComponent(subdir)}/${encodeURIComponent(slug)}/${encodeURIComponent(mainFilename)}`;
+}
+function staticCardPriceHtml(price, oldPrice) {
+  const fmt = n => Number(n).toLocaleString('en-US');
+  const cur = `<span class="price-currency">دج</span>`;
+  let html = `<span class="price-current${oldPrice ? ' price-sale' : ''}"><span class="price-value">${cur}<span class="price-amount">${fmt(price)}</span></span></span>`;
+  if (oldPrice) {
+    html += `<span class="price-old"><span class="price-value">${cur}<span class="price-amount">${fmt(oldPrice)}</span></span></span>`;
+    const pct = Math.round((1 - price / oldPrice) * 100);
+    if (pct > 0) html += `<span class="discount-tag">-${pct}%</span>`;
+  }
+  return html;
+}
+function staticCardSummary(p) {
+  const raw = (p.short_description || p.full_description || '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+  if (!raw) return '';
+  if (raw.length <= 72) return raw;
+  const cut = raw.slice(0, 72);
+  const lastSpace = cut.lastIndexOf(' ');
+  return (lastSpace > 40 ? cut.slice(0, lastSpace) : cut) + '…';
+}
+function buildStaticProductCard(p) {
+  const { esc, escAttr, catLabelAr } = ProductTemplate;
+  const isBook  = p.category === 'books';
+  const url     = `${isBook ? '/books/' : '/product/'}${encodeURIComponent(p.slug)}/`;
+  const isAvail = p.stock_status !== 'out_of_stock';
+  const badgeCls = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
+  const badgeTxt = isAvail ? 'متوفر' : 'نفذت الكمية';
+  const icon    = STATIC_CARD_CAT_ICON[p.category] || '📦';
+  const catAr   = catLabelAr(p.category);
+  const imgSrc  = staticCardResolveImage(p);
+  const summary = staticCardSummary(p);
+  const name    = staticCardArName(p);
+  const fallbackAttr = (!isBook && p.main_image) ? `data-fallback="${escAttr(p.main_image)}" ` : '';
+  const onerror = `onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}"`;
+  const cartBtn = isAvail
+    ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
+    : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
+
+  return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}">
+      <div class="${badgeCls}" data-avail-badge="${p.catalog_id}">${badgeTxt}</div>
+      <a href="${url}" class="product-img-area" style="text-decoration:none;">
+        <img src="${imgSrc}" ${fallbackAttr}alt="${escAttr(name)} — Derradj Shop"
+             loading="lazy" decoding="async" width="400" height="400"
+             ${onerror}>
+      </a>
+      <div class="product-info">
+        <div class="product-cat-label">${icon} ${escAttr(catAr)}</div>
+        <a href="${url}" style="text-decoration:none;color:inherit;">
+          <h3 class="product-name">${esc(name)}</h3>
+        </a>
+        ${summary ? `<p class="product-card-summary">${esc(summary)}</p>` : ''}
+        <div class="product-prices">${staticCardPriceHtml(p.price, p.old_price)}</div>
+        <div class="product-card-btns">
+          <a href="${url}" class="btn-order-card">${icon} تفاصيل</a>
+          ${cartBtn}
+        </div>
+      </div>
+    </div>`;
+}
+
+function injectStaticGrid(filePath, gridId, rows) {
+  const label = path.relative(ROOT, filePath);
+  if (!fs.existsSync(filePath)) {
+    console.warn(`[generate-product-pages] ${label} not found — skipping static grid fallback for #${gridId}`);
+    return;
+  }
+  const html = fs.readFileSync(filePath, 'utf8');
+  const startMarker = `<!--STATIC_FALLBACK:${gridId}:START-->`;
+  const endMarker = `<!--STATIC_FALLBACK:${gridId}:END-->`;
+  const startIdx = html.indexOf(startMarker);
+  const endIdx = html.indexOf(endMarker);
+  if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
+    console.warn(`[generate-product-pages] static fallback markers for #${gridId} not found in ${label} — skipping`);
+    return;
+  }
+  const cardsHtml = rows.filter(p => p.slug).map(buildStaticProductCard).join('\n');
+  const newHtml = html.slice(0, startIdx + startMarker.length) + cardsHtml + html.slice(endIdx);
+  if (newHtml !== html) {
+    fs.writeFileSync(filePath, newHtml);
+    console.log(`[generate-product-pages] refreshed static fallback grid #${gridId} in ${label} (${rows.length} item(s))`);
+  }
+}
+
+/* ── Catalog-wide structured data on index.html / books/index.html /
+   Electronique/index.html ── these 3 pages hand-author their own
+   JSON-LD (LocalBusiness.hasOfferCatalog on the homepage, ItemList on
+   the two category pages) which drifts out of sync with Supabase the
+   moment a product is added/removed/renamed. Regenerate just the
+   catalog-derived fields (itemListElement / numberOfItems) in place,
+   from the same `products`/`books` arrays the sitemap is built from,
+   leaving every other hand-written field (name, description,
+   breadcrumb, LocalBusiness address/hours/etc.) untouched. ── */
+function findFirstJsonLdNode(node, predicate, seen) {
+  seen = seen || new Set();
+  if (!node || typeof node !== 'object' || seen.has(node)) return null;
+  seen.add(node);
+  if (predicate(node)) return node;
+  for (const key of Object.keys(node)) {
+    const val = node[key];
+    if (Array.isArray(val)) {
+      for (const item of val) {
+        const found = findFirstJsonLdNode(item, predicate, seen);
+        if (found) return found;
+      }
+    } else if (val && typeof val === 'object') {
+      const found = findFirstJsonLdNode(val, predicate, seen);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+function updateCatalogSchema(filePath, mutateFn) {
+  const label = path.relative(ROOT, filePath);
+  if (!fs.existsSync(filePath)) {
+    console.warn(`[generate-product-pages] ${label} not found — skipping schema update`);
+    return;
+  }
+  const html = fs.readFileSync(filePath, 'utf8');
+  const m = html.match(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/);
+  if (!m) {
+    console.warn(`[generate-product-pages] no JSON-LD <script> found in ${label} — skipping schema update`);
+    return;
+  }
+  let data;
+  try {
+    data = JSON.parse(m[2]);
+  } catch (err) {
+    console.warn(`[generate-product-pages] could not parse JSON-LD in ${label}: ${err.message} — skipping schema update`);
+    return;
+  }
+  if (!mutateFn(data)) {
+    console.warn(`[generate-product-pages] target node not found in JSON-LD for ${label} — skipping schema update`);
+    return;
+  }
+  const newHtml = html.slice(0, m.index) + m[1] + JSON.stringify(data) + m[3] + html.slice(m.index + m[0].length);
+  if (newHtml !== html) {
+    fs.writeFileSync(filePath, newHtml);
+    console.log(`[generate-product-pages] refreshed catalog schema in ${label}`);
+  }
+}
+
+function offerItemsForCatalog(products, books) {
+  const items = [];
+  books.forEach(p => {
+    if (!p.slug || !p.product_name) return;
+    items.push({
+      '@type': 'Offer',
+      price: String(p.price),
+      priceCurrency: 'DZD',
+      itemOffered: { '@type': 'Book', name: p.product_name, url: `${SITE_URL}/books/${encodeURIComponent(p.slug)}/` },
+    });
+  });
+  products.forEach(p => {
+    if (!p.slug) return;
+    let name = p.product_name;
+    try { name = ProductTemplate.buildProductView(p).productName || name; } catch (_) { /* keep raw name */ }
+    items.push({
+      '@type': 'Offer',
+      price: String(p.price),
+      priceCurrency: 'DZD',
+      itemOffered: { '@type': 'Product', name, url: `${SITE_URL}/product/${encodeURIComponent(p.slug)}/` },
+    });
+  });
+  return items;
+}
+
+function listItemsForCategory(rows, kind) {
+  return rows.filter(p => p.slug).map((p, i) => {
+    let name = p.product_name;
+    const url = kind === 'books'
+      ? `${SITE_URL}/books/${encodeURIComponent(p.slug)}/`
+      : `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`;
+    if (kind === 'electronics') {
+      try { name = ProductTemplate.buildProductView(p).productName || name; } catch (_) { /* keep raw name */ }
+    }
+    return { '@type': 'ListItem', position: i + 1, url, name };
+  });
+}
+
+function refreshCatalogSchemas(products, books) {
+  updateCatalogSchema(path.join(ROOT, 'index.html'), data => {
+    const business = findFirstJsonLdNode(data, n => n && n.hasOfferCatalog);
+    if (!business) return false;
+    const items = offerItemsForCatalog(products, books);
+    business.hasOfferCatalog.itemListElement = items;
+    business.hasOfferCatalog.numberOfItems = items.length;
+    return true;
+  });
+
+  updateCatalogSchema(path.join(BOOKS_DIR, 'index.html'), data => {
+    const list = findFirstJsonLdNode(data, n => n && n['@type'] === 'ItemList');
+    if (!list) return false;
+    const items = listItemsForCategory(books, 'books');
+    list.itemListElement = items;
+    list.numberOfItems = items.length;
+    return true;
+  });
+
+  updateCatalogSchema(path.join(ROOT, 'Electronique', 'index.html'), data => {
+    const list = findFirstJsonLdNode(data, n => n && n['@type'] === 'ItemList');
+    if (!list) return false;
+    const items = listItemsForCategory(products, 'electronics');
+    list.itemListElement = items;
+    list.numberOfItems = items.length;
+    return true;
+  });
+}
+
 /* ── Main ── */
 async function main() {
   console.log('[generate-product-pages] fetching active catalog from Supabase...');
@@ -691,6 +932,20 @@ async function main() {
      from ever being written or removed by this script. */
 
   saveCache(cache);
+
+  /* Electronics only — small catalog (single digits), so the added page
+     weight is negligible. Books are deliberately NOT injected here: the
+     homepage carousel would otherwise embed all ~100+ books statically
+     (~150KB), and every book already has its own crawlable static page
+     plus a fully accurate ItemList on books/index.html (see
+     refreshCatalogSchemas below) and a sitemap entry — the actual
+     discoverability gap this phase targets is electronics/Arduino, not
+     books, so keep the fix scoped to that instead of bloating the
+     homepage for content that isn't at risk of being orphaned. */
+  injectStaticGrid(path.join(ROOT, 'Electronique', 'index.html'), 'electronicsGrid', products);
+  injectStaticGrid(path.join(ROOT, 'index.html'), 'homeElectronicsGrid', products);
+
+  refreshCatalogSchemas(products, books);
 
   const sitemap = buildSitemap(products, books);
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap);

@@ -266,7 +266,7 @@
       '@type': 'BreadcrumbList',
       'itemListElement': [
         { '@type': 'ListItem', 'position': 1, 'name': 'Derradj Shop', 'item': SITE_URL },
-        { '@type': 'ListItem', 'position': 2, 'name': catAr,          'item': `${SITE_URL}/#categories` },
+        { '@type': 'ListItem', 'position': 2, 'name': catAr,          'item': `${SITE_URL}/Electronique/` },
         { '@type': 'ListItem', 'position': 3, 'name': schemaName,     'item': pageUrl }
       ]
     };
@@ -278,8 +278,7 @@
 
       <div class="breadcrumb">
         <a href="/">الرئيسية</a><span>›</span>
-        <a href="/#categories">التصنيفات</a><span>›</span>
-        <span>${esc(catAr)}</span><span>›</span>
+        <a href="/Electronique/">${esc(catAr)}</a><span>›</span>
         <span>${esc(arName)}</span>
       </div>
 
