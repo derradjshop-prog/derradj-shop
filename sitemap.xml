@@ -989,6 +989,15 @@
     </image:image>
   </url>
   <url>
+    <loc>https://derradjshop.com/books/the-straw-man/</loc>
+    <lastmod>2026-08-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/books/the-straw-man/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
     <loc>https://derradjshop.com/product/arduino-r3-830/</loc>
     <lastmod>2026-07-01</lastmod>
     <changefreq>weekly</changefreq>
