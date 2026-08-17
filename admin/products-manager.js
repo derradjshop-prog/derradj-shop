@@ -50,6 +50,13 @@
   let BOOK_SORT_MODE = 'manual';
   let BOOK_SALES = new Map();
   let BOOK_SALES_LOADED = false;
+  /* Locally-staged (not-yet-written-to-disk) product images — see the
+     IMAGE UPLOAD section below. Populated on file pick, written to the
+     local repo via window.LocalFS only once saveProduct() knows the
+     product's final slug/category. */
+  let PM_STAGED_MAIN = null; /* { blob, previewUrl } | null */
+  let PM_GALLERY_ITEMS = []; /* [{ id, type:'existing'|'staged', url?, blob?, previewUrl?, el }] */
+  let PM_GALLERY_SEQ = 0;
 
   /* إلكتروني = كل ما ليس كتاباً */
   function isElec(p) { return p.category !== 'books'; }
@@ -601,9 +608,11 @@
             <div class="pm-section-title">🛍 إدارة المنتجات <span id="pmProductCount" style="background:#e2e8f0;color:#475569;font-size:13px;font-weight:700;padding:2px 10px;border-radius:99px;margin-right:8px;vertical-align:middle;">—</span></div>
             <div class="pm-section-sub">إضافة منتجات جديدة، تعديلها، التحكم بتوفرها وترتيب ظهورها</div>
           </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد</button>
             <button class="btn-pm-add" id="pmSitemapBtn" style="background:#1d4ed8;">🗺 توليد Sitemap</button>
+            <button type="button" class="btn-pm-add" id="pmFolderBtn" style="background:#64748b;">🔄 التحقق من خادم الصور المحلي</button>
+            <span id="pmFolderStatus" style="font-size:12px;font-weight:700;color:#94a3b8;">⏳ جاري التحقق...</span>
           </div>
         </div>
         <div id="pmOrderWarning" style="display:none;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#78350f;line-height:1.6;">
@@ -708,6 +717,37 @@
       </div>
     `;
     document.body.appendChild(sitemapModal);
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     LOCAL IMAGE SERVER — connectivity badge for the local Node
+     helper (scripts/local-image-server.js, start with `npm run
+     local-image-server`). See admin/local-fs.js for the actual
+     read/write logic — it talks to http://127.0.0.1:8787.
+  ══════════════════════════════════════════════════════════ */
+  function renderFolderBadge(status) {
+    const el = document.getElementById('pmFolderStatus');
+    if (!el) return;
+    const LABELS = {
+      granted: { text: '✅ متصل بخادم الصور المحلي', color: '#059669' },
+      offline: { text: '🔴 خادم الصور المحلي غير متصل — شغّله بـ npm run local-image-server', color: '#dc2626' },
+    };
+    const l = LABELS[status] || LABELS.offline;
+    el.textContent = l.text;
+    el.style.color = l.color;
+  }
+
+  async function initLocalFsBadge() {
+    if (!window.LocalFS) { renderFolderBadge('offline'); return; }
+    const status = await window.LocalFS.restorePermission();
+    renderFolderBadge(status);
+  }
+
+  async function handleFolderBtnClick() {
+    if (!window.LocalFS) return;
+    const status = await window.LocalFS.restorePermission();
+    renderFolderBadge(status);
+    showToast(status === 'granted' ? '✅ خادم الصور المحلي متصل' : '❌ تعذّر الاتصال — تأكد من تشغيل npm run local-image-server', status === 'granted' ? 'success' : 'error');
   }
 
   /* ── Build form HTML ── */
@@ -879,6 +919,9 @@
   function bindEvents() {
     /* Open add modal */
     document.getElementById('pmAddBtn')?.addEventListener('click', () => openModal(null));
+
+    /* Local project folder — File System Access API */
+    document.getElementById('pmFolderBtn')?.addEventListener('click', handleFolderBtnClick);
 
     /* Close modal */
     document.getElementById('pmMClose')?.addEventListener('click', closeModal);
@@ -1774,7 +1817,7 @@
       if (product.main_image) showMainPreview(resolveThumbSrc(product));
 
       if (Array.isArray(product.gallery_images)) {
-        product.gallery_images.forEach(url => addGalleryThumb(url));
+        product.gallery_images.forEach(url => addGalleryItem({ type: 'existing', url }));
       }
 
       const slugEl = document.getElementById('pmSlug');
@@ -1802,14 +1845,16 @@
     const slugEl = document.getElementById('pmSlug');
     if (slugEl) delete slugEl.dataset.manualEdit;
 
+    if (PM_STAGED_MAIN?.previewUrl) URL.revokeObjectURL(PM_STAGED_MAIN.previewUrl);
+    PM_STAGED_MAIN = null;
+
     const prev = document.getElementById('pmMainPrev');
     if (prev) prev.innerHTML = `
       <div class="pm-upload-lbl">📷 انقر لرفع الصورة الرئيسية</div>
       <div class="pm-upload-sub">PNG · JPG · WebP</div>
     `;
     document.getElementById('pmMainBox')?.classList.remove('loaded');
-    const galPrev = document.getElementById('pmGalPreviews');
-    if (galPrev) galPrev.innerHTML = '';
+    clearGalleryItems();
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -1897,25 +1942,18 @@
   }
 
   /* Resizes to at most IMG_MAX_EDGE on the long edge (never upscales) and
-     re-encodes as WebP. Falls back to the original file whenever that's
-     the safer/smaller choice: SVG/GIF (would lose vector precision or
-     animation), a decode failure, or a re-encode that didn't actually
-     end up smaller than the original. */
-  async function optimizeImageForUpload(file) {
+     re-encodes as WebP. Unlike a Storage upload, a file written locally as
+     "main.webp" that secretly isn't WebP would silently break the
+     storefront — so this always forces a real re-encode and throws
+     instead of ever passing the original bytes through under a .webp
+     name. */
+  async function convertToWebpForLocal(file) {
     if (!file || !file.type || !file.type.startsWith('image/')) {
       throw new Error('الملف المختار ليس صورة');
     }
-    if (file.type === 'image/svg+xml' || file.type === 'image/gif') return file;
 
-    let loaded;
+    const { img, url } = await loadImageElement(file);
     try {
-      loaded = await loadImageElement(file);
-    } catch {
-      return file; /* let the actual upload fail with a clearer Storage error instead */
-    }
-
-    try {
-      const { img, url } = loaded;
       const scale = Math.min(1, IMG_MAX_EDGE / Math.max(img.naturalWidth, img.naturalHeight));
       const w = Math.max(1, Math.round(img.naturalWidth * scale));
       const h = Math.max(1, Math.round(img.naturalHeight * scale));
@@ -1925,46 +1963,38 @@
       canvas.height = h;
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
 
       const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', IMG_WEBP_QUALITY));
-      if (!blob || blob.size >= file.size) return file; /* optimization didn't help — keep original */
-
-      const newName = file.name.replace(/\.[^.]+$/, '') + '.webp';
-      return new File([blob], newName, { type: 'image/webp' });
-    } catch {
-      return file;
+      if (!blob) throw new Error('فشل تحويل الصورة إلى WebP');
+      return blob;
+    } finally {
+      URL.revokeObjectURL(url);
     }
   }
 
   /* ══════════════════════════════════════════════════════════
-     IMAGE UPLOAD
+     IMAGE UPLOAD — staged locally only. Nothing here touches
+     Supabase Storage; the actual write to the local repo happens in
+     saveProduct() via window.LocalFS, once the product's final slug
+     is known (see admin/local-fs.js).
   ══════════════════════════════════════════════════════════ */
-  function randName(ext) {
-    return `products/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
-  }
-
   async function uploadMainImage(file) {
     const prev = document.getElementById('pmMainPrev');
-    if (prev) prev.innerHTML = `<div class="pm-upload-lbl">⏳ جاري الرفع...</div>`;
+    if (prev) prev.innerHTML = `<div class="pm-upload-lbl">⏳ جاري التجهيز...</div>`;
 
     try {
-      const optimized = await optimizeImageForUpload(file);
-      const ext  = optimized.name.split('.').pop();
-      const path = randName(ext);
+      const blob = await convertToWebpForLocal(file);
+      if (PM_STAGED_MAIN?.previewUrl) URL.revokeObjectURL(PM_STAGED_MAIN.previewUrl);
+      const previewUrl = URL.createObjectURL(blob);
+      PM_STAGED_MAIN = { blob, previewUrl };
+      setValue('pmMainUrl', ''); /* the real local path is only known after saveProduct() writes it */
 
-      const { error: upErr } = await sb.storage.from('admin-product-images').upload(path, optimized, { cacheControl: '3600', upsert: false });
-      if (upErr) throw upErr;
-
-      const { data: { publicUrl } } = sb.storage.from('admin-product-images').getPublicUrl(path);
-
-      setValue('pmMainUrl', publicUrl);
-      showMainPreview(publicUrl);
+      showMainPreview(previewUrl);
       document.getElementById('pmMainBox')?.classList.add('loaded');
-      showToast('✅ تم رفع الصورة الرئيسية');
+      showToast('✅ تم تجهيز الصورة الرئيسية — ستُحفظ محلياً عند حفظ المنتج');
     } catch (err) {
-      if (prev) prev.innerHTML = `<div class="pm-upload-lbl" style="color:#dc2626;">❌ فشل رفع الصورة</div>`;
-      showToast('❌ فشل رفع الصورة: ' + err.message, 'error');
+      if (prev) prev.innerHTML = `<div class="pm-upload-lbl" style="color:#dc2626;">❌ فشل تجهيز الصورة</div>`;
+      showToast('❌ فشل تجهيز الصورة: ' + err.message, 'error');
     }
   }
 
@@ -1979,36 +2009,118 @@
   }
 
   async function uploadGalleryImages(files) {
-    showToast(`⏳ جاري رفع ${files.length} صورة...`);
     for (const file of files) {
       try {
-        const optimized = await optimizeImageForUpload(file);
-        const ext  = optimized.name.split('.').pop();
-        const path = `products/gallery/${randName(ext).split('/').pop()}`;
-
-        const { error: upErr } = await sb.storage.from('admin-product-images').upload(path, optimized, { cacheControl: '3600', upsert: false });
-        if (upErr) throw upErr;
-
-        const { data: { publicUrl } } = sb.storage.from('admin-product-images').getPublicUrl(path);
-        addGalleryThumb(publicUrl);
+        const blob = await convertToWebpForLocal(file);
+        addGalleryItem({ type: 'staged', blob });
       } catch (err) {
-        showToast('❌ فشل رفع صورة: ' + err.message, 'error');
+        showToast('❌ فشل تجهيز صورة: ' + err.message, 'error');
       }
     }
-    showToast('✅ تم رفع الصور');
+    showToast('✅ تم تجهيز الصور — ستُحفظ محلياً عند حفظ المنتج');
   }
 
-  function addGalleryThumb(url) {
+  /* item: { type:'existing', url } for images already saved on a product
+     being edited, or { type:'staged', blob } for a freshly-picked file
+     not yet written to disk. Both render the same way; only 'staged'
+     entries get an actual local write in saveProduct(). */
+  function addGalleryItem(item) {
     const container = document.getElementById('pmGalPreviews');
-    if (!container) return;
+    if (!container) return null;
+
+    const id = 'g' + (++PM_GALLERY_SEQ);
+    const previewUrl = item.type === 'existing' ? item.url : URL.createObjectURL(item.blob);
+
     const wrap = document.createElement('div');
     wrap.className = 'pm-gal-wrap';
+    wrap.dataset.galId = id;
     wrap.innerHTML = `
-      <img src="${esc(url)}" class="pm-gal-img" alt="">
+      <img src="${esc(previewUrl)}" class="pm-gal-img" alt="">
       <button type="button" class="pm-gal-rm" title="إزالة">×</button>
     `;
-    wrap.querySelector('.pm-gal-rm').addEventListener('click', () => wrap.remove());
+    wrap.querySelector('.pm-gal-rm').addEventListener('click', () => removeGalleryItem(id));
     container.appendChild(wrap);
+
+    const entry = {
+      id,
+      type: item.type,
+      url: item.type === 'existing' ? item.url : null,
+      blob: item.type === 'staged' ? item.blob : null,
+      previewUrl: item.type === 'staged' ? previewUrl : null,
+      el: wrap,
+    };
+    PM_GALLERY_ITEMS.push(entry);
+    return entry;
+  }
+
+  function removeGalleryItem(id) {
+    const idx = PM_GALLERY_ITEMS.findIndex(it => it.id === id);
+    if (idx === -1) return;
+    const [entry] = PM_GALLERY_ITEMS.splice(idx, 1);
+    if (entry.previewUrl) URL.revokeObjectURL(entry.previewUrl);
+    entry.el?.remove();
+  }
+
+  function clearGalleryItems() {
+    PM_GALLERY_ITEMS.forEach(it => { if (it.previewUrl) URL.revokeObjectURL(it.previewUrl); });
+    PM_GALLERY_ITEMS = [];
+    const container = document.getElementById('pmGalPreviews');
+    if (container) container.innerHTML = '';
+  }
+
+  /* ── Parses a DB image value back into { category, subcategory, slug,
+     filename } if — and only if — it's a value our local-write flow
+     itself produced (never a Supabase Storage URL or an admin-pasted
+     external URL). Used only for best-effort local orphan cleanup. ── */
+  function parseLocalImagePath(url) {
+    if (!url || typeof url !== 'string' || /^https?:\/\//.test(url)) return null;
+    let m = url.match(/^\/books\/([^\/]+)\/(main|image-\d+)\.webp$/);
+    if (m) return { category: 'books', subcategory: null, slug: m[1], filename: m[2] + '.webp' };
+    m = url.match(/^([a-z0-9]+(?:-[a-z0-9]+)*)\/main\.webp$/);
+    if (m) return { category: 'books', subcategory: null, slug: m[1], filename: 'main.webp' };
+    m = url.match(/^\/Electronique\/([^\/]+)\/([^\/]+)\/(main|image-\d+)\.webp$/);
+    if (m) return { category: 'electronics', subcategory: m[1], slug: m[2], filename: m[3] + '.webp' };
+    return null;
+  }
+
+  /* ── Writes every staged (not-yet-on-disk) main/gallery image for the
+     current form via window.LocalFS, returning the DB-ready values.
+     Existing (untouched) images pass through unchanged. Throws — and
+     saveProduct() lets that abort the whole save — rather than ever
+     falling back to a Supabase Storage upload. ── */
+  async function resolveImagesForSave(category, subcategory, slug) {
+    const hasStaged = !!PM_STAGED_MAIN || PM_GALLERY_ITEMS.some(it => it.type === 'staged');
+    if (hasStaged) {
+      if (!slug) throw new Error('أدخل Slug المنتج قبل حفظ صور محلية');
+      const status = window.LocalFS ? await window.LocalFS.restorePermission() : 'offline';
+      renderFolderBadge(status);
+      if (status !== 'granted') {
+        throw new Error('تعذّر الاتصال بخادم الصور المحلي — شغّله بـ npm run local-image-server ثم أعد المحاولة');
+      }
+    }
+
+    let mainImg = getValue('pmMainUrl') || null;
+    if (PM_STAGED_MAIN) {
+      const written = await window.LocalFS.writeProductImage({
+        category, subcategory, slug, filename: 'main.webp', blob: PM_STAGED_MAIN.blob,
+      });
+      mainImg = category === 'books' ? `${slug}/main.webp` : '/' + written;
+    }
+
+    const existingNums = PM_GALLERY_ITEMS
+      .filter(it => it.type === 'existing')
+      .map(it => { const m = /image-(\d+)\.webp$/.exec(it.url || ''); return m ? parseInt(m[1], 10) : 0; });
+    let nextNum = existingNums.length ? Math.max(...existingNums) + 1 : 1;
+
+    const galleryImgs = [];
+    for (const item of PM_GALLERY_ITEMS) {
+      if (item.type === 'existing') { galleryImgs.push(item.url); continue; }
+      const filename = `image-${nextNum++}.webp`;
+      const written = await window.LocalFS.writeProductImage({ category, subcategory, slug, filename, blob: item.blob });
+      galleryImgs.push('/' + written);
+    }
+
+    return { mainImg, galleryImgs };
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -2022,19 +2134,23 @@
       const { data: { session } } = await sb.auth.getSession();
       if (!session) throw new Error('يجب تسجيل الدخول أولاً');
 
-      /* Collect gallery images from live DOM */
-      const galleryImgs = Array.from(
-        document.querySelectorAll('#pmGalPreviews .pm-gal-img')
-      ).map(img => img.src);
+      const category    = getValue('pmCat') || 'electronics';
+      const subcategory = getValue('pmSubcat') || null;
+      const slug        = getValue('pmSlug');
 
-      const mainImg = getValue('pmMainUrl') || null;
+      /* Writes any locally-staged main/gallery images to disk via
+         window.LocalFS — never to Supabase Storage. Existing images
+         (populated when editing a product) pass through unchanged. */
+      const { mainImg, galleryImgs } = await resolveImagesForSave(category, subcategory, slug);
+      setValue('pmMainUrl', mainImg || '');
+
       const oldPrice = parseInt(getValue('pmOldPrice')) || null;
 
       const payload = {
         product_name:      getValue('pmName'),
         product_name_ar:   getValue('pmNameEn')    || null,
-        category:          getValue('pmCat')        || 'electronics',
-        subcategory:       getValue('pmSubcat')     || null,
+        category,
+        subcategory,
         price:             parseInt(getValue('pmPrice')) || 0,
         old_price:         oldPrice,
         discount_enabled:  !!oldPrice,
@@ -2044,7 +2160,7 @@
         full_description:  getValue('pmFullDesc')   || null,
         main_image:        mainImg,
         gallery_images:    galleryImgs,
-        slug:              getValue('pmSlug'),
+        slug,
         seo_title:         getValue('pmSeoTitle')   || null,
         seo_description:   getValue('pmSeoDesc')    || null,
         keywords:          getValue('pmKeywords')   || null,
@@ -2118,6 +2234,10 @@
         const stillUsed = new Set(collectImageUrls(payload));
         const droppedImages = EDIT_ORIGINAL_IMAGES.filter(u => !stillUsed.has(u));
         if (droppedImages.length) {
+          for (const u of droppedImages) {
+            const local = parseLocalImagePath(u);
+            if (local && window.LocalFS) await window.LocalFS.deleteProductImage(local);
+          }
           const { failed } = await cleanupOrphanedImages(droppedImages);
           if (failed.length) {
             console.warn('[PM] could not remove old image(s) from Storage:', failed);
@@ -2173,7 +2293,12 @@
 
       /* Only now — after the row is actually gone — clean up its images. */
       if (deletedProduct) {
-        const { failed } = await cleanupOrphanedImages(collectImageUrls(deletedProduct));
+        const urls = collectImageUrls(deletedProduct);
+        for (const u of urls) {
+          const local = parseLocalImagePath(u);
+          if (local && window.LocalFS) await window.LocalFS.deleteProductImage(local);
+        }
+        const { failed } = await cleanupOrphanedImages(urls);
         if (failed.length) {
           console.warn('[PM] could not remove image(s) from Storage after delete:', failed);
           showToast(`⚠️ تم حذف المنتج، لكن تعذّر حذف ${failed.length} صورة من التخزين`, 'error');
@@ -2278,6 +2403,7 @@
     injectStyles();
     injectHTML();
     bindEvents();
+    initLocalFsBadge();
     loadBookSortMode();
     /* Only load the full catalog (select *, incl. descriptions/gallery
        arrays for every row) when the Products tab is actually visible —

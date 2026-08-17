@@ -4,7 +4,8 @@
   "version": "1.0.0",
   "description": "Derradj Shop — static site build scripts",
   "scripts": {
-    "generate:products": "node scripts/generate-product-pages.js"
+    "generate:products": "node scripts/generate-product-pages.js",
+    "local-image-server": "node scripts/local-image-server.js"
   },
   "engines": {
     "node": ">=18"
