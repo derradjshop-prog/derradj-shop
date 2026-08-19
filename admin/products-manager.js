@@ -1649,6 +1649,16 @@
     try {
       await saveOrderChanges(changed);
       if (!silent) showToast(`✅ تم تحديث الترتيب (${changed.length} منتج)`);
+      /* Reordering only writes display_order to Supabase — unlike
+         save/delete, nothing else was rebuilding the static homepage
+         grid (index.html's #homeElectronicsGrid fallback) or the
+         product pages/sitemap for a pure reorder. Electronics' homepage
+         section ships that static fallback for SEO/no-JS visitors, so
+         without this call a reorder saved fine to the DB but never
+         appeared there until an unrelated edit happened to trigger a
+         rebuild. Books has no such static fallback (fully client-
+         rendered), which is why book reordering never showed this gap. */
+      triggerPageRebuild('إعادة ترتيب المنتجات');
     } catch (err) {
       showToast('❌ فشل حفظ الترتيب: ' + err.message, 'error');
       await loadProducts(); /* resync truth from DB */
