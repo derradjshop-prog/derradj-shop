@@ -10,16 +10,116 @@
   if (!window.sbClient) return;
   const sb = window.sbClient;
 
-  /* ── Categories ── */
+  /* ── Top-level categories — the only two values `category` actually
+     takes (live data confirms it: 104 books / 7 electronics, nothing
+     else). Subcategories (Phone Chargers, Power Banks, ...) are a
+     separate concept driven entirely by the `categories` Supabase
+     table — see ALL_CATEGORIES / loadCategories() below. ── */
   const CATEGORIES = [
     { value: 'books',        label: '📚 كتب' },
     { value: 'electronics',  label: '💻 إلكترونيات' },
-    { value: 'earbuds',      label: '🎧 سماعات' },
-    { value: 'laptop',       label: '💻 إكسسوارات لابتوب' },
-    { value: 'smart_watch',  label: '⌚ ساعات ذكية' },
-    { value: 'power_bank',   label: '🔋 بطاريات محمولة' },
-    { value: 'other',        label: '📦 أخرى' },
   ];
+
+  /* ── Electronics subcategories — single source of truth is the
+     Supabase `categories` table (see admin/setup-categories.sql).
+     Populated by loadCategories() at startup; everywhere a subcategory
+     dropdown/filter/label is needed, read from this array instead of
+     hard-coding values. ── */
+  let ALL_CATEGORIES = [];
+
+  async function loadCategories() {
+    try {
+      const { data, error } = await sb
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+      if (error) throw error;
+      ALL_CATEGORIES = data || [];
+    } catch (err) {
+      console.warn('[PM] loadCategories failed — subcategory picker will be empty:', err.message || err);
+      ALL_CATEGORIES = [];
+    }
+  }
+
+  /* ── Legacy subcategory classification — the 7 electronics products
+     that existed before this category system was added still store
+     old free-text subcategory values (earbuds, smart_watch, power_bank,
+     "Arduino / Composants électroniques", ...). Their `subcategory`
+     column is NEVER rewritten by this map — it's also used verbatim as
+     a local image-folder path segment (see resolveThumbSrc below and
+     js/products-loader.js's resolveImage), so changing it here would
+     silently break that product's photo. This map only affects which
+     category bucket a legacy product is displayed / filtered under,
+     and pre-selects a sensible option when its edit modal opens —
+     saving from there switches it to the real slug going forward.
+
+     Only mapped where the product's own name/value makes it truly
+     unambiguous. Everything else resolves to null (no bucket) rather
+     than a guessed default — the current category list has no general
+     "wireless earbuds" bucket (only "AirPods" and the wired "Kit Main
+     Libre"), so e.g. the Anker SoundCore earbuds (wireless, not
+     AirPods-branded) genuinely don't fit any of the 17 and are left
+     unclassified; same for the laptop stand and the 2 Arduino kits —
+     none of the 17 categories apply to them. Unclassified products
+     still show under "All Electronics", just no subcategory chip. ── */
+  const LEGACY_SUBCATEGORY_BY_CATALOG_ID = { 87: 'airpods' };
+  const LEGACY_SUBCATEGORY_BY_VALUE = {
+    smart_watch: 'smartwatch',
+    power_bank:  'power-bank',
+  };
+  function resolveCategorySlug(p) {
+    if (!p || !isElec(p)) return null;
+    const byId = LEGACY_SUBCATEGORY_BY_CATALOG_ID[p.catalog_id];
+    if (byId) return byId;
+    const raw = p.subcategory;
+    if (raw && ALL_CATEGORIES.some(c => c.slug === raw)) return raw;
+    if (raw && LEGACY_SUBCATEGORY_BY_VALUE[raw]) return LEGACY_SUBCATEGORY_BY_VALUE[raw];
+    return null;
+  }
+  function categoryBySlug(slug) { return ALL_CATEGORIES.find(c => c.slug === slug) || null; }
+
+  /* ── Subcategory <select> options, grouped into <optgroup>s by the
+     `description` column (used purely as a UI group label — "Phone &
+     Charging", "Audio", ... — see admin/setup-categories.sql). Called
+     both at initial (pre-load) form build and again once
+     loadCategories() resolves, via populateSubcatSelect(). ── */
+  function subcatOptionsHtml() {
+    const opt = c => `<option value="${esc(c.slug)}">${esc(c.icon || '📦')} ${esc(c.name)}</option>`;
+    /* `description` is an optional UI-only group label. Current seed
+       list (admin/setup-categories.sql) is flat and leaves it null —
+       render plain <option>s in that case rather than wrapping
+       everything in one bogus catch-all <optgroup> (worse: this list
+       already has its own real "Autre" category, so a fallback group
+       literally named "other" would be actively confusing here). Only
+       categories that DO have a description group into <optgroup>s. */
+    if (!ALL_CATEGORIES.some(c => c.description)) {
+      return ALL_CATEGORIES.map(opt).join('');
+    }
+    const groups = [];
+    const byGroup = new Map();
+    ALL_CATEGORIES.forEach(c => {
+      const g = c.description || '—';
+      if (!byGroup.has(g)) { byGroup.set(g, []); groups.push(g); }
+      byGroup.get(g).push(c);
+    });
+    return groups.map(g => `<optgroup label="${esc(g)}">${
+      byGroup.get(g).map(opt).join('')
+    }</optgroup>`).join('');
+  }
+  function populateSubcatSelect() {
+    const sel = document.getElementById('pmSubcat');
+    if (!sel) return;
+    const current = sel.value;
+    sel.innerHTML = `<option value="">— اختر —</option>${subcatOptionsHtml()}`;
+    if (current) sel.value = current;
+  }
+  function subcategoryLabelHtml(p) {
+    if (!isElec(p)) return '';
+    const cat = categoryBySlug(resolveCategorySlug(p));
+    if (!cat) return '';
+    return `<br><span style="font-size:11px;color:#64748b;">${esc(cat.icon || '📦')} ${esc(cat.name)}</span>`;
+  }
 
   /* ── State ── */
   let ALL_PM_PRODUCTS = [];
@@ -42,9 +142,24 @@
      Storage files that are no longer referenced can be cleaned up. Never
      read before a save actually succeeds. */
   let EDIT_ORIGINAL_IMAGES = [];
+  /* The product's raw `subcategory` DB value as the edit modal opened it,
+     and the bucket resolveCategorySlug() displays it as (may differ for
+     legacy rows — see resolveCategorySlug's comment). If the admin saves
+     without touching the subcategory dropdown, saveProduct() writes this
+     original raw value back unchanged rather than the resolved slug —
+     otherwise a plain price/name edit would silently rewrite e.g.
+     "power_bank" to "power-banks", which no longer matches that
+     product's actual /Electronique/power-bank/ image folder and forces
+     its photo to fall back to the raw (uncached) Supabase Storage URL —
+     exactly the Cached Egress pattern this codebase has already had to
+     fix once. Deliberately picking a different subcategory in the
+     dropdown still saves the new slug as intended. */
+  let EDIT_ORIGINAL_SUBCATEGORY = null;
+  let EDIT_ORIGINAL_RESOLVED_SLUG = null;
   /* null = unknown yet, true = column exists in DB, false = column missing */
   let DISPLAY_ORDER_SUPPORTED = null;
   let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' | 'pending' */
+  let PROD_SUBFILTER = 'all';     /* electronics-only: 'all' | a categories.slug */
   let PROD_SEARCH_QUERY = '';
   let DRAG_SRC_ID = null;
   let BOOK_SORT_MODE = 'manual';
@@ -384,6 +499,12 @@
     }
     .prod-sf-btn.active .prod-sf-pending { background:rgba(255,255,255,.85); }
 
+    /* ── Electronics subcategory chip row — same button styling as the
+       main sub-filter bar, but chip-sized (content width, wraps) since
+       there can be up to ~20 of them instead of a fixed 4. ── */
+    .prod-subfilter-sub-bar { flex-wrap:wrap; margin-top:-6px; margin-bottom:14px; }
+    .prod-subfilter-sub-bar .prod-sf-btn { flex:0 0 auto; padding:7px 12px; font-size:12px; }
+
     /* "⏳ بانتظار المراجعة" sub-filter — amber at rest (same tone as
        .prod-sf-pending/.badge-pending), emerald when active like every
        other .prod-sf-btn. */
@@ -462,6 +583,17 @@
     .pm-fld .hint { font-size:11px; color:#94a3b8; margin-top:3px; }
     .pm-url-row { display:flex; gap:6px; align-items:center; }
     .pm-url-row input { flex:1; min-width:0; }
+
+    /* ── Categories modal inputs — same look as .pm-fld input/select,
+       just not wrapped in that label+field layout since this is a
+       compact add-row + inline-editable table instead of a form. ── */
+    #pmCategoriesOverlay input {
+      padding:8px 10px; border:1.5px solid #e2e8f0;
+      border-radius:8px; font-size:13px;
+      font-family:'Cairo',sans-serif; color:#1e293b;
+      background:#fff; transition:border-color .2s;
+    }
+    #pmCategoriesOverlay input:focus { outline:none; border-color:#059669; }
 
     .pm-divider {
       grid-column:1 / -1; border:none;
@@ -610,6 +742,7 @@
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد</button>
+            <button class="btn-pm-add" id="pmCategoriesBtn" style="background:#7c3aed;">🏷 التصنيفات الفرعية</button>
             <button class="btn-pm-add" id="pmSitemapBtn" style="background:#1d4ed8;">🗺 توليد Sitemap</button>
             <button type="button" class="btn-pm-add" id="pmFolderBtn" style="background:#64748b;">🔄 التحقق من خادم الصور المحلي</button>
             <span id="pmFolderStatus" style="font-size:12px;font-weight:700;color:#94a3b8;">⏳ جاري التحقق...</span>
@@ -625,6 +758,9 @@
           <button class="prod-sf-btn active" data-pfilter="all">🗂 الكل <span class="prod-sf-badge" id="psb-all">—</span></button>
           <button class="prod-sf-btn" data-pfilter="books">📚 الكتب <span class="prod-sf-badge" id="psb-books">—</span><span class="prod-sf-pending" id="psb-books-pending" style="display:none;"></span></button>
           <button class="prod-sf-btn" data-pfilter="electronics">💻 إلكترونيات <span class="prod-sf-badge" id="psb-electronics">—</span></button>
+        </div>
+        <div class="prod-subfilter-bar prod-subfilter-sub-bar" id="prodSubcatFilterBar" style="display:none;">
+          <button class="prod-sf-btn prod-sf-sub-btn active" data-psub="all">🗂 كل الإلكترونيات</button>
         </div>
         <div class="pm-book-sort-row" id="pmBookSortRow">
           <div>
@@ -717,6 +853,46 @@
       </div>
     `;
     document.body.appendChild(sitemapModal);
+
+    /* Categories modal — source of truth for the Supabase `categories`
+       table (see admin/setup-categories.sql). Add/edit/deactivate here
+       instead of ever hard-coding a subcategory list in JS. */
+    const categoriesModal = document.createElement('div');
+    categoriesModal.id = 'pmCategoriesOverlay';
+    categoriesModal.className = 'pm-overlay';
+    categoriesModal.innerHTML = `
+      <div class="pm-modal" style="max-width:760px;">
+        <div class="pm-mhdr">
+          <span class="pm-mhdr-title">🏷 التصنيفات الفرعية (إلكترونيات)</span>
+          <button class="pm-mclose" id="pmCategoriesClose">✕</button>
+        </div>
+        <div class="pm-mbody">
+          <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">
+            هذه القائمة تظهر تلقائياً في نموذج إضافة/تعديل منتج وفي فلاتر لوحة التحكم والموقع —
+            إضافة تصنيف هنا لا يحتاج أي تعديل برمجي.
+          </p>
+          <div id="pmCatAddRow" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;padding:12px;background:#f8fafc;border:1.5px dashed #cbd5e1;border-radius:10px;">
+            <input type="text" id="pmCatNewIcon" placeholder="📦" style="width:52px;text-align:center;" maxlength="4">
+            <input type="text" id="pmCatNewName" placeholder="اسم التصنيف (مثال: Webcams)" style="flex:1;min-width:160px;">
+            <input type="text" id="pmCatNewGroup" placeholder="المجموعة (اختياري)" style="width:140px;">
+            <button type="button" class="btn-pm-add" id="pmCatAddBtn" style="background:#059669;">＋ إضافة</button>
+          </div>
+          <div class="pm-tbl-wrap">
+            <table class="pm-tbl">
+              <thead>
+                <tr>
+                  <th></th><th>الاسم</th><th>Slug</th><th>المنتجات</th><th>مفعّل</th><th>الترتيب</th><th></th>
+                </tr>
+              </thead>
+              <tbody id="pmCategoriesTbody">
+                <tr><td colspan="7" class="pm-empty">⏳ جاري التحميل...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(categoriesModal);
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -779,9 +955,9 @@
           <label>الفئة *</label>
           <select id="pmCat">${catOpts}</select>
         </div>
-        <div class="pm-fld">
+        <div class="pm-fld" id="pmSubcatWrap">
           <label>الفئة الفرعية</label>
-          <input type="text" id="pmSubcat" placeholder="مثال: TWS Earbuds">
+          <select id="pmSubcat"><option value="">— اختر —</option>${subcatOptionsHtml()}</select>
         </div>
         <div class="pm-fld full">
           <label>Brand / العلامة التجارية (اختياري)</label>
@@ -1049,9 +1225,19 @@
       const btn = e.target.closest('.prod-sf-btn');
       if (!btn) return;
       PROD_FILTER = btn.dataset.pfilter || 'all';
-      document.querySelectorAll('.prod-sf-btn').forEach(b => b.classList.remove('active'));
+      PROD_SUBFILTER = 'all'; /* leaving/re-entering "electronics" always starts unfiltered */
+      document.querySelectorAll('#prodSubfilterBar .prod-sf-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       updateBookSortUi();
+      renderTable();
+    });
+
+    /* Electronics subcategory chips — rebuilt on every renderTable(),
+       so delegate instead of binding to individual buttons. */
+    document.getElementById('prodSubcatFilterBar')?.addEventListener('click', e => {
+      const btn = e.target.closest('.prod-sf-sub-btn');
+      if (!btn) return;
+      PROD_SUBFILTER = btn.dataset.psub || 'all';
       renderTable();
     });
 
@@ -1087,6 +1273,44 @@
         e.target.classList.remove('open');
         document.body.style.overflow = '';
       }
+    });
+
+    /* Categories modal open/close */
+    document.getElementById('pmCategoriesBtn')?.addEventListener('click', async () => {
+      document.getElementById('pmCategoriesOverlay')?.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      await loadCategories();
+      renderCategoriesTable();
+    });
+    document.getElementById('pmCategoriesClose')?.addEventListener('click', () => {
+      document.getElementById('pmCategoriesOverlay')?.classList.remove('open');
+      document.body.style.overflow = '';
+      /* Categories may have changed (add/edit/deactivate) — refresh
+         everywhere they're rendered: form dropdown, filter chips, table labels. */
+      populateSubcatSelect();
+      renderTable();
+    });
+    document.getElementById('pmCategoriesOverlay')?.addEventListener('click', e => {
+      if (e.target.id === 'pmCategoriesOverlay') {
+        e.target.classList.remove('open');
+        document.body.style.overflow = '';
+        populateSubcatSelect();
+        renderTable();
+      }
+    });
+
+    document.getElementById('pmCatAddBtn')?.addEventListener('click', addCategory);
+
+    /* Delegated: every row's inline edits (name/slug/icon/order/active/delete) */
+    document.getElementById('pmCategoriesTbody')?.addEventListener('click', e => {
+      const delBtn = e.target.closest('button[data-cata="delete"]');
+      if (delBtn) { deleteCategory(delBtn.dataset.catid); return; }
+      const toggleBtn = e.target.closest('button[data-cata="toggle"]');
+      if (toggleBtn) { toggleCategoryActive(toggleBtn.dataset.catid, toggleBtn.classList.contains('is-on')); return; }
+    });
+    document.getElementById('pmCategoriesTbody')?.addEventListener('focusout', e => {
+      const inp = e.target.closest('input[data-cata]');
+      if (inp) commitCategoryFieldEdit(inp);
     });
 
     /* Sitemap generate button */
@@ -1254,6 +1478,8 @@
     return sortedGrouped(ALL_PM_PRODUCTS).filter(p => {
       if (PROD_FILTER === 'books'       &&  isElec(p)) return false;
       if (PROD_FILTER === 'electronics' && !isElec(p)) return false;
+      if (PROD_FILTER === 'electronics' && PROD_SUBFILTER !== 'all' &&
+          resolveCategorySlug(p) !== PROD_SUBFILTER) return false;
       if (PROD_FILTER === 'pending'     && p.status !== 'pending_review') return false;
       if (q && !String(p.product_name || '').toLowerCase().includes(q) &&
                !String(p.category || '').toLowerCase().includes(q)) return false;
@@ -1295,6 +1521,42 @@
       }
     }
     updateBookSortUi();
+    renderSubcatFilterBar();
+  }
+
+  /* ── Electronics subcategory chip row — only shown while the main
+     "إلكترونيات" filter is active, one chip per active category with a
+     live count, built from ALL_CATEGORIES (never hard-coded). Uses
+     resolveCategorySlug() so the 7 legacy products bucket correctly
+     without their DB subcategory value ever being touched. ── */
+  function renderSubcatFilterBar() {
+    const bar = document.getElementById('prodSubcatFilterBar');
+    if (!bar) return;
+
+    if (PROD_FILTER !== 'electronics') { bar.style.display = 'none'; return; }
+
+    const elecProducts = ALL_PM_PRODUCTS.filter(isElec);
+    const counts = new Map();
+    elecProducts.forEach(p => {
+      const slug = resolveCategorySlug(p);
+      if (slug) counts.set(slug, (counts.get(slug) || 0) + 1);
+    });
+
+    const chips = ALL_CATEGORIES
+      .filter(c => counts.get(c.slug))
+      .map(c => `<button class="prod-sf-btn prod-sf-sub-btn${PROD_SUBFILTER === c.slug ? ' active' : ''}" data-psub="${esc(c.slug)}">${esc(c.icon || '📦')} ${esc(c.name)} <span class="prod-sf-badge">${counts.get(c.slug)}</span></button>`)
+      .join('');
+
+    /* A lone "All Electronics" chip (no product has a resolvable
+       subcategory yet — e.g. before admin/setup-categories.sql has
+       been run, or none classified yet) would just repeat what the
+       parent "إلكترونيات" button above already says: an extra bordered
+       row of empty space for zero added filtering value. Only show
+       this row once there's at least one real subcategory to filter by. */
+    if (!chips) { bar.style.display = 'none'; return; }
+
+    bar.style.display = '';
+    bar.innerHTML = `<button class="prod-sf-btn prod-sf-sub-btn${PROD_SUBFILTER === 'all' ? ' active' : ''}" data-psub="all">🗂 كل الإلكترونيات <span class="prod-sf-badge">${elecProducts.length}</span></button>${chips}`;
   }
 
   function normalizeBookSortMode(mode) {
@@ -1461,8 +1723,18 @@
        overwrite the manual order with whatever the sales ranking
        happens to be (see applyDragReorder), so lock it while active. */
     const salesMode = !isElec(p) && BOOK_SORT_MODE === 'best_selling';
+    /* A subcategory chip narrows the visible rows to a strict subset of
+       the electronics category. Drag-and-drop derives its new order
+       from the visible DOM rows (applyDragReorder), so dragging inside
+       a filtered subset would renumber only that subset 1..N and
+       corrupt display_order for the rest of the category. The numeric
+       order <input> stays enabled — moveToPosition() always recomputes
+       from the full category regardless of what's currently filtered,
+       so it's already safe. */
+    const subFiltered = isElec(p) && PROD_SUBFILTER !== 'all';
+    const dragLocked = salesMode || subFiltered;
 
-    return `<tr draggable="${salesMode ? 'false' : 'true'}" data-pmid="${esc(p.id)}" class="${isPending ? 'pm-row-pending' : ''}">
+    return `<tr draggable="${dragLocked ? 'false' : 'true'}" data-pmid="${esc(p.id)}" class="${isPending ? 'pm-row-pending' : ''}">
         <td>${imgHtml}</td>
         <td>
           <strong style="font-size:13px;display:block;">${esc(p.product_name)}</strong>
@@ -1470,7 +1742,7 @@
           ${p.slug ? `<span style="font-size:11px;color:#94a3b8;direction:ltr;">/product/${esc(p.slug)}/</span>` : ''}
           ${isPending ? `<span class="badge badge-pending">⏳ بانتظار المراجعة</span>${pendingMetaHtml(p)}` : ''}
         </td>
-        <td style="font-size:13px;font-weight:600;">${esc(catLabel(p.category))}</td>
+        <td style="font-size:13px;font-weight:600;">${esc(catLabel(p.category))}${subcategoryLabelHtml(p)}</td>
         <td>
           <strong style="color:#1d4ed8;direction:ltr;display:block;">${fmtPrice(p.price)}</strong>
           ${p.old_price ? `<span style="font-size:12px;text-decoration:line-through;color:#94a3b8;direction:ltr;">${fmtPrice(p.old_price)}</span>` : ''}
@@ -1481,7 +1753,7 @@
         <td style="text-align:center;white-space:nowrap;">
           ${salesMode
             ? `<span class="pm-sales-badge" title="مرتّب حسب المبيعات الفعلية — الترتيب اليدوي معطّل">🏆 ${bookSalesFor(p)}</span>`
-            : `<span class="pm-drag-handle" title="اسحب لإعادة الترتيب">⠿</span>
+            : `<span class="pm-drag-handle" title="${subFiltered ? 'امسح فلتر الفئة الفرعية لتفعيل السحب' : 'اسحب لإعادة الترتيب'}" style="${subFiltered ? 'opacity:.35;cursor:default;' : ''}">⠿</span>
           <input type="number" class="pm-order-input" min="1" step="1"
                  value="${p.display_order ?? ''}" data-pma="order" data-pmid="${esc(p.id)}">`}
         </td>
@@ -1511,6 +1783,7 @@
         ${imgHtml}
         <div class="pm-mcard-body">
           <div class="pm-mcard-name">${esc(p.product_name)}</div>
+          ${isElec(p) ? `<div style="font-size:11px;color:#64748b;">${subcategoryLabelHtml(p).replace(/^<br>/, '')}</div>` : ''}
           ${isPending ? `<span class="badge badge-pending">⏳ بانتظار المراجعة</span>${pendingMetaHtml(p)}` : ''}
           ${salesMode ? `<span class="pm-sales-badge" title="مرتّب حسب المبيعات الفعلية — الترتيب اليدوي معطّل">🏆 ${bookSalesFor(p)} مبيعات</span>` : ''}
           <div class="pm-mcard-row">
@@ -1771,13 +2044,20 @@
   ══════════════════════════════════════════════════════════ */
   /* إظهار/إخفاء حقول الكتب (المؤلف/المترجم/سنة النشر) حسب الفئة المختارة */
   function toggleBookFields() {
+    const isBooks = getValue('pmCat') === 'books';
     const el = document.getElementById('pmBookFields');
-    if (el) el.style.display = getValue('pmCat') === 'books' ? '' : 'none';
+    if (el) el.style.display = isBooks ? '' : 'none';
+    /* Subcategory only makes sense for electronics — books have no
+       subcategory concept in this system. */
+    const subEl = document.getElementById('pmSubcatWrap');
+    if (subEl) subEl.style.display = isBooks ? 'none' : '';
   }
 
   function openModal(product) {
     EDIT_PRODUCT_ID = product?.id || null;
     EDIT_ORIGINAL_IMAGES = product ? collectImageUrls(product) : [];
+    EDIT_ORIGINAL_SUBCATEGORY = product ? (product.subcategory || null) : null;
+    EDIT_ORIGINAL_RESOLVED_SLUG = product ? resolveCategorySlug(product) : null;
     const isEdit = !!product;
     const isPending = isEdit && product.status === 'pending_review';
 
@@ -1800,6 +2080,7 @@
     }
 
     resetForm();
+    populateSubcatSelect();
 
     if (product) {
       setValue('pmName',      product.product_name);
@@ -1807,7 +2088,7 @@
       setValue('pmNameFr',    product.product_name_fr);
       setValue('pmBrand',     product.brand);
       setValue('pmCat',       product.category);
-      setValue('pmSubcat',    product.subcategory);
+      setValue('pmSubcat',    resolveCategorySlug(product) || '');
       setValue('pmAuthor',     product.author);
       setValue('pmTranslator', product.translator);
       setValue('pmYear',       product.year);
@@ -2144,8 +2425,20 @@
       const { data: { session } } = await sb.auth.getSession();
       if (!session) throw new Error('يجب تسجيل الدخول أولاً');
 
-      const category    = getValue('pmCat') || 'electronics';
-      const subcategory = getValue('pmSubcat') || null;
+      const category = getValue('pmCat') || 'electronics';
+      const subcatSelected = getValue('pmSubcat') || null;
+      /* Editing a legacy product whose dropdown was pre-selected to its
+         resolved bucket (see openModal): if the admin saves without
+         actually changing that selection, keep the original raw DB
+         value instead of overwriting it with the resolved slug — see
+         EDIT_ORIGINAL_SUBCATEGORY's comment for why (image-folder path
+         coupling). A deliberate change to a different subcategory still
+         saves as the new clean slug. */
+      const keepOriginalSubcategory = EDIT_PRODUCT_ID &&
+        EDIT_ORIGINAL_SUBCATEGORY &&
+        subcatSelected === EDIT_ORIGINAL_RESOLVED_SLUG &&
+        EDIT_ORIGINAL_SUBCATEGORY !== subcatSelected;
+      const subcategory = keepOriginalSubcategory ? EDIT_ORIGINAL_SUBCATEGORY : subcatSelected;
       const slug        = getValue('pmSlug');
 
       /* Writes any locally-staged main/gallery images to disk via
@@ -2326,6 +2619,129 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     CATEGORY MANAGEMENT — CRUD on the `categories` table
+     (admin/setup-categories.sql). This is the ONLY place electronics
+     subcategories are created/edited/deactivated — everywhere else
+     (form dropdown, admin filter chips, public filter/cards/search)
+     just reads ALL_CATEGORIES / the live table.
+  ══════════════════════════════════════════════════════════ */
+  function categoryRowHtml(c) {
+    const count = ALL_PM_PRODUCTS.filter(p => isElec(p) && resolveCategorySlug(p) === c.slug).length;
+    return `<tr data-catid="${esc(c.id)}">
+        <td><input type="text" data-cata="icon" data-catid="${esc(c.id)}" value="${esc(c.icon || '')}" style="width:44px;text-align:center;" maxlength="4"></td>
+        <td><input type="text" data-cata="name" data-catid="${esc(c.id)}" value="${esc(c.name)}" style="width:100%;min-width:160px;"></td>
+        <td><span style="font-size:12px;color:#94a3b8;direction:ltr;">${esc(c.slug)}</span></td>
+        <td style="text-align:center;">${count}</td>
+        <td>
+          <button type="button" class="pm-toggle ${c.is_active ? 'is-on' : ''}" data-cata="toggle" data-catid="${esc(c.id)}" role="switch" aria-checked="${!!c.is_active}">
+            <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
+          </button>
+        </td>
+        <td><input type="number" data-cata="sort_order" data-catid="${esc(c.id)}" value="${c.sort_order ?? ''}" style="width:64px;"></td>
+        <td>
+          <button type="button" class="btn-pm-edit" data-cata="delete" data-catid="${esc(c.id)}" title="${count ? 'لا يمكن الحذف — يوجد ' + count + ' منتج مرتبط' : 'حذف'}" ${count ? 'disabled style="opacity:.4;cursor:not-allowed;"' : ''}>🗑</button>
+        </td>
+      </tr>`;
+  }
+
+  function renderCategoriesTable() {
+    const tbody = document.getElementById('pmCategoriesTbody');
+    if (!tbody) return;
+    if (!ALL_CATEGORIES.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">لا توجد تصنيفات بعد — أضف واحداً أعلاه.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = ALL_CATEGORIES.map(categoryRowHtml).join('');
+  }
+
+  async function addCategory() {
+    const icon  = getValue('pmCatNewIcon') || '📦';
+    const name  = getValue('pmCatNewName');
+    const group = getValue('pmCatNewGroup') || null;
+    if (!name) { showToast('❌ اسم التصنيف مطلوب', 'error'); return; }
+    const slug = slugify(name);
+    if (!slug) { showToast('❌ تعذر توليد رابط (slug) من هذا الاسم', 'error'); return; }
+    const nextOrder = (Math.max(0, ...ALL_CATEGORIES.map(c => c.sort_order || 0)) || 0) + 10;
+
+    try {
+      const { error } = await sb.from('categories').insert({
+        name, slug, icon, description: group, sort_order: nextOrder, is_active: true,
+      });
+      if (error) throw error;
+      showToast('✅ تم إضافة التصنيف');
+      setValue('pmCatNewIcon', ''); setValue('pmCatNewName', ''); setValue('pmCatNewGroup', '');
+      await loadCategories();
+      renderCategoriesTable();
+      populateSubcatSelect();
+    } catch (err) {
+      const isDup = err?.code === '23505' || /duplicate key|unique constraint/i.test(err?.message || '');
+      showToast('❌ فشل الإضافة: ' + (isDup ? 'هذا الاسم موجود بالفعل' : err.message), 'error');
+    }
+  }
+
+  async function commitCategoryFieldEdit(inp) {
+    const id    = inp.dataset.catid;
+    const field = inp.dataset.cata;
+    const cat   = ALL_CATEGORIES.find(c => c.id === id);
+    if (!cat) return;
+
+    let value = inp.value.trim();
+    if (field === 'sort_order') {
+      const n = parseInt(value, 10);
+      if (!Number.isFinite(n)) { inp.value = cat.sort_order ?? ''; return; }
+      value = n;
+    }
+    if (field === 'name' && !value) { inp.value = cat.name; return; }
+    if (String(cat[field] ?? '') === String(value)) return;
+
+    try {
+      const { error } = await sb.from('categories').update({ [field]: value }).eq('id', id);
+      if (error) throw error;
+      cat[field] = value;
+      showToast('✅ تم الحفظ');
+      if (field === 'name' || field === 'icon') populateSubcatSelect();
+    } catch (err) {
+      inp.value = cat[field] ?? '';
+      showToast('❌ فشل الحفظ: ' + err.message, 'error');
+    }
+  }
+
+  async function toggleCategoryActive(id, currentlyOn) {
+    const cat = ALL_CATEGORIES.find(c => c.id === id);
+    if (!cat) return;
+    const next = !currentlyOn;
+    try {
+      const { error } = await sb.from('categories').update({ is_active: next }).eq('id', id);
+      if (error) throw error;
+      cat.is_active = next;
+      renderCategoriesTable();
+      populateSubcatSelect();
+      showToast(next ? '✅ تم تفعيل التصنيف' : '✅ تم إلغاء تفعيل التصنيف');
+    } catch (err) {
+      showToast('❌ فشل التحديث: ' + err.message, 'error');
+    }
+  }
+
+  async function deleteCategory(id) {
+    const cat = ALL_CATEGORIES.find(c => c.id === id);
+    if (!cat) return;
+    const count = ALL_PM_PRODUCTS.filter(p => isElec(p) && resolveCategorySlug(p) === cat.slug).length;
+    if (count) { showToast(`❌ لا يمكن حذف "${cat.name}" — ${count} منتج مرتبط به`, 'error'); return; }
+    if (!confirm(`حذف التصنيف "${cat.name}" نهائياً؟`)) return;
+
+    try {
+      const { error } = await sb.from('categories').delete().eq('id', id);
+      if (error) throw error;
+      showToast('✅ تم حذف التصنيف');
+      await loadCategories();
+      renderCategoriesTable();
+      populateSubcatSelect();
+    } catch (err) {
+      showToast('❌ فشل الحذف: ' + err.message, 'error');
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
      SITEMAP GENERATOR
   ══════════════════════════════════════════════════════════ */
   async function generateSitemap() {
@@ -2415,6 +2831,10 @@
     bindEvents();
     initLocalFsBadge();
     loadBookSortMode();
+    /* Public read of active rows needs no auth session (see
+       admin/setup-categories.sql RLS) — safe to fetch immediately,
+       before admin login/session resolves, unlike loadProducts(). */
+    loadCategories().then(() => { populateSubcatSelect(); renderTable(); });
     /* Only load the full catalog (select *, incl. descriptions/gallery
        arrays for every row) when the Products tab is actually visible —
        it isn't the default tab, so most admin sessions never need this. */

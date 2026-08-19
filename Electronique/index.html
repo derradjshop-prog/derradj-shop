@@ -63,6 +63,24 @@
       object-fit: contain;
     }
 
+    /* ── Subcategory filter chips — source of truth is Supabase
+       `categories` (admin/setup-categories.sql), rendered by
+       js/products-loader.js. Compact pills, not a redesign. ── */
+    #electronicsCatFilterBar {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      margin: 0 0 28px;
+    }
+    #electronicsCatFilterBar .cat-filter-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 7px 14px; border-radius: 99px;
+      border: 1.5px solid var(--border);
+      background: #fff; color: var(--text-muted);
+      font-family: 'Cairo', sans-serif; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: background .2s, color .2s, border-color .2s;
+    }
+    #electronicsCatFilterBar .cat-filter-chip:hover { border-color: var(--primary-light); color: var(--primary); }
+    #electronicsCatFilterBar .cat-filter-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
     /* ── رسالة "قريباً" للمنتجات القادمة ─────────────────── */
     .coming-soon-card {
       background: #f8fafc;
@@ -172,6 +190,9 @@
         أطقم ومكونات Arduino، إكسسوارات وأدوات إلكترونية مختارة لتحسين إنتاجيتك وراحتك أثناء العمل والدراسة، مع توصيل سريع إلى جميع ولايات الجزائر
       </p>
     </div>
+
+    <!-- فلتر التصنيفات الفرعية — يُبنى من جدول categories في Supabase -->
+    <div id="electronicsCatFilterBar"></div>
 
     <!-- شبكة المنتجات -->
     <div class="products-grid" id="electronicsGrid">
@@ -419,6 +440,66 @@
 
 <!-- نظام السلة --><script src="../js/search-products.js"></script>
 <script src="../js/products-loader.js"></script>
+<script>
+  /* Subcategory filter chips — built from the same Supabase `categories`
+     data products-loader.js already fetched (window.SUPABASE_CATEGORIES),
+     filtering the already-rendered #electronicsGrid cards client-side by
+     their data-subcategory attribute. No extra Supabase query, no card
+     re-render, no redesign of .product-card. */
+  (function () {
+    'use strict';
+    let activeFilter = 'all';
+
+    function applyFilter() {
+      document.querySelectorAll('#electronicsGrid .product-card').forEach(function (card) {
+        const match = activeFilter === 'all' || card.dataset.subcategory === activeFilter;
+        card.style.display = match ? '' : 'none';
+      });
+    }
+
+    function renderChips() {
+      const bar = document.getElementById('electronicsCatFilterBar');
+      const products = (window.SUPABASE_PRODUCTS || []).filter(function (p) { return p.category !== 'books'; });
+      if (!bar || !products.length || typeof window.resolveCategorySlug !== 'function') return;
+
+      /* resolveCategorySlug() returns null for products that don't
+         unambiguously fit any current category (see products-loader.js)
+         — those only count toward the "All" total, no chip. */
+      const counts = {};
+      products.forEach(function (p) {
+        const slug = window.resolveCategorySlug(p);
+        if (slug) counts[slug] = (counts[slug] || 0) + 1;
+      });
+
+      const chips = (window.SUPABASE_CATEGORIES || [])
+        .filter(function (c) { return counts[c.slug]; })
+        .map(function (c) {
+          return '<button type="button" class="cat-filter-chip" data-filter="' + c.slug + '">' +
+            (c.icon || '📦') + ' ' + c.name + ' (' + counts[c.slug] + ')</button>';
+        }).join('');
+
+      /* No real subcategory to filter by yet (categories not seeded,
+         or nothing classified) — a lone "الكل" chip adds nothing, skip
+         rendering the row at all instead of reserving empty space. */
+      if (!chips) { bar.innerHTML = ''; return; }
+
+      bar.innerHTML = '<button type="button" class="cat-filter-chip active" data-filter="all">🗂 الكل (' + products.length + ')</button>' + chips;
+
+      bar.addEventListener('click', function (e) {
+        const btn = e.target.closest('.cat-filter-chip');
+        if (!btn) return;
+        activeFilter = btn.dataset.filter;
+        bar.querySelectorAll('.cat-filter-chip').forEach(function (b) { b.classList.toggle('active', b === btn); });
+        applyFilter();
+      });
+    }
+
+    /* Dispatched once at the end of products-loader.js's load() —
+       guarantees SUPABASE_PRODUCTS/SUPABASE_CATEGORIES and the rendered
+       #electronicsGrid cards are all ready. */
+    document.addEventListener('derradj:catalog-loaded', renderChips);
+  })();
+</script>
 <script src="../cart.js"></script>
 
 <!-- whatsapp-float -->

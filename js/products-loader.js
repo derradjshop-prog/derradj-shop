@@ -25,6 +25,55 @@
     other:       '📦',
   };
 
+  /* ── Electronics subcategories — single source of truth is the
+     Supabase `categories` table (see admin/setup-categories.sql).
+     Populated by fetchCategories() in load(); exposed on window so
+     Electronique/index.html's filter chips can reuse the exact same
+     data + resolveCategorySlug() logic without a second query. ── */
+  window.SUPABASE_CATEGORIES = window.SUPABASE_CATEGORIES || [];
+
+  /* Same legacy bucketing as admin/products-manager.js — kept in sync
+     by hand since one runs via supabase-js (sb.from) and the other via
+     plain fetch() (no supabase-js loaded on the public site), matching
+     how this file already duplicates fetchProducts() vs the admin
+     equivalent for the same reason. Never rewrites subcategory in the
+     DB — see that file's comment for why (image-folder path coupling). */
+  /* Only mapped where unambiguous — see the matching comment in
+     admin/products-manager.js. No fallback bucket: unmapped legacy
+     products simply show no subcategory label/chip rather than being
+     guessed into one (e.g. the current 17-category list has no general
+     "wireless earbuds" bucket, so the Anker SoundCore earbuds — not
+     AirPods-branded — are intentionally left unclassified). */
+  const LEGACY_SUBCATEGORY_BY_CATALOG_ID = { 87: 'airpods' };
+  const LEGACY_SUBCATEGORY_BY_VALUE = {
+    smart_watch: 'smartwatch',
+    power_bank:  'power-bank',
+  };
+  function resolveCategorySlug(p) {
+    if (!p || p.category === 'books') return null;
+    const byId = LEGACY_SUBCATEGORY_BY_CATALOG_ID[p.catalog_id];
+    if (byId) return byId;
+    const raw = p.subcategory;
+    if (raw && window.SUPABASE_CATEGORIES.some(c => c.slug === raw)) return raw;
+    if (raw && LEGACY_SUBCATEGORY_BY_VALUE[raw]) return LEGACY_SUBCATEGORY_BY_VALUE[raw];
+    return null;
+  }
+  function categoryBySlug(slug) { return window.SUPABASE_CATEGORIES.find(c => c.slug === slug) || null; }
+  window.resolveCategorySlug = resolveCategorySlug;
+  window.categoryBySlug = categoryBySlug;
+
+  async function fetchCategories() {
+    try {
+      const url = SB_URL + '/rest/v1/categories?select=*&is_active=eq.true&order=sort_order.asc';
+      const res = await fetch(url, { headers: HEADERS });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return await res.json();
+    } catch (err) {
+      console.warn('[products-loader] categories unavailable:', err.message || err);
+      return [];
+    }
+  }
+
   /* ── `product_name` / `product_name_ar` aren't consistently
      Arabic-vs-English per row (legacy data entry varies), so detect
      by script rather than trusting the field name — mirrors the
@@ -133,8 +182,12 @@
     const isAvail  = p.stock_status !== 'out_of_stock';
     const badgeCls = isAvail ? 'product-badge new' : 'product-badge product-badge--unavail';
     const badgeTxt = isAvail ? 'متوفر' : 'نفذت الكمية';
-    const icon     = catIcon(p.category);
-    const catAr    = catLabelAr(p.category);
+    /* Electronics cards show the specific subcategory (🔋 بطاريات محمولة)
+       instead of the generic top-level label, when one can be resolved —
+       books keep the plain "📚 كتب" label as before. */
+    const subcat   = isBook ? null : categoryBySlug(resolveCategorySlug(p));
+    const icon     = subcat ? (subcat.icon || '📦') : catIcon(p.category);
+    const catAr    = subcat ? subcat.name : catLabelAr(p.category);
     const imgSrc   = resolveImage(p);
     const summary  = cardSummary(p);
 
@@ -143,7 +196,8 @@
       : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 
     const name = arName(p);
-    return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}">
+    const subcatAttr = subcat ? ` data-subcategory="${escAttr(subcat.slug)}"` : '';
+    return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}"${subcatAttr}>
       <div class="${badgeCls}" data-avail-badge="${p.catalog_id}">${badgeTxt}</div>
       <a href="${url}" class="product-img-area" style="text-decoration:none;">
         <img src="${imgSrc}" ${imgFallbackAttrs(p)}alt="${escAttr(name)} — Derradj Shop"
@@ -346,12 +400,18 @@
     products.forEach(p => {
       if (!p.slug || existingSlugs.has(p.slug)) return;
       const isBook = p.category === 'books';
+      /* The raw `subcategory` value (e.g. "power_bank", or free text
+         like "Arduino / Composants électroniques" for legacy rows)
+         rarely matches what someone actually types — resolve it to the
+         real category's name (e.g. "بطاريات محمولة") so subcategory
+         search words actually match. */
+      const subcat = isBook ? null : categoryBySlug(resolveCategorySlug(p));
       window.SEARCH_PRODUCTS.push({
         name:        arName(p),
         nameEn:      otherName(p),
         nameFr:      p.product_name_fr || '',
         category:    catLabelAr(p.category),
-        subcategory: p.subcategory || '',
+        subcategory: subcat ? subcat.name : (p.subcategory || ''),
         price:       p.price,
         image:       resolveImage(p),
         url:         `${isBook ? '/books/' : '/product/'}${p.slug}/`,
@@ -372,6 +432,11 @@
      of staleness is an acceptable trade for cutting that egress. ── */
   const CATALOG_CACHE_KEY = 'derradj_catalog_v1';
   const CATALOG_CACHE_TTL = 3 * 60 * 1000;
+  /* Categories change far less often than stock/price — a longer TTL
+     than the product catalog is fine and cuts one more request per
+     page on top of it. */
+  const CATEGORIES_CACHE_KEY = 'derradj_categories_v1';
+  const CATEGORIES_CACHE_TTL = 30 * 60 * 1000;
   function cacheGet(key, ttlMs) {
     try {
       const raw = sessionStorage.getItem(key);
@@ -411,6 +476,13 @@
   /* ── Main loader ── */
   async function load() {
     try {
+      let categories = cacheGet(CATEGORIES_CACHE_KEY, CATEGORIES_CACHE_TTL);
+      if (!Array.isArray(categories) || !categories.length) {
+        categories = await fetchCategories();
+        if (categories.length) cacheSet(CATEGORIES_CACHE_KEY, categories);
+      }
+      window.SUPABASE_CATEGORIES = categories;
+
       let products = cacheGet(CATALOG_CACHE_KEY, CATALOG_CACHE_TTL);
       if (!Array.isArray(products) || !products.length) {
         products = await fetchProducts();
