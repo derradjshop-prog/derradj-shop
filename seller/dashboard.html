@@ -135,6 +135,8 @@
     .stat-card.s-ord-done     { border-right-color: #10b981; }
     .stat-card.s-ord-profit   { border-right-color: #C9A227; background: linear-gradient(135deg,#FBF7EF,#ffffff); }
     .stat-card.s-ord-profit .stat-num { color: #0F5132; }
+    .stat-card.s-ord-owed    { border-right-color: #dc2626; background: linear-gradient(135deg,#FEF2F2,#ffffff); }
+    .stat-card.s-ord-owed .stat-num { color: #dc2626; }
     .stat-num   { font-size: 30px; font-weight: 900; line-height: 1; }
     .stat-label { font-size: 12px; color: var(--text-light); font-weight: 700; }
 
@@ -388,6 +390,64 @@
     }
     .btn-undo:hover:not(:disabled) { background: #64748b; color: #fff; border-color: #64748b; }
     .btn-undo:disabled { opacity: .6; cursor: default; }
+
+    /* حذف الطلب — لون تحذيري أحمر */
+    .btn-delete {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; background: #fee2e2; color: #dc2626;
+      border: 1.5px solid #fca5a5; border-radius: 8px;
+      font-size: 12px; font-weight: 800; cursor: pointer;
+      font-family: var(--font); transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .btn-delete:hover:not(:disabled) { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .btn-delete:disabled { opacity: .6; cursor: default; }
+
+    /* اتصال مباشر بالزبون */
+    .btn-call {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; background: #e0f2fe; color: #0369a1;
+      border: 1.5px solid #7dd3fc; border-radius: 8px;
+      font-size: 12px; font-weight: 800; cursor: pointer;
+      text-decoration: none; font-family: var(--font);
+      transition: background .15s, color .15s; white-space: nowrap;
+    }
+    .btn-call:hover { background: #0369a1; color: #fff; border-color: #0369a1; }
+
+    /* حظر العميل — إجراء أمني، لون تحذيري داكن مغاير عن حذف الطلب */
+    .btn-block {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 6px 12px; background: #fef3c7; color: #92400e;
+      border: 1.5px solid #fcd34d; border-radius: 8px;
+      font-size: 12px; font-weight: 800; cursor: pointer;
+      font-family: var(--font); transition: background .15s, color .15s;
+      white-space: nowrap;
+    }
+    .btn-block:hover:not(:disabled) { background: #92400e; color: #fff; border-color: #92400e; }
+    .btn-block:disabled { opacity: .6; cursor: default; }
+
+    /* أزرار إجراءات الطلب على بطاقات الموبايل — شبكة عمودين بدل
+       ضغط الأزرار الخمسة في صف واحد ضيق. لا تؤثر على جدول سطح
+       المكتب (.mobile-cards مخفية أصلاً فوق 768px). */
+    @media (max-width: 768px) {
+      .m-order-actions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 4px;
+      }
+      .m-order-actions > * {
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: center;
+        text-align: center;
+        white-space: normal;
+        line-height: 1.25;
+        min-height: 42px;
+        padding: 10px 8px;
+        font-size: 13px;
+      }
+    }
 
     /* ━━ MODAL ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .modal-overlay {
@@ -690,6 +750,10 @@
         <span class="stat-num" id="stat-ord-profit">—</span>
         <span class="stat-label">🤝 إجمالي ربحك</span>
       </div>
+      <div class="stat-card s-ord-owed">
+        <span class="stat-num" id="stat-ord-owed">—</span>
+        <span class="stat-label">💳 المستحق لـ Derradj Abdellah</span>
+      </div>
     </div>
 
     <div class="controls-bar">
@@ -857,8 +921,8 @@
     completed:     "✅ مكتمل",
   };
 
-  /* حصّة Mehdi من الربح على كل كتاب — الإدارة تُدخل تكلفة الشراء */
-  const PARTNER_SHARE_RATE = 0.70;
+  /* حصّة Mehdi من الربح — نصيب الإدارة 100 دج ثابتة لكل طلب، والباقي لـ Mehdi */
+  const MY_SHARE_PER_ORDER = 100;
 
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
@@ -924,7 +988,7 @@
 
     const { data: staff, error } = await supabase
       .from("staff_accounts")
-      .select("id, full_name, email, role, is_active")
+      .select("id, full_name, email, role, is_active, show_amount_owed")
       .eq("id", session.user.id)
       .maybeSingle();
 
@@ -1009,6 +1073,18 @@
     if (error) throw error;
   }
 
+  /* ── حذف طلب — مسموح للبائع فقط ضمن الطلبات المعيّنة له، بفضل
+     سياسة RLS الجديدة orders_seller_delete_assigned (مطابقة تماماً
+     لنطاق سياستَي SELECT/UPDATE الحاليتين للبائع). أي محاولة حذف
+     لطلب غير معيّن له تُرفض على مستوى القاعدة. ── */
+  async function deleteOrder(orderId) {
+    const { error } = await supabase
+      .from("orders")
+      .delete()
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
   async function markMessageCompleted(msgId) {
     const { error } = await supabase
       .from("messages")
@@ -1025,16 +1101,27 @@
     document.getElementById("stat-ord-progress").textContent = inProgress;
     document.getElementById("stat-ord-done").textContent     = done;
 
-    /* إجمالي ربح Mehdi — مجموع حصّته (70%) عبر كل الكتب التي أُدخلت تكلفتها،
-       وفقط للطلبات المؤكد تسليمها (is_confirmed === true) من الأدمن. */
-    let totalProfit = 0;
+    /* إجمالي ربح Mehdi — مجموع (ربح كل طلب - 100 دج نصيب الإدارة)، لكل طلب
+       أُدخلت تكلفة كتابه (أو كتبه)، وفقط للطلبات المؤكد تسليمها
+       (is_confirmed === true) من الأدمن. النصيب 100 دج مرة واحدة لكل طلب
+       بغض النظر عن عدد المنتجات داخله. */
+    let totalMehdiProfit = 0;
     orders.filter(o => o.is_confirmed === true).forEach(o => {
-      (o.order_items || []).forEach(it => {
-        if (it.purchase_cost === null || it.purchase_cost === undefined || it.purchase_cost === "") return;
-        totalProfit += Number(it.subtotal || 0) - Number(it.purchase_cost);
-      });
+      const itemsWithCost = (o.order_items || []).filter(it =>
+        it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
+      if (!itemsWithCost.length) return;
+      const orderProfit = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
+      totalMehdiProfit += orderProfit - MY_SHARE_PER_ORDER;
     });
-    document.getElementById("stat-ord-profit").textContent = fmtMoney(totalProfit * PARTNER_SHARE_RATE);
+    document.getElementById("stat-ord-profit").textContent = fmtMoney(totalMehdiProfit);
+
+    /* المبلغ المستحق لـ Derradj Abdellah (صاحب المنصة) — 100 دج لكل طلب
+       مؤكَّد التسليم (is_confirmed === true)، بصرف النظر عن إدخال تكلفة
+       الشراء أو عن عدد المنتجات داخل الطلب. الرسم ثابت لكل طلب مسلَّم،
+       ولا يعتمد على بيانات التكلفة/الربح (بعكس بطاقة "ربحك" أعلاه). */
+    const eligibleOrderCount = orders.filter(o => o.is_confirmed === true).length;
+    const owedEl = document.getElementById("stat-ord-owed");
+    if (owedEl) owedEl.textContent = fmtMoney(eligibleOrderCount * MY_SHARE_PER_ORDER);
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -1090,10 +1177,13 @@
             <span style="font-weight:800;color:var(--primary);">${esc(fmtMoney(o.total_price))}</span>
             <span style="font-size:13px;color:var(--text-light);">${totalQty} قطعة</span>
           </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn-receipt" data-id="${esc(o.id)}" data-action="ord-details" style="flex:1;justify-content:center;">عرض التفاصيل</button>
-            ${o.assignment_status === "assigned" ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="ord-complete" style="flex:1;justify-content:center;" ${disabledInPreview()}>✅ تسليم</button>` : ""}
-            ${o.assignment_status === "completed" ? `<button class="btn-undo" data-id="${esc(o.id)}" data-action="ord-revert" style="flex:1;justify-content:center;" ${disabledInPreview()}>↩️ تراجع</button>` : ""}
+          <div class="m-order-actions">
+            <button class="btn-receipt" data-id="${esc(o.id)}" data-action="ord-details">عرض التفاصيل</button>
+            ${(o.phone || "").trim() ? `<a href="tel:${esc((o.phone || "").trim())}" class="btn-call">📞 اتصال</a>` : ""}
+            ${o.assignment_status === "assigned" ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="ord-complete" ${disabledInPreview()}>✅ تسليم</button>` : ""}
+            ${o.assignment_status === "completed" ? `<button class="btn-undo" data-id="${esc(o.id)}" data-action="ord-revert" ${disabledInPreview()}>↩️ تراجع</button>` : ""}
+            <button class="btn-delete" data-id="${esc(o.id)}" data-action="ord-delete" ${disabledInPreview()}>🗑 حذف</button>
+            <button class="btn-block" data-id="${esc(o.id)}" data-action="ord-block" ${disabledInPreview()}>🚫 حظر</button>
           </div>
         </div>`;
     }).join("");
@@ -1124,6 +1214,11 @@
       const revertBtn = o.assignment_status === "completed"
         ? `<button class="btn-undo" data-id="${esc(o.id)}" data-action="ord-revert" ${disabledInPreview()}>↩️ تراجع</button>`
         : "";
+      const deleteBtn = `<button class="btn-delete" data-id="${esc(o.id)}" data-action="ord-delete" ${disabledInPreview()}>🗑 حذف</button>`;
+      const callBtn = (o.phone || "").trim()
+        ? `<a href="tel:${esc((o.phone || "").trim())}" class="btn-call">📞 اتصال</a>`
+        : "";
+      const blockBtn = `<button class="btn-block" data-id="${esc(o.id)}" data-action="ord-block" ${disabledInPreview()}>🚫 حظر</button>`;
 
       return `
         <tr data-id="${esc(o.id)}">
@@ -1137,8 +1232,11 @@
           <td class="nowrap">
             <div style="display:flex;gap:6px;">
               <button class="btn-receipt" data-id="${esc(o.id)}" data-action="ord-details">تفاصيل</button>
+              ${callBtn}
               ${completeBtn}
               ${revertBtn}
+              ${deleteBtn}
+              ${blockBtn}
             </div>
           </td>
         </tr>`;
@@ -1170,7 +1268,6 @@
             ${hasCost ? `
               <div class="product-profit-row">
                 <span>الربح: <strong>${esc(fmtMoney(profit))}</strong></span>
-                <span>حصتك (70%): <strong style="color:#0F5132;">${esc(fmtMoney(profit * PARTNER_SHARE_RATE))}</strong></span>
               </div>` : ``}`;
           return `
           <div class="product-card" style="flex-direction:column;align-items:stretch;">
@@ -1193,28 +1290,27 @@
        حالة التسليم. الرسالة البديلة تظهر فقط إن لم تُدخَل أي تكلفة بعد. ── */
     const itemsWithCost = items.filter(it => it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
     const totalProfit   = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
+    const mehdiShare     = totalProfit - MY_SHARE_PER_ORDER;
     const profitSummaryHTML = !itemsWithCost.length ? `
       <div class="modal-section">
-        <div class="modal-section-title">🤝 حصتك من الربح</div>
+        <div class="modal-section-title">حصتك من الربح</div>
         <div class="price-summary-box profit-pending-box">
-          <p style="margin:0;font-size:13px;color:var(--text-light);text-align:center;">⏳ أدخل تكلفة الشراء أعلاه لعرض الربح</p>
+          <p style="margin:0;font-size:13px;color:var(--text-light);text-align:center;">أدخل تكلفة الشراء أعلاه لعرض الربح</p>
         </div>
       </div>`
       : `
       <div class="modal-section">
-        <div class="modal-section-title">🤝 حصتك من الربح</div>
+        <div class="modal-section-title">حصتك من الربح</div>
         <div class="price-summary-box" style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border-color:#bbf7d0;">
           <div class="price-row"><span>الربح الكلي${itemsWithCost.length < items.length ? " (جزئي)" : ""}</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span></div>
-          <div class="price-row grand"><span>حصتك (70%)</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(totalProfit * PARTNER_SHARE_RATE))}</span></div>
+          <div class="price-row grand"><span>حصتك</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(mehdiShare))}</span></div>
+          <div class="price-row"><span>حقوق المنصة</span><span class="pv">${esc(fmtMoney(MY_SHARE_PER_ORDER))}</span></div>
+          <p style="margin:8px 0 0;font-size:12px;color:var(--text-light);text-align:center;">ربحك 100% — حقوق المنصة 100 دج فقط</p>
         </div>
       </div>`;
 
     const receiptHTML = o.receipt_url
       ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" class="btn-receipt" style="display:inline-flex;margin-top:10px;">🧾 فتح وصل الدفع</a>`
-      : "";
-
-    const completedNoteHTML = o.assignment_status === "completed"
-      ? `<div class="completed-note">✅ تم تسليم هذا الطلب بواسطتك في ${esc(fmtDate(o.completed_at))}</div>`
       : "";
 
     document.getElementById("modalTitle").textContent = "طلب #" + (o.order_number ?? "—") + " — " + (o.full_name || "—");
@@ -1268,7 +1364,6 @@
           ${confirmBadge(o.is_confirmed)}
           ${assignBadge(o.assignment_status)}
         </div>
-        ${completedNoteHTML}
       </div>`;
 
     document.getElementById("modalFooter").innerHTML = o.assignment_status === "assigned"
@@ -1323,6 +1418,63 @@
     } catch (err) {
       console.error("Revert order error:", err);
       showToast("❌ فشل التراجع: " + (err.message || ""), "error");
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  async function handleOrderDelete(orderId, btn) {
+    if (PREVIEW_MODE) return;
+    const order = ALL_ORDERS.find(x => x.id === orderId);
+    const name  = order?.full_name || "هذا الطلب";
+    if (!confirm(`هل أنت متأكد أنك تريد حذف طلب "${name}"؟\nلا يمكن التراجع عن هذا الإجراء.`)) return;
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳...";
+    try {
+      await deleteOrder(orderId);
+      ALL_ORDERS = ALL_ORDERS.filter(x => x.id !== orderId);
+      renderOrdersTable(getFilteredOrders());
+      if (ACTIVE_ORDER?.id === orderId) closeModal();
+    } catch (err) {
+      console.error("Delete order error:", err);
+      showToast("❌ فشل حذف الطلب: " + (err.message || ""), "error");
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  /* ── حظر العميل — يُدرج صفاً في blocked_customers برقم هاتف هذا
+     الطلب. الحظر الفعلي يُنفَّذ لاحقاً عبر trigger على orders نفسها
+     (انظر add-blocked-customers-system.sql) — أي طلب جديد بنفس الرقم
+     يُرفض من القاعدة مباشرة، وليس فقط من الواجهة. سياسة RLS تسمح
+     للبائع بحظر رقم فقط إن ظهر على أحد طلباته المعيّنة له. ── */
+  async function handleBlockCustomer(orderId, btn) {
+    if (PREVIEW_MODE) return;
+    const order = ALL_ORDERS.find(x => x.id === orderId);
+    const phone = (order?.phone || "").trim();
+    if (!phone) return;
+    if (!confirm("هل أنت متأكد من حظر هذا العميل؟")) return;
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳...";
+    try {
+      const { error } = await supabase
+        .from("blocked_customers")
+        .insert({ phone, blocked_by: CURRENT_STAFF_ID });
+      if (error) {
+        if (error.code === "23505") {
+          showToast("⚠️ هذا العميل محظور بالفعل", "error");
+        } else {
+          throw error;
+        }
+      } else {
+        showToast("✅ تم حظر العميل", "success");
+      }
+    } catch (err) {
+      console.error("Block customer error:", err);
+      showToast("❌ فشل حظر العميل: " + (err.message || ""), "error");
+    } finally {
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -1703,6 +1855,8 @@
       if (btn.dataset.action === "ord-details")  showOrderModal(btn.dataset.id);
       if (btn.dataset.action === "ord-complete")  await handleOrderComplete(btn.dataset.id, btn);
       if (btn.dataset.action === "ord-revert")    await handleOrderRevert(btn.dataset.id, btn);
+      if (btn.dataset.action === "ord-delete")    await handleOrderDelete(btn.dataset.id, btn);
+      if (btn.dataset.action === "ord-block")     await handleBlockCustomer(btn.dataset.id, btn);
     });
 
     document.getElementById("ordersMobileCards").addEventListener("click", async e => {
@@ -1711,6 +1865,8 @@
       if (btn.dataset.action === "ord-details")  showOrderModal(btn.dataset.id);
       if (btn.dataset.action === "ord-complete")  await handleOrderComplete(btn.dataset.id, btn);
       if (btn.dataset.action === "ord-revert")    await handleOrderRevert(btn.dataset.id, btn);
+      if (btn.dataset.action === "ord-delete")    await handleOrderDelete(btn.dataset.id, btn);
+      if (btn.dataset.action === "ord-block")     await handleBlockCustomer(btn.dataset.id, btn);
     });
 
     /* ── My Messages ─────────────────────────────────────────── */
@@ -1883,6 +2039,13 @@
       if (!staff) return;
 
       CURRENT_STAFF_ID = staff.id;
+
+      /* بطاقة "المستحق لـ Derradj Abdellah" تُخفى بالكامل (لا تُترك بقيمة
+         صفر) إن عطّلها الأدمن الرئيسي لهذا البائع تحديداً — انظر
+         admin/add-seller-show-amount-owed-setting.sql. */
+      if (staff.show_amount_owed === false) {
+        document.querySelector(".stat-card.s-ord-owed")?.remove();
+      }
 
       document.getElementById("sellerBadge").textContent =
         "🛒 بائع" + (staff.full_name ? " — " + staff.full_name : "");

@@ -39,6 +39,15 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
      an explicit check (not hardcoded true) for defense-in-depth. */
   function isAdmin() { return CURRENT_ROLE === 'admin'; }
 
+  /* ── Main admin (platform owner) — the only account allowed to see/use
+     the "البائعين" tab. This is a UI convenience check only; the real
+     boundary is public.is_main_admin() enforced server-side on the
+     staff_accounts UPDATE policy (see add-seller-show-amount-owed-setting.sql) —
+     even if this check were bypassed in DevTools, the database would
+     still reject the write for any other account. ── */
+  const MAIN_ADMIN_EMAIL = '0555491316@derradjshop.com';
+  function isMainAdmin() { return isAdmin() && CURRENT_STAFF_EMAIL === MAIN_ADMIN_EMAIL; }
+
   /* ── Assignment status labels ──────────────────────────── */
   const ASSIGN_LABELS = {
     pending_admin: '🆕 غير معيّن',
@@ -60,9 +69,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     office: "📮 استلام من أقرب نقطة توصيل",
   };
 
-  /* حصص الأرباح — الشريك (البائع) 70% ، الإدارة 30% */
-  const PARTNER_SHARE_RATE = 0.70;
-  const MY_SHARE_RATE      = 0.30;
+  /* حصص الأرباح — نصيبي 100 دج ثابتة لكل طلب، والباقي لـ Mehdi */
+  const MY_SHARE_PER_ORDER = 100;
 
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
@@ -170,12 +178,134 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   async function fetchSellers() {
     const { data, error } = await supabase
       .from("staff_accounts")
-      .select("id, full_name, email")
+      .select("id, full_name, email, show_amount_owed")
       .eq("role", "seller")
       .eq("is_active", true)
       .order("full_name");
     if (error) throw error;
     return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     SELLERS TAB — إعداد "إظهار المبلغ المستحق" لكل بائع
+     يظهر هذا التبويب فقط لحساب الأدمن الرئيسي (isMainAdmin()) —
+     هذا مجرد تسهيل واجهة. الحماية الفعلية هي سياسة RLS
+     staff_accounts_main_admin_update التي تقبل فقط
+     public.is_main_admin() على مستوى القاعدة (انظر
+     add-seller-show-amount-owed-setting.sql)، لذا حتى لو أظهر أحد
+     الزر يدوياً عبر DevTools فإن التحديث سيُرفض من القاعدة نفسها
+     لأي حساب غير هذا الحساب تحديداً.
+  ───────────────────────────────────────────────────────── */
+  function renderSellersTab() {
+    const container = document.getElementById("tab-sellers");
+    if (!container) return;
+    container.innerHTML = `
+      <p class="modal-sec-lbl" style="margin-bottom:14px;">البائعون</p>
+      <div class="detail-rows">
+        ${ALL_SELLERS.length ? ALL_SELLERS.map(s => `
+          <div class="detail-row">
+            <span class="dr-key">${esc(s.full_name || s.email)}</span>
+            <span class="dr-val" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+              <span style="font-size:12px;color:var(--text-muted);">إظهار المبلغ المستحق</span>
+              <button type="button" class="pm-toggle ${s.show_amount_owed ? "is-on" : ""}"
+                      data-action="toggle-show-owed" data-id="${esc(s.id)}"
+                      role="switch" aria-checked="${!!s.show_amount_owed}">
+                <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
+                <span class="pm-toggle-label">${s.show_amount_owed ? "🟢 ظاهر" : "⚪ مخفي"}</span>
+              </button>
+            </span>
+          </div>`).join("")
+        : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا يوجد بائعون بعد</p>`}
+      </div>`;
+  }
+
+  async function handleToggleShowOwed(sellerId, btn) {
+    if (!isMainAdmin()) return;
+    const seller = ALL_SELLERS.find(s => s.id === sellerId);
+    if (!seller) return;
+    const next = !seller.show_amount_owed;
+    btn.disabled = true;
+    try {
+      const { error } = await supabase
+        .from("staff_accounts")
+        .update({ show_amount_owed: next })
+        .eq("id", sellerId);
+      if (error) throw error;
+      seller.show_amount_owed = next;
+      renderSellersTab();
+    } catch (err) {
+      console.error("Toggle show_amount_owed error:", err);
+      showToast("❌ فشل تحديث الإعداد: " + (err.message || ""), "error");
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     BLOCKED CUSTOMERS TAB — main-admin-only management view
+     الحظر الفعلي مُنفَّذ داخل القاعدة نفسها عبر trigger على orders
+     (انظر add-blocked-customers-system.sql) — يرفض أي طلب جديد
+     برقم هاتف محظور بغض النظر عن الواجهة. البائعون يحظرون مباشرة
+     من لوحتهم (زر "🚫 حظر" على الطلب)؛ هذا التبويب هنا فقط للعرض
+     ولإلغاء الحظر — وإلغاء الحظر (UPDATE) مقصور على الأدمن الرئيسي
+     عبر سياسة blocked_customers_main_admin_update (is_main_admin()).
+  ───────────────────────────────────────────────────────── */
+  let ALL_BLOCKED = [];
+
+  async function fetchBlockedCustomers() {
+    const { data, error } = await supabase
+      .from("blocked_customers")
+      .select(`
+        id, phone, reason, is_active, blocked_at, unblocked_at,
+        blocked_staff:staff_accounts!blocked_customers_blocked_by_fkey ( full_name, email ),
+        unblocked_staff:staff_accounts!blocked_customers_unblocked_by_fkey ( full_name, email )
+      `)
+      .order("blocked_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+
+  function renderBlockedTab() {
+    const container = document.getElementById("tab-blocked");
+    if (!container) return;
+    container.innerHTML = `
+      <p class="modal-sec-lbl" style="margin-bottom:14px;">العملاء المحظورون</p>
+      <div class="detail-rows">
+        ${ALL_BLOCKED.length ? ALL_BLOCKED.map(b => `
+          <div class="detail-row">
+            <span class="dr-key" dir="ltr">${esc(b.phone)}</span>
+            <span class="dr-val">
+              ${b.is_active
+                ? `<strong style="color:#92400e;">🚫 محظور</strong>`
+                : `<span style="color:var(--text-muted);">غير محظور</span>`}
+              <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">
+                حظره ${esc(b.blocked_staff?.full_name || b.blocked_staff?.email || "—")} — ${esc(fmtDate(b.blocked_at))}
+                ${!b.is_active ? ` · ألغى الحظر ${esc(b.unblocked_staff?.full_name || b.unblocked_staff?.email || "—")} — ${esc(fmtDate(b.unblocked_at))}` : ""}
+              </span>
+            </span>
+            ${b.is_active ? `<button class="btn-undo" data-action="unblock" data-id="${esc(b.id)}">إلغاء الحظر</button>` : ""}
+          </div>`).join("")
+        : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا يوجد عملاء محظورون</p>`}
+      </div>`;
+  }
+
+  async function handleUnblock(blockId, btn) {
+    if (!isMainAdmin()) return;
+    if (!confirm("هل تريد إلغاء حظر هذا العميل؟")) return;
+    btn.disabled = true;
+    try {
+      const { error } = await supabase
+        .from("blocked_customers")
+        .update({ is_active: false, unblocked_by: CURRENT_STAFF_ID, unblocked_at: new Date().toISOString() })
+        .eq("id", blockId);
+      if (error) throw error;
+      ALL_BLOCKED = await fetchBlockedCustomers();
+      renderBlockedTab();
+    } catch (err) {
+      console.error("Unblock error:", err);
+      showToast("❌ فشل إلغاء الحظر: " + (err.message || ""), "error");
+      btn.disabled = false;
+    }
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -1066,8 +1196,6 @@ ${itemsText}
           const profitHTML = hasCost ? `
               <div class="prod-profit-row">
                 <span>💰 الربح: <strong>${esc(fmtMoney(profit))}</strong></span>
-                <span>🤝 حصتك (70%): <strong style="color:#0F5132;">${esc(fmtMoney(profit * PARTNER_SHARE_RATE))}</strong></span>
-                <span>👤 نصيبي (30%): <strong>${esc(fmtMoney(profit * MY_SHARE_RATE))}</strong></span>
               </div>` : ``;
           const editMetaHTML = it.updated_at ? `
               <div class="prod-cost-meta" title="آخر تعديل">✏️ آخر تعديل: ${esc(it.updated_by_staff?.full_name || "—")} · ${esc(fmtDate(it.updated_at))}</div>` : ``;
@@ -1094,14 +1222,15 @@ ${itemsText}
     /* ── Order-level profit summary (only counts items with a cost entered) ── */
     const itemsWithCost = items.filter(it => it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
     const totalProfit   = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
+    const mehdiProfit   = totalProfit - MY_SHARE_PER_ORDER;
     const profitSummaryHTML = itemsWithCost.length ? `
       <div class="modal-totals profit-summary">
         <div class="total-row">
           <span>💰 الربح الكلي${itemsWithCost.length < items.length ? " (جزئي — التكلفة غير مدخلة لكل المنتجات)" : ""}</span>
           <span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span>
         </div>
-        <div class="total-row"><span>🤝 Mehdi (70%)</span><span class="total-val">${esc(fmtMoney(totalProfit * PARTNER_SHARE_RATE))}</span></div>
-        <div class="total-row grand"><span>👤 أنا (30%)</span><span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit * MY_SHARE_RATE))}</span></div>
+        <div class="total-row"><span>🤝 Mehdi</span><span class="total-val">${esc(fmtMoney(mehdiProfit))}</span></div>
+        <div class="total-row grand"><span>👤 أنا</span><span class="total-val" style="color:#0F5132;">${esc(fmtMoney(MY_SHARE_PER_ORDER))}</span></div>
       </div>` : ``;
 
     /* ── Receipt ── */
@@ -1653,6 +1782,8 @@ ${itemsText}
         : tab === "messages"    ? "✉️ الرسائل الواردة"
         : tab === "reviews"     ? "⭐ إدارة التقييمات"
         : tab === "bestsellers" ? "📚 الكتب المباعة"
+        : tab === "sellers"     ? "👤 إدارة البائعين"
+        : tab === "blocked"     ? "🚫 العملاء المحظورون"
         : "📚 إدارة المنتجات";
 
         /* فتح التبويب يصفّر عداد "غير مُشاهد" الخاص به */
@@ -1660,6 +1791,20 @@ ${itemsText}
         if (tab === "messages") { UNSEEN_MESSAGES = 0; sessionStorage.setItem("admin_messages_last_seen", new Date().toISOString()); }
         updateLiveBadges();
       });
+    });
+
+    /* ── Sellers tab — toggle "show amount owed" ─────────────── */
+    document.getElementById("tab-sellers")?.addEventListener("click", async e => {
+      const btn = e.target.closest('[data-action="toggle-show-owed"]');
+      if (!btn) return;
+      await handleToggleShowOwed(btn.dataset.id, btn);
+    });
+
+    /* ── Blocked customers tab — unblock ─────────────────────── */
+    document.getElementById("tab-blocked")?.addEventListener("click", async e => {
+      const btn = e.target.closest('[data-action="unblock"]');
+      if (!btn) return;
+      await handleUnblock(btn.dataset.id, btn);
     });
 
     /* ── Messages search & refresh ─────────────────────────── */
@@ -1899,6 +2044,11 @@ ${itemsText}
 
       document.getElementById("viewAsBtn").style.display = "inline-flex";
 
+      if (isMainAdmin()) {
+        document.getElementById("navBtnSellers").style.display = "";
+        document.getElementById("navBtnBlocked").style.display = "";
+      }
+
       /* حساب "غير مُشاهد منذ آخر زيارة" قبل أي بيانات جديدة تصل عبر Realtime */
       const lastSeenOrders   = sessionStorage.getItem("admin_orders_last_seen");
       const lastSeenMessages = sessionStorage.getItem("admin_messages_last_seen");
@@ -1926,6 +2076,11 @@ ${itemsText}
       renderTable(getFiltered());
       renderMessagesTable(ALL_MESSAGES);
       renderReviewsTable(ALL_REVIEWS);
+      if (isMainAdmin()) {
+        renderSellersTab();
+        ALL_BLOCKED = await fetchBlockedCustomers().catch(() => []);
+        renderBlockedTab();
+      }
       bindEvents();
       setupRealtime();
 

@@ -164,6 +164,9 @@
     const code = err?.code || "";
     const msg  = (err?.message || "").toLowerCase();
 
+    if (msg.includes("blocked_phone")) {
+      return "لا يمكن تقديم الطلب بهذا الرقم. يرجى التواصل مع إدارة المنصة.";
+    }
     if (code === "42501" || msg.includes("row-level security") || msg.includes("rls")) {
       return (
         "❌ خطأ في إعدادات قاعدة البيانات (RLS).\n\n" +
