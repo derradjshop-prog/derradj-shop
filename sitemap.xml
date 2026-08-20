@@ -1078,4 +1078,22 @@
       <image:loc>https://derradjshop.com/Electronique/airpods/apple-airpods-3rd-generation/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/hoco-ew04-plus-true-wireless-earbuds/</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/airpods/hoco-ew04-plus-true-wireless-earbuds/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/hoco-ew78-true-wireless-stereo-earbuds/</loc>
+    <lastmod>2026-08-20</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/airpods/hoco-ew78-true-wireless-stereo-earbuds/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
