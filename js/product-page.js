@@ -90,7 +90,7 @@
          every product/book page (the static HTML is already pre-rendered;
          this is just a live refresh), so select(*) here meant re-pulling
          every text/gallery column on every pageview site-wide. */
-      const SELECT = 'id,catalog_id,product_name,product_name_ar,category,subcategory,price,old_price,stock_status,main_image,short_description,full_description,seo_title,seo_description,keywords,gallery_images,brand,slug,author,translator,year,updated_at';
+      const SELECT = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,full_description,seo_title,seo_description,keywords,gallery_images,brand,slug,author,translator,year,updated_at';
       const apiUrl = `${SB_URL}/rest/v1/admin_products_catalog?${field}=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=${SELECT}&limit=1`;
 
       const res = await fetch(apiUrl, {

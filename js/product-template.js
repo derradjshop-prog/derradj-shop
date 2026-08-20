@@ -147,6 +147,24 @@
     const allImgs = [imgSrc, ...gallery.filter(u => u && u !== imgSrc)];
     const catAr     = catLabelAr(p.category);
     const { ar: arName, other: otherName } = pickNames(p);
+    /* Visible <h1> only — the SERP <title>, og/twitter tags, meta
+       description, breadcrumb, and JSON-LD all keep using arName
+       exactly as before (untouched below). Electronics show the
+       English name (otherName, same field the product cards already
+       use), falling back to product_name_fr for the couple of legacy
+       rows with no English name stored, then to arName as a last
+       resort. Books always keep arName as the main title. When
+       otherName becomes the H1, the secondary "book-en-title" span
+       shows arName instead, so the same text is never shown twice. */
+    let h1Name = arName, h1IsEnglish = false, subName = otherName;
+    if (isElectronics) {
+      if (otherName) {
+        h1Name = otherName; h1IsEnglish = true; subName = arName;
+      } else {
+        const frName = (p.product_name_fr || '').trim();
+        if (frName) { h1Name = frName; h1IsEnglish = true; subName = arName; }
+      }
+    }
     const titleNameRaw = (p.seo_title && p.seo_title.trim()) || arName;
     const titleName    = String(titleNameRaw || '').replace(/\s*\|\s*Derradj Shop\s*$/i, '').trim();
     const title        = `${titleName || arName} | توصيل لكل الجزائر - Derradj Shop`;
@@ -301,8 +319,8 @@
         <!-- Product details -->
         <div class="product-details">
           <div class="product-cat-label">${esc(catAr)}</div>
-          <h1>${esc(arName)}</h1>
-          ${otherName ? `<span class="book-en-title">${esc(otherName)}</span>` : ''}
+          <h1${h1IsEnglish ? ' dir="ltr"' : ''}>${esc(h1Name)}</h1>
+          ${subName ? `<span class="book-en-title">${esc(subName)}</span>` : ''}
 
           ${stockBadge(p.stock_status)}
 

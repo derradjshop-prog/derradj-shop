@@ -96,6 +96,27 @@
     return '';
   }
 
+  /* ── Electronics card title — must never be Arabic. otherName(p)
+     covers the normal case (one of product_name/product_name_ar is
+     genuinely English). A small number of legacy rows have Arabic
+     text typed into BOTH name fields (a data-entry gap, not a code
+     bug — confirmed 2026-08-20 for catalog_id 83 "adjustable-laptop-
+     stand" and 84 "modio-st11-smart-watch"), so otherName() returns
+     ''; product_name_fr (French, also non-Arabic) is the agreed
+     interim fallback for those until an admin fills in a real English
+     name. If even that is missing, falling back to Arabic here is a
+     last-resort safety net, not the intended behavior — it should
+     never trigger given current data, and any occurrence should be
+     reported/fixed in Admin rather than relied on. */
+  function electronicsTitle(p) {
+    const en = otherName(p);
+    if (en) return { text: en, isEnglish: true };
+    const fr = (p.product_name_fr || '').trim();
+    if (fr) return { text: fr, isEnglish: true };
+    console.warn('[products-loader] Electronics product has no English or French title — showing Arabic as last resort:', p.catalog_id, p.slug);
+    return { text: arName(p), isEnglish: false };
+  }
+
   function catIcon(cat) { return CAT_ICON[cat] || '📦'; }
   function catLabelAr(cat) {
     const m = {
@@ -196,6 +217,17 @@
       : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 
     const name = arName(p);
+    /* Main card title: electronics always show a non-Arabic title —
+       English when product_name/product_name_ar has one, otherwise
+       product_name_fr (French) as an interim fallback for the couple
+       of legacy rows with no English name stored — see
+       electronicsTitle() above. Books keep the original Arabic main
+       title unchanged. Everything else on the card (alt text, search
+       index, SEO/H1 on the product page) keeps using the Arabic name
+       regardless of category. */
+    const titleInfo = isBook ? { text: name, isEnglish: false } : electronicsTitle(p);
+    const mainTitle = titleInfo.text;
+    const titleDirAttr = titleInfo.isEnglish ? ' dir="ltr"' : '';
     const subcatAttr = subcat ? ` data-subcategory="${escAttr(subcat.slug)}"` : '';
     return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}"${subcatAttr}>
       <div class="${badgeCls}" data-avail-badge="${p.catalog_id}">${badgeTxt}</div>
@@ -207,7 +239,7 @@
       <div class="product-info">
         <div class="product-cat-label">${icon} ${escAttr(catAr)}</div>
         <a href="${url}" style="text-decoration:none;color:inherit;">
-          <h3 class="product-name">${esc(name)}</h3>
+          <h3 class="product-name"${titleDirAttr}>${esc(mainTitle)}</h3>
         </a>
         ${summary ? `<p class="product-card-summary">${esc(summary)}</p>` : ''}
         <div class="product-prices">${priceHTML(p.price, p.old_price)}</div>

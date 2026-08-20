@@ -36,12 +36,15 @@ const CACHE_FILE = path.join(__dirname, '.image-dims-cache.json');
    js/book-template.js, which it feeds) actually reads from a row — keep
    it in sync if either template starts using a new field. Admin-only
    workflow columns (is_active, status, quantity, discount_enabled,
-   created_at, product_name_fr, display_order) are deliberately left out;
-   is_active is still applied as a filter below and display_order is
-   still used in `order=`, neither requires being in `select=`. */
+   created_at, display_order) are deliberately left out; is_active is
+   still applied as a filter below and display_order is still used in
+   `order=`, neither requires being in `select=`. product_name_fr IS
+   included — it's the electronics-card title fallback for the rare
+   row with no English name (see staticCardOtherName/buildStaticProductCard
+   below, mirrors js/products-loader.js electronicsTitle()). */
 const PRODUCT_COLUMNS = [
   'id', 'catalog_id', 'slug', 'category', 'subcategory',
-  'product_name', 'product_name_ar', 'price', 'old_price',
+  'product_name', 'product_name_ar', 'product_name_fr', 'price', 'old_price',
   'main_image', 'gallery_images', 'stock_status',
   'short_description', 'full_description',
   'seo_title', 'seo_description', 'keywords', 'brand',
@@ -666,6 +669,27 @@ function staticCardArName(p) {
   if (!aIsAr && bIsAr) return b;
   return a || b || '';
 }
+/* Mirrors otherName() in js/products-loader.js — the non-Arabic of
+   product_name/product_name_ar, used as the card's main title. */
+function staticCardOtherName(p) {
+  const a = p.product_name, b = p.product_name_ar;
+  const aIsAr = STATIC_CARD_AR_RE.test(a || ''), bIsAr = STATIC_CARD_AR_RE.test(b || '');
+  if (aIsAr && !bIsAr) return b || '';
+  if (!aIsAr && bIsAr) return a || '';
+  return '';
+}
+/* Mirrors electronicsTitle() in js/products-loader.js: English name
+   when one exists, else product_name_fr (French, non-Arabic) as the
+   interim fallback for legacy rows with no English name stored, else
+   Arabic as a last resort (should not occur with current data). */
+function staticCardElectronicsTitle(p) {
+  const en = staticCardOtherName(p);
+  if (en) return { text: en, isEnglish: true };
+  const fr = (p.product_name_fr || '').trim();
+  if (fr) return { text: fr, isEnglish: true };
+  console.warn('[generate-product-pages] Electronics product has no English or French title — using Arabic as last resort:', p.catalog_id, p.slug);
+  return { text: staticCardArName(p), isEnglish: false };
+}
 function staticCardResolveImage(p) {
   if (p.category === 'books') {
     const slug = p.slug || '';
@@ -710,6 +734,12 @@ function buildStaticProductCard(p) {
   const imgSrc  = staticCardResolveImage(p);
   const summary = staticCardSummary(p);
   const name    = staticCardArName(p);
+  /* Books keep the Arabic main title unchanged — electronics always
+     show a non-Arabic title (mirrors js/products-loader.js buildCard()
+     / electronicsTitle()). */
+  const titleInfo = isBook ? { text: name, isEnglish: false } : staticCardElectronicsTitle(p);
+  const mainTitle = titleInfo.text;
+  const titleDirAttr = titleInfo.isEnglish ? ' dir="ltr"' : '';
   const fallbackAttr = (!isBook && p.main_image) ? `data-fallback="${escAttr(p.main_image)}" ` : '';
   const onerror = `onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}"`;
   const cartBtn = isAvail
@@ -726,7 +756,7 @@ function buildStaticProductCard(p) {
       <div class="product-info">
         <div class="product-cat-label">${icon} ${escAttr(catAr)}</div>
         <a href="${url}" style="text-decoration:none;color:inherit;">
-          <h3 class="product-name">${esc(name)}</h3>
+          <h3 class="product-name"${titleDirAttr}>${esc(mainTitle)}</h3>
         </a>
         ${summary ? `<p class="product-card-summary">${esc(summary)}</p>` : ''}
         <div class="product-prices">${staticCardPriceHtml(p.price, p.old_price)}</div>
