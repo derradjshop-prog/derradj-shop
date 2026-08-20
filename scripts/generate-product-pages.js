@@ -150,6 +150,68 @@ function warnIfReplacingLegacyRedirect(dir, slug, kind) {
   );
 }
 
+/* ── Redirect stub for a renamed electronics product ── mirrors the
+   hand-authored legacy stubs already used for book/product slug renames
+   (e.g. books/la-anam/, Electronique/earbuds/anker-soundcore-r50i-vg/):
+   noindex + canonical to the new URL + instant meta-refresh + a JS
+   fallback redirect, so an old link/bookmark/search result lands on the
+   current page instead of 404ing, without the old URL ever competing
+   with it as an independently indexed page. GitHub Pages has no
+   server-side redirect mechanism (confirmed live — it isn't Netlify/
+   Cloudflare Pages despite the leftover _redirects/_headers files that
+   used to assume otherwise), so this client-side stub is the correct,
+   platform-appropriate redirect for a fully static host.
+
+   The catalog_id is embedded in an HTML comment so a later re-run of
+   this script can still trace a *stub* back to its product (stub pages
+   have no JSON-LD `sku` of their own) — this keeps a chain of renames
+   collapsed to a single hop pointing at the current URL, instead of
+   redirect-through-redirect. ── */
+function renderRedirectStub(newUrl, title, catalogId) {
+  const esc = ProductTemplate.esc, escAttr = ProductTemplate.escAttr;
+  return `<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <!-- redirect-stub catalog_id:${catalogId} -->
+  <meta charset="UTF-8">
+  <title>${esc(title)} — Derradj Shop</title>
+  <link rel="canonical" href="${escAttr(newUrl)}">
+  <meta http-equiv="refresh" content="0;url=${escAttr(newUrl)}">
+  <meta name="robots" content="noindex,follow">
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N4NME3KN9N');
+  </script>
+</head>
+<body>
+<script>window.location.replace(${JSON.stringify(newUrl)});</script>
+<p>جاري التحويل... <a href="${escAttr(newUrl)}">انقر هنا إن لم يتم التحويل تلقائياً</a></p>
+</body>
+</html>
+`;
+}
+
+/* ── Recovers the catalog_id a previously-generated product/{slug}/
+   page (or an earlier redirect stub sitting at that path) belongs to —
+   used below to tell "this slug was renamed, the product is still
+   active elsewhere" apart from "this product was deactivated/deleted"
+   before deleting a directory that's no longer in the active slug set. ── */
+function extractCatalogIdFromGeneratedPage(indexHtmlPath) {
+  try {
+    const html = fs.readFileSync(indexHtmlPath, 'utf8');
+    const stub = html.match(/redirect-stub catalog_id:(\S+?)\s*-->/);
+    if (stub) return stub[1];
+    const sku = html.match(/"sku":"([^"]*)"/);
+    return sku ? sku[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 /* ── Local book cover dims — these are repo files, not remote
    Supabase Storage URLs, so a plain fs read is enough (no
    network probe / cache needed). Tries webp → png → jpg. ── */
@@ -297,6 +359,7 @@ function renderPage(view, dims) {
   return `<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+  <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
   <!-- Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-N4NME3KN9N');</script>
@@ -927,6 +990,10 @@ async function main() {
 
   const cache = loadCache();
   const writtenSlugs = new Set();
+  /* catalog_id (string) -> where that product lives now — lets the
+     stale-directory pass below tell a slug rename (product still
+     active, under a new slug) apart from a real deactivation/deletion. */
+  const activeElectronicsByCatalogId = new Map();
 
   for (const p of products) {
     if (!p.slug) {
@@ -957,16 +1024,46 @@ async function main() {
     warnIfReplacingLegacyRedirect(dir, p.slug, 'product');
     fs.writeFileSync(path.join(dir, 'index.html'), html);
     writtenSlugs.add(p.slug);
+    if (p.catalog_id != null) {
+      activeElectronicsByCatalogId.set(String(p.catalog_id), { slug: p.slug, pageUrl: view.pageUrl, productName: view.productName });
+    }
     console.log(`[generate-product-pages] wrote product/${p.slug}/index.html (${dims ? dims.width + 'x' + dims.height : 'no dims'})`);
   }
 
-  /* Remove static pages for products that are no longer active */
+  /* Reconcile static pages for slugs that are no longer active. Two
+     different reasons a directory can fall out of writtenSlugs:
+       (1) renamed  — the product is still active, just under a new
+           slug. The old directory becomes a redirect stub pointing at
+           the new URL (same idea as the hand-authored book stubs, just
+           automatic here), so a previously indexed/bookmarked/linked
+           old URL lands on the current page instead of 404ing.
+       (2) deactivated/deleted — the product is genuinely gone. The old
+           directory is removed, exactly as before this change.
+     Distinguished by reading the directory's own last-generated page
+     for its catalog_id (see extractCatalogIdFromGeneratedPage) and
+     checking whether that catalog_id is still active under a different
+     slug. A directory that's already a correct stub is left untouched
+     (no-op) so this doesn't touch git history on every run. */
   const existingDirs = fs.readdirSync(PRODUCT_DIR, { withFileTypes: true })
     .filter(d => d.isDirectory())
     .map(d => d.name);
   for (const slug of existingDirs) {
-    if (!writtenSlugs.has(slug)) {
-      fs.rmSync(path.join(PRODUCT_DIR, slug), { recursive: true, force: true });
+    if (writtenSlugs.has(slug)) continue;
+    const dir = path.join(PRODUCT_DIR, slug);
+    const indexPath = path.join(dir, 'index.html');
+    const catalogId = extractCatalogIdFromGeneratedPage(indexPath);
+    const renamedTo = catalogId ? activeElectronicsByCatalogId.get(catalogId) : null;
+
+    if (renamedTo && renamedTo.slug !== slug) {
+      const stub = renderRedirectStub(renamedTo.pageUrl, renamedTo.productName, catalogId);
+      const current = fs.existsSync(indexPath) ? fs.readFileSync(indexPath, 'utf8') : null;
+      if (current !== stub) {
+        fs.mkdirSync(dir, { recursive: true });
+        fs.writeFileSync(indexPath, stub);
+        console.log(`[generate-product-pages] product/${slug}/ renamed → redirect stub to ${renamedTo.pageUrl}`);
+      }
+    } else {
+      fs.rmSync(dir, { recursive: true, force: true });
       console.log(`[generate-product-pages] removed stale product/${slug}/ (no longer active)`);
     }
   }

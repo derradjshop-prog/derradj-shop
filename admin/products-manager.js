@@ -743,7 +743,6 @@
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
             <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد</button>
             <button class="btn-pm-add" id="pmCategoriesBtn" style="background:#7c3aed;">🏷 التصنيفات الفرعية</button>
-            <button class="btn-pm-add" id="pmSitemapBtn" style="background:#1d4ed8;">🗺 توليد Sitemap</button>
             <button type="button" class="btn-pm-add" id="pmFolderBtn" style="background:#64748b;">🔄 التحقق من خادم الصور المحلي</button>
             <span id="pmFolderStatus" style="font-size:12px;font-weight:700;color:#94a3b8;">⏳ جاري التحقق...</span>
           </div>
@@ -821,38 +820,6 @@
       </div>
     `;
     document.body.appendChild(modal);
-
-    /* Sitemap modal */
-    const sitemapModal = document.createElement('div');
-    sitemapModal.id = 'pmSitemapOverlay';
-    sitemapModal.className = 'pm-overlay';
-    sitemapModal.innerHTML = `
-      <div class="pm-modal" style="max-width:860px;">
-        <div class="pm-mhdr">
-          <span class="pm-mhdr-title">🗺 Sitemap Generator</span>
-          <button class="pm-mclose" id="pmSitemapClose">✕</button>
-        </div>
-        <div class="pm-mbody">
-          <p style="font-size:13px;color:#475569;margin-bottom:4px;">
-            انسخ المحتوى أدناه واحفظه في ملف <strong>sitemap.xml</strong> على جذر الموقع.
-          </p>
-          <p style="font-size:12px;color:#94a3b8;margin-bottom:14px;">
-            يشمل جميع الصفحات الثابتة + جميع المنتجات النشطة من قاعدة البيانات.
-          </p>
-          <div style="display:flex;gap:8px;margin-bottom:12px;">
-            <button id="pmSitemapGenBtn" class="btn-pm-add" style="background:#1d4ed8;">🔄 توليد Sitemap</button>
-            <button id="pmSitemapCopyBtn" class="btn-pm-add" style="background:#059669;display:none;">📋 نسخ الكل</button>
-          </div>
-          <div id="pmSitemapStatus" style="font-size:12px;color:#64748b;margin-bottom:8px;"></div>
-          <textarea id="pmSitemapOutput"
-            style="width:100%;height:420px;font-family:'Courier New',monospace;font-size:12px;
-                   padding:12px;border:1.5px solid #e2e8f0;border-radius:8px;resize:vertical;
-                   direction:ltr;line-height:1.5;background:#f8fafc;"
-            placeholder="اضغط &quot;توليد Sitemap&quot; للبدء..." readonly></textarea>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(sitemapModal);
 
     /* Categories modal — source of truth for the Supabase `categories`
        table (see admin/setup-categories.sql). Add/edit/deactivate here
@@ -1031,7 +998,7 @@
           </div>
           <span class="hint" style="font-size:11px;color:#94a3b8;margin-top:4px;">أو ادخل رابط الصورة مباشرة:</span>
           <div class="pm-url-row">
-            <input type="url" id="pmMainUrl" placeholder="https://... (اختياري إذا رفعت الصورة)">
+            <input type="text" id="pmMainUrl" placeholder="https://... أو مسار محلي مثل Electronique/.../main.webp (اختياري إذا رفعت الصورة)">
             <button type="button" class="btn-copy-msg" data-pma="copy-url" data-copy-target="pmMainUrl">📋 نسخ</button>
           </div>
         </div>
@@ -1259,22 +1226,6 @@
       b.addEventListener('click', () => setTimeout(loadProductsIfStale, 200));
     });
 
-    /* Sitemap modal open/close */
-    document.getElementById('pmSitemapBtn')?.addEventListener('click', () => {
-      document.getElementById('pmSitemapOverlay')?.classList.add('open');
-      document.body.style.overflow = 'hidden';
-    });
-    document.getElementById('pmSitemapClose')?.addEventListener('click', () => {
-      document.getElementById('pmSitemapOverlay')?.classList.remove('open');
-      document.body.style.overflow = '';
-    });
-    document.getElementById('pmSitemapOverlay')?.addEventListener('click', e => {
-      if (e.target.id === 'pmSitemapOverlay') {
-        e.target.classList.remove('open');
-        document.body.style.overflow = '';
-      }
-    });
-
     /* Categories modal open/close */
     document.getElementById('pmCategoriesBtn')?.addEventListener('click', async () => {
       document.getElementById('pmCategoriesOverlay')?.classList.add('open');
@@ -1313,17 +1264,6 @@
       if (inp) commitCategoryFieldEdit(inp);
     });
 
-    /* Sitemap generate button */
-    document.getElementById('pmSitemapGenBtn')?.addEventListener('click', generateSitemap);
-
-    /* Sitemap copy button */
-    document.getElementById('pmSitemapCopyBtn')?.addEventListener('click', () => {
-      const out = document.getElementById('pmSitemapOutput');
-      if (!out || !out.value) return;
-      navigator.clipboard?.writeText(out.value)
-        .then(() => showToast('✅ تم نسخ Sitemap XML'))
-        .catch(() => { out.select(); document.execCommand('copy'); showToast('✅ تم النسخ'); });
-    });
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -2751,87 +2691,6 @@
       populateSubcatSelect();
     } catch (err) {
       showToast('❌ فشل الحذف: ' + err.message, 'error');
-    }
-  }
-
-  /* ══════════════════════════════════════════════════════════
-     SITEMAP GENERATOR
-  ══════════════════════════════════════════════════════════ */
-  async function generateSitemap() {
-    const output    = document.getElementById('pmSitemapOutput');
-    const copyBtn   = document.getElementById('pmSitemapCopyBtn');
-    const statusEl  = document.getElementById('pmSitemapStatus');
-    const genBtn    = document.getElementById('pmSitemapGenBtn');
-
-    if (output)  output.value = '';
-    if (copyBtn) copyBtn.style.display = 'none';
-    if (statusEl) statusEl.textContent = '⏳ جاري جلب المنتجات من قاعدة البيانات...';
-    if (genBtn)  { genBtn.disabled = true; genBtn.textContent = '⏳ جاري التوليد...'; }
-
-    try {
-      const { data: { session } } = await sb.auth.getSession();
-      if (!session) {
-        if (statusEl) statusEl.textContent = '❌ يجب تسجيل الدخول أولاً';
-        return;
-      }
-
-      const { data, error } = await sb
-        .from('admin_products_catalog')
-        .select('slug, updated_at')
-        .eq('is_active', true)
-        .not('slug', 'is', null)
-        .order('created_at', { ascending: true });
-
-      if (error) throw error;
-
-      const today = new Date().toISOString().slice(0, 10);
-
-      const STATIC = [
-        { loc: 'https://derradjshop.com/',                                                          lastmod: today,        freq: 'weekly',  pri: '1.0' },
-        { loc: 'https://derradjshop.com/books/',                                                    lastmod: today,        freq: 'weekly',  pri: '0.9' },
-        { loc: 'https://derradjshop.com/Electronique/',                                             lastmod: today,        freq: 'weekly',  pri: '0.9' },
-        { loc: 'https://derradjshop.com/product/adjustable-laptop-stand/',                          lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
-        { loc: 'https://derradjshop.com/Electronique/smart-watch/modio-st11-smart-watch/',          lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
-        { loc: 'https://derradjshop.com/Electronique/earbuds/anker-soundcore-r50i-vg/',             lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
-        { loc: 'https://derradjshop.com/Electronique/earbuds/airpods-4-type-c-vrac/',               lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
-        { loc: 'https://derradjshop.com/Electronique/power-bank/hoco-j132a-20000mah-power-bank/',   lastmod: '2026-06-02', freq: 'monthly', pri: '0.8' },
-        { loc: 'https://derradjshop.com/about',                                                     lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
-        { loc: 'https://derradjshop.com/contact',                                                   lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
-        { loc: 'https://derradjshop.com/faq',                                                       lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
-        { loc: 'https://derradjshop.com/delivery',                                                  lastmod: '2026-06-02', freq: 'monthly', pri: '0.6' },
-        { loc: 'https://derradjshop.com/return-policy',                                             lastmod: '2026-06-02', freq: 'monthly', pri: '0.5' },
-      ];
-
-      function urlBlock(u) {
-        return `  <url>\n    <loc>${u.loc}</loc>\n    <lastmod>${u.lastmod}</lastmod>\n    <changefreq>${u.freq}</changefreq>\n    <priority>${u.pri}</priority>\n  </url>`;
-      }
-
-      let xml = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n`;
-      xml += '\n  <!-- ══ Static Pages ══ -->\n';
-      xml += STATIC.map(urlBlock).join('\n') + '\n';
-
-      const products = (data || []).filter(p => p.slug);
-      if (products.length) {
-        xml += '\n  <!-- ══ Dynamic Product Pages ══ -->\n';
-        xml += products.map(p => urlBlock({
-          loc:     `https://derradjshop.com/product/${encodeURIComponent(p.slug)}/`,
-          lastmod: p.updated_at ? p.updated_at.slice(0, 10) : today,
-          freq:    'weekly',
-          pri:     '0.8',
-        })).join('\n') + '\n';
-      }
-
-      xml += '\n</urlset>';
-
-      if (output) output.value = xml;
-      if (copyBtn) copyBtn.style.display = '';
-      if (statusEl) statusEl.textContent = `✅ تم التوليد — ${STATIC.length} صفحة ثابتة + ${products.length} منتج ديناميكي`;
-
-    } catch (err) {
-      if (statusEl) statusEl.textContent = '❌ خطأ: ' + err.message;
-      showToast('❌ فشل توليد Sitemap: ' + err.message, 'error');
-    } finally {
-      if (genBtn) { genBtn.disabled = false; genBtn.textContent = '🔄 توليد Sitemap'; }
     }
   }
 
