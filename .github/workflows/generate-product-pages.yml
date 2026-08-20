@@ -54,6 +54,13 @@ jobs:
         run: node scripts/generate-product-pages.js
 
       - name: Commit and push if changed
+        # Runs even if the generate step above exited non-zero — that now only
+        # happens when one product/book failed to render (see
+        # scripts/generate-product-pages.js), and every OTHER page it wrote
+        # this run should still ship instead of being dropped along with it.
+        # A genuinely fatal error (e.g. Supabase fetch itself failing) writes
+        # nothing at all, so this stays a safe no-op ("No changes") in that case.
+        if: success() || failure()
         run: |
           git config user.name "derradj-shop-bot"
           git config user.email "actions@users.noreply.github.com"

@@ -274,7 +274,39 @@
      write this follows has already succeeded, so the admin is only
      ever told the rebuild itself didn't fire and should be run
      manually from the Actions tab. ══════════════════════════════ */
-  async function triggerPageRebuild(reason) {
+  /* Persistent failure banner — a toast alone is easy to miss (it
+     auto-removes after a few seconds, and showToast() replaces whatever
+     toast is currently showing, so a fast page-rebuild failure can
+     silently overwrite the "✅ product saved" toast the admin actually
+     saw). This banner stays until the rebuild actually succeeds or the
+     admin dismisses it, and gives a one-click way to retry instead of
+     "go run this from the Actions tab yourself". */
+  function showRebuildFailureBanner(reason, err) {
+    const el = document.getElementById('pmRebuildWarning');
+    if (!el) return;
+    const msg = (err && (err.message || String(err))) || 'خطأ غير معروف';
+    el.innerHTML = `
+      ⚠️ <strong>فشل تحديث صفحات الموقع تلقائياً</strong> — الحفظ في قاعدة البيانات نجح، لكن توليد صفحة المنتج لم يتم بعد.<br>
+      السبب: ${esc(msg)}<br>
+      <button type="button" id="pmRebuildRetryBtn" style="margin-top:8px;margin-inline-end:8px;padding:7px 16px;background:#dc2626;color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Cairo',sans-serif;">🔁 إعادة المحاولة</button>
+      <a href="https://github.com/${GITHUB_OWNER_REPO}/actions/workflows/generate-product-pages.yml" target="_blank" rel="noopener" style="color:#7f1d1d;">أو شغّله يدوياً من GitHub Actions</a>
+      <button type="button" id="pmRebuildDismissBtn" style="margin-inline-start:10px;background:none;border:none;color:#7f1d1d;text-decoration:underline;cursor:pointer;font-family:'Cairo',sans-serif;font-size:12px;">تجاهل</button>
+    `;
+    el.style.display = 'block';
+    document.getElementById('pmRebuildRetryBtn')?.addEventListener('click', function () {
+      this.disabled = true;
+      this.textContent = '⏳ جارٍ المحاولة...';
+      triggerPageRebuild(reason);
+    });
+    document.getElementById('pmRebuildDismissBtn')?.addEventListener('click', clearRebuildFailureBanner);
+  }
+  function clearRebuildFailureBanner() {
+    const el = document.getElementById('pmRebuildWarning');
+    if (el) { el.style.display = 'none'; el.innerHTML = ''; }
+  }
+  const GITHUB_OWNER_REPO = 'derradjshop-prog/derradj-shop';
+
+  async function triggerPageRebuild(reason, isRetry) {
     try {
       const { data, error } = await sb.functions.invoke('trigger-page-rebuild', {
         body: { reason },
@@ -282,6 +314,7 @@
       if (error) throw error;
       if (data?.ok === false) throw new Error(data.error || 'فشل غير معروف');
 
+      clearRebuildFailureBanner();
       if (data?.run?.html_url) {
         showToast('🚀 جاري تحديث صفحات الموقع', 'info', {
           linkUrl: data.run.html_url,
@@ -292,12 +325,24 @@
         showToast('🚀 تم تشغيل تحديث صفحات الموقع — ستظهر التغييرات خلال دقيقة تقريباً', 'info', { duration: 6000 });
       }
     } catch (err) {
-      console.warn('[PM] triggerPageRebuild failed:', err);
+      console.warn('[PM] triggerPageRebuild failed' + (isRetry ? ' (after retry)' : '') + ':', err);
+      if (!isRetry) {
+        /* One automatic retry after a short delay — covers transient
+           network blips and the rare case where the browser's session
+           token was mid-refresh at the exact moment of the call (the
+           Edge Function rejects a stale token with 401 before ever
+           reaching GitHub, so nothing gets dispatched and nothing shows
+           up in the Actions run list — the retry picks up the refreshed
+           token). Never blocks the save this follows either way. */
+        await new Promise(r => setTimeout(r, 2000));
+        return triggerPageRebuild(reason, true);
+      }
       showToast(
-        '⚠️ تم الحفظ بنجاح، لكن التحديث التلقائي لصفحات الموقع فشل — شغّله يدوياً من تبويب Actions في GitHub',
+        '⚠️ تم الحفظ بنجاح، لكن التحديث التلقائي لصفحات الموقع فشل — انظر التنبيه أعلى قائمة المنتجات',
         'error',
         { duration: 7000 },
       );
+      showRebuildFailureBanner(reason, err);
     }
   }
 
@@ -751,6 +796,7 @@
           ⚠️ <strong>ميزة ترتيب الظهور غير مفعّلة</strong> — عمود <code>display_order</code> غير موجود في قاعدة البيانات.<br>
           شغّل ملف <strong>admin/supabase-admin-products-rls-fix.sql</strong> في <a href="https://supabase.com/dashboard/project/jbmcbjzcedqpvnhbmrhk/sql/new" target="_blank" style="color:#92400e;">Supabase SQL Editor</a> لتفعيل هذه الميزة.
         </div>
+        <div id="pmRebuildWarning" style="display:none;background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#7f1d1d;line-height:1.7;"></div>
 
         <div class="prod-subfilter-bar" id="prodSubfilterBar">
           <button class="prod-sf-btn prod-sf-pending-btn" data-pfilter="pending" id="prodSfPendingBtn" style="display:none;">⏳ بانتظار المراجعة <span class="prod-sf-badge" id="psb-pending">—</span></button>

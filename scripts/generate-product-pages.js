@@ -994,40 +994,56 @@ async function main() {
      stale-directory pass below tell a slug rename (product still
      active, under a new slug) apart from a real deactivation/deletion. */
   const activeElectronicsByCatalogId = new Map();
+  /* Items that threw during generation — collected instead of letting one
+     bad row abort main() outright. A single malformed product used to take
+     down the ENTIRE run: main().catch() would exit(1) before the "Commit
+     and push" step ever ran, so every OTHER already-generated page that run
+     — pages that wrote successfully to disk moments earlier — never got
+     committed either. Isolating each item's generation means the rest of
+     the batch still ships; the run still ends non-zero (see the summary
+     below) so the failure stays visible in the Actions log instead of
+     being silently absorbed. */
+  const failures = [];
 
   for (const p of products) {
     if (!p.slug) {
       console.warn(`[generate-product-pages] skipping product without slug: catalog_id=${p.catalog_id}`);
       continue;
     }
-    await localizeElectronicsImagesIfMissing(p);
-    const view = ProductTemplate.buildProductView(p);
-    let dims = null;
+    console.log(`[generate-product-pages] processing product/${p.slug}/ (catalog_id=${p.catalog_id})...`);
     try {
-      if (view.mainImage && !/^https?:\/\//.test(view.mainImage) && view.mainImage.startsWith('/')) {
-        /* local repo path like /Electronique/{sub}/{slug}/filename */
-        const parts = view.mainImage.split('/').filter(Boolean);
-        const sub = parts[1] || 'other';
-        const slug = parts[2] || p.slug || '';
-        const filename = parts.slice(3).join('/') || '';
-        dims = probeLocalElectronicsImageDims(sub, slug, filename);
-      } else {
-        dims = await probeImageDims(view.mainImage, cache);
+      await localizeElectronicsImagesIfMissing(p);
+      const view = ProductTemplate.buildProductView(p);
+      let dims = null;
+      try {
+        if (view.mainImage && !/^https?:\/\//.test(view.mainImage) && view.mainImage.startsWith('/')) {
+          /* local repo path like /Electronique/{sub}/{slug}/filename */
+          const parts = view.mainImage.split('/').filter(Boolean);
+          const sub = parts[1] || 'other';
+          const slug = parts[2] || p.slug || '';
+          const filename = parts.slice(3).join('/') || '';
+          dims = probeLocalElectronicsImageDims(sub, slug, filename);
+        } else {
+          dims = await probeImageDims(view.mainImage, cache);
+        }
+      } catch (err) {
+        dims = null;
       }
-    } catch (err) {
-      dims = null;
-    }
-    const html = renderPage(view, dims);
+      const html = renderPage(view, dims);
 
-    const dir = path.join(PRODUCT_DIR, p.slug);
-    fs.mkdirSync(dir, { recursive: true });
-    warnIfReplacingLegacyRedirect(dir, p.slug, 'product');
-    fs.writeFileSync(path.join(dir, 'index.html'), html);
-    writtenSlugs.add(p.slug);
-    if (p.catalog_id != null) {
-      activeElectronicsByCatalogId.set(String(p.catalog_id), { slug: p.slug, pageUrl: view.pageUrl, productName: view.productName });
+      const dir = path.join(PRODUCT_DIR, p.slug);
+      fs.mkdirSync(dir, { recursive: true });
+      warnIfReplacingLegacyRedirect(dir, p.slug, 'product');
+      fs.writeFileSync(path.join(dir, 'index.html'), html);
+      writtenSlugs.add(p.slug);
+      if (p.catalog_id != null) {
+        activeElectronicsByCatalogId.set(String(p.catalog_id), { slug: p.slug, pageUrl: view.pageUrl, productName: view.productName });
+      }
+      console.log(`[generate-product-pages] wrote product/${p.slug}/index.html (${dims ? dims.width + 'x' + dims.height : 'no dims'})`);
+    } catch (err) {
+      failures.push({ kind: 'product', slug: p.slug, catalog_id: p.catalog_id, error: err.message });
+      console.error(`[generate-product-pages] FAILED to generate product/${p.slug}/ (catalog_id=${p.catalog_id}): ${err.stack || err.message}`);
     }
-    console.log(`[generate-product-pages] wrote product/${p.slug}/index.html (${dims ? dims.width + 'x' + dims.height : 'no dims'})`);
   }
 
   /* Reconcile static pages for slugs that are no longer active. Two
@@ -1075,22 +1091,28 @@ async function main() {
       console.warn(`[generate-product-pages] skipping book without slug: catalog_id=${p.catalog_id}`);
       continue;
     }
-    await localizeBookCoverIfMissing(p);
-    const b = toBookRow(p);
-    const slug = p.slug;
-    const view = BookTemplate.buildBookView(b);
-    /* Prefer the local file (now the deterministic path for all books) — only
-       fall back to a network probe for an actual remote (Supabase) URL when
-       no local cover exists yet, e.g. a brand new book pending its cover. */
-    const dims = probeLocalBookImageDims(slug)
-      || (/^https?:\/\//.test(b.image || '') ? await probeImageDims(b.image, cache) : null);
-    const html = renderBookPage(view, dims);
+    console.log(`[generate-product-pages] processing books/${p.slug}/ (catalog_id=${p.catalog_id})...`);
+    try {
+      await localizeBookCoverIfMissing(p);
+      const b = toBookRow(p);
+      const slug = p.slug;
+      const view = BookTemplate.buildBookView(b);
+      /* Prefer the local file (now the deterministic path for all books) — only
+         fall back to a network probe for an actual remote (Supabase) URL when
+         no local cover exists yet, e.g. a brand new book pending its cover. */
+      const dims = probeLocalBookImageDims(slug)
+        || (/^https?:\/\//.test(b.image || '') ? await probeImageDims(b.image, cache) : null);
+      const html = renderBookPage(view, dims);
 
-    const dir = path.join(BOOKS_DIR, slug);
-    fs.mkdirSync(dir, { recursive: true });
-    warnIfReplacingLegacyRedirect(dir, slug, 'books');
-    fs.writeFileSync(path.join(dir, 'index.html'), html);
-    console.log(`[generate-product-pages] wrote books/${slug}/index.html (${dims ? dims.width + 'x' + dims.height : 'no dims'})`);
+      const dir = path.join(BOOKS_DIR, slug);
+      fs.mkdirSync(dir, { recursive: true });
+      warnIfReplacingLegacyRedirect(dir, slug, 'books');
+      fs.writeFileSync(path.join(dir, 'index.html'), html);
+      console.log(`[generate-product-pages] wrote books/${slug}/index.html (${dims ? dims.width + 'x' + dims.height : 'no dims'})`);
+    } catch (err) {
+      failures.push({ kind: 'book', slug: p.slug, catalog_id: p.catalog_id, error: err.message });
+      console.error(`[generate-product-pages] FAILED to generate books/${p.slug}/ (catalog_id=${p.catalog_id}): ${err.stack || err.message}`);
+    }
   }
   /* Note: unlike products, directories not present in Supabase are
      left untouched — this protects the legacy redirect-stub
@@ -1116,6 +1138,17 @@ async function main() {
   const sitemap = buildSitemap(products, books);
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap);
   console.log('[generate-product-pages] sitemap.xml regenerated.');
+
+  if (failures.length) {
+    console.error(`[generate-product-pages] ${failures.length} item(s) FAILED to generate (see FAILED lines above) — every other page still generated normally and will still be committed:`);
+    failures.forEach(f => console.error(`  - ${f.kind} "${f.slug || '(no slug)'}" (catalog_id=${f.catalog_id}): ${f.error}`));
+    /* Non-zero via exitCode (not process.exit) so this runs after every
+       write above has already completed — the workflow's commit step is
+       set to run even when this step fails, so the successful pages still
+       ship; only the failing item is missing, and the run shows red so
+       it isn't missed. */
+    process.exitCode = 1;
+  }
 }
 
 main().catch(err => {
