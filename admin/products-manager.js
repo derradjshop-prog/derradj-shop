@@ -2441,9 +2441,37 @@
       const subcategory = keepOriginalSubcategory ? EDIT_ORIGINAL_SUBCATEGORY : subcatSelected;
       const slug        = getValue('pmSlug');
 
+      /* ── Validate BEFORE writing anything to disk ──────────────
+         resolveImagesForSave() below physically writes staged images
+         to the repo via the local image helper. If that ran first and
+         a check here failed afterward, the images would already be on
+         disk with no matching DB row — an orphaned folder the
+         generator can never turn into a page (it only reads from
+         Supabase). Confirmed happening in practice on 2026-08-20: two
+         abandoned slug-rename attempts (adding "-algeria", then "-nc")
+         left orphaned image folders under Electronique/airpods/ with
+         no corresponding catalog row. Running every check that can be
+         done without images first closes that gap. ── */
+      const productNameCheck = getValue('pmName');
+      const priceCheck       = parseInt(getValue('pmPrice')) || 0;
+      const fullDescCheck    = getValue('pmFullDesc');
+      if (!productNameCheck) throw new Error('اسم المنتج مطلوب');
+      if (!slug)             throw new Error('Slug المنتج مطلوب');
+      if (!priceCheck)       throw new Error('سعر المنتج مطلوب');
+      if (!EDIT_PRODUCT_ID && (!fullDescCheck || fullDescCheck.trim().length < 20)) {
+        throw new Error('الوصف الكامل مطلوب لنشر منتج جديد (20 حرفاً على الأقل) — لتفادي صفحة منتج فارغة');
+      }
+      let dupCheckEarly = sb.from('admin_products_catalog').select('id').eq('slug', slug).limit(1);
+      if (EDIT_PRODUCT_ID) dupCheckEarly = dupCheckEarly.neq('id', EDIT_PRODUCT_ID);
+      const { data: dupRowsEarly } = await dupCheckEarly;
+      if (dupRowsEarly && dupRowsEarly.length) {
+        throw new Error('هذا الرابط (slug) مستخدم من قبل لمنتج آخر — الرجاء اختيار رابط مختلف');
+      }
+
       /* Writes any locally-staged main/gallery images to disk via
          window.LocalFS — never to Supabase Storage. Existing images
-         (populated when editing a product) pass through unchanged. */
+         (populated when editing a product) pass through unchanged.
+         Only reached once every check above has passed. */
       const { mainImg, galleryImgs } = await resolveImagesForSave(category, subcategory, slug);
       setValue('pmMainUrl', mainImg || '');
 
@@ -2495,30 +2523,12 @@
         payload.year = yearRaw !== '' ? (parseInt(yearRaw) || null) : null;
       }
 
-      if (!payload.product_name) throw new Error('اسم المنتج مطلوب');
-      if (!payload.slug)         throw new Error('Slug المنتج مطلوب');
-      if (!payload.price)        throw new Error('سعر المنتج مطلوب');
-      /* New products only — require a real full description so a
-         product page is never published with an empty "تفاصيل المنتج"
-         section (thin content for both visitors and Google). Existing
-         products already published without one can still be edited
-         and saved without being forced to backfill this now. */
-      if (!EDIT_PRODUCT_ID && (!payload.full_description || payload.full_description.trim().length < 20)) {
-        throw new Error('الوصف الكامل مطلوب لنشر منتج جديد (20 حرفاً على الأقل) — لتفادي صفحة منتج فارغة');
-      }
-
-      /* Friendly pre-check only — a UX nicety, NOT the real guard against
-         a duplicate slug. Two saves racing each other can both pass this
-         and still both reach the insert/update below; the database's own
-         UNIQUE constraint on `slug` (see supabase/migrations) is what
-         actually rejects the loser, and the catch block below turns that
+      /* product_name/slug/price/full_description and the duplicate-slug
+         pre-check already ran above, before any image was written to
+         disk. The database's own UNIQUE constraint on `slug` (see
+         supabase/migrations) remains the real guard against a race
+         between two saves — the catch block below turns that
          rejection into the same friendly message. */
-      let dupCheck = sb.from('admin_products_catalog').select('id').eq('slug', payload.slug).limit(1);
-      if (EDIT_PRODUCT_ID) dupCheck = dupCheck.neq('id', EDIT_PRODUCT_ID);
-      const { data: dupRows } = await dupCheck;
-      if (dupRows && dupRows.length) {
-        throw new Error('هذا الرابط (slug) مستخدم من قبل لمنتج آخر — الرجاء اختيار رابط مختلف');
-      }
 
       console.log('[PM] saveProduct —', EDIT_PRODUCT_ID ? 'UPDATE id=' + EDIT_PRODUCT_ID : 'INSERT new', '| slug:', payload.slug, '| is_active:', payload.is_active);
 
