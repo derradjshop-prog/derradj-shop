@@ -2557,6 +2557,9 @@
           }
           throw error;
         }
+        if (!insertedData || insertedData.length === 0) {
+          throw new Error('لم يُحفظ المنتج فعلياً — الإدراج لم يُرجع أي صف (تحقق من صلاحيات RLS)');
+        }
         console.log('[PM] INSERT succeeded:', insertedData);
         showToast('✅ تم إضافة المنتج ونشره في المتجر');
         triggerPageRebuild('إضافة منتج: ' + payload.product_name);

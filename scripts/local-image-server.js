@@ -15,8 +15,9 @@
 
    Security model:
    - Binds to 127.0.0.1 only — never reachable from the network.
-   - Only accepts requests whose Origin is the local Admin's Live
-     Server origin (http://127.0.0.1:5500 or http://localhost:5500).
+   - Only accepts requests whose Origin is one of the local Admin's
+     Live Server origins (127.0.0.1/localhost on port 5500 or 5501 —
+     Live Server falls back to 5501 when 5500 is already in use).
    - The project root is fixed to this script's own parent directory
      — never taken from the request. The browser can never choose an
      arbitrary destination.
@@ -42,6 +43,8 @@ const ROOT = path.resolve(__dirname, '..');
 const ALLOWED_ORIGINS = new Set([
   'http://127.0.0.1:5500',
   'http://localhost:5500',
+  'http://127.0.0.1:5501',
+  'http://localhost:5501',
 ]);
 
 /* Same mapping as resolveThumbSrc()/electronicsFolderBase() elsewhere
@@ -170,6 +173,29 @@ const server = http.createServer(async (req, res) => {
   } catch (err) {
     send(res, 400, { ok: false, error: err.message || String(err) });
   }
+});
+
+server.on('error', async err => {
+  if (err.code !== 'EADDRINUSE') throw err;
+
+  /* Something is already bound to 8787 — find out if it's just this
+     same server left running from an earlier terminal (totally fine,
+     nothing to do) or an unrelated process (needs the user's attention).
+     Never auto-pick a different port and never kill anything. */
+  try {
+    const res = await fetch(`http://${HOST}:${PORT}/api/ping`);
+    const data = res.ok ? await res.json() : null;
+    if (data?.ok === true && data.root === ROOT) {
+      console.log(`[local-image-server] already running for this project on http://${HOST}:${PORT} — nothing to do.`);
+      process.exit(0);
+    }
+    console.error(`[local-image-server] port ${PORT} is in use by a DIFFERENT server (root: ${data?.root || 'unknown'}).`);
+    console.error('[local-image-server] stop that process before starting this one — refusing to pick a different port.');
+  } catch {
+    console.error(`[local-image-server] port ${PORT} is in use by a process that isn't answering /api/ping (not this server).`);
+    console.error('[local-image-server] find and stop it (e.g. `netstat -ano | findstr :8787` on Windows), then retry.');
+  }
+  process.exit(1);
 });
 
 server.listen(PORT, HOST, () => {
