@@ -1105,4 +1105,13 @@
       <image:loc>https://derradjshop.com/Electronique/airpods/airpods-pro-2-vrac-type-c-wireless-earbuds/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/slike-kz-124-20w-gan-usb-a-usb-c-charger/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/slike-kz-124-20w-gan-usb-a-usb-c-charger/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
