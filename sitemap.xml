@@ -1132,4 +1132,40 @@
       <image:loc>https://derradjshop.com/Electronique/prise-chargeur/xiaomi-mdy-17-en-45w-turbo-charging-power-adapter/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/oppo-45w-supervooc-fast-charger-aaa/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/oppo-45w-supervooc-fast-charger-aaa/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/hoco-c109a-18w-qc30-fast-charger-with-type-c-cable/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/hoco-c109a-18w-qc30-fast-charger-with-type-c-cable/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/oppo-dl129-usb-a-to-type-c-supervooc-8a-charging-cable/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/cables-usb/oppo-dl129-usb-a-to-type-c-supervooc-8a-charging-cable/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/slike-dr-57-type-c-to-iphone-27w-fast-charging-cable-1m/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/cables-usb/slike-dr-57-type-c-to-iphone-27w-fast-charging-cable-1m/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
