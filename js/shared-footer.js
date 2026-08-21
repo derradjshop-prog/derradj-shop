@@ -8,24 +8,6 @@
 (function () {
   'use strict';
 
-  /* ── Electronics footer links — single source of truth so every
-     active electronics product always has a permanent, crawlable
-     <a href> from the footer on every page. Add a new product here
-     when it goes live so it can never become orphaned. ── */
-  var ELECTRONICS_LINKS = [
-    { url: '/product/adjustable-laptop-stand/',                                   label: '💻 حامل اللابتوب — 900 دج' },
-    { url: '/product/modio-st11-smart-watch/',                                    label: '⌚ ساعة Modio ST11 — 9,800 دج' },
-    { url: '/product/anker-soundcore-r50i-vg/',                                   label: '🎧 Anker R50i VG Earbuds — 4,500 دج' },
-    { url: '/product/airpods-4-type-c-vrac/',                                     label: '🎧 Airpods 4 Type-C Vrac — 2,500 دج' },
-    { url: '/product/hoco-j132a-20000mah-power-bank/',                            label: '🔋 Hoco J132A Power Bank — 3,950 دج' },
-    { url: '/product/arduino-r3-830/',                                            label: '🔌 طقم Arduino R3 كامل 830 قطعة — 7,000 دج' },
-    { url: '/product/arduino-uno-r3-super-starter-kit-with-200-components/',      label: '🔌 عدة Arduino UNO R3 للمبتدئين — 7,200 دج' },
-  ];
-
-  var electronicsLinksHtml = ELECTRONICS_LINKS.map(function (item) {
-    return '<li><a href="' + item.url + '">' + item.label + '</a></li>';
-  }).join('\n          ');
-
   var FOOTER_HTML = `
     <div class="footer-top">
       <div class="footer-brand">
@@ -54,7 +36,7 @@
         </ul>
         <h4 style="margin-top:16px;">إلكترونيات</h4>
         <ul>
-          ${electronicsLinksHtml}
+          <li><a href="/Electronique/">💻 جميع الإلكترونيات</a></li>
         </ul>
       </div>
 
