@@ -1114,4 +1114,13 @@
       <image:loc>https://derradjshop.com/Electronique/prise-chargeur/slike-kz-124-20w-gan-usb-a-usb-c-charger/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/iphone-pd-20w-usb-c-fast-charger/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/iphone-pd-20w-usb-c-fast-charger/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
