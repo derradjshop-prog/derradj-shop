@@ -1186,4 +1186,13 @@
       <image:loc>https://derradjshop.com/Electronique/cables-usb/oppo-dl2023-45w-supervooc-45a-usb-a-to-type-c-cable/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/hoco-x88-usb-a-to-type-c-3a-fast-charging-cable/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/cables-usb/hoco-x88-usb-a-to-type-c-3a-fast-charging-cable/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
