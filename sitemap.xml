@@ -1123,4 +1123,13 @@
       <image:loc>https://derradjshop.com/Electronique/prise-chargeur/iphone-pd-20w-usb-c-fast-charger/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/xiaomi-mdy-17-en-45w-turbo-charging-power-adapter/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/xiaomi-mdy-17-en-45w-turbo-charging-power-adapter/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
