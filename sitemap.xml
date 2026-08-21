@@ -1168,4 +1168,13 @@
       <image:loc>https://derradjshop.com/Electronique/cables-usb/slike-dr-57-type-c-to-iphone-27w-fast-charging-cable-1m/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/kd-s23-type-c-to-type-c-charging-data-cable/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/cables-usb/kd-s23-type-c-to-type-c-charging-data-cable/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
