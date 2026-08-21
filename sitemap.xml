@@ -1177,4 +1177,13 @@
       <image:loc>https://derradjshop.com/Electronique/cables-usb/kd-s23-type-c-to-type-c-charging-data-cable/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/oppo-dl2023-45w-supervooc-45a-usb-a-to-type-c-cable/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/cables-usb/oppo-dl2023-45w-supervooc-45a-usb-a-to-type-c-cable/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
