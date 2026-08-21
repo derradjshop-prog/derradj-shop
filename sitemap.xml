@@ -1204,4 +1204,13 @@
       <image:loc>https://derradjshop.com/Electronique/cables-usb/hoco-du201-24a-micro-usb-fast-charging-data-cable-1m/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/hoco-j123c-60000mah-power-bank-pd-20w/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/power-bank/hoco-j123c-60000mah-power-bank-pd-20w/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
