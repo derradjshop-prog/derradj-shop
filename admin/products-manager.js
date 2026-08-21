@@ -173,6 +173,20 @@
   let PM_GALLERY_ITEMS = []; /* [{ id, type:'existing'|'staged', url?, blob?, previewUrl?, el }] */
   let PM_GALLERY_SEQ = 0;
 
+  /* ── Add Product draft protection (see admin/draft-manager.js) ──────
+     Scoped to ADD mode only (EDIT_PRODUCT_ID === null) — editing an
+     existing product is always backed by the real DB row, so there's
+     nothing a draft needs to protect there; this only guards against
+     losing a brand-new, not-yet-saved product's data. `add` is a single
+     fixed draft slot (only one Add Product form can ever be open in one
+     browser tab), so an in-progress add draft can never collide with or
+     overwrite another product's data — every existing product is only
+     ever edited straight against Supabase, never through this draft
+     store. */
+  const PM_DRAFT_ID = 'add';
+  let DRAFT_ACTIVE = false;        /* true only while the modal is open in add-mode with protection ON */
+  let PM_DRAFT_SAVE_TIMER = null;
+
   /* إلكتروني = كل ما ليس كتاباً */
   function isElec(p) { return p.category !== 'books'; }
 
@@ -765,6 +779,26 @@
     .pm-book-sort-title { font-size:13px; font-weight:900; color:#1e293b; }
     .pm-book-sort-active { color:#1d4ed8; }
     .pm-book-sort-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+
+    /* ── Draft protection setting row (toolbar) ──────────────── */
+    .pm-draft-setting-row { display:flex; margin-bottom:14px; }
+    .pm-draft-setting-state { font-weight:900; }
+    .pm-draft-setting-state.is-on  { color:#059669; }
+    .pm-draft-setting-state.is-off { color:#94a3b8; }
+
+    /* ── Draft status bar (inside modal) ─────────────────────── */
+    #pmDraftStatusBar {
+      display:none; font-size:12px; font-weight:800;
+      padding:8px 12px; margin-bottom:14px; border-radius:8px;
+      background:#f8fafc; border:1px solid #e2e8f0;
+    }
+
+    /* ── Draft confirm dialog ────────────────────────────────── */
+    #pmDraftConfirmOverlay { z-index:3100; align-items:center; }
+    .pm-draft-confirm-actions { display:flex; flex-direction:column; gap:10px; }
+    .pm-draft-confirm-actions .pm-save,
+    .pm-draft-confirm-actions .btn-pm-add,
+    .pm-draft-confirm-actions .btn-pm-del { width:100%; margin-top:0; padding:12px; }
     `;
     document.head.appendChild(s);
   }
@@ -786,12 +820,32 @@
             <div class="pm-section-sub">إضافة منتجات جديدة، تعديلها، التحكم بتوفرها وترتيب ظهورها</div>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
-            <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد</button>
+            <button class="btn-pm-add" id="pmAddBtn">＋ إضافة منتج جديد<span id="pmAddBtnDraftBadge" style="display:none;margin-right:6px;background:#fff;color:#059669;font-size:10px;font-weight:900;padding:1px 7px;border-radius:99px;">مسودة</span></button>
             <button class="btn-pm-add" id="pmCategoriesBtn" style="background:#7c3aed;">🏷 التصنيفات الفرعية</button>
             <button type="button" class="btn-pm-add" id="pmFolderBtn" style="background:#64748b;">🔄 التحقق من خادم الصور المحلي</button>
             <span id="pmFolderStatus" style="font-size:12px;font-weight:700;color:#94a3b8;">⏳ جاري التحقق...</span>
           </div>
         </div>
+
+        <div class="pm-book-sort-row pm-draft-setting-row" id="pmDraftProtectionRow" style="display:flex;">
+          <div>
+            <div class="pm-book-sort-title">🛡️ حماية نموذج إضافة المنتج والحفظ التلقائي
+              <span class="pm-draft-setting-state" id="pmDraftProtectionState">—</span>
+            </div>
+            <div style="font-size:12px;color:#64748b;margin-top:2px;">
+              عند التفعيل: يُحفظ ما تكتبه في نموذج "إضافة منتج جديد" تلقائياً أثناء الكتابة، ولا يمكن مغادرته
+              بالخطأ (تبويب آخر، تحديث الصفحة...) — فقط زر ✕ يُغلقه عمداً.
+            </div>
+          </div>
+          <div class="pm-book-sort-actions">
+            <button type="button" class="pm-toggle" id="pmDraftProtectionToggle"
+                    role="switch" title="تفعيل/تعطيل حماية نموذج إضافة المنتج">
+              <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
+              <span class="pm-toggle-label" id="pmDraftProtectionToggleLabel">—</span>
+            </button>
+          </div>
+        </div>
+
         <div id="pmOrderWarning" style="display:none;background:#fef3c7;border:1.5px solid #fcd34d;border-radius:10px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:#78350f;line-height:1.6;">
           ⚠️ <strong>ميزة ترتيب الظهور غير مفعّلة</strong> — عمود <code>display_order</code> غير موجود في قاعدة البيانات.<br>
           شغّل ملف <strong>admin/supabase-admin-products-rls-fix.sql</strong> في <a href="https://supabase.com/dashboard/project/jbmcbjzcedqpvnhbmrhk/sql/new" target="_blank" style="color:#92400e;">Supabase SQL Editor</a> لتفعيل هذه الميزة.
@@ -860,12 +914,40 @@
           <button class="pm-mclose" id="pmMClose">✕</button>
         </div>
         <div class="pm-mbody" id="pmMBody">
+          <div id="pmDraftStatusBar"></div>
           <div id="pmPendingBanner" style="display:none;background:#fffbeb;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:13px;color:#92400e;line-height:1.7;"></div>
           ${buildForm()}
         </div>
       </div>
     `;
     document.body.appendChild(modal);
+
+    /* Draft confirm dialog — shown when the admin tries to leave an
+       in-progress Add Product draft via any protected exit (X button,
+       backdrop, Escape, sidebar tab, browser back/refresh/close all
+       route into requestCloseModal(); browser-level exits also get the
+       native beforeunload prompt in addition to this). */
+    const draftConfirm = document.createElement('div');
+    draftConfirm.id = 'pmDraftConfirmOverlay';
+    draftConfirm.className = 'pm-overlay';
+    draftConfirm.innerHTML = `
+      <div class="pm-modal" style="max-width:420px;">
+        <div class="pm-mhdr">
+          <span class="pm-mhdr-title">⚠️ مسودة منتج غير مكتملة</span>
+        </div>
+        <div class="pm-mbody" style="text-align:center;">
+          <p style="font-size:14px;color:#334155;line-height:1.8;margin:0 0 20px;">
+            لديك مسودة منتج غير مكتملة. ماذا تريد أن تفعل؟
+          </p>
+          <div class="pm-draft-confirm-actions">
+            <button type="button" class="pm-save" id="pmDraftContinueBtn">✏️ متابعة التعديل</button>
+            <button type="button" class="btn-pm-add" id="pmDraftSaveExitBtn" style="background:#2563eb;">💾 حفظ المسودة والخروج</button>
+            <button type="button" class="btn-pm-del" id="pmDraftDiscardBtn">🗑 تجاهل المسودة</button>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(draftConfirm);
 
     /* Categories modal — source of truth for the Supabase `categories`
        table (see admin/setup-categories.sql). Add/edit/deactivate here
@@ -1103,8 +1185,210 @@
   }
 
   /* ══════════════════════════════════════════════════════════
-     EVENTS
+     ADD-PRODUCT DRAFT PROTECTION
+     Scoped to add-mode only (EDIT_PRODUCT_ID === null) — see the
+     PM_DRAFT_ID comment near the top of this file for why. Everything
+     here is a no-op when window.DraftManager is missing or its
+     "protectAddProductDraft" setting is OFF, so this whole feature can
+     never break the underlying save/edit/delete flows it wraps.
   ══════════════════════════════════════════════════════════ */
+  const PM_DRAFT_FIELD_IDS = [
+    'pmName', 'pmNameEn', 'pmNameFr', 'pmCat', 'pmSubcat', 'pmBrand',
+    'pmAuthor', 'pmTranslator', 'pmYear',
+    'pmPrice', 'pmOldPrice', 'pmStock', 'pmQty',
+    'pmShortDesc', 'pmFullDesc', 'pmMainUrl',
+    'pmSlug', 'pmSeoTitle', 'pmSeoDesc', 'pmKeywords', 'pmOrder',
+  ];
+
+  function draftProtectionOn() {
+    return !!(window.DraftManager && window.DraftManager.isEnabled());
+  }
+
+  /* Serializes every plain form field + the gallery's ordering/type
+     (existing URLs vs. staged not-yet-uploaded images) into one plain
+     object. Staged image *bytes* are handled separately, via IndexedDB
+     (see persistDraftImages) — localStorage can only hold strings. */
+  function collectDraftFields() {
+    const fields = {};
+    PM_DRAFT_FIELD_IDS.forEach(id => { fields[id] = getValue(id); });
+    fields.pmSlugManual = document.getElementById('pmSlug')?.dataset.manualEdit === '1';
+    fields.hasStagedMain = !!PM_STAGED_MAIN;
+    fields.gallery = PM_GALLERY_ITEMS.map((it, i) =>
+      it.type === 'existing' ? { type: 'existing', url: it.url } : { type: 'staged', slot: 'gallery:' + i }
+    );
+    return fields;
+  }
+
+  function applyDraftFields(f) {
+    if (!f) return;
+    PM_DRAFT_FIELD_IDS.forEach(id => { if (id !== 'pmStock') setValue(id, f[id]); });
+    if (f.pmSlugManual) {
+      const el = document.getElementById('pmSlug');
+      if (el) el.dataset.manualEdit = '1';
+    }
+    setStockToggle(f.pmStock || 'available');
+    toggleBookFields();
+  }
+
+  /* "Dirty" = there's something a refresh/accidental-nav could actually
+     lose. Checked against a fixed set of meaningful keys (not e.g. the
+     category <select>'s always-non-empty default) so a freshly-opened,
+     untouched form never triggers a confirmation the admin didn't earn. */
+  const PM_DIRTY_KEYS = [
+    'pmName', 'pmNameEn', 'pmNameFr', 'pmBrand', 'pmAuthor', 'pmTranslator', 'pmYear',
+    'pmPrice', 'pmOldPrice', 'pmQty', 'pmShortDesc', 'pmFullDesc', 'pmMainUrl',
+    'pmSlug', 'pmSeoTitle', 'pmSeoDesc', 'pmKeywords', 'pmOrder',
+  ];
+  function isFormDirty() {
+    if (!!PM_STAGED_MAIN || PM_GALLERY_ITEMS.length) return true;
+    return PM_DIRTY_KEYS.some(id => getValue(id));
+  }
+
+  function setDraftStatus(state, savedAt) {
+    const el = document.getElementById('pmDraftStatusBar');
+    if (!el) return;
+    if (!DRAFT_ACTIVE) { el.style.display = 'none'; return; }
+    const time = savedAt ? new Date(savedAt).toLocaleTimeString('ar-DZ', { hour: '2-digit', minute: '2-digit' }) : '';
+    const MAP = {
+      saving:   { text: '⏳ جاري الحفظ...', color: '#92400e' },
+      saved:    { text: `✓ تم حفظ المسودة${time ? ' — آخر حفظ ' + time : ''}`, color: '#059669' },
+      restored: { text: '📝 تم استرجاع مسودة محفوظة' + (time ? ' (آخر حفظ ' + time + ')' : ''), color: '#1d4ed8' },
+    };
+    const m = MAP[state];
+    el.textContent = m ? m.text : '';
+    el.style.color = m ? m.color : '';
+    el.style.display = m ? '' : 'none';
+  }
+
+  /* Debounced text/JSON save — fired on every keystroke/select-change
+     while the add-draft is active. Image blobs are persisted separately
+     and immediately (see persistDraftImages), since those only change on
+     discrete user actions (pick/remove a file), not on every keystroke. */
+  function scheduleDraftAutosave() {
+    if (!DRAFT_ACTIVE) return;
+    setDraftStatus('saving');
+    window.DraftManager.saveDraft(PM_DRAFT_ID, collectDraftFields(), currentScrollTop());
+    clearTimeout(PM_DRAFT_SAVE_TIMER);
+    PM_DRAFT_SAVE_TIMER = setTimeout(() => {
+      setDraftStatus('saved', new Date().toISOString());
+    }, 750);
+  }
+
+  function currentScrollTop() {
+    return document.getElementById('pmMBody')?.scrollTop || 0;
+  }
+
+  /* Immediate (non-debounced) flush — used by "Save Draft & Exit" and
+     by beforeunload, where waiting out the debounce isn't an option. */
+  function flushDraftSave() {
+    if (!DRAFT_ACTIVE) return;
+    clearTimeout(PM_DRAFT_SAVE_TIMER);
+    window.DraftManager.saveDraftNow(PM_DRAFT_ID, collectDraftFields(), currentScrollTop());
+    setDraftStatus('saved', new Date().toISOString());
+  }
+
+  /* Writes every currently-staged image blob to IndexedDB, replacing
+     whatever was stored before (simplest correct approach given a
+     handful of images at most) — then flushes the field draft too, so
+     the gallery slot mapping on disk always matches the images that
+     were actually just persisted. */
+  async function persistDraftImages() {
+    if (!DRAFT_ACTIVE || !window.DraftManager) return;
+    await window.DraftManager.clearBlobs(PM_DRAFT_ID);
+    if (PM_STAGED_MAIN) await window.DraftManager.saveBlob(PM_DRAFT_ID, 'main', PM_STAGED_MAIN.blob);
+    let i = 0;
+    for (const it of PM_GALLERY_ITEMS) {
+      if (it.type === 'staged') await window.DraftManager.saveBlob(PM_DRAFT_ID, 'gallery:' + i, it.blob);
+      i++;
+    }
+    flushDraftSave();
+  }
+
+  async function restoreDraftImages(fields) {
+    if (!window.DraftManager) return;
+    const blobs = await window.DraftManager.loadBlobs(PM_DRAFT_ID);
+    if (fields.hasStagedMain && blobs.has('main')) {
+      const blob = blobs.get('main');
+      const previewUrl = URL.createObjectURL(blob);
+      PM_STAGED_MAIN = { blob, previewUrl };
+      showMainPreview(previewUrl);
+      document.getElementById('pmMainBox')?.classList.add('loaded');
+    }
+    (fields.gallery || []).forEach(g => {
+      if (g.type === 'existing') addGalleryItem({ type: 'existing', url: g.url });
+      else if (g.type === 'staged' && blobs.has(g.slot)) addGalleryItem({ type: 'staged', blob: blobs.get(g.slot) });
+    });
+  }
+
+  /* Called once from openModal() when opening a blank Add Product form
+     with protection ON — silently restores whatever was last saved
+     ("Save Draft & Exit", or an autosave caught by a refresh/close) so
+     the admin picks up exactly where they left off. */
+  async function restoreDraftIfAny() {
+    try {
+      const draft = window.DraftManager.loadDraft(PM_DRAFT_ID);
+      if (!draft || !draft.fields) { setDraftStatus(null); return; }
+      applyDraftFields(draft.fields);
+      await restoreDraftImages(draft.fields);
+      setDraftStatus('restored', draft.savedAt);
+      showToast('📝 تم استرجاع مسودة منتج غير مكتملة');
+      requestAnimationFrame(() => {
+        const body = document.getElementById('pmMBody');
+        if (body) body.scrollTop = draft.scrollTop || 0;
+      });
+    } catch (err) {
+      /* Restore is a best-effort convenience — a failure here must never
+         block the Add Product form from opening; it just opens blank. */
+      console.warn('[PM] draft restore failed:', err.message || err);
+      setDraftStatus(null);
+    }
+  }
+
+  /* ── The draft confirm dialog (Continue / Save & Exit / Discard) ── */
+  function openDraftConfirmDialog() {
+    document.getElementById('pmDraftConfirmOverlay')?.classList.add('open');
+  }
+  function closeDraftConfirmDialog() {
+    document.getElementById('pmDraftConfirmOverlay')?.classList.remove('open');
+  }
+
+  /* Single gate every exit path (X button, backdrop click, Escape,
+     sidebar tab clicks, logout) funnels through. Never closes the modal
+     out from under unsaved data unless protection is off or there's
+     genuinely nothing to lose. */
+  function requestCloseModal() {
+    if (!DRAFT_ACTIVE || !draftProtectionOn() || !isFormDirty()) {
+      closeModal();
+      return;
+    }
+    openDraftConfirmDialog();
+  }
+
+  /* Visible even before the modal is opened — "never silently delete an
+     unfinished draft" also means never silently *hide* that one exists. */
+  function refreshAddBtnDraftBadge() {
+    const badge = document.getElementById('pmAddBtnDraftBadge');
+    if (!badge) return;
+    const has = draftProtectionOn() && !!window.DraftManager?.hasDraft(PM_DRAFT_ID);
+    badge.style.display = has ? '' : 'none';
+  }
+
+  /* Reflects the current ON/OFF state on the toolbar toggle (requirement:
+     "Clearly indicate whether the protection is currently ON/OFF"). */
+  function renderDraftProtectionSettingUi() {
+    const on = draftProtectionOn();
+    const btn = document.getElementById('pmDraftProtectionToggle');
+    const label = document.getElementById('pmDraftProtectionToggleLabel');
+    const state = document.getElementById('pmDraftProtectionState');
+    if (btn) { btn.classList.toggle('is-on', on); btn.setAttribute('aria-checked', String(on)); }
+    if (label) label.textContent = on ? '🟢 مفعّلة' : '⚪ معطّلة';
+    if (state) {
+      state.textContent = on ? '(مفعّلة)' : '(معطّلة)';
+      state.classList.toggle('is-on', on);
+      state.classList.toggle('is-off', !on);
+    }
+  }
+
   function bindEvents() {
     /* Open add modal */
     document.getElementById('pmAddBtn')?.addEventListener('click', () => openModal(null));
@@ -1112,10 +1396,83 @@
     /* Local project folder — File System Access API */
     document.getElementById('pmFolderBtn')?.addEventListener('click', handleFolderBtnClick);
 
-    /* Close modal */
-    document.getElementById('pmMClose')?.addEventListener('click', closeModal);
+    /* Close modal — X is the only *intentional* close action; the
+       backdrop and Escape now go through the same protected gate
+       instead of discarding an in-progress add-draft on a stray click. */
+    document.getElementById('pmMClose')?.addEventListener('click', requestCloseModal);
     document.getElementById('pmOverlay')?.addEventListener('click', e => {
-      if (e.target.id === 'pmOverlay') closeModal();
+      if (e.target.id === 'pmOverlay') requestCloseModal();
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key !== 'Escape') return;
+      if (document.getElementById('pmDraftConfirmOverlay')?.classList.contains('open')) {
+        closeDraftConfirmDialog(); /* Escape on the confirm dialog itself = "Continue Editing", never destructive */
+        return;
+      }
+      if (document.getElementById('pmOverlay')?.classList.contains('open')) requestCloseModal();
+    });
+
+    /* Draft confirm dialog actions */
+    document.getElementById('pmDraftContinueBtn')?.addEventListener('click', closeDraftConfirmDialog);
+    document.getElementById('pmDraftConfirmOverlay')?.addEventListener('click', e => {
+      if (e.target.id === 'pmDraftConfirmOverlay') closeDraftConfirmDialog(); /* backdrop = Continue Editing, never destructive */
+    });
+    document.getElementById('pmDraftSaveExitBtn')?.addEventListener('click', () => {
+      flushDraftSave();
+      closeDraftConfirmDialog();
+      closeModal();
+      showToast('📝 تم حفظ المسودة — يمكنك إكمالها لاحقاً من "＋ إضافة منتج جديد"');
+    });
+    document.getElementById('pmDraftDiscardBtn')?.addEventListener('click', async () => {
+      if (!confirm('تجاهل المسودة نهائياً؟ لن تتمكن من استرجاعها بعد ذلك.')) return;
+      await window.DraftManager?.clearDraft(PM_DRAFT_ID);
+      closeDraftConfirmDialog();
+      closeModal();
+      showToast('🗑 تم تجاهل المسودة');
+    });
+
+    /* Autosave — any field change while an add-draft is active. `input`
+       covers text/number/textarea keystrokes, `change` covers <select>s
+       (which don't fire `input` in all browsers); scheduleDraftAutosave
+       itself is debounced so double-binding both is harmless. */
+    document.getElementById('pmForm')?.addEventListener('input', scheduleDraftAutosave);
+    document.getElementById('pmForm')?.addEventListener('change', scheduleDraftAutosave);
+
+    /* Draft-protection setting toggle */
+    document.getElementById('pmDraftProtectionToggle')?.addEventListener('click', () => {
+      if (!window.DraftManager) return;
+      const next = !window.DraftManager.isEnabled();
+      window.DraftManager.setEnabled(next);
+      renderDraftProtectionSettingUi();
+      refreshAddBtnDraftBadge();
+      showToast(next ? '🛡️ تم تفعيل حماية نموذج الإضافة' : '⚠️ تم تعطيل حماية نموذج الإضافة');
+    });
+
+    /* Sidebar tabs / logout — capture phase so this runs before admin.js's
+       own (bubble-phase) tab-switch/logout handlers ever fire. Only
+       intercepts while the Add Product modal is open, dirty, and
+       protection is on; everywhere else, navigation is untouched. */
+    document.addEventListener('click', e => {
+      if (!DRAFT_ACTIVE || !draftProtectionOn()) return;
+      if (!document.getElementById('pmOverlay')?.classList.contains('open')) return;
+      if (!isFormDirty()) return;
+      const navEl = e.target.closest('.tab-btn, #logoutBtn');
+      if (!navEl) return;
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+      openDraftConfirmDialog();
+    }, true);
+
+    /* Browser back / refresh / close / navigate-away — the debounced
+       autosave already means almost nothing is lost even if this native
+       prompt is dismissed or not shown (e.g. some mobile browsers), but
+       it's the only way to warn *before* the page actually unloads. */
+    window.addEventListener('beforeunload', e => {
+      if (!DRAFT_ACTIVE || !draftProtectionOn() || !isFormDirty()) return;
+      flushDraftSave();
+      e.preventDefault();
+      e.returnValue = '';
     });
 
     /* Form submit */
@@ -2039,13 +2396,16 @@
     if (subEl) subEl.style.display = isBooks ? 'none' : '';
   }
 
-  function openModal(product) {
+  async function openModal(product) {
     EDIT_PRODUCT_ID = product?.id || null;
     EDIT_ORIGINAL_IMAGES = product ? collectImageUrls(product) : [];
     EDIT_ORIGINAL_SUBCATEGORY = product ? (product.subcategory || null) : null;
     EDIT_ORIGINAL_RESOLVED_SLUG = product ? resolveCategorySlug(product) : null;
     const isEdit = !!product;
     const isPending = isEdit && product.status === 'pending_review';
+    /* Draft protection only ever applies to a brand-new product — see
+       the PM_DRAFT_ID comment near the top of this file. */
+    DRAFT_ACTIVE = !isEdit && draftProtectionOn();
 
     document.getElementById('pmModalTitle').textContent =
       isPending ? '📝 مراجعة كتاب مُرسل من بائع' : isEdit ? '✏️ تعديل المنتج' : '➕ إضافة منتج جديد';
@@ -2067,6 +2427,9 @@
 
     resetForm();
     populateSubcatSelect();
+    setDraftStatus(null);
+
+    if (DRAFT_ACTIVE) await restoreDraftIfAny();
 
     if (product) {
       setValue('pmName',      product.product_name);
@@ -2113,7 +2476,11 @@
     document.getElementById('pmOverlay')?.classList.remove('open');
     document.body.style.overflow = '';
     EDIT_PRODUCT_ID = null;
+    clearTimeout(PM_DRAFT_SAVE_TIMER);
+    DRAFT_ACTIVE = false;
+    setDraftStatus(null);
     resetForm();
+    refreshAddBtnDraftBadge();
   }
 
   function resetForm() {
@@ -2269,6 +2636,7 @@
       showMainPreview(previewUrl);
       document.getElementById('pmMainBox')?.classList.add('loaded');
       showToast('✅ تم تجهيز الصورة الرئيسية — ستُحفظ محلياً عند حفظ المنتج');
+      persistDraftImages();
     } catch (err) {
       if (prev) prev.innerHTML = `<div class="pm-upload-lbl" style="color:#dc2626;">❌ فشل تجهيز الصورة</div>`;
       showToast('❌ فشل تجهيز الصورة: ' + err.message, 'error');
@@ -2295,6 +2663,7 @@
       }
     }
     showToast('✅ تم تجهيز الصور — ستُحفظ محلياً عند حفظ المنتج');
+    persistDraftImages();
   }
 
   /* item: { type:'existing', url } for images already saved on a product
@@ -2336,6 +2705,7 @@
     const [entry] = PM_GALLERY_ITEMS.splice(idx, 1);
     if (entry.previewUrl) URL.revokeObjectURL(entry.previewUrl);
     entry.el?.remove();
+    persistDraftImages();
   }
 
   function clearGalleryItems() {
@@ -2559,6 +2929,9 @@
         console.log('[PM] INSERT succeeded:', insertedData);
         showToast('✅ تم إضافة المنتج ونشره في المتجر');
         triggerPageRebuild('إضافة منتج: ' + payload.product_name);
+        /* Product is safely in Supabase now — the draft that protected
+           it while unsaved has nothing left to protect. */
+        await window.DraftManager?.clearDraft(PM_DRAFT_ID);
       }
 
       closeModal();
@@ -2747,6 +3120,8 @@
     injectStyles();
     injectHTML();
     bindEvents();
+    renderDraftProtectionSettingUi();
+    refreshAddBtnDraftBadge();
     initLocalFsBadge();
     loadBookSortMode();
     /* Public read of active rows needs no auth session (see
