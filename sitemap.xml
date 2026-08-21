@@ -1231,4 +1231,13 @@
       <image:loc>https://derradjshop.com/Electronique/autre/ipx8-waterproof-phone-pouch-with-strap/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/hoco-ho-07-lightning-to-usb-30-otg-adapter/</loc>
+    <lastmod>2026-08-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/cables-usb/hoco-ho-07-lightning-to-usb-30-otg-adapter/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
