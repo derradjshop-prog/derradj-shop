@@ -425,6 +425,65 @@
     });
   }
 
+  /* ── Manually-curated "Best-Selling Products" homepage section —
+     entirely admin-controlled (admin/bestseller-picks.js), never
+     derived from order statistics. Picks + the section's on/off flag
+     live in Supabase (bestseller_picks, site_settings) and are fetched
+     fresh on every load (not run through the sessionStorage catalog
+     cache below) so admin changes show up on the very next page load
+     instead of waiting out that cache's TTL. ── */
+  async function fetchBestsellerEnabled() {
+    try {
+      const url = SB_URL + '/rest/v1/site_settings?select=value&key=eq.bestsellers_section_enabled&limit=1';
+      const res = await fetch(url, { headers: HEADERS });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      return rows?.[0]?.value?.enabled !== false;
+    } catch (err) {
+      console.warn('[products-loader] bestsellers_section_enabled unavailable; defaulting to enabled:', err.message || err);
+      return true;
+    }
+  }
+
+  async function fetchBestsellerPicks() {
+    try {
+      const url = SB_URL + '/rest/v1/bestseller_picks'
+        + '?select=display_order,admin_products_catalog!inner(*)'
+        + '&admin_products_catalog.is_active=eq.true'
+        + '&order=display_order.asc';
+      const res = await fetch(url, { headers: HEADERS });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const rows = await res.json();
+      return (rows || [])
+        .map(row => row.admin_products_catalog)
+        .filter(Boolean);
+    } catch (err) {
+      console.warn('[products-loader] bestseller picks unavailable:', err.message || err);
+      return [];
+    }
+  }
+
+  /* ── Render the curated bestsellers section — reuses buildCard(p)
+     unchanged so cards are pixel-identical to every other section.
+     Hides the whole section (not just an empty grid) when there are
+     no picks, per the "hide instead of showing empty" requirement. ── */
+  function renderHomepageBestsellers(picks) {
+    const section = document.getElementById('bestsellers-section');
+    const grid = document.getElementById('homeBestsellersGrid');
+    if (!section || !grid) return;
+
+    if (!picks.length) {
+      section.style.display = 'none';
+      return;
+    }
+
+    grid.innerHTML = '';
+    picks.forEach(p => {
+      grid.insertAdjacentHTML('beforeend', buildCard(p));
+    });
+    section.style.display = '';
+  }
+
   /* ── Build SEARCH_PRODUCTS entries for new products ── */
   function extendSearch(products) {
     if (!window.SEARCH_PRODUCTS) return;
@@ -537,6 +596,9 @@
       extendCatalog(products);
       renderHomepageProducts(products);
       renderHomepageBooks(products);
+
+      const [bsEnabled, bsPicks] = await Promise.all([fetchBestsellerEnabled(), fetchBestsellerPicks()]);
+      renderHomepageBestsellers(bsEnabled ? bsPicks : []);
 
       /* Extend search after search-products.js has run */
       if (window.SEARCH_PRODUCTS) {

@@ -1013,6 +1013,9 @@
     <button class="tab-btn" data-tab="bestsellers">
       📚 الكتب المباعة
     </button>
+    <button class="tab-btn" data-tab="bestpicks">
+      🔥 المنتجات الأكثر مبيعاً
+    </button>
     <button class="tab-btn" data-tab="sellers" id="navBtnSellers" style="display:none;">
       👤 البائعين
     </button>
@@ -1144,6 +1147,9 @@
 
   <!-- Tab: Bestselling books — fully managed by admin/bestsellers.js -->
   <div class="tab-content" id="tab-bestsellers"></div><!-- /tab-bestsellers -->
+
+  <!-- Tab: Curated best-selling products (homepage section) — fully managed by admin/bestseller-picks.js -->
+  <div class="tab-content" id="tab-bestpicks"></div><!-- /tab-bestpicks -->
 
   <!-- Tab: Sellers — main-admin-only setting, rendered by admin.js -->
   <div class="tab-content" id="tab-sellers"></div><!-- /tab-sellers -->
@@ -1320,5 +1326,6 @@
 <script src="draft-manager.js"></script>
 <script src="products-manager.js"></script>
 <script src="bestsellers.js"></script>
+<script src="bestseller-picks.js"></script>
 </body>
 </html>

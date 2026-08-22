@@ -193,6 +193,21 @@
 
 
 
+<!-- ===================== BESTSELLING PRODUCTS ===================== -->
+<!-- Manually curated in Admin (🔥 المنتجات الأكثر مبيعاً tab) — hidden via
+     inline display:none until js/products-loader.js confirms there are
+     picks and the section is enabled; never shows an empty section. -->
+<section class="products-section section-wrap product-slider-section" id="bestsellers-section" style="background:#fff;display:none;">
+  <div class="container">
+    <div class="section-header product-slider-header centered">
+      <div class="section-label">🔥 الأكثر مبيعاً</div>
+      <h2 class="section-title">🔥 المنتجات الأكثر مبيعاً</h2>
+      <p class="section-subtitle">اختيارات مضمونة يثق بها عملاؤنا</p>
+    </div>
+    <div class="product-carousel" id="homeBestsellersGrid"></div>
+  </div>
+</section>
+
 <!-- ===================== ELECTRONICS PRODUCTS ===================== -->
 <section class="products-section section-wrap product-slider-section" id="electronics" style="background:#fff;">
   <div class="container">
@@ -797,49 +812,6 @@
 
     <div class="product-carousel" id="homeBooksGrid">
       <!--STATIC_FALLBACK:homeBooksGrid:START--><!--STATIC_FALLBACK:homeBooksGrid:END-->
-    </div>
-  </div>
-</section>
-
-<!-- ===================== CATEGORIES ===================== -->
-<section class="categories-section" id="categories">
-  <div class="container">
-    <div class="section-header">
-      <h2 class="section-title">تصفح حسب التصنيف</h2>
-      <p class="section-subtitle">تسوّق بسهولة — منتجات متنوعة لكل اهتمام وكل احتياج مع توصيل سريع إلى جميع الولايات</p>
-    </div>
-    <div class="categories-grid">
-      <a href="books/index.html?cat=تطوير الذات" class="category-card active">
-        <div class="cat-icon">🌱</div>
-        <h3>تطوير الذات</h3>
-        <p>عادات، إنتاجية، نجاح ومهارات حياتية</p>
-      </a>
-      <a href="books/index.html?cat=علم النفس والمجتمع" class="category-card">
-        <div class="cat-icon">🧠</div>
-        <h3>علم النفس والمجتمع</h3>
-        <p>فهم النفس، السلوك، والعلاقات الإنسانية</p>
-      </a>
-      <a href="books/index.html?cat=الفلسفة والفكر" class="category-card">
-        <div class="cat-icon">💡</div>
-        <h3>الفلسفة والفكر</h3>
-        <p>رؤى عميقة لفهم الحياة والوجود</p>
-      </a>
-      <a href="books/index.html?cat=الإدارة والأعمال" class="category-card">
-        <div class="cat-icon">💼</div>
-        <h3>الإدارة والأعمال</h3>
-        <p>قيادة، مبيعات، وبناء المشاريع</p>
-      </a>
-      <a href="books/index.html?cat=العلوم والمعرفة" class="category-card">
-        <div class="cat-icon">🔭</div>
-        <h3>العلوم والمعرفة</h3>
-        <p>علوم مبسطة لعقل فضولي</p>
-      </a>
-      <a href="#electronics" class="category-card offers">
-        <div class="cat-icon">💻</div>
-        <h3>إلكترونيات</h3>
-        <p>حاملات لابتوب، إكسسوارات وأدوات مفيدة</p>
-        <span class="badge-hot">🔥 جديد</span>
-      </a>
     </div>
   </div>
 </section>

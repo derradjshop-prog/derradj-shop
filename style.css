@@ -563,66 +563,12 @@ input, select, textarea { font-family: inherit; }
 }
 .benefit-text span { display: none; }
 
-/* === 8. CATEGORIES === */
-.categories-section { padding: 48px 0 40px; background: var(--bg); }
-
-.categories-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 20px;
-}
-
-.category-card {
-  background: white;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px 20px;
-  text-align: center;
-  transition: var(--transition);
-  position: relative;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.category-card:hover:not(.coming-soon),
-.category-card.active {
-  border-color: var(--primary);
-  background: linear-gradient(145deg, rgba(37,99,235,0.04), white);
-  box-shadow: var(--shadow-blue);
-  transform: translateY(-3px);
-}
-
-.category-card.coming-soon { opacity: 0.65; cursor: default; }
-
-.category-card.offers {
-  border-color: #fecaca;
-  background: linear-gradient(145deg, rgba(239,68,68,0.03), white);
-}
-
-.cat-icon { font-size: 38px; line-height: 1; margin-bottom: 4px; }
-
-.category-card h3 { font-size: 16px; font-weight: 800; color: var(--text); }
-.category-card p  { font-size: 13px; color: var(--text-light); line-height: 1.5; }
-
 .badge-soon {
   display: inline-block;
   background: var(--bg-alt);
   color: var(--text-muted);
   font-size: 11px;
   font-weight: 700;
-  padding: 3px 10px;
-  border-radius: 99px;
-}
-
-.badge-hot {
-  display: inline-block;
-  background: var(--accent);
-  color: white;
-  font-size: 11px;
-  font-weight: 800;
   padding: 3px 10px;
   border-radius: 99px;
 }
@@ -2152,7 +2098,6 @@ input, select, textarea { font-family: inherit; }
   .hero-subtitle { font-size: 16px; }
 
   /* Sections */
-  .categories-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .benefits-inner  { grid-template-columns: repeat(2, 1fr); }
   .benefit-item:nth-child(2) { border-left: none; }
   .delivery-grid   { grid-template-columns: 1fr; gap: 28px; }
@@ -2199,7 +2144,6 @@ input, select, textarea { font-family: inherit; }
   .container    { padding: 0 16px; }
 
   /* Full-width homepage sections — tighter rhythm on small screens */
-  .categories-section,
   .why-us,
   .delivery-section,
   .reviews-section,
@@ -2207,7 +2151,6 @@ input, select, textarea { font-family: inherit; }
 
   /* Grids */
   .products-grid   { grid-template-columns: repeat(2, 1fr); gap: 14px; }
-  .categories-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
   .benefits-inner  { grid-template-columns: 1fr 1fr; }
   .why-grid        { grid-template-columns: 1fr; }
   .reviews-grid    { grid-template-columns: 1fr; }
@@ -2234,10 +2177,6 @@ input, select, textarea { font-family: inherit; }
   .hero-buttons .btn-secondary { width: 100%; max-width: 320px; justify-content: center; }
 
   /* Cards */
-  .category-card   { padding: 18px 12px; gap: 6px; }
-  .cat-icon        { font-size: 30px; }
-  .category-card h3 { font-size: 14px; }
-  .category-card p  { font-size: 12px; }
   .why-card  { padding: 20px 16px; }
   .review-card { padding: 20px; }
 
@@ -2300,7 +2239,6 @@ input, select, textarea { font-family: inherit; }
 @media (max-width: 480px) {
   /* Very small screens */
   .products-grid    { grid-template-columns: 1fr; }
-  .categories-grid  { grid-template-columns: 1fr 1fr; }
   .header-inner     { height: 60px; }
   body              { padding-top: 60px; }
   .mobile-menu      { top: 60px; }
