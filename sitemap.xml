@@ -1285,4 +1285,13 @@
       <image:loc>https://derradjshop.com/Electronique/power-bank/hoco-q16-10000mah-2-in-1-power-bank-useu-adapter/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/hoco-ew73-4h-lcd-true-wireless-earbuds/</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/airpods/hoco-ew73-4h-lcd-true-wireless-earbuds/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
