@@ -1258,4 +1258,13 @@
       <image:loc>https://derradjshop.com/Electronique/power-bank/hoco-j100-10000mah-power-bank/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/hoco-j132-10000mah-power-bank-225w-pd20w/</loc>
+    <lastmod>2026-08-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/power-bank/hoco-j132-10000mah-power-bank-225w-pd20w/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
