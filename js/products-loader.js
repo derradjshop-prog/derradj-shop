@@ -564,7 +564,21 @@
     }
   }
 
-  /* ── Main loader ── */
+  /* ── Bestsellers loader — kicked off independently of load() below
+     (not awaited after the electronics/books catalog fetch) so its own
+     two small requests aren't stuck behind the larger catalog fetch
+     chain and the homepage section fills in as early as possible.
+     fetchBestsellerEnabled()/fetchBestsellerPicks() already swallow
+     their own errors and resolve to safe defaults (enabled=true,
+     picks=[]), so a failure here still resolves to hiding the section
+     via renderHomepageBestsellers([]) rather than leaving the skeleton
+     stuck forever. ── */
+  async function loadBestsellers() {
+    const [bsEnabled, bsPicks] = await Promise.all([fetchBestsellerEnabled(), fetchBestsellerPicks()]);
+    renderHomepageBestsellers(bsEnabled ? bsPicks : []);
+  }
+
+  /* ── Main loader (electronics + books catalog) ── */
   async function load() {
     try {
       let categories = cacheGet(CATEGORIES_CACHE_KEY, CATEGORIES_CACHE_TTL);
@@ -597,9 +611,6 @@
       renderHomepageProducts(products);
       renderHomepageBooks(products);
 
-      const [bsEnabled, bsPicks] = await Promise.all([fetchBestsellerEnabled(), fetchBestsellerPicks()]);
-      renderHomepageBestsellers(bsEnabled ? bsPicks : []);
-
       /* Extend search after search-products.js has run */
       if (window.SEARCH_PRODUCTS) {
         extendSearch(products);
@@ -617,8 +628,9 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', load);
+    document.addEventListener('DOMContentLoaded', () => { loadBestsellers(); load(); });
   } else {
+    loadBestsellers();
     load();
   }
 })();

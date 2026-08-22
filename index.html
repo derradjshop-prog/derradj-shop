@@ -194,17 +194,24 @@
 
 
 <!-- ===================== BESTSELLING PRODUCTS ===================== -->
-<!-- Manually curated in Admin (🔥 المنتجات الأكثر مبيعاً tab) — hidden via
-     inline display:none until js/products-loader.js confirms there are
-     picks and the section is enabled; never shows an empty section. -->
-<section class="products-section section-wrap product-slider-section" id="bestsellers-section" style="background:#fff;display:none;">
+<!-- Manually curated in Admin (🔥 المنتجات الأكثر مبيعاً tab). Kept
+     visible (never display:none) from first paint, pre-filled with
+     skeleton placeholder cards below, so this section holds its slot
+     above Electronics instead of popping in late and pushing
+     Electronics down a few seconds after load. js/products-loader.js
+     fetches the picks as early as possible and swaps the skeleton for
+     real cards in place; it only sets display:none afterwards, if the
+     fetch confirms the section is disabled or has no picks. -->
+<section class="products-section section-wrap product-slider-section" id="bestsellers-section" style="background:#fff;">
   <div class="container">
     <div class="section-header product-slider-header centered">
       <div class="section-label">🔥 الأكثر مبيعاً</div>
       <h2 class="section-title">🔥 المنتجات الأكثر مبيعاً</h2>
       <p class="section-subtitle">اختيارات مضمونة يثق بها عملاؤنا</p>
     </div>
-    <div class="product-carousel" id="homeBestsellersGrid"></div>
+    <div class="product-carousel" id="homeBestsellersGrid">
+      <!--SKELETON:START--><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><!--SKELETON:END-->
+    </div>
   </div>
 </section>
 
