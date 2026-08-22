@@ -9,6 +9,45 @@
   const BASE     = window.location.origin;
 
   /* ══════════════════════════════════════════════════════════
+     طبقة حماية المحتوى الشاملة — رادع فقط، لا حماية فعلية مضمونة
+     (موقع ثابت بدون سيرفر، راجع تقرير التدقيق). مفوّضة عبر document
+     مرحلة الالتقاط لتغطي كل عناصر الموقع بما فيها ما يُضاف لاحقاً
+     ديناميكياً (بطاقات المنتجات، نتائج البحث...) دون تكرار الكود في
+     كل صفحة. لا تُطبَّق على حقول الإدخال حتى يبقى الكتابة/التحديد/
+     اللصق طبيعياً في نماذج البحث وتسجيل الدخول والطلب. لا تُحمَّل هذه
+     الحماية أصلاً في admin/ أو seller/ (لا تستدعيان cart.js). ══════════════════════════════════════════════════════════ */
+  function isEditableTarget(target) {
+    const el = target && target.nodeType === 1 ? target : (target && target.parentElement);
+    if (!el) return false;
+    return !!el.closest('input, textarea, select, [contenteditable], [contenteditable="true"]');
+  }
+
+  document.addEventListener('contextmenu', function (e) {
+    if (!isEditableTarget(e.target)) e.preventDefault();
+  }, true);
+
+  document.addEventListener('dragstart', function (e) {
+    if (!isEditableTarget(e.target)) e.preventDefault();
+  }, true);
+
+  /* اختصارات النسخ/الحفظ/الفحص — عند لوحة المفاتيح فقط، وليس عند
+     حدث copy/cut، حتى لا تتعارض مع زر "نسخ ملخص الطلب" في صفحة الطلب
+     (ordre/index.html) الذي يستدعي execCommand('copy') برمجياً. غير
+     موثوقة بالكامل عبر كل المتصفحات (خصوصاً Firefox) — رادع إضافي فقط. */
+  document.addEventListener('keydown', function (e) {
+    if (isEditableTarget(e.target)) return;
+    const k = e.key;
+    const ctrl = e.ctrlKey || e.metaKey;
+    const isDevtoolsKey =
+      k === 'F12' ||
+      (ctrl && e.shiftKey && (k === 'I' || k === 'i' || k === 'J' || k === 'j' || k === 'C' || k === 'c'));
+    const isBlockedCtrlKey =
+      ctrl && (k === 'U' || k === 'u' || k === 'S' || k === 's' || k === 'P' || k === 'p' ||
+               k === 'C' || k === 'c' || k === 'X' || k === 'x' || k === 'Insert');
+    if (isDevtoolsKey || isBlockedCtrlKey) e.preventDefault();
+  }, true);
+
+  /* ══════════════════════════════════════════════════════════
      نصوص حالة التوفر — تُستخدم في صفحات المنتج الفردية
      (.purchase-avail-badge و .avail-tag)
   ══════════════════════════════════════════════════════════ */
