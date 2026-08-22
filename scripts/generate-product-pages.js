@@ -410,7 +410,6 @@ function renderPage(view, dims) {
     </a>
     <nav class="main-nav">
       <a href="/"              class="nav-link">الرئيسية</a>
-      <a href="/#categories"   class="nav-link">التصنيفات</a>
       <a href="/books/"        class="nav-link">📚 الكتب</a>
       <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
       <a href="/about"    class="nav-link">من نحن</a>
@@ -443,7 +442,6 @@ function renderPage(view, dims) {
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="/">الرئيسية</a>
-  <a href="/#categories">التصنيفات</a>
   <a href="/books/">📚 الكتب</a>
   <a href="/Electronique/">💻 إلكترونيات</a>
   <a href="/about">من نحن</a>
@@ -559,7 +557,6 @@ function renderBookPage(view, dims) {
     </a>
     <nav class="main-nav">
       <a href="/"              class="nav-link">الرئيسية</a>
-      <a href="/#categories"   class="nav-link">التصنيفات</a>
       <a href="/books/"        class="nav-link" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
       <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
       <a href="/about"    class="nav-link">من نحن</a>
@@ -592,7 +589,6 @@ function renderBookPage(view, dims) {
 
 <div class="mobile-menu" id="mobileMenu">
   <a href="/">الرئيسية</a>
-  <a href="/#categories">التصنيفات</a>
   <a href="/books/" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
   <a href="/Electronique/">💻 إلكترونيات</a>
   <a href="/about">من نحن</a>

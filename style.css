@@ -564,7 +564,7 @@ input, select, textarea { font-family: inherit; }
 .benefit-text span { display: none; }
 
 /* === 8. CATEGORIES === */
-.categories-section { padding: 80px 0 60px; background: var(--bg); }
+.categories-section { padding: 48px 0 40px; background: var(--bg); }
 
 .categories-grid {
   display: grid;
@@ -933,7 +933,7 @@ input, select, textarea { font-family: inherit; }
 /* === 10. MARKETING BANNER === */
 .marketing-banner {
   background: linear-gradient(135deg, #1e3a8a 0%, #1d4ed8 40%, #0d9488 100%);
-  padding: 72px 0;
+  padding: 48px 0;
   position: relative;
   overflow: hidden;
 }
@@ -1035,7 +1035,7 @@ input, select, textarea { font-family: inherit; }
 .savings-caption{ font-size: 14px; opacity: 0.75; margin-top: 8px; }
 
 /* === 11. WHY US === */
-.why-us { padding: 80px 0; background: white; }
+.why-us { padding: 48px 0; background: white; }
 
 .why-grid {
   display: grid;
@@ -1060,7 +1060,7 @@ input, select, textarea { font-family: inherit; }
 .why-card p  { font-size: 14px; color: var(--text-light); line-height: 1.75; }
 
 /* === 12. DELIVERY SECTION === */
-.delivery-section { padding: 80px 0; background: var(--bg-alt); }
+.delivery-section { padding: 48px 0; background: var(--bg-alt); }
 
 .delivery-grid {
   display: grid;
@@ -1132,7 +1132,7 @@ input, select, textarea { font-family: inherit; }
 .step-content p      { font-size: 13px; color: var(--text-light); }
 
 /* === 13. REVIEWS === */
-.reviews-section { padding: 80px 0; background: white; }
+.reviews-section { padding: 48px 0; background: white; }
 
 .reviews-grid {
   display: grid;
@@ -1266,7 +1266,7 @@ input, select, textarea { font-family: inherit; }
 }
 
 /* === 14. CONTACT SECTION === */
-.contact-section { padding: 80px 0; background: var(--bg-alt); }
+.contact-section { padding: 48px 0; background: var(--bg-alt); }
 
 .contact-grid {
   display: grid;
@@ -2198,6 +2198,13 @@ input, select, textarea { font-family: inherit; }
   .section-wrap { padding: 30px 0; }
   .container    { padding: 0 16px; }
 
+  /* Full-width homepage sections — tighter rhythm on small screens */
+  .categories-section,
+  .why-us,
+  .delivery-section,
+  .reviews-section,
+  .contact-section { padding: 36px 0; }
+
   /* Grids */
   .products-grid   { grid-template-columns: repeat(2, 1fr); gap: 14px; }
   .categories-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
@@ -2283,7 +2290,7 @@ input, select, textarea { font-family: inherit; }
   .btn-outline { padding: 11px 22px; font-size: 14px; }
 
   /* Banner */
-  .marketing-banner { padding: 48px 0; }
+  .marketing-banner { padding: 36px 0; }
   .banner-inner h2  { font-size: clamp(20px, 5vw, 28px); }
   .banner-inner p   { font-size: 14px; }
   .banner-checks    { flex-direction: column; gap: 10px; align-items: flex-start; }
@@ -2949,8 +2956,10 @@ img { max-width: 100%; height: auto; }
 /* Section wrapper — no clip, keeps hover shadows visible.
    Overrides .products-section's 60px bottom padding (meant for the
    grid layout's now-hidden CTA row) so slider sections use even,
-   compact top/bottom spacing instead of a lopsided gap. */
-.product-slider-section { overflow: visible; padding: 30px 0; }
+   compact top/bottom spacing instead of a lopsided gap. Bottom is
+   trimmed further than top so back-to-back slider sections (e.g.
+   electronics → books) don't stack two full paddings into one gap. */
+.product-slider-section { overflow: visible; padding: 30px 0 12px; }
 
 /* Offset for fixed 68 px header so anchor links don't get hidden behind it */
 #books,
@@ -3077,7 +3086,7 @@ img { max-width: 100%; height: auto; }
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  padding: 8px 4px 22px;
+  padding: 8px 4px;
   direction: ltr;            /* normalise scrollLeft=0→max in every browser */
   cursor: grab;
   -ms-overflow-style: none;  /* IE/Edge: hide scrollbar */
@@ -3106,7 +3115,7 @@ img { max-width: 100%; height: auto; }
 @media (max-width: 640px) {
   .product-carousel {
     gap: 12px;
-    padding: 8px 4px 16px;
+    padding: 8px 4px;
   }
   .product-carousel .product-card {
     flex: 0 0 82%;
