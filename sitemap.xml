@@ -1089,11 +1089,11 @@
   </url>
   <url>
     <loc>https://derradjshop.com/product/arduino-uno-r3-super-starter-kit-with-200-components/</loc>
-    <lastmod>2026-08-21</lastmod>
+    <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://derradjshop.com/Electronique/Arduino%20Kits/arduino-uno-r3-super-starter-kit-with-200-components/1782473068872-pbl7hu6.jpeg</image:loc>
+      <image:loc>https://derradjshop.com/Electronique/Arduino%20Kits/arduino-uno-r3-super-starter-kit-with-200-components/1782473075897-64d2ydr.png</image:loc>
     </image:image>
   </url>
   <url>
@@ -1373,6 +1373,42 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://derradjshop.com/Electronique/telephones/nokia-1616-classic-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/nokia-105-classic-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/nokia-105-classic-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/nokia-1202-classic-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/nokia-1202-classic-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/samsung-keystone-2-e1200-classic-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/samsung-keystone-2-e1200-classic-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/samsung-guru-e1205-fm-radio-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/samsung-guru-e1205-fm-radio-feature-phone/main.webp</image:loc>
     </image:image>
   </url>
 </urlset>
