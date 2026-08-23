@@ -678,17 +678,40 @@
     .pm-upload-lbl { font-size:13px; color:#64748b; font-weight:600; margin-bottom:4px; }
     .pm-upload-sub { font-size:11px; color:#94a3b8; }
 
+    .pm-main-preview-wrap { position:relative; display:inline-block; }
     .pm-main-preview {
       max-width:110px; max-height:150px;
       object-fit:contain; border-radius:6px;
       display:block; margin:0 auto 8px;
     }
+    .pm-main-badge {
+      position:absolute; top:-6px; right:-6px;
+      background:#059669; color:#fff;
+      font-size:10px; font-weight:800;
+      padding:2px 7px; border-radius:20px;
+      border:2px solid #fff; white-space:nowrap;
+    }
     .pm-gallery-row { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-    .pm-gal-wrap { position:relative; display:inline-block; }
+    .pm-gal-wrap {
+      position:relative; display:inline-block;
+      cursor:pointer; border-radius:6px;
+    }
     .pm-gal-img {
       width:72px; height:90px; object-fit:cover;
       border-radius:6px; border:1px solid #e2e8f0;
+      transition:opacity .15s;
     }
+    .pm-gal-wrap.pm-gal-busy { pointer-events:none; }
+    .pm-gal-wrap.pm-gal-busy .pm-gal-img { opacity:.5; }
+    .pm-gal-set-main {
+      position:absolute; inset:0; border-radius:6px;
+      background:rgba(5,150,105,.82); color:#fff;
+      font-size:10px; font-weight:800; text-align:center;
+      display:flex; align-items:center; justify-content:center;
+      padding:4px; line-height:1.3;
+      opacity:0; transition:opacity .15s; pointer-events:none;
+    }
+    .pm-gal-wrap:hover .pm-gal-set-main { opacity:1; }
     .pm-gal-rm {
       position:absolute; top:-7px; left:-7px;
       width:22px; height:22px;
@@ -696,6 +719,7 @@
       border:2px solid #fff; border-radius:50%;
       font-size:12px; cursor:pointer; line-height:1;
       display:flex; align-items:center; justify-content:center;
+      z-index:1;
     }
 
     /* ── Save button ─────────────────────────────────── */
@@ -2647,7 +2671,10 @@
     const prev = document.getElementById('pmMainPrev');
     if (prev) {
       prev.innerHTML = `
-        <img src="${esc(url)}" class="pm-main-preview" alt="">
+        <div class="pm-main-preview-wrap">
+          <img src="${esc(url)}" class="pm-main-preview" alt="">
+          <span class="pm-main-badge">⭐ رئيسية</span>
+        </div>
         <div class="pm-upload-lbl" style="color:#059669;">✅ صورة محملة</div>
       `;
     }
@@ -2680,11 +2707,17 @@
     const wrap = document.createElement('div');
     wrap.className = 'pm-gal-wrap';
     wrap.dataset.galId = id;
+    wrap.title = 'انقر لتعيينها كصورة رئيسية';
     wrap.innerHTML = `
       <img src="${esc(previewUrl)}" class="pm-gal-img" alt="">
+      <div class="pm-gal-set-main">⭐ تعيين كرئيسية</div>
       <button type="button" class="pm-gal-rm" title="إزالة">×</button>
     `;
-    wrap.querySelector('.pm-gal-rm').addEventListener('click', () => removeGalleryItem(id));
+    wrap.querySelector('.pm-gal-rm').addEventListener('click', e => {
+      e.stopPropagation();
+      removeGalleryItem(id);
+    });
+    wrap.addEventListener('click', () => useAsMainImage(id));
     container.appendChild(wrap);
 
     const entry = {
@@ -2713,6 +2746,107 @@
     PM_GALLERY_ITEMS = [];
     const container = document.getElementById('pmGalPreviews');
     if (container) container.innerHTML = '';
+  }
+
+  /* Moves an already-added gallery entry to a given array index, keeping
+     its DOM node in the matching visual slot. Used by useAsMainImage()
+     so the image that gets bumped out of "main" reappears where the
+     thumbnail that replaced it used to be, instead of at the end. */
+  function repositionGalleryItem(id, targetIdx) {
+    const idx = PM_GALLERY_ITEMS.findIndex(it => it.id === id);
+    if (idx === -1 || idx === targetIdx) return;
+    const [entry] = PM_GALLERY_ITEMS.splice(idx, 1);
+    PM_GALLERY_ITEMS.splice(targetIdx, 0, entry);
+    const container = document.getElementById('pmGalPreviews');
+    const referenceNode = container?.children[targetIdx] || null;
+    if (container && entry.el && entry.el !== referenceNode) {
+      container.insertBefore(entry.el, referenceNode);
+    }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     PROMOTE AN ADDITIONAL IMAGE TO MAIN — clicking a thumbnail in
+     "صور إضافية" swaps it with the current main image: the clicked
+     image becomes main, and the previous main image takes its place
+     in the gallery. Nothing is deleted or duplicated.
+
+     Books are a special case: the live site always serves whatever
+     physical file is at books/{slug}/main.webp, ignoring the
+     main_image DB value (see toBookRow() in
+     scripts/generate-product-pages.js) — so for books a plain DB-
+     pointer swap would silently do nothing on the real page. Both
+     images involved are re-staged (fetched back into a blob) so the
+     normal save path in resolveImagesForSave() physically writes the
+     new main.webp, and the old one is preserved as a fresh gallery
+     file. Electronics resolve main_image by filename instead, so a
+     cheap pointer-only swap is correct and avoids re-uploading
+     anything unnecessarily. ── */
+  async function useAsMainImage(id) {
+    const idx = PM_GALLERY_ITEMS.findIndex(it => it.id === id);
+    if (idx === -1) return;
+    const clicked = PM_GALLERY_ITEMS[idx];
+
+    const hadStagedMain = !!PM_STAGED_MAIN;
+    const currentMainUrl = getValue('pmMainUrl');
+    if (!hadStagedMain && !currentMainUrl) return; /* nothing set as main yet */
+
+    const category = getValue('pmCat') || 'electronics';
+    const wrapEl = clicked.el;
+
+    try {
+      if (category === 'books') {
+        wrapEl?.classList.add('pm-gal-busy');
+
+        const newMainBlob = clicked.type === 'staged'
+          ? clicked.blob
+          : await (await fetch(clicked.el?.querySelector('img')?.src || clicked.url)).blob();
+
+        const oldMainItem = hadStagedMain
+          ? { type: 'staged', blob: PM_STAGED_MAIN.blob }
+          : { type: 'staged', blob: await (await fetch(document.querySelector('#pmMainPrev img')?.src || currentMainUrl)).blob() };
+
+        PM_GALLERY_ITEMS.splice(idx, 1);
+        if (clicked.type === 'staged' && clicked.previewUrl) URL.revokeObjectURL(clicked.previewUrl);
+        wrapEl?.remove();
+
+        const inserted = addGalleryItem(oldMainItem);
+        if (inserted) repositionGalleryItem(inserted.id, idx);
+
+        if (PM_STAGED_MAIN?.previewUrl) URL.revokeObjectURL(PM_STAGED_MAIN.previewUrl);
+        PM_STAGED_MAIN = { blob: newMainBlob, previewUrl: URL.createObjectURL(newMainBlob) };
+        setValue('pmMainUrl', '');
+        showMainPreview(PM_STAGED_MAIN.previewUrl);
+      } else {
+        const oldMainItem = hadStagedMain
+          ? { type: 'staged', blob: PM_STAGED_MAIN.blob }
+          : { type: 'existing', url: currentMainUrl };
+
+        PM_GALLERY_ITEMS.splice(idx, 1);
+        wrapEl?.remove();
+
+        const inserted = addGalleryItem(oldMainItem);
+        if (inserted) repositionGalleryItem(inserted.id, idx);
+
+        if (clicked.type === 'existing') {
+          if (PM_STAGED_MAIN?.previewUrl) URL.revokeObjectURL(PM_STAGED_MAIN.previewUrl);
+          PM_STAGED_MAIN = null;
+          setValue('pmMainUrl', clicked.url);
+          showMainPreview(clicked.url);
+        } else {
+          if (PM_STAGED_MAIN?.previewUrl) URL.revokeObjectURL(PM_STAGED_MAIN.previewUrl);
+          PM_STAGED_MAIN = { blob: clicked.blob, previewUrl: clicked.previewUrl };
+          setValue('pmMainUrl', '');
+          showMainPreview(clicked.previewUrl);
+        }
+      }
+
+      document.getElementById('pmMainBox')?.classList.add('loaded');
+      persistDraftImages();
+    } catch (err) {
+      showToast('❌ فشل تعيين الصورة كصورة رئيسية: ' + err.message, 'error');
+    } finally {
+      wrapEl?.classList.remove('pm-gal-busy');
+    }
   }
 
   /* ── Parses a DB image value back into { category, subcategory, slug,
