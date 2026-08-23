@@ -1071,20 +1071,20 @@
   </url>
   <url>
     <loc>https://derradjshop.com/product/modio-st11-smart-watch/</loc>
-    <lastmod>2026-08-21</lastmod>
+    <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://derradjshop.com/Electronique/smart-watch/modio-st11-smart-watch/main.webp</image:loc>
+      <image:loc>https://derradjshop.com/Electronique/smart-watch/modio-st11-smart-watch/gallery-1.webp</image:loc>
     </image:image>
   </url>
   <url>
     <loc>https://derradjshop.com/product/arduino-r3-830/</loc>
-    <lastmod>2026-08-21</lastmod>
+    <lastmod>2026-08-23</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-      <image:loc>https://derradjshop.com/Electronique/Arduino%20-%20Composants%20%C3%A9lectroniques/arduino-r3-830/1781815095537-3vnhwwj.jpg</image:loc>
+      <image:loc>https://derradjshop.com/Electronique/Arduino%20-%20Composants%20%C3%A9lectroniques/arduino-r3-830/1781815106160-3mx8ozf.jpg</image:loc>
     </image:image>
   </url>
   <url>
@@ -1319,6 +1319,60 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://derradjshop.com/Electronique/smartwatch/modio-sm03-smart-watch-22-sim-bluetooth-53/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/modio-sm06-smart-watch-22-sim-bluetooth-53/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/smartwatch/modio-sm06-smart-watch-22-sim-bluetooth-53/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/nokia-107-dual-sim-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/nokia-107-dual-sim-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/nokia-101-dual-sim-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/nokia-101-dual-sim-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/nokia-1280-classic-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/nokia-1280-classic-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/nokia-1200-classic-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/nokia-1200-classic-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/nokia-1616-classic-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/nokia-1616-classic-feature-phone/main.webp</image:loc>
     </image:image>
   </url>
 </urlset>
