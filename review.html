@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N4NME3KN9N');
+  </script>
+  <meta name="robots" content="noindex, nofollow">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>شاركنا رأيك — Derradj Shop</title>
+  <link rel="icon" type="image/png" href="Logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    /* ── Page wrapper ─────────────────────────────────────────── */
+    .rv-wrap {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 48px 20px 80px;
+    }
+
+    /* ── Form card ────────────────────────────────────────────── */
+    .rv-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .rv-card-top {
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      padding: 28px 36px;
+    }
+    .rv-card-top h2 {
+      font-size: 20px;
+      font-weight: 900;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+    .rv-card-top p {
+      font-size: 13.5px;
+      color: rgba(255,255,255,.78);
+      line-height: 1.5;
+    }
+    .rv-card-body {
+      padding: 32px 36px 36px;
+    }
+
+    /* ── Name row ─────────────────────────────────────────────── */
+    .rv-name-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+
+    /* ── Field label style ────────────────────────────────────── */
+    .rv-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .rv-label .req { color: #ef4444; font-size: 16px; line-height: 1; }
+
+    /* ── Inputs ───────────────────────────────────────────────── */
+    .rv-input {
+      width: 100%;
+      padding: 13px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14.5px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+    .rv-input::placeholder { color: var(--text-muted); font-weight: 400; }
+    .rv-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.11);
+    }
+    .rv-input.is-error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.09);
+    }
+
+    /* ── Field error ──────────────────────────────────────────── */
+    .rv-err {
+      font-size: 12px;
+      font-weight: 700;
+      color: #dc2626;
+      margin-top: 5px;
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+    .rv-err.on { display: flex; }
+
+    /* ── Divider ──────────────────────────────────────────────── */
+    .rv-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 28px 0;
+    }
+
+    /* ── Stars section ────────────────────────────────────────── */
+    .rv-stars-wrap {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 20px 20px;
+      text-align: center;
+      margin-bottom: 8px;
+      transition: border-color .2s;
+    }
+    .rv-stars-wrap.is-error { border-color: #ef4444; }
+
+    .rv-stars-row {
+      display: flex;
+      justify-content: center;
+      gap: 4px;
+      direction: ltr;
+      margin-bottom: 14px;
+    }
+
+    .rv-star {
+      font-size: 50px;
+      line-height: 1;
+      cursor: pointer;
+      color: #d1d5db;
+      background: none;
+      border: none;
+      padding: 2px 4px;
+      transition: color .12s, transform .15s;
+      font-family: inherit;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+    }
+    .rv-star:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+      border-radius: 6px;
+    }
+    .rv-star:hover        { transform: scale(1.18); }
+    .rv-star.hovered      { color: #fbbf24; }
+    .rv-star.selected     { color: #f59e0b; }
+
+    .rv-rating-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--card-bg);
+      border: 1.5px solid var(--border);
+      border-radius: 99px;
+      padding: 6px 18px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text-light);
+      min-width: 160px;
+      justify-content: center;
+      transition: background .2s, color .2s, border-color .2s;
+      min-height: 36px;
+    }
+    .rv-rating-pill.has-value {
+      background: #fffbeb;
+      border-color: #fbbf24;
+      color: #92400e;
+    }
+
+    .rv-star-hint {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 4px;
+      margin-top: 12px;
+    }
+    .rv-star-hint span {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .rv-star-err {
+      font-size: 12px;
+      font-weight: 700;
+      color: #dc2626;
+      margin-top: 8px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+    }
+    .rv-star-err.on { display: flex; }
+
+    /* ── Comment ──────────────────────────────────────────────── */
+    .rv-textarea {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14.5px;
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg);
+      min-height: 130px;
+      resize: vertical;
+      line-height: 1.8;
+      transition: border-color .18s, box-shadow .18s, background .18s;
+    }
+    .rv-textarea::placeholder { color: var(--text-muted); font-weight: 400; }
+    .rv-textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.11);
+    }
+    .rv-textarea.is-error {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 3px rgba(239,68,68,.09);
+    }
+
+    .rv-char-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 5px;
+    }
+    .rv-char {
+      font-size: 11px;
+      color: var(--text-muted);
+      direction: ltr;
+    }
+    .rv-char.warn { color: #ef4444; font-weight: 700; }
+    .rv-char.ok   { color: var(--secondary); font-weight: 700; }
+
+    /* ── Privacy note ─────────────────────────────────────────── */
+    .rv-privacy {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      background: var(--primary-bg);
+      border: 1px solid rgba(37,99,235,.15);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin: 24px 0 20px;
+    }
+    .rv-privacy-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+    .rv-privacy-text {
+      font-size: 12.5px;
+      color: var(--text-light);
+      line-height: 1.6;
+    }
+    .rv-privacy-text strong { color: var(--primary); }
+
+    /* ── Submit button ────────────────────────────────────────── */
+    .rv-submit {
+      width: 100%;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-lg);
+      font-size: 16px;
+      font-weight: 900;
+      font-family: var(--font);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      box-shadow: var(--shadow-blue);
+      transition: opacity .2s, transform .15s, box-shadow .2s;
+    }
+    .rv-submit:hover:not(:disabled) {
+      opacity: .92;
+      transform: translateY(-2px);
+      box-shadow: 0 12px 32px rgba(37,99,235,.38);
+    }
+    .rv-submit:active:not(:disabled) { transform: translateY(0); }
+    .rv-submit:disabled {
+      background: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .rv-spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: rv-spin .65s linear infinite;
+      display: none;
+      flex-shrink: 0;
+    }
+    @keyframes rv-spin { to { transform: rotate(360deg); } }
+
+    /* ── Form-level error message ─────────────────────────────── */
+    .rv-alert {
+      margin-top: 16px;
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 700;
+      display: none;
+      align-items: flex-start;
+      gap: 10px;
+      line-height: 1.6;
+    }
+    .rv-alert.err {
+      background: #fee2e2;
+      color: #dc2626;
+      border: 1px solid #fca5a5;
+      display: flex;
+    }
+    .rv-alert-icon { font-size: 18px; flex-shrink: 0; }
+
+    /* ── Success screen ───────────────────────────────────────── */
+    .rv-success {
+      display: none;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 64px 36px 56px;
+      text-align: center;
+      box-shadow: var(--shadow-md);
+      animation: rv-fadeUp .4s ease;
+    }
+    .rv-success.show { display: block; }
+    @keyframes rv-fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .rv-success-icon {
+      width: 96px; height: 96px;
+      background: #d1fae5;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 28px;
+      font-size: 46px;
+      animation: rv-pop .45s cubic-bezier(.175,.885,.32,1.275) both;
+    }
+    @keyframes rv-pop {
+      0%   { transform: scale(.3); opacity: 0; }
+      70%  { transform: scale(1.12); opacity: 1; }
+      100% { transform: scale(1); }
+    }
+    .rv-success h2 {
+      font-size: clamp(22px, 5vw, 30px);
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .rv-success p {
+      font-size: 15px;
+      color: var(--text-light);
+      line-height: 1.85;
+      max-width: 380px;
+      margin: 0 auto 32px;
+    }
+    .rv-success .rv-home-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 44px;
+      background: linear-gradient(135deg, var(--primary), #2563eb);
+      color: #fff;
+      border-radius: var(--radius-lg);
+      font-size: 15px;
+      font-weight: 800;
+      font-family: var(--font);
+      text-decoration: none;
+      transition: opacity .2s, transform .15s;
+      box-shadow: var(--shadow-blue);
+    }
+    .rv-success .rv-home-btn:hover { opacity: .88; transform: translateY(-2px); }
+
+    /* ── Responsive ───────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .rv-wrap        { padding: 32px 16px 64px; }
+      .rv-card-top    { padding: 22px 24px; }
+      .rv-card-body   { padding: 24px 24px 28px; }
+      .rv-name-row    { grid-template-columns: 1fr; gap: 12px; }
+.rv-star        { font-size: 42px; }
+    }
+    @media (max-width: 420px) {
+      .rv-card-top    { padding: 20px 18px; }
+      .rv-card-body   { padding: 20px 18px 24px; }
+      .rv-star        { font-size: 36px; padding: 1px 2px; }
+      .rv-submit      { font-size: 15px; padding: 14px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════ HEADER ═══════════ -->
+<header class="main-header" id="mainHeader">
+  <div class="header-inner">
+    <a href="/" class="logo">
+      <span>Derradj <span class="logo-accent">Shop</span></span>
+    </a>
+    <nav class="main-nav">
+      <a href="books/"        class="nav-link">📚 الكتب</a>
+      <a href="Electronique/" class="nav-link">💻 إلكترونيات</a>
+      <a href="about"    class="nav-link">من نحن</a>
+      <a href="faq"      class="nav-link">الأسئلة الشائعة</a>
+      <a href="contact"  class="nav-link">تواصل معنا</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <button class="gs-btn" id="gsBtn" aria-label="بحث عن منتج" title="بحث" aria-expanded="false">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <a href="ordre/" class="btn-header-cta">🛒 اطلب الآن</a>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Search Overlay -->
+<div class="gs-overlay" id="gsOverlay" role="search" aria-label="بحث في المنتجات">
+  <div class="gs-inner">
+    <div class="gs-field">
+      <svg class="gs-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="gsInput" class="gs-input"
+             placeholder="ابحث عن كتاب، منتج، حامل حاسوب..."
+             autocomplete="off" autocorrect="off" spellcheck="false" dir="rtl"
+             aria-label="حقل البحث">
+      <button class="gs-x" id="gsX" aria-label="إغلاق البحث">✕</button>
+    </div>
+    <div class="gs-results" id="gsResults" role="listbox" aria-live="polite"></div>
+  </div>
+</div>
+<div class="gs-backdrop" id="gsBackdrop"></div>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="books/">📚 الكتب</a>
+  <a href="Electronique/">💻 إلكترونيات</a>
+  <a href="about">من نحن</a>
+  <a href="faq">الأسئلة الشائعة</a>
+  <a href="contact">تواصل معنا</a>
+  <a href="ordre/" class="mobile-cta-link">🛒 اطلب الآن</a>
+</div>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<div class="rv-wrap">
+
+  <!-- Form card -->
+  <div class="rv-card" id="formCard">
+
+    <!-- Card top banner -->
+    <div class="rv-card-top">
+      <h2>تقييم تجربتك مع Derradj Shop</h2>
+      <p>رأيك يساعدنا على تقديم خدمة أفضل لك وللجزائريين</p>
+    </div>
+
+    <!-- Card body -->
+    <div class="rv-card-body">
+      <form id="reviewForm" novalidate autocomplete="off">
+
+        <!-- Name fields -->
+        <div class="rv-name-row">
+          <div>
+            <label class="rv-label" for="fName">الاسم <span class="req">*</span></label>
+            <input class="rv-input" type="text" id="fName"
+                   placeholder="مثال: أمين"
+                   autocomplete="given-name" maxlength="60">
+            <div class="rv-err" id="e-fName">⚠ الاسم مطلوب</div>
+          </div>
+          <div>
+            <label class="rv-label" for="lName">اللقب <span class="req">*</span></label>
+            <input class="rv-input" type="text" id="lName"
+                   placeholder="مثال: بوقرة"
+                   autocomplete="family-name" maxlength="60">
+            <div class="rv-err" id="e-lName">⚠ اللقب مطلوب</div>
+          </div>
+        </div>
+
+        <div class="rv-divider"></div>
+
+        <!-- Star rating -->
+        <div>
+          <label class="rv-label" style="margin-bottom:12px;">
+            تقييمك بالنجوم <span class="req">*</span>
+          </label>
+
+          <div class="rv-stars-wrap" id="starsWrap">
+            <div class="rv-stars-row" id="starRow"
+                 role="group" aria-label="التقييم من 1 إلى 5 نجوم">
+              <!-- injected by JS -->
+            </div>
+            <div id="ratingPill" class="rv-rating-pill">اختر تقييمك</div>
+            <div class="rv-star-hint">
+              <span>ضعيف</span>
+              <span>ممتاز</span>
+            </div>
+          </div>
+          <div class="rv-star-err" id="e-rating">⚠ يرجى اختيار تقييم من 1 إلى 5 نجوم</div>
+        </div>
+
+        <div class="rv-divider"></div>
+
+        <!-- Comment -->
+        <div>
+          <label class="rv-label" for="comment">
+            تعليقك <span class="req">*</span>
+          </label>
+          <textarea class="rv-textarea" id="comment" rows="5"
+            placeholder="شاركنا رأيك في تجربتك... كيف كانت سرعة التوصيل؟ هل أعجبك المنتج؟ كلماتك تساعد زبائن آخرين 🙏"
+            maxlength="1500"></textarea>
+          <div class="rv-char-row">
+            <div class="rv-err" id="e-comment" style="margin-top:0;">⚠ التعليق مطلوب (3 أحرف على الأقل)</div>
+            <span class="rv-char" id="charCount">0 / 1500</span>
+          </div>
+        </div>
+
+        <!-- Privacy note -->
+        <div class="rv-privacy">
+          <span class="rv-privacy-icon">🔒</span>
+          <span class="rv-privacy-text">
+            <strong>خصوصيتك مهمة:</strong>
+            يظهر اسمك المختصر وتقييمك وتعليقك فقط — رأيك لن يُنشر قبل مراجعته من فريقنا.
+          </span>
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="rv-submit" id="submitBtn">
+          <span class="rv-spinner" id="spin"></span>
+          <span id="submitTxt">إرسال التقييم ✦</span>
+        </button>
+
+        <div class="rv-alert" id="formAlert">
+          <span class="rv-alert-icon">❌</span>
+          <span id="formAlertText"></span>
+        </div>
+
+      </form>
+    </div>
+  </div><!-- /rv-card -->
+
+  <!-- Success screen -->
+  <div class="rv-success" id="successScreen">
+    <div class="rv-success-icon">🎉</div>
+    <h2>شكرًا لك!</h2>
+    <p>
+      تم إرسال رأيك بنجاح.<br>
+      سيظهر على الموقع بعد مراجعته من فريقنا.
+    </p>
+    <a href="/" class="rv-home-btn">← العودة إلى المتجر</a>
+  </div>
+
+</div><!-- /rv-wrap -->
+
+<!-- ═══════════ FOOTER ═══════════ -->
+<footer class="main-footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="/" class="footer-logo">
+        <span>Derradj <span class="logo-accent">Shop</span></span>
+      </a>
+      <p>متجر جزائري أونلاين — منتجات متنوعة مع توصيل سريع إلى جميع ولايات الجزائر.</p>
+    </div>
+    <div class="footer-links-col">
+      <h4>روابط سريعة</h4>
+      <ul>
+        <li><a href="/">الرئيسية</a></li>
+        <li><a href="about">من نحن</a></li>
+        <li><a href="delivery">سياسة التوصيل</a></li>
+        <li><a href="payment">سياسة الدفع</a></li>
+        <li><a href="faq">الأسئلة الشائعة</a></li>
+        <li><a href="return-policy">سياسة الإرجاع</a></li>
+        <li><a href="terms">الشروط والأحكام</a></li>
+      </ul>
+    </div>
+    <div class="footer-links-col">
+      <h4>تواصل</h4>
+      <div class="footer-contact-list">
+        <a href="tel:+213555491316" class="footer-contact-link">
+          <span class="contact-icon">📞</span>
+          <span class="phone-number" dir="ltr">0555 49 13 16</span>
+        </a>
+        <a href="mailto:derradjshop@gmail.com">📧 derradjshop@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-links-col">
+      <h4>الدفع</h4>
+      <div class="footer-pay-badge">💳 CCP / BaridiMob</div>
+      <div class="footer-pay-badge" style="margin-top:6px;">🏠 الدفع عند الاستلام</div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Derradj Shop — جميع الحقوق محفوظة</p>
+  </div>
+</footer>
+
+<!-- ═══════════ SCRIPTS ═══════════ -->
+<script>
+"use strict";
+
+const SB_URL = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
+
+const STAR_LABELS = {
+  1: "ضعيف 😕",
+  2: "متوسط 🙂",
+  3: "جيد 😊",
+  4: "جيد جداً 😃",
+  5: "ممتاز 🤩",
+};
+
+let selectedRating = 0;
+
+/* ── Boot ─────────────────────────────────────────────────── */
+(function boot() {
+  buildStars();
+  bindEvents();
+})();
+
+/* ── Build stars ──────────────────────────────────────────── */
+function buildStars() {
+  const row = document.getElementById("starRow");
+  for (let i = 1; i <= 5; i++) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "rv-star";
+    btn.dataset.v = i;
+    btn.setAttribute("aria-label", i + " نجوم — " + STAR_LABELS[i]);
+    btn.textContent = "★";
+    row.appendChild(btn);
+  }
+}
+
+/* ── Bind events ──────────────────────────────────────────── */
+function bindEvents() {
+  const starRow = document.getElementById("starRow");
+
+  starRow.addEventListener("mouseover", e => {
+    const btn = e.target.closest(".rv-star");
+    if (!btn) return;
+    const v = +btn.dataset.v;
+    starRow.querySelectorAll(".rv-star").forEach((b, i) => {
+      b.classList.toggle("hovered", i < v);
+      b.classList.remove("selected");
+    });
+    setPill(STAR_LABELS[v], true);
+  });
+
+  starRow.addEventListener("mouseleave", () => {
+    starRow.querySelectorAll(".rv-star").forEach(b => b.classList.remove("hovered"));
+    lightStars(selectedRating);
+    setPill(selectedRating ? STAR_LABELS[selectedRating] : null, !!selectedRating);
+  });
+
+  starRow.addEventListener("click", e => {
+    const btn = e.target.closest(".rv-star");
+    if (!btn) return;
+    selectedRating = +btn.dataset.v;
+    lightStars(selectedRating);
+    setPill(STAR_LABELS[selectedRating], true);
+    clearErr("rating");
+  });
+
+  starRow.addEventListener("keydown", e => {
+    const btn = e.target.closest(".rv-star");
+    if (!btn) return;
+    const cur = +btn.dataset.v;
+    if (e.key === "ArrowLeft"  || e.key === "ArrowUp")   { e.preventDefault(); focusStar(Math.min(5, cur + 1)); }
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") { e.preventDefault(); focusStar(Math.max(1, cur - 1)); }
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      selectedRating = cur;
+      lightStars(selectedRating);
+      setPill(STAR_LABELS[selectedRating], true);
+      clearErr("rating");
+    }
+  });
+
+  document.getElementById("comment").addEventListener("input", function () {
+    const len = this.value.trim().length;
+    const el  = document.getElementById("charCount");
+    el.textContent = len + " / 1500";
+    el.className = len === 0 ? "rv-char" : len < 3 ? "rv-char warn" : "rv-char ok";
+    if (len >= 3) clearErr("comment");
+  });
+
+  document.getElementById("fName").addEventListener("input", () => clearErr("fName"));
+  document.getElementById("lName").addEventListener("input", () => clearErr("lName"));
+
+  document.getElementById("reviewForm").addEventListener("submit", onSubmit);
+}
+
+function lightStars(n) {
+  document.querySelectorAll(".rv-star").forEach((btn, i) => {
+    btn.classList.remove("hovered");
+    btn.classList.toggle("selected", i < n);
+  });
+}
+
+function focusStar(n) {
+  document.querySelector(`.rv-star[data-v="${n}"]`)?.focus();
+}
+
+function setPill(text, active) {
+  const pill = document.getElementById("ratingPill");
+  pill.textContent = text || "اختر تقييمك";
+  pill.classList.toggle("has-value", !!active);
+}
+
+/* ── Validate ─────────────────────────────────────────────── */
+function validate() {
+  let ok = true;
+  if (!document.getElementById("fName").value.trim()) { showErr("fName"); ok = false; }
+  if (!document.getElementById("lName").value.trim()) { showErr("lName"); ok = false; }
+  if (!selectedRating)                                 { showErr("rating"); ok = false; }
+  if (document.getElementById("comment").value.trim().length < 3) { showErr("comment"); ok = false; }
+  return ok;
+}
+
+/* ── Submit ───────────────────────────────────────────────── */
+async function onSubmit(e) {
+  e.preventDefault();
+  hideAlert();
+
+  if (!validate()) {
+    const first = document.querySelector(".rv-err.on, .rv-star-err.on");
+    if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+    return;
+  }
+
+  setLoading(true);
+
+  const firstName   = document.getElementById("fName").value.trim().slice(0, 60);
+  const lastName    = document.getElementById("lName").value.trim().slice(0, 60);
+  const comment     = document.getElementById("comment").value.trim().slice(0, 1500);
+  const displayName = firstName + " " + lastName.charAt(0) + ".";
+
+  const payload = {
+    first_name:           firstName,
+    last_name:            lastName,
+    display_name:         displayName,
+    wilaya:               "غير محدد",
+    rating:               selectedRating,
+    comment,
+    purchased_items:      [],
+    package_name:         null,
+    total_price:          null,
+    order_id:             null,
+    is_verified_purchase: false,
+    is_approved:          false,
+    is_featured:          false,
+    source:               "website",
+  };
+
+  try {
+    const res = await fetch(SB_URL + "/rest/v1/customer_reviews", {
+      method: "POST",
+      headers: {
+        "Content-Type":  "application/json",
+        "apikey":        SB_KEY,
+        "Authorization": "Bearer " + SB_KEY,
+        "Prefer":        "return=minimal",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const errBody = await res.text();
+      console.error("[review] Supabase error:", res.status, errBody);
+      throw new Error("HTTP " + res.status);
+    }
+
+    document.getElementById("formCard").style.display = "none";
+    document.getElementById("successScreen").classList.add("show");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+
+  } catch (err) {
+    console.error("[review] submit error:", err);
+    showAlert("حدث خطأ أثناء إرسال رأيك، يرجى المحاولة مرة أخرى.");
+  } finally {
+    setLoading(false);
+  }
+}
+
+/* ── UI helpers ───────────────────────────────────────────── */
+function setLoading(on) {
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = on;
+  document.getElementById("spin").style.display    = on ? "block" : "none";
+  document.getElementById("submitTxt").textContent = on ? "جاري الإرسال..." : "إرسال التقييم ✦";
+}
+
+function showAlert(text) {
+  const el = document.getElementById("formAlert");
+  el.className = "rv-alert err";
+  document.getElementById("formAlertText").textContent = text;
+  el.scrollIntoView({ behavior: "smooth", block: "nearest" });
+}
+
+function hideAlert() {
+  document.getElementById("formAlert").className = "rv-alert";
+}
+
+function showErr(field) {
+  if (field === "rating") {
+    document.getElementById("e-rating").classList.add("on");
+    document.getElementById("starsWrap").classList.add("is-error");
+    return;
+  }
+  if (field === "comment") {
+    document.getElementById("e-comment").classList.add("on");
+    document.getElementById("comment").classList.add("is-error");
+    return;
+  }
+  document.getElementById("e-" + field)?.classList.add("on");
+  document.getElementById(field)?.classList.add("is-error");
+}
+
+function clearErr(field) {
+  if (field === "rating") {
+    document.getElementById("e-rating").classList.remove("on");
+    document.getElementById("starsWrap").classList.remove("is-error");
+    return;
+  }
+  if (field === "comment") {
+    document.getElementById("e-comment").classList.remove("on");
+    document.getElementById("comment").classList.remove("is-error");
+    return;
+  }
+  document.getElementById("e-" + field)?.classList.remove("on");
+  document.getElementById(field)?.classList.remove("is-error");
+}
+</script>
+
+<!-- Mobile menu & scroll -->
+<script>
+  const menuBtn    = document.getElementById('mobileMenuBtn');
+  const mobileMenu = document.getElementById('mobileMenu');
+  const header     = document.getElementById('mainHeader');
+  menuBtn?.addEventListener('click', () => {
+    mobileMenu.classList.toggle('open');
+    menuBtn.classList.toggle('open');
+  });
+  document.querySelectorAll('.mobile-menu a').forEach(link => {
+    link.addEventListener('click', () => {
+      mobileMenu.classList.remove('open');
+      menuBtn.classList.remove('open');
+    });
+  });
+  window.addEventListener('scroll', () => {
+    header.classList.toggle('scrolled', window.scrollY > 50);
+  }, { passive: true });
+</script>
+
+<script src="whatsapp-float.js" defer></script>
+<script src="js/search-products.js"></script>
+<script src="js/search.js" defer></script>
+
+</body>
+</html>

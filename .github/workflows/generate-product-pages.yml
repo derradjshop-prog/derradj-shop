@@ -1,0 +1,73 @@
+name: Generate product pages
+
+# Regenerates static /product/{slug}/ and /books/{slug}/ pages (with real
+# OG/Twitter/JSON-LD meta tags baked in from Supabase) plus sitemap.xml,
+# then commits the result back to main so GitHub Pages republishes it.
+#
+# This exists because WhatsApp/Facebook/Telegram/X/Discord crawlers
+# don't execute JavaScript — the product meta tags must already be in
+# the raw HTML for link previews and Google rich results to work.
+#
+# Fires on demand, immediately after a successful write to
+# admin_products_catalog, via the Supabase Edge Function in
+# supabase/functions/trigger-page-rebuild/ (called from
+# admin/products-manager.js right after insert/update/delete).
+# The cron schedule below is a safety net: that Edge Function call is
+# best-effort and non-fatal (it must never block the admin's save), so
+# this still runs every 2h to catch any product the on-demand trigger
+# silently missed. `workflow_dispatch` is also available for a manual
+# "Run workflow" click in the Actions tab.
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'What triggered this run (e.g. "add product: <name>")'
+        required: false
+        default: 'manual'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-product-pages
+  cancel-in-progress: true
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Log trigger reason
+        run: 'echo "Triggered by: ${{ github.event.inputs.reason }}"'
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate product pages + sitemap
+        run: node scripts/generate-product-pages.js
+
+      - name: Commit and push if changed
+        # Runs even if the generate step above exited non-zero — that now only
+        # happens when one product/book failed to render (see
+        # scripts/generate-product-pages.js), and every OTHER page it wrote
+        # this run should still ship instead of being dropped along with it.
+        # A genuinely fatal error (e.g. Supabase fetch itself failing) writes
+        # nothing at all, so this stays a safe no-op ("No changes") in that case.
+        if: success() || failure()
+        run: |
+          git config user.name "derradj-shop-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add product/ books/ Electronique/ index.html books-data.js sitemap.xml scripts/.image-dims-cache.json
+          if git diff --cached --quiet; then
+            echo "No changes — products are already up to date."
+          else
+            git commit -m "chore: regenerate product pages + sitemap from Supabase"
+            git push
+          fi

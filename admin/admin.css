@@ -1,0 +1,358 @@
+:root{
+  --bg:#f6f7fb;
+  --card:#ffffff;
+  --text:#111827;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+  --btn:#111827;
+  --btnText:#ffffff;
+  --danger:#b91c1c;
+  --shadow: 0 10px 25px rgba(0,0,0,.06);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, "Segoe UI", Tahoma, Arial;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  padding:18px 16px;
+  background:var(--card);
+  border-bottom:1px solid var(--border);
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.brand h1{margin:0;font-size:20px}
+.brand p{margin:4px 0 0 0}
+
+.container{
+  max-width:1200px;
+  margin:18px auto;
+  padding:0 16px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:14px;
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+
+.card-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+  padding:14px 14px 10px;
+  border-bottom:1px solid var(--border);
+}
+
+.card-head h2{margin:0;font-size:18px}
+
+.filters{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+}
+
+.input{
+  padding:10px 12px;
+  border:1px solid var(--border);
+  border-radius:10px;
+  min-width:220px;
+  outline:none;
+  background:#fff;
+}
+
+.btn{
+  padding:10px 12px;
+  border:none;
+  border-radius:10px;
+  background:var(--btn);
+  color:var(--btnText);
+  cursor:pointer;
+  font-weight:600;
+}
+.btn:hover{opacity:.92}
+.btn.danger{background:var(--danger)}
+
+.table-wrap{overflow:auto}
+.table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1000px;
+}
+
+.table th, .table td{
+  border-bottom:1px solid var(--border);
+  padding:10px;
+  text-align:center;
+  vertical-align:middle;
+  white-space:nowrap;
+}
+
+.table th{
+  background:#0f172a;
+  color:#fff;
+  position:sticky;
+  top:0;
+  z-index:1;
+}
+
+.muted{color:var(--muted)}
+.center{text-align:center}
+
+.badge{
+  padding:6px 10px;
+  border-radius:999px;
+  font-weight:700;
+  display:inline-block;
+  font-size:12px;
+}
+
+.badge.new{background:#e0f2fe;color:#075985}
+.badge.confirmed{background:#dcfce7;color:#166534}
+.badge.shipped{background:#fef9c3;color:#854d0e}
+.badge.delivered{background:#ede9fe;color:#5b21b6}
+.badge.cancelled{background:#fee2e2;color:#991b1b}
+
+.row-actions{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+.icon-btn{
+  padding:8px 10px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  background:#fff;
+  cursor:pointer;
+  font-weight:700;
+}
+.icon-btn:hover{background:#f9fafb}
+
+.foot-note{
+  padding:12px 14px;
+  border-top:1px solid var(--border);
+  background:#fafafa;
+}
+
+/* Modal */
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.35);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  z-index:50;
+}
+.hidden{display:none}
+.modal-content{
+  width:min(720px, 100%);
+  background:#fff;
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:var(--shadow);
+}
+.modal-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 14px;
+  border-bottom:1px solid var(--border);
+}
+.modal-head h3{margin:0}
+.modal-body{
+  padding:14px;
+  max-height:70vh;
+  overflow:auto;
+  line-height:1.7;
+}
+.modal-body .box{
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+  background:#fafafa;
+}
+
+/* Mobile */
+@media (max-width:640px){
+  .input{min-width:160px}
+  .topbar{flex-direction:column; align-items:stretch}
+  .actions{display:flex; gap:10px; flex-wrap:wrap}
+}
+@media (max-width: 768px){
+
+  /* hide table header */
+  #ordersTable thead{ display:none; }
+
+  #ordersTable,
+  #ordersTable tbody,
+  #ordersTable tr,
+  #ordersTable td{
+    display:block;
+    width:100%;
+  }
+
+  #ordersTable tr{
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:12px;
+    margin-bottom:14px;
+    box-shadow:var(--shadow);
+  }
+
+  /* ✅ FIX: grid layout (no big empty space) */
+  #ordersTable td{
+    display:grid;
+    grid-template-columns: 120px 1fr; /* عرض التسمية + باقي المساحة للقيمة */
+    gap:10px;
+    padding:8px 0;
+    border:none;
+    white-space:normal;
+    text-align:right;
+    align-items:start;
+  }
+
+  #ordersTable td::before{
+    content: attr(data-label);
+    font-weight:700;
+    color:var(--muted);
+    min-width:0;       /* ✅ مهم */
+  }
+
+  /* ✅ value stays close and wraps nicely */
+  #ordersTable td{
+    overflow-wrap:anywhere;
+    word-break:break-word;
+  }
+
+  /* Actions row */
+  #ordersTable td:last-child{
+    grid-template-columns: 1fr; /* زرّ الإجراءات يكون سطر لوحده */
+  }
+}
+@media (max-width: 768px){
+
+  /* ✅ الحالة: اجعل المحتوى عمودي ومنظّم */
+  #ordersTable td[data-label="الحالة"]{
+    grid-template-columns: 120px 1fr;
+    align-items:center;
+  }
+
+  /* الحقل الثاني (القيمة) داخل الحالة: خليها Column */
+  #ordersTable td[data-label="الحالة"] > *{
+    justify-self:start;
+  }
+
+  #ordersTable td[data-label="الحالة"] .badge{
+    margin-bottom:8px;
+    display:inline-block;
+  }
+
+  #ordersTable td[data-label="الحالة"] .statusSelect{
+    width:100%;
+    min-width:0;
+  }
+
+  /* ✅ الإجراءات: خلّي "إجراءات" + الأزرار في سطر مرتب */
+  #ordersTable td[data-label="إجراءات"]{
+    grid-template-columns: 120px 1fr;
+    align-items:center;
+  }
+
+  #ordersTable td[data-label="إجراءات"] .row-actions{
+    justify-content:flex-start;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+}
+html, body{
+  max-width:100%;
+  overflow-x:hidden;
+}
+@media (max-width: 768px){
+
+  /* ❌ لا نحتاج scroll أفقي في وضع البطاقات */
+  .table-wrap{
+    overflow-x:hidden;
+  }
+
+  /* ❌ ألغِ min-width نهائيًا */
+  #ordersTable{
+    min-width:0 !important;
+    width:100%;
+  }
+}
+/* ===== Mobile: show tables as vertical cards ===== */
+@media (max-width: 640px) {
+
+  /* امنع التحريك لليسار/اليمين */
+  html, body { overflow-x: hidden; }
+
+  /* الغي العرض الكبير الذي يسبب سكرول أفقي */
+  .table-wrap { overflow: visible; }
+  .table { min-width: 0 !important; width: 100%; }
+
+  /* اخفاء العناوين */
+  .table thead { display: none; }
+
+  /* كل صف = بطاقة */
+  .table tr {
+    display: block;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    margin: 10px 10px;
+    overflow: hidden;
+    background: #fff;
+  }
+
+  /* كل خلية = سطر (label + value) */
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 12px;
+    text-align: right;
+    white-space: normal;     /* يسمح بالنزول سطر */
+    border-bottom: 1px solid var(--border);
+  }
+
+  .table td:last-child { border-bottom: none; }
+
+  /* label يجي من data-label */
+  .table td::before {
+    content: attr(data-label);
+    font-weight: 800;
+    color: var(--muted);
+    flex: 0 0 40%;
+    text-align: right;
+  }
+
+  /* القيمة */
+  .table td > * {
+    flex: 1;
+  }
+
+  /* إجراءات: خليه منظم */
+  .row-actions { justify-content: flex-start; }
+}

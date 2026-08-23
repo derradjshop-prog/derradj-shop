@@ -1,0 +1,564 @@
+-- ============================================================
+-- derradj_shop_books_content_backfill.sql
+-- Backfills full_description / seo_description / keywords into
+-- public.books, scraped verbatim from the existing static
+-- books/{slug}/index.html pages so no SEO content is lost when
+-- those pages get regenerated from Supabase.
+-- Generated: 2026-06-24
+-- Rows: 77
+-- NOTE: columns must already exist (see derradj_shop_books_add_columns.sql) —
+-- no BEGIN/COMMIT here, run statement-by-statement in the SQL Editor.
+-- ============================================================
+
+UPDATE public.books SET
+  full_description = 'يُعدّ هذا الكتاب من أكثر كتب تطوير الذات مبيعاً في العالم على الإطلاق، وقد غيّر حياة ملايين الأشخاص. يأخذك كوفي في رحلة عميقة نحو بناء شخصية متكاملة من خلال سبع عادات أساسية: كن استباقياً، ابدأ بالنهاية في ذهنك، ضع الأهم أولاً، فكر بعقلية الربح للجميع، ابدأ بالفهم قبل أن تُفهَم، تآزر، وجدّد نفسك.',
+  seo_description = 'اطلب كتاب العادات السبع للناس الأكثر فعالية لـستيفن آر. كوفي بسعر 1 400 دج. سبعة مبادئ لبناء الشخصية الفعّالة والنجاح في الحياة الشخصية والمهنية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'العادات السبع للناس الأكثر فعالية, The 7 Habits of Highly Effective People, ستيفن آر. كوفي, The 7 Habits of Highly Effective People, شراء العادات السبع للناس الأكثر فعالية الجزائر, سعر العادات السبع للناس الأكثر فعالية الجزائر, العادات السبع للناس الأكثر فعالية دزاير, acheter The 7 Habits of Highly Effective People Algérie, prix The 7 Habits of Highly Effective People Algérie, The 7 Habits of Highly Effective People livraison Algérie, buy The 7 Habits of Highly Effective People Algeria, The 7 Habits of Highly Effective People price Algeria, The 7 Habits of Highly Effective People DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 2; -- 7-habits
+
+UPDATE public.books SET
+  full_description = 'يُثبت جيمس كلير أن تحسين نسبة 1% يومياً يجعلك أفضل بـ 37 مرة في نهاية العام. يشرح الكتاب قوانين السلوك البشري ويُعلّمك كيف تُصمّم بيئتك لجعل العادات الجيدة سهلة والسيئة صعبة. إنه الدليل العلمي الأكثر شمولاً وعملية لفهم كيف تتشكّل العادات وكيف نُغيّرها.',
+  seo_description = 'اطلب كتاب العادات الذرية لـجيمس كلير بسعر 950 دج. استراتيجيات علمية وعملية لبناء عادات إيجابية عبر تغييرات صغيرة تحقق نتائج استثنائية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'العادات الذرية, Atomic Habits, جيمس كلير, Atomic Habits, شراء العادات الذرية الجزائر, سعر العادات الذرية الجزائر, العادات الذرية دزاير, acheter Atomic Habits Algérie, prix Atomic Habits Algérie, Atomic Habits livraison Algérie, buy Atomic Habits Algeria, Atomic Habits price Algeria, Atomic Habits DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 3; -- atomic-habits
+
+UPDATE public.books SET
+  full_description = 'يُقدّم شهاب الهاشمي منهجية عملية وسهلة التطبيق تساعدك على بناء مكانتك الرقمية وتطوير علاقاتك المهنية والشخصية. القاعدة تُقسّم المسار إلى ثلاث مراحل مترابطة تُبنى عليها استراتيجية متكاملة لتحقيق التميز في عالم الإعلام والتواصل الرقمي.',
+  seo_description = 'اطلب كتاب قاعدة الـ 333 لـشهاب الهاشمي بسعر 1 350 دج. أفكار قيّمة في العلاقات وصناعة المحتوى الرقمي وبناء الحضور الشخصي عبر قاعدة مبسّطة وفعّالة… توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'قاعدة الـ 333, Rule 3-3-3, شهاب الهاشمي, Rule 3-3-3, شراء قاعدة الـ 333 الجزائر, سعر قاعدة الـ 333 الجزائر, قاعدة الـ 333 دزاير, acheter Rule 3-3-3 Algérie, prix Rule 3-3-3 Algérie, Rule 3-3-3 livraison Algérie, buy Rule 3-3-3 Algeria, Rule 3-3-3 price Algeria, Rule 3-3-3 DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 4; -- rule-333
+
+UPDATE public.books SET
+  full_description = 'يساعدك هذا الكتاب على التخلص من ضغط التوقعات المثالية وتقبّل ذاتك كما أنت، والانطلاق نحو أهدافك دون انتظار الظروف المثالية التي لن تأتي. الكمالية مرض يُقيّدك عن الفعل — والكتاب يُعطيك المفتاح لتتحرر منه وتبدأ في العيش والإنجاز الحقيقي.',
+  seo_description = 'اطلب كتاب متعة عدم الكمال لـديمون زهاريادس بسعر 1 800 دج. دليل شامل للتغلب على وسواس الكمالية واكتشاف أن النقص الإنساني هو أصل الجمال والتطور. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'متعة عدم الكمال, The Joy of Imperfection, ديمون زهاريادس, The Joy of Imperfection, شراء متعة عدم الكمال الجزائر, سعر متعة عدم الكمال الجزائر, متعة عدم الكمال دزاير, acheter The Joy of Imperfection Algérie, prix The Joy of Imperfection Algérie, The Joy of Imperfection livraison Algérie, buy The Joy of Imperfection Algeria, The Joy of Imperfection price Algeria, The Joy of Imperfection DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 6; -- joy-of-imperfection
+
+UPDATE public.books SET
+  full_description = 'يأخذك ريان هوليداي في رحلة مع أعظم الشجعان في التاريخ ليُثبت أن الشجاعة ليست غياب الخوف بل القدرة على التصرف رغمه. يستند إلى الفلسفة الرواقية ومواقف تاريخية حقيقية لتحديد كيف يمكن لكل إنسان أن يُجيب نداء الشجاعة في حياته اليومية.',
+  seo_description = 'اطلب كتاب الشجاعة تنادي لـريان هوليداي بسعر 1 300 دج. عبر قصص تاريخية ملهمة يستكشف الكاتب معنى الشجاعة الحقيقية وكيف نتغلب على الخوف. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الشجاعة تنادي, Courage Is Calling, ريان هوليداي, Courage Is Calling, شراء الشجاعة تنادي الجزائر, سعر الشجاعة تنادي الجزائر, الشجاعة تنادي دزاير, acheter Courage Is Calling Algérie, prix Courage Is Calling Algérie, Courage Is Calling livraison Algérie, buy Courage Is Calling Algeria, Courage Is Calling price Algeria, Courage Is Calling DZ, كتب فلسفة الجزائر, فكر وفلسفة, كتب فكرية, livre philosophie Algérie, philosophie livraison Algérie, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 7; -- courage-is-calling
+
+UPDATE public.books SET
+  full_description = 'يرى تول أن معظم المعاناة الإنسانية تنبع من الاستغراق في أفكار الماضي والمستقبل، وأن الحاضر هو المكان الوحيد الذي يمكن فيه تحقيق السلام الحقيقي. هذا الكتاب أحدث ثورة في الوعي الروحي لملايين القراء منذ صدوره ولا يزال من أكثر الكتب تأثيراً في القرن الحادي والعشرين.',
+  seo_description = 'اطلب كتاب قوة الآن لـإيكهارت تول بسعر 1 100 دج. دليل روحي للعيش في اللحظة الراهنة والتحرر من قيود الماضي وقلق المستقبل. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'قوة الآن, The Power of Now, إيكهارت تول, The Power of Now, شراء قوة الآن الجزائر, سعر قوة الآن الجزائر, قوة الآن دزاير, acheter The Power of Now Algérie, prix The Power of Now Algérie, The Power of Now livraison Algérie, buy The Power of Now Algeria, The Power of Now price Algeria, The Power of Now DZ, كتب فلسفة الجزائر, فكر وفلسفة, كتب فكرية, livre philosophie Algérie, philosophie livraison Algérie, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 8; -- power-of-now
+
+UPDATE public.books SET
+  full_description = 'بيرنايز، ابن شقيق فرويد، يفضح الآليات الخفية للدعاية والإعلام ويشرح كيف تشكّلت الديمقراطيات الحديثة عبر التلاعب بالوعي الجمعي. كتاب لا يجب أن يقرأه أحد دون أن يفهم نفسه أولاً — إنه مرآة صادقة للمجتمعات الحديثة وأدواتها الخفية.',
+  seo_description = 'اطلب كتاب بروباغندا لـإدوارد بيرنايز بسعر 1 100 دج. الكتاب الأصل في علم العلاقات العامة يكشف آليات التأثير في الجماهير والرأي العام. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'بروباغندا, Propaganda, إدوارد بيرنايز, Propaganda, شراء بروباغندا الجزائر, سعر بروباغندا الجزائر, بروباغندا دزاير, acheter Propaganda Algérie, prix Propaganda Algérie, Propaganda livraison Algérie, buy Propaganda Algeria, Propaganda price Algeria, Propaganda DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 9; -- propaganda
+
+UPDATE public.books SET
+  full_description = 'يكشف ميلر عن أخطائه الشخصية كمدير وكيف تحوّل من إدارة فوضوية إلى قيادة ناجحة ومؤثرة. مرجع صادق وعملي لكل من يتولى منصباً قيادياً — لأن المشكلة الكبرى في الإدارة ليست غياب المعرفة بل غياب الوعي الذاتي بنقاط ضعفك.',
+  seo_description = 'اطلب كتاب فوضى الإدارة لـسكوت جيفري ميلر بسعر 1 600 دج. ثلاثون تحدياً حقيقياً يواجهها القادة مع حلول عملية للتغلب عليها. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'فوضى الإدارة, Management Mess to Leadership Success, سكوت جيفري ميلر, Management Mess to Leadership Success, شراء فوضى الإدارة الجزائر, سعر فوضى الإدارة الجزائر, فوضى الإدارة دزاير, acheter Management Mess to Leadership Success Algérie, prix Management Mess to Leadership Success Algérie, Management Mess to Leadership Success livraison Algérie, buy Management Mess to Leadership Success Algeria, Management Mess to Leadership Success price Algeria, Management Mess to Leadership Success DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 10; -- management-mess
+
+UPDATE public.books SET
+  full_description = 'هل الزواج يجلب السعادة الدائمة؟ هل الثروة تضمنها؟ هل النجاح المهني يكفي؟ تجيب المؤلفة على هذه الأسئلة بأدلة علمية صارمة تكسر التوقعات الاجتماعية السائدة، وتُقدّم خريطة طريق نحو سعادة حقيقية ومستدامة بعيدة عن الأوهام الشائعة.',
+  seo_description = 'اطلب كتاب السعادة الحقيقية والسعادة الزائفة لـسونيا ليوبوميرسكي بسعر 1 600 دج. تدحض الباحثة النفسية الأساطير الشائعة حول السعادة وتقدم بدائل علمية لبناء سعادة حقيقية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'السعادة الحقيقية والسعادة الزائفة, The Myths of Happiness, سونيا ليوبوميرسكي, The Myths of Happiness, شراء السعادة الحقيقية والسعادة الزائفة الجزائر, سعر السعادة الحقيقية والسعادة الزائفة الجزائر, السعادة الحقيقية والسعادة الزائفة دزاير, acheter The Myths of Happiness Algérie, prix The Myths of Happiness Algérie, The Myths of Happiness livraison Algérie, buy The Myths of Happiness Algeria, The Myths of Happiness price Algeria, The Myths of Happiness DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 11; -- myths-of-happiness
+
+UPDATE public.books SET
+  full_description = 'يتحدى دولان القصص الاجتماعية التي تُخبرنا بأننا يجب أن نكون متزوجين وأثرياء وناجحين لنكون سعداء. يُقدّم دليلاً علمياً على أن السعادة الحقيقية تسلك مسارات مختلفة تماماً عما تعلّمناه منذ الطفولة — مسارات يختارها كل شخص بنفسه.',
+  seo_description = 'اطلب كتاب مسارات السعادة لـبول دولان بسعر 1 300 دج. اكتشاف معنى السعادة الحقيقية بتجاوز القوالب الاجتماعية والتوقعات النمطية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'مسارات السعادة, Happy Ever After, بول دولان, Happy Ever After, شراء مسارات السعادة الجزائر, سعر مسارات السعادة الجزائر, مسارات السعادة دزاير, acheter Happy Ever After Algérie, prix Happy Ever After Algérie, Happy Ever After livraison Algérie, buy Happy Ever After Algeria, Happy Ever After price Algeria, Happy Ever After DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 12; -- happy-ever-after
+
+UPDATE public.books SET
+  full_description = 'يرى ماتيه أن الإدمان ليس خياراً أخلاقياً بل استجابة طبيعية لألم عاطفي عميق يعود غالباً إلى الطفولة المبكرة. يدعو إلى نهج تعاطفي في التعامل مع المدمنين بدلاً من إصدار الأحكام — ويُثبت أن التعافي ممكن حين يتم التعامل مع الجذر الحقيقي للألم.',
+  seo_description = 'اطلب كتاب في عالم الأشباح الجائعة لـغابور ماتيه بسعر 1 800 دج. استكشاف الجذور النفسية للإدمان والصدمات وكيفية التعافي بأسلوب إنساني وعلمي. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'في عالم الأشباح الجائعة, In the Realm of Hungry Ghosts, غابور ماتيه, In the Realm of Hungry Ghosts, شراء في عالم الأشباح الجائعة الجزائر, سعر في عالم الأشباح الجائعة الجزائر, في عالم الأشباح الجائعة دزاير, acheter In the Realm of Hungry Ghosts Algérie, prix In the Realm of Hungry Ghosts Algérie, In the Realm of Hungry Ghosts livraison Algérie, buy In the Realm of Hungry Ghosts Algeria, In the Realm of Hungry Ghosts price Algeria, In the Realm of Hungry Ghosts DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 13; -- hungry-ghosts
+
+UPDATE public.books SET
+  full_description = 'ستيفن هوكينج يُقدّم أعمق الأسئلة العلمية في الكون بأسلوب سلس وممتع لا يتطلب خلفية علمية متخصصة. من أكثر الكتب العلمية الشعبية مبيعاً في التاريخ — رحلة لا تُنسى في الزمان والمكان والنسبية وميكانيكا الكم والثقوب السوداء.',
+  seo_description = 'اطلب كتاب تاريخ موجز للزمان لـستيفن هوكينج بسعر 1 200 دج. رحلة علمية مبسّطة في أعماق الكون من أصغر الجسيمات إلى أسرار الزمان والمكان. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'تاريخ موجز للزمان, A Brief History of Time, ستيفن هوكينج, A Brief History of Time, شراء تاريخ موجز للزمان الجزائر, سعر تاريخ موجز للزمان الجزائر, تاريخ موجز للزمان دزاير, acheter A Brief History of Time Algérie, prix A Brief History of Time Algérie, A Brief History of Time livraison Algérie, buy A Brief History of Time Algeria, A Brief History of Time price Algeria, A Brief History of Time DZ, كتب علمية الجزائر, علوم ومعرفة, كتب معرفة, livre science Algérie, sciences livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 14; -- brief-history-of-time
+
+UPDATE public.books SET
+  full_description = 'يُقدّم الكتاب نظرة إيجابية ومشرقة لمرحلة كثيراً ما يخشاها الناس، مُبيِّناً أن الثلاثينيات ليست نهاية الشباب بل بداية أعمق مراحل الحياة قيمةً وإنجازاً. كل مقالة تحمل تجربة إنسانية حقيقية تُلامس الوجدان وتُعيد تشكيل المفاهيم.',
+  seo_description = 'اطلب كتاب متعة أن تكون في الثلاثين لـعلا ديوب بسعر 950 دج. مقالات ملهمة حول مرحلة الثلاثينيات وما تحمله من نضج وتحولات عميقة في الرؤية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'متعة أن تكون في الثلاثين, The Joy of Being Thirty, علا ديوب, The Joy of Being Thirty, شراء متعة أن تكون في الثلاثين الجزائر, سعر متعة أن تكون في الثلاثين الجزائر, متعة أن تكون في الثلاثين دزاير, acheter The Joy of Being Thirty Algérie, prix The Joy of Being Thirty Algérie, The Joy of Being Thirty livraison Algérie, buy The Joy of Being Thirty Algeria, The Joy of Being Thirty price Algeria, The Joy of Being Thirty DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 16; -- joy-of-thirties
+
+UPDATE public.books SET
+  full_description = 'يستعرض الكتاب كيف أن الأشخاص المحيطين بنا يُشكّلون نسبة كبيرة من سعادتنا أو تعاستنا. اختيار الشريك والبيئة الصحيحين هو من أهم القرارات في الحياة — يُعلّمك كيف تُميّز العلاقات المغذية من المستنزفة وكيف تصنع بيئة داعمة لنموك.',
+  seo_description = 'اطلب كتاب كن مع الشخص الذي يجعلك سعيداً بسعر 1 200 دج. أهمية البيئة الداعمة واختيار الشريك المناسب لبناء حياة مليئة بالسعادة والانسجام. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كن مع الشخص الذي يجعلك سعيداً, Be with the One Who Makes You Happy, شراء كن مع الشخص الذي يجعلك سعيداً الجزائر, سعر كن مع الشخص الذي يجعلك سعيداً الجزائر, كن مع الشخص الذي يجعلك سعيداً دزاير, acheter Be with the One Who Makes You Happy Algérie, prix Be with the One Who Makes You Happy Algérie, Be with the One Who Makes You Happy livraison Algérie, buy Be with the One Who Makes You Happy Algeria, Be with the One Who Makes You Happy price Algeria, Be with the One Who Makes You Happy DZ, كتب علاقات الجزائر, علاقات عاطفية, كتب الحياة والحب, livre relations Algérie, livre amour livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 17; -- be-happy-with-someone
+
+UPDATE public.books SET
+  full_description = 'أثبت جولمان بالأدلة العلمية أن IQ وحده لا يكفي للنجاح في الحياة، وأن القدرة على فهم وإدارة المشاعر — مشاعرنا ومشاعر الآخرين — هي المحدد الحقيقي للنجاح والسعادة. أحدث هذا الكتاب ثورة في فهمنا للذكاء الإنساني عند صدوره ولا يزال مرجعاً أساسياً حتى اليوم.',
+  seo_description = 'اطلب كتاب الذكاء العاطفي لـدانيال جولمان بسعر 1 600 دج. كيف يتفوق الذكاء العاطفي على معدل الذكاء التقليدي في تحقيق النجاح وبناء العلاقات. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الذكاء العاطفي, Emotional Intelligence, دانيال جولمان, Emotional Intelligence, شراء الذكاء العاطفي الجزائر, سعر الذكاء العاطفي الجزائر, الذكاء العاطفي دزاير, acheter Emotional Intelligence Algérie, prix Emotional Intelligence Algérie, Emotional Intelligence livraison Algérie, buy Emotional Intelligence Algeria, Emotional Intelligence price Algeria, Emotional Intelligence DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 20; -- emotional-intelligence
+
+UPDATE public.books SET
+  full_description = 'جو جيرارد لم يبيع أفكاراً مجردة بل باع 13000 سيارة في 15 عاماً — كل صفحة في هذا الكتاب مستخلصة من تجربة ميدانية حقيقية. يُثبت أن البيع فن قابل للتعلم لمن يمتلك الإرادة والمنهجية الصحيحة، وأن العلاقة مع العميل هي أغلى ما يملكه البائع.',
+  seo_description = 'اطلب كتاب كيف تبيع أي شيء لأي إنسان لـجو جيرارد بسعر 1 100 دج. أسرار المبيعات من أفضل بائع في العالم مع أساليب عملية تُغير طريقة التفكير في البيع. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كيف تبيع أي شيء لأي إنسان, How to Sell Anything to Anybody, جو جيرارد, How to Sell Anything to Anybody, شراء كيف تبيع أي شيء لأي إنسان الجزائر, سعر كيف تبيع أي شيء لأي إنسان الجزائر, كيف تبيع أي شيء لأي إنسان دزاير, acheter How to Sell Anything to Anybody Algérie, prix How to Sell Anything to Anybody Algérie, How to Sell Anything to Anybody livraison Algérie, buy How to Sell Anything to Anybody Algeria, How to Sell Anything to Anybody price Algeria, How to Sell Anything to Anybody DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 21; -- sell-anything
+
+UPDATE public.books SET
+  full_description = 'جو جيرارد يعلّمك أن أهم صفقة في حياتك ليست بيع منتج أو خدمة — بل بيع نفسك. سواء في مقابلة العمل، في علاقاتك الشخصية، أو في مفاوضاتك اليومية، فإن القدرة على تقديم نفسك بثقة واحترافية هي المفتاح الحقيقي للنجاح.',
+  seo_description = 'اطلب كتاب كيف تسوق نفسك لـجو جيرارد بسعر 1 700 دج. دليل عملي لتسويق شخصيتك في الحياة والعمل — البيع الأول دائماً هو بيع نفسك. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كيف تسوق نفسك, How to Sell Yourself, جو جيرارد, How to Sell Yourself, شراء كيف تسوق نفسك الجزائر, سعر كيف تسوق نفسك الجزائر, كيف تسوق نفسك دزاير, acheter How to Sell Yourself Algérie, prix How to Sell Yourself Algérie, How to Sell Yourself livraison Algérie, buy How to Sell Yourself Algeria, How to Sell Yourself price Algeria, How to Sell Yourself DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 22; -- sell-yourself
+
+UPDATE public.books SET
+  full_description = 'يُعلّمك جو جيرارد — صاحب رقم غينيس في المبيعات — فن إغلاق الصفقات بثقة واحترافية. هذا الكتاب مليء بالتقنيات العملية والأمثلة الواقعية التي تحوّل كل اجتماع مع عميل إلى فرصة ناجحة للإقناع والإغلاق.',
+  seo_description = 'اطلب كتاب كيف تتقن إتمام الصفقات لـجو جيرارد بسعر 1 500 دج. تقنيات احترافية لإغلاق الصفقات وتحويل كل فرصة إلى نتيجة ناجحة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كيف تتقن إتمام الصفقات, How to Close Every Sale, جو جيرارد, How to Close Every Sale, شراء كيف تتقن إتمام الصفقات الجزائر, سعر كيف تتقن إتمام الصفقات الجزائر, كيف تتقن إتمام الصفقات دزاير, acheter How to Close Every Sale Algérie, prix How to Close Every Sale Algérie, How to Close Every Sale livraison Algérie, buy How to Close Every Sale Algeria, How to Close Every Sale price Algeria, How to Close Every Sale DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 23; -- mastering-deals
+
+UPDATE public.books SET
+  full_description = 'مورجان هاوسل يُثبت أن النجاح المالي لا يعتمد على معادلات الاقتصاد بل على السلوك البشري. من خلال 19 قصة قصيرة، يُشرح كيف يفكر أكثر الناس ذكاءً في المال — وكيف يفشل حتى العباقرة بسبب مشاعرهم وتحيزاتهم غير الواعية.',
+  seo_description = 'اطلب كتاب سيكولوجية المال لـمورجان هاوسل بسعر 1 600 دج. كيف تؤثر مشاعرنا وسلوكياتنا على قراراتنا المالية أكثر من المعرفة التقنية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'سيكولوجية المال, The Psychology of Money, مورجان هاوسل, The Psychology of Money, شراء سيكولوجية المال الجزائر, سعر سيكولوجية المال الجزائر, سيكولوجية المال دزاير, acheter The Psychology of Money Algérie, prix The Psychology of Money Algérie, The Psychology of Money livraison Algérie, buy The Psychology of Money Algeria, The Psychology of Money price Algeria, The Psychology of Money DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 24; -- psychology-of-money
+
+UPDATE public.books SET
+  full_description = 'يكشف هذا الكتاب عن الطبقة الخفية من عقولنا التي تُدير معظم قراراتنا وسلوكياتنا — العقل الباطن الذي يعمل في صمت لكنه يُشكّل حياتنا كلها. دليل مُعمَّق لفهم هذا الجزء الأقوى من النفس البشرية والتعامل معه بوعي وإيجابية.',
+  seo_description = 'اطلب كتاب العقل الباطن لـفيكتور بوشيه بسعر 950 دج. رحلة في أعماق العقل الباطن وآلياته التي تحرك سلوكنا دون وعي منا. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'العقل الباطن, The Subconscious Mind, فيكتور بوشيه, The Subconscious Mind, شراء العقل الباطن الجزائر, سعر العقل الباطن الجزائر, العقل الباطن دزاير, acheter The Subconscious Mind Algérie, prix The Subconscious Mind Algérie, The Subconscious Mind livraison Algérie, buy The Subconscious Mind Algeria, The Subconscious Mind price Algeria, The Subconscious Mind DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 25; -- subconscious-mind
+
+UPDATE public.books SET
+  full_description = 'يكسر مارك مانسون الأنماط التقليدية لكتب تطوير الذات ويُقدّم رؤية مختلفة جذرياً: لا تحاول أن تكون سعيداً دائماً، بل اختر بعناية ما يستحق قلقك واهتمامك. هذا هو الطريق الحقيقي لحياة ذات معنى وتوازن.',
+  seo_description = 'اطلب كتاب فن اللامبالاة لـمارك مانسون بسعر 900 دج. مقاربة مختلفة لحياة أفضل — تعلّم كيف تختار ما تهتم به بعناية لتعيش بحرية حقيقية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'فن اللامبالاة, The Subtle Art of Not Giving a F*ck, مارك مانسون, The Subtle Art of Not Giving a F*ck, شراء فن اللامبالاة الجزائر, سعر فن اللامبالاة الجزائر, فن اللامبالاة دزاير, acheter The Subtle Art of Not Giving a F*ck Algérie, prix The Subtle Art of Not Giving a F*ck Algérie, The Subtle Art of Not Giving a F*ck livraison Algérie, buy The Subtle Art of Not Giving a F*ck Algeria, The Subtle Art of Not Giving a F*ck price Algeria, The Subtle Art of Not Giving a F*ck DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 26; -- subtle-art
+
+UPDATE public.books SET
+  full_description = 'أحد أكثر الكتب تأثيراً في التاريخ — أسّس غوستاف لوبون من خلاله علماً كاملاً لفهم سلوك الجماهير. يُثبت أن الفرد حين ينخرط في حشد يتصرف بعقل جمعي مختلف تماماً عن عقله الفردي، وهو ما وظّفه القادة والسياسيون والمسوّقون طوال القرن الماضي.',
+  seo_description = 'اطلب كتاب سيكولوجية الجماهير لـغوستاف لوبون بسعر 750 دج. الكتاب الكلاسيكي الذي أسّس علم نفس الجماهير — يكشف كيف تفكر الحشود وتتصرف. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'سيكولوجية الجماهير, The Crowd, غوستاف لوبون, The Crowd, شراء سيكولوجية الجماهير الجزائر, سعر سيكولوجية الجماهير الجزائر, سيكولوجية الجماهير دزاير, acheter The Crowd Algérie, prix The Crowd Algérie, The Crowd livraison Algérie, buy The Crowd Algeria, The Crowd price Algeria, The Crowd DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 27; -- crowd-psychology
+
+UPDATE public.books SET
+  full_description = 'يطرح غوستاف لوبون في هذا الكتاب نظرية عميقة حول طبيعة الشعوب والعوامل النفسية التي تحدد تطورها أو تراجعها. يُثبت أن لكل أمة روحاً جماعية تتشكّل عبر قرون، وأن المؤسسات والقوانين لا تُغيّر هذه الروح بسهولة — وهو ما يُفسّر كثيراً من الأحداث التاريخية.',
+  seo_description = 'اطلب كتاب السنن النفسية لتطور الأمم لـغوستاف لوبون بسعر 1 300 دج. دراسة معمّقة في الخصائص النفسية للشعوب وكيف تحدد مساراتها الحضارية والتاريخية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'السنن النفسية لتطور الأمم, The Psychology of Peoples, غوستاف لوبون, The Psychology of Peoples, شراء السنن النفسية لتطور الأمم الجزائر, سعر السنن النفسية لتطور الأمم الجزائر, السنن النفسية لتطور الأمم دزاير, acheter The Psychology of Peoples Algérie, prix The Psychology of Peoples Algérie, The Psychology of Peoples livraison Algérie, buy The Psychology of Peoples Algeria, The Psychology of Peoples price Algeria, The Psychology of Peoples DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 28; -- psychological-laws
+
+UPDATE public.books SET
+  full_description = 'يستكشف غوستاف لوبون في هذا العمل الرائد كيف تنشأ المعتقدات الجماعية وكيف تصبح راسخة في وجدان الشعوب. يُحلّل الأسس النفسية للإقناع والتأثير في الرأي العام، وكيف يستطيع الدعاة والقادة تشكيل قناعات الجماهير والتأثير فيها عبر التاريخ.',
+  seo_description = 'اطلب كتاب الآراء والمعتقدات لـغوستاف لوبون بسعر 1 550 دج. كيف تتشكّل الآراء والمعتقدات وتنتشر في المجتمعات وآليات التأثير الجماهيري. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الآراء والمعتقدات, The Psychology of Revolution, غوستاف لوبون, The Psychology of Revolution, شراء الآراء والمعتقدات الجزائر, سعر الآراء والمعتقدات الجزائر, الآراء والمعتقدات دزاير, acheter The Psychology of Revolution Algérie, prix The Psychology of Revolution Algérie, The Psychology of Revolution livraison Algérie, buy The Psychology of Revolution Algeria, The Psychology of Revolution price Algeria, The Psychology of Revolution DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 29; -- opinions-beliefs
+
+UPDATE public.books SET
+  full_description = 'يُقدّم رولو توماسي في هذا الكتاب تحليلاً نفسياً وفلسفياً عميقاً للعلاقات الإنسانية وديناميكياتها من منظور الذكورة الإيجابية. يتناول مواضيع الهوية الذكورية والقيم والمبادئ التي تبني الشخصية الرجولية القوية والمتوازنة في العصر الحديث.',
+  seo_description = 'اطلب كتاب الذكر العقلاني: الذكورة الإيجابية لـرولو توماسي بسعر 2 100 دج. مرجع شامل في الديناميكيات النفسية للعلاقات والهوية الذكورية الإيجابية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الذكر العقلاني: الذكورة الإيجابية, The Rational Male, رولو توماسي, The Rational Male, شراء الذكر العقلاني: الذكورة الإيجابية الجزائر, سعر الذكر العقلاني: الذكورة الإيجابية الجزائر, الذكر العقلاني: الذكورة الإيجابية دزاير, acheter The Rational Male Algérie, prix The Rational Male Algérie, The Rational Male livraison Algérie, buy The Rational Male Algeria, The Rational Male price Algeria, The Rational Male DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 30; -- rational-male
+
+UPDATE public.books SET
+  full_description = 'يجمع هذا الكتاب خبرة أربعة متخصصين في المبيعات لتقديم ست مهارات أساسية قابلة للتطبيق الفوري في أي بيئة مبيعات. من فهم العميل إلى بناء العلاقات وإغلاق الصفقات، كل مهارة مدعومة بأمثلة عملية وتمارين تطبيقية حقيقية.',
+  seo_description = 'اطلب كتاب 6 مهارات لتحقيق مبيعات مختلفة مذهلة لـديل ميريل وآخرون بسعر 1 400 دج. ست مهارات عملية مجرّبة لرفع مستوى أدائك في المبيعات إلى آفاق جديدة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = '6 مهارات لتحقيق مبيعات مختلفة مذهلة, 6 Skills to Super-Charge Your Sales, ديل ميريل وآخرون, 6 Skills to Super-Charge Your Sales, شراء 6 مهارات لتحقيق مبيعات مختلفة مذهلة الجزائر, سعر 6 مهارات لتحقيق مبيعات مختلفة مذهلة الجزائر, 6 مهارات لتحقيق مبيعات مختلفة مذهلة دزاير, acheter 6 Skills to Super-Charge Your Sales Algérie, prix 6 Skills to Super-Charge Your Sales Algérie, 6 Skills to Super-Charge Your Sales livraison Algérie, buy 6 Skills to Super-Charge Your Sales Algeria, 6 Skills to Super-Charge Your Sales price Algeria, 6 Skills to Super-Charge Your Sales DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 31; -- 6-sales-skills
+
+UPDATE public.books SET
+  full_description = 'يُثبت ديمون زهاريادس في هذا الدليل الشامل أن أكبر التحولات في حياة الإنسان لا تبدأ بقرارات ضخمة بل بعادات صغيرة متراكمة. مع أساليب علمية مجرّبة وخطوات واضحة، سيساعدك هذا الكتاب على بناء منظومة عادات مستدامة تُحوّل حياتك تدريجياً وبشكل حقيقي.',
+  seo_description = 'اطلب كتاب الأثر المذهل للعادات البسيطة لـديمون زهاريادس بسعر 1 800 دج. دليل لاكتساب عادات مستدامة — يُثبت أن التغيير الجذري يبدأ دائماً من خطوات صغيرة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الأثر المذهل للعادات البسيطة, Small Habits Revolution, ديمون زهاريادس, Small Habits Revolution, شراء الأثر المذهل للعادات البسيطة الجزائر, سعر الأثر المذهل للعادات البسيطة الجزائر, الأثر المذهل للعادات البسيطة دزاير, acheter Small Habits Revolution Algérie, prix Small Habits Revolution Algérie, Small Habits Revolution livraison Algérie, buy Small Habits Revolution Algeria, Small Habits Revolution price Algeria, Small Habits Revolution DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 32; -- small-habits-effect
+
+UPDATE public.books SET
+  full_description = 'يأخذ شين كوفي — ابن المؤلف الشهير ستيفن كوفي — العادات السبع الكلاسيكية ويُعيد صياغتها بأسلوب مباشر وممتع يخاطب المراهقين مباشرةً. يتناول الكتاب مواضيع كالأهداف الشخصية، وإدارة الوقت، وبناء العلاقات، والمسؤولية الذاتية — كل ذلك بلغة عصرية وأمثلة قريبة من حياة الشباب.',
+  seo_description = 'اطلب كتاب العادات السبع للمراهقين الأكثر فعالية لـشين كوفي بسعر 1 100 دج. سبعة مبادئ عملية تساعد الشباب على بناء شخصية قوية وتحقيق أهدافهم بثقة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'العادات السبع للمراهقين الأكثر فعالية, The 7 Habits of Highly Effective Teens, شين كوفي, The 7 Habits of Highly Effective Teens, شراء العادات السبع للمراهقين الأكثر فعالية الجزائر, سعر العادات السبع للمراهقين الأكثر فعالية الجزائر, العادات السبع للمراهقين الأكثر فعالية دزاير, acheter The 7 Habits of Highly Effective Teens Algérie, prix The 7 Habits of Highly Effective Teens Algérie, The 7 Habits of Highly Effective Teens livraison Algérie, buy The 7 Habits of Highly Effective Teens Algeria, The 7 Habits of Highly Effective Teens price Algeria, The 7 Habits of Highly Effective Teens DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 33; -- 7-habits-teens
+
+UPDATE public.books SET
+  full_description = 'يرى ستيفن كوفي أن القيادة الحقيقية لا تُكتسب من المناصب بل تُبنى من الداخل. يُقدّم الكتاب نموذجاً فريداً مطبَّقاً في مدارس ومؤسسات حول العالم، يستند إلى المبادئ السبعة لتنمية روح القيادة في كل فرد، ويُثبت أن قيادة النفس هي أساس قيادة الآخرين.',
+  seo_description = 'اطلب كتاب القائد في داخلي لـستيفن آر. كوفي بسعر 1 300 دج. كيف تُنمّي قيادة حقيقية من الداخل — نموذج تحويلي لبناء شخصية قيادية مستدامة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'القائد في داخلي, The Leader in Me, ستيفن آر. كوفي, The Leader in Me, شراء القائد في داخلي الجزائر, سعر القائد في داخلي الجزائر, القائد في داخلي دزاير, acheter The Leader in Me Algérie, prix The Leader in Me Algérie, The Leader in Me livraison Algérie, buy The Leader in Me Algeria, The Leader in Me price Algeria, The Leader in Me DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 34; -- leader-in-me
+
+UPDATE public.books SET
+  full_description = 'يتناول الكتاب الجانب المظلم من الطاقة الأنثوية — ذلك الجزء الذي طالما تمّ قمعه أو إخفاؤه تحت ضغط التوقعات الاجتماعية. تُرشد المؤلفة القارئة إلى كيفية الاعتراف بهذا الجانب وتحويله إلى مصدر قوة حقيقية، والتحرر من القوالب النمطية نحو أنوثة أصيلة وحرة.',
+  seo_description = 'اطلب كتاب الأنوثة المظلمة لـكاثرين جيمس بسعر 800 دج. استكشاف الجانب المظلم من الطاقة الأنثوية وتحويله إلى قوة داخلية أصيلة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الأنوثة المظلمة, Dark Feminine Power, كاثرين جيمس, Dark Feminine Power, شراء الأنوثة المظلمة الجزائر, سعر الأنوثة المظلمة الجزائر, الأنوثة المظلمة دزاير, acheter Dark Feminine Power Algérie, prix Dark Feminine Power Algérie, Dark Feminine Power livraison Algérie, buy Dark Feminine Power Algeria, Dark Feminine Power price Algeria, Dark Feminine Power DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 35; -- dark-feminine-power
+
+UPDATE public.books SET
+  full_description = 'ينطلق الكتاب من سؤال بسيط مُستفزّ: لماذا يرفض الإنسان طلب المساعدة حتى حين يحتاجها بشدة؟ يُقدّم المؤلفان تحليلاً نفسياً واجتماعياً طريفاً وعميقاً لمفارقات السلوك البشري، مستعينَين بأمثلة من الحياة اليومية لمناقشة ظواهر كالعناد والخجل والغرور والخوف من الحكم الاجتماعي.',
+  seo_description = 'اطلب كتاب لماذا لا تذهب الخراف إلى الطبيب؟ لـفهد عامر الأحمدي بسعر 1 100 دج. نظرة نقدية ممتعة لمفارقات السلوك البشري وأسئلة عميقة حول العقلانية الإنسانية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'لماذا لا تذهب الخراف إلى الطبيب؟, Why Sheep Don''t Go to the Doctor, فهد عامر الأحمدي, Why Sheep Don''t Go to the Doctor, شراء لماذا لا تذهب الخراف إلى الطبيب؟ الجزائر, سعر لماذا لا تذهب الخراف إلى الطبيب؟ الجزائر, لماذا لا تذهب الخراف إلى الطبيب؟ دزاير, acheter Why Sheep Don''t Go to the Doctor Algérie, prix Why Sheep Don''t Go to the Doctor Algérie, Why Sheep Don''t Go to the Doctor livraison Algérie, buy Why Sheep Don''t Go to the Doctor Algeria, Why Sheep Don''t Go to the Doctor price Algeria, Why Sheep Don''t Go to the Doctor DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 36; -- why-sheep-dont-go-to-doctor
+
+UPDATE public.books SET
+  full_description = 'يُميّز بيتر ثيل بين نمطين من التقدم: نسخ ما هو موجود (من 1 إلى N) وخلق شيء جديد تماماً (من 0 إلى 1). يُقدّم الكتاب رؤيةً مغايرة لعالم الشركات الناشئة، مؤكداً أن الابتكار الحقيقي يعني خلق احتكار، لا المنافسة. كتاب أساسي لكل من يفكر في بناء مشروع ريادي مستقبلي.',
+  seo_description = 'اطلب كتاب من صفر إلى واحد لـبيتر ثيل، بليك ماسترز بسعر 850 دج. رؤية ثاقبة حول بناء شركات ناشئة استثنائية تخلق شيئاً جديداً تماماً. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'من صفر إلى واحد, Zero to One, بيتر ثيل، بليك ماسترز, Zero to One, شراء من صفر إلى واحد الجزائر, سعر من صفر إلى واحد الجزائر, من صفر إلى واحد دزاير, acheter Zero to One Algérie, prix Zero to One Algérie, Zero to One livraison Algérie, buy Zero to One Algeria, Zero to One price Algeria, Zero to One DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 37; -- zero-to-one
+
+UPDATE public.books SET
+  full_description = 'يستند ديفيد هاميلتون إلى أبحاث علمية موثقة ليُثبت أن اللطف يُنتج أوكسيتوسين ويُحفّز دوامات إيجابية في الجهاز المناعي والقلب والصحة النفسية. يُقدّم الكتاب الأدلة العلمية على أن الشخص اللطيف يعيش حياة أكثر صحةً وسعادةً، ويُغيّر هذا الكتاب تماماً نظرتنا إلى اللطف كفضيلة اجتماعية إلى ضرورة صحية.',
+  seo_description = 'اطلب كتاب اللطف وآثاره الجانبية الخمسة لـديفيد هاميلتون بسعر 950 دج. دراسة علمية تُثبت أن اللطف له آثار جانبية إيجابية عميقة على الصحة الجسدية والنفسية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'اللطف وآثاره الجانبية الخمسة, The Five Side Effects of Kindness, ديفيد هاميلتون, The Five Side Effects of Kindness, شراء اللطف وآثاره الجانبية الخمسة الجزائر, سعر اللطف وآثاره الجانبية الخمسة الجزائر, اللطف وآثاره الجانبية الخمسة دزاير, acheter The Five Side Effects of Kindness Algérie, prix The Five Side Effects of Kindness Algérie, The Five Side Effects of Kindness livraison Algérie, buy The Five Side Effects of Kindness Algeria, The Five Side Effects of Kindness price Algeria, The Five Side Effects of Kindness DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 38; -- kindness-side-effects
+
+UPDATE public.books SET
+  full_description = 'تدعو كاثرين جيمس القارئة إلى رحلة عميقة في استكشاف الطاقة الأنثوية والتعرف عليها كمصدر لإبداع لا ينضب وسعادة حقيقية. يجمع الكتاب بين التمارين العملية والمعرفة النفسية والتأملات الشخصية لمساعدة المرأة على الارتقاء بحياتها من خلال الاتصال بجوهرها الأنثوي الحقيقي.',
+  seo_description = 'اطلب كتاب طاقة الأنوثة لـكاثرين جيمس بسعر 900 دج. دليل لاكتشاف الطاقة الأنثوية الكامنة وتوظيفها لرفع مستوى السعادة والإبداع. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'طاقة الأنوثة, Feminine Energy, كاثرين جيمس, Feminine Energy, شراء طاقة الأنوثة الجزائر, سعر طاقة الأنوثة الجزائر, طاقة الأنوثة دزاير, acheter Feminine Energy Algérie, prix Feminine Energy Algérie, Feminine Energy livraison Algérie, buy Feminine Energy Algeria, Feminine Energy price Algeria, Feminine Energy DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 39; -- feminine-energy
+
+UPDATE public.books SET
+  full_description = 'يتناول الدكتور عماد رشاد عثمان في هذا الكتاب ظاهرة الإدمان والسلوكيات القهرية من منظور نفسي إنساني عميق، مُحللاً الفراغ الداخلي الذي يدفع الإنسان نحو هذه السلوكيات ومُقدّماً تأملات علاجية تجمع بين العلم والإنسانية والبُعد الروحي للتعافي الحقيقي.',
+  seo_description = 'اطلب كتاب ممتلئ بالفراغ لـد. عماد رشاد عثمان بسعر 1 400 دج. تأملات في جذور الإدمان والسلوكيات القهرية وكيفية التعافي منها. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'ممتلئ بالفراغ, Full of Emptiness, د. عماد رشاد عثمان, Full of Emptiness, شراء ممتلئ بالفراغ الجزائر, سعر ممتلئ بالفراغ الجزائر, ممتلئ بالفراغ دزاير, acheter Full of Emptiness Algérie, prix Full of Emptiness Algérie, Full of Emptiness livraison Algérie, buy Full of Emptiness Algeria, Full of Emptiness price Algeria, Full of Emptiness DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 40; -- full-of-emptiness
+
+UPDATE public.books SET
+  full_description = 'يتناول الدكتور عماد رشاد عثمان في هذا الكتاب الجريء موضوعاً حساساً طالما ظلّ في الظل: إساءات الوالدين وصدمات الطفولة وتأثيراتها البعيدة على شخصية البالغ. يُقدّم الكتاب تحليلاً نفسياً دقيقاً وإنسانياً للجروح الخفية، ومسارات علاجية للتعافي وإعادة بناء الذات بعيداً عن لوم الضحية.',
+  seo_description = 'اطلب كتاب أبي الذي أكره لـد. عماد رشاد عثمان بسعر 1 100 دج. دراسة نفسية في إساءات الوالدين وصدمات الطفولة مع مسارات نحو التعافي. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'أبي الذي أكره, The Father I Hate, د. عماد رشاد عثمان, The Father I Hate, شراء أبي الذي أكره الجزائر, سعر أبي الذي أكره الجزائر, أبي الذي أكره دزاير, acheter The Father I Hate Algérie, prix The Father I Hate Algérie, The Father I Hate livraison Algérie, buy The Father I Hate Algeria, The Father I Hate price Algeria, The Father I Hate DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 41; -- father-i-hate
+
+UPDATE public.books SET
+  full_description = 'يُعدّ إدوارد بيرنايز مؤسس العلاقات العامة الحديثة وابن أخت سيغموند فرويد. في هذا الكتاب الصادر عام 1923، يضع الأسس النظرية والعملية لفهم كيف يتشكّل الرأي العام وكيف يمكن توجيهه. يُقدّم بيرنايز نظرته الثاقبة حول الإعلام والتأثير والسلطة الرمزية — وهي رؤية لا تزال صالحة ومُقلقة حتى يومنا هذا.',
+  seo_description = 'اطلب كتاب بلورة الرأي العام لـإدوارد بيرنايز بسعر 1 100 دج. الكتاب الرائد لمؤسس العلاقات العامة الحديثة — كيف يُشكَّل الرأي العام ويُوجَّه. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'بلورة الرأي العام, Crystallizing Public Opinion, إدوارد بيرنايز, Crystallizing Public Opinion, شراء بلورة الرأي العام الجزائر, سعر بلورة الرأي العام الجزائر, بلورة الرأي العام دزاير, acheter Crystallizing Public Opinion Algérie, prix Crystallizing Public Opinion Algérie, Crystallizing Public Opinion livraison Algérie, buy Crystallizing Public Opinion Algeria, Crystallizing Public Opinion price Algeria, Crystallizing Public Opinion DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 42; -- crystallizing-public-opinion
+
+UPDATE public.books SET
+  full_description = 'يأخذك كتاب "بوابتك للتغيير" في رحلة عملية لفهم آليات التحول الشخصي وكيفية الانتقال من مرحلة إلى أخرى. يقدم المؤلف نواف العثمان خطوات مدروسة لبناء عادات وأنماط تفكير أفضل، مما يساعد القارئ على تحقيق حياة أكثر وعيًا وتوازنًا وهدوءًا داخليًا.',
+  seo_description = 'اطلب كتاب بوابتك للتغيير لـنواف العثمان بسعر 950 دج. كتاب في تطوير الذات يساعد على فهم خطوات التغيير الشخصي وبناء عادات وأفكار أفضل. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'بوابتك للتغيير, نواف العثمان, شراء بوابتك للتغيير الجزائر, سعر بوابتك للتغيير الجزائر, بوابتك للتغيير دزاير, acheter livre Algérie, prix livraison Algérie, buy book Algeria, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 43; -- bawabatuka-liltaghyir
+
+UPDATE public.books SET
+  full_description = 'يُعدّ هذا الكتاب من أبرز الكتب الكلاسيكية في الثقافة المالية، إذ يقدم تعاليم بابل القديمة في صورة قصص شيّقة عن شخصيات تسعى إلى بناء الثروة. يتناول الكتاب مبادئ الادخار وتنمية المال بأسلوب بسيط وعملي لا يزال صالحًا حتى يومنا هذا.',
+  seo_description = 'اطلب كتاب أغنى رجل في بابل لـجورج صامويل كلاسون بسعر 950 دج. كتاب كلاسيكي في الثقافة المالية يقدم مبادئ الادخار وبناء الثروة عبر حكم بابل. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'أغنى رجل في بابل, The Richest Man in Babylon, جورج صامويل كلاسون, The Richest Man in Babylon, شراء أغنى رجل في بابل الجزائر, سعر أغنى رجل في بابل الجزائر, أغنى رجل في بابل دزاير, acheter The Richest Man in Babylon Algérie, prix The Richest Man in Babylon Algérie, The Richest Man in Babylon livraison Algérie, buy The Richest Man in Babylon Algeria, The Richest Man in Babylon price Algeria, The Richest Man in Babylon DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 44; -- richest-man-in-babylon
+
+UPDATE public.books SET
+  full_description = 'يأخذ كتاب "أريد أن أنام" الأطفال في رحلة هادئة نحو النوم، من خلال أسلوب سردي لطيف يساعدهم على الاسترخاء التدريجي والشعور بالأمان والطمأنينة. كتاب مثالي لوقت النوم يشجع الأطفال على الهدوء والراحة بطريقة ممتعة وناعمة.',
+  seo_description = 'اطلب كتاب أريد أن أنام لـهارييت جريفي بسعر 850 دج. كتاب يساعد الأطفال على الاسترخاء والاستعداد للنوم بأسلوب هادئ ومريح. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'أريد أن أنام, هارييت جريفي, شراء أريد أن أنام الجزائر, سعر أريد أن أنام الجزائر, أريد أن أنام دزاير, acheter livre Algérie, prix livraison Algérie, buy book Algeria, روايات الجزائر, كتب أدبية, روايات عربية, roman Algérie, littérature livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 45; -- urid-an-anam
+
+UPDATE public.books SET
+  full_description = 'يأخذك لوغان أوري في رحلة صادقة لفهم الأنماط الخاطئة التي تمنعنا من بناء علاقات حقيقية، ويقدم أدوات عملية مستندة إلى علم النفس السلوكي لمساعدتك على اتخاذ قرارات أذكى في الحب والارتباط، وبناء العلاقة التي تستحقها.',
+  seo_description = 'اطلب كتاب كيف لا تموت وحيدًا لـلوغان أوري بسعر 1 300 دج. كتاب عملي في العلاقات العاطفية يساعد على بناء علاقة صحية بعيدًا عن الأخطاء المتكررة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كيف لا تموت وحيدًا, How Not to Die Alone, لوغان أوري, How Not to Die Alone, شراء كيف لا تموت وحيدًا الجزائر, سعر كيف لا تموت وحيدًا الجزائر, كيف لا تموت وحيدًا دزاير, acheter How Not to Die Alone Algérie, prix How Not to Die Alone Algérie, How Not to Die Alone livraison Algérie, buy How Not to Die Alone Algeria, How Not to Die Alone price Algeria, How Not to Die Alone DZ, كتب علاقات الجزائر, علاقات عاطفية, كتب الحياة والحب, livre relations Algérie, livre amour livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 46; -- how-not-to-die-alone
+
+UPDATE public.books SET
+  full_description = 'يقدم باتريك كينغ في هذا الكتاب أدوات عملية لفهم المشاعر الداخلية والتحكم بها بدلاً من الانجراف معها. يتناول الكتاب موضوعات الذكاء العاطفي، الوعي الذاتي، والتعامل مع الانفعالات بأسلوب مبسط وعملي يساعد القارئ على بناء حياة أكثر توازنًا وهدوءًا.',
+  seo_description = 'اطلب كتاب كن أقوى من مشاعرك لـباتريك كينغ بسعر 1 400 دج. طرق عملية لفهم الانفعالات والتعامل معها بقوة ووعي أكبر. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كن أقوى من مشاعرك, Emotionally Stronger, باتريك كينغ, Emotionally Stronger, شراء كن أقوى من مشاعرك الجزائر, سعر كن أقوى من مشاعرك الجزائر, كن أقوى من مشاعرك دزاير, acheter Emotionally Stronger Algérie, prix Emotionally Stronger Algérie, Emotionally Stronger livraison Algérie, buy Emotionally Stronger Algeria, Emotionally Stronger price Algeria, Emotionally Stronger DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 47; -- stronger-than-your-emotions
+
+UPDATE public.books SET
+  full_description = 'يكسر ستيف هارفي الحواجز ويتحدث بصراحة كاملة عن طبيعة الرجل وكيف يفكر في الحب والالتزام والعلاقات. يقدم الكتاب منظورًا ذكوريًا صريحًا يساعد المرأة على فهم شريكها بشكل أعمق وتجنب الأخطاء الشائعة في العلاقات العاطفية.',
+  seo_description = 'اطلب كتاب تصرفي كسيدة وفكري كرجل لـستيف هارفي بسعر 950 دج. كتاب في العلاقات يشرح كيف يفكر الرجال في الحب ويقدم نصائح لفهم العلاقات بوضوح. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'تصرفي كسيدة وفكري كرجل, Act Like a Lady, Think Like a Man, ستيف هارفي, Act Like a Lady, Think Like a Man, شراء تصرفي كسيدة وفكري كرجل الجزائر, سعر تصرفي كسيدة وفكري كرجل الجزائر, تصرفي كسيدة وفكري كرجل دزاير, acheter Act Like a Lady, Think Like a Man Algérie, prix Act Like a Lady, Think Like a Man Algérie, Act Like a Lady, Think Like a Man livraison Algérie, buy Act Like a Lady, Think Like a Man Algeria, Act Like a Lady, Think Like a Man price Algeria, Act Like a Lady, Think Like a Man DZ, كتب علاقات الجزائر, علاقات عاطفية, كتب الحياة والحب, livre relations Algérie, livre amour livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 48; -- act-like-a-lady-think-like-a-man
+
+UPDATE public.books SET
+  full_description = 'يدعوك الدكتور خالد المنيف في هذا الكتاب إلى تبني منظور أوسع تجاه المشكلات والضغوط اليومية، وعدم إعطائها من الاهتمام أكثر مما تستحق. بأسلوب بسيط ومباشر، يقدم الكتاب مفاتيح عملية لتحقيق الهدوء النفسي والتعامل الحكيم مع تقلبات الحياة.',
+  seo_description = 'اطلب كتاب كبر دماغك لـد. خالد المنيف بسعر 950 دج. كتاب خفيف في تطوير الذات يساعد على تبسيط الأمور وعدم إعطاء المشاكل أكبر من حجمها. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كبر دماغك, د. خالد المنيف, شراء كبر دماغك الجزائر, سعر كبر دماغك الجزائر, كبر دماغك دزاير, acheter livre Algérie, prix livraison Algérie, buy book Algeria, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 49; -- kabber-dmaghak
+
+UPDATE public.books SET
+  full_description = 'يتناول هذا الكتاب سؤالاً جوهرياً: كيف تحافظ على نجاحك بعد تحقيقه؟ يستعرض الكتاب قوانين عملية للاستمرارية والانضباط الذاتي، وكيفية بناء أسلوب حياة قائم على الإنجاز الدائم بدلاً من النجاح المتقطع.',
+  seo_description = 'اطلب كتاب قوانين النجاح المستدام بسعر 900 دج. كتاب في النجاح يركز على الاستمرارية والانضباط وبناء أسلوب حياة يحافظ على الإنجاز. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'قوانين النجاح المستدام, Laws of Sustainable Success, شراء قوانين النجاح المستدام الجزائر, سعر قوانين النجاح المستدام الجزائر, قوانين النجاح المستدام دزاير, acheter Laws of Sustainable Success Algérie, prix Laws of Sustainable Success Algérie, Laws of Sustainable Success livraison Algérie, buy Laws of Sustainable Success Algeria, Laws of Sustainable Success price Algeria, Laws of Sustainable Success DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 50; -- qawanin-al-najah-al-mustadam
+
+UPDATE public.books SET
+  full_description = 'يطرح ريوهو أوكاوا في هذا الكتاب أفكارًا عميقة وعملية حول السعادة الحقيقية وكيف نبنيها من الداخل، بدلاً من البحث عنها في الخارج. يقدم الكتاب مرشدًا للتحول من الأفكار السلبية والكآبة إلى حالة من الرضا والهدوء الداخلي.',
+  seo_description = 'اطلب كتاب كيف نحصل على السعادة ونبتعد عن الكآبة لـريوهو أوكاوا بسعر 850 دج. أفكار حول السعادة والتفكير الإيجابي والتخلص من المشاعر السلبية لحياة أكثر هدوءًا. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كيف نحصل على السعادة ونبتعد عن الكآبة, The Laws of the Sun, ريوهو أوكاوا, The Laws of the Sun, شراء كيف نحصل على السعادة ونبتعد عن الكآبة الجزائر, سعر كيف نحصل على السعادة ونبتعد عن الكآبة الجزائر, كيف نحصل على السعادة ونبتعد عن الكآبة دزاير, acheter The Laws of the Sun Algérie, prix The Laws of the Sun Algérie, The Laws of the Sun livraison Algérie, buy The Laws of the Sun Algeria, The Laws of the Sun price Algeria, The Laws of the Sun DZ, كتب علاقات الجزائر, علاقات عاطفية, كتب الحياة والحب, livre relations Algérie, livre amour livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 51; -- happiness-and-depression
+
+UPDATE public.books SET
+  full_description = 'تجمع كيتلين دوتي، عالمة تشريح وكاتبة ساخرة، أغرب أسئلة الأطفال حول الموت وتجيب عنها بشكل علمي ومرح في آنٍ واحد: ماذا يحدث للجسد بعد الموت؟ هل يمكن أن يأكل حيوانك الأليف جثتك؟ وأكثر من ذلك. كتاب يحكي الحقيقة بصدق ودون خوف.',
+  seo_description = 'اطلب كتاب هل ستأكل قطتي مقلتي؟ لـكيتلين دوتي بسعر 2 400 دج. كتاب ممتع يجيب عن أسئلة الأطفال حول الموت بأسلوب علمي وصريح مع لمسة من الفكاهة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'هل ستأكل قطتي مقلتي؟, Will My Cat Eat My Eyeballs?, كيتلين دوتي, Will My Cat Eat My Eyeballs?, شراء هل ستأكل قطتي مقلتي؟ الجزائر, سعر هل ستأكل قطتي مقلتي؟ الجزائر, هل ستأكل قطتي مقلتي؟ دزاير, acheter Will My Cat Eat My Eyeballs? Algérie, prix Will My Cat Eat My Eyeballs? Algérie, Will My Cat Eat My Eyeballs? livraison Algérie, buy Will My Cat Eat My Eyeballs? Algeria, Will My Cat Eat My Eyeballs? price Algeria, Will My Cat Eat My Eyeballs? DZ, كتب علمية الجزائر, علوم ومعرفة, كتب معرفة, livre science Algérie, sciences livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 52; -- will-my-cat-eat-my-eyeballs
+
+UPDATE public.books SET
+  full_description = 'يدعوك هذا الكتاب إلى الاعتراف بالجانب المعتم من شخصيتك — ذلك الجانب الذي يحمل الخوف والغضب والألم — بدلاً من إنكاره. من خلال قبول هذا "الوحش" الداخلي وفهمه، يمكن تحويله إلى مصدر للطف والقوة والوعي الحقيقي.',
+  seo_description = 'اطلب كتاب الوحش الذي يسكنك يمكن أن يكون لطيفًا بسعر 1 400 دج. كتاب في فهم الذات يدعو إلى التصالح مع الجانب الداخلي وتحويل الألم إلى لطف ووعي. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الوحش الذي يسكنك يمكن أن يكون لطيفًا, شراء الوحش الذي يسكنك يمكن أن يكون لطيفًا الجزائر, سعر الوحش الذي يسكنك يمكن أن يكون لطيفًا الجزائر, الوحش الذي يسكنك يمكن أن يكون لطيفًا دزاير, acheter livre Algérie, prix livraison Algérie, buy book Algeria, كتب فلسفة الجزائر, فكر وفلسفة, كتب فكرية, livre philosophie Algérie, philosophie livraison Algérie, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 53; -- the-monster-inside-you-can-be-kind
+
+UPDATE public.books SET
+  full_description = 'ليس هذا كتابًا تقرأه فحسب — بل تكتبه أنت. من خلال أسئلة عميقة وفضاءات للتعبير الحر، يدعوك "احرق بعد الكتابة" إلى استكشاف مشاعرك وأفكارك الأكثر صدقًا، بعيدًا عن أعين الآخرين. نسخة جديدة من اليوميات الشخصية، أكثر حرية وأكثر صدقًا.',
+  seo_description = 'اطلب كتاب احرق بعد الكتابة لـشارون جونز بسعر 950 دج. كتاب تفاعلي بالكتابة الشخصية والأسئلة العميقة لاكتشاف أفكارك ومشاعرك بصدق. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'احرق بعد الكتابة, Burn After Writing, شارون جونز, Burn After Writing, شراء احرق بعد الكتابة الجزائر, سعر احرق بعد الكتابة الجزائر, احرق بعد الكتابة دزاير, acheter Burn After Writing Algérie, prix Burn After Writing Algérie, Burn After Writing livraison Algérie, buy Burn After Writing Algeria, Burn After Writing price Algeria, Burn After Writing DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 54; -- burn-after-writing
+
+UPDATE public.books SET
+  full_description = 'يقدم الدكتور ديفيد هاوكينز في هذا الكتاب العميق استكشافًا فلسفيًا وروحيًا لطبيعة الأنا والوعي البشري. يتساءل: ما الذي يُدرك ويرى كل شيء دون أن يُرى؟ من خلال مناقشات عميقة وأمثلة توضيحية، يقود الكتاب القارئ نحو مستويات أعلى من الوعي والفهم الذاتي.',
+  seo_description = 'اطلب كتاب عين الأنا: الذي لا يُخفى عنه شيء لـد. ديفيد ر. هاوكينز بسعر 1 300 دج. كتاب في الوعي والروحانيات يناقش طبيعة الأنا ويقود نحو فهم أعمق للذات والحقيقة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'عين الأنا: الذي لا يُخفى عنه شيء, The Eye of the I, د. ديفيد ر. هاوكينز, The Eye of the I, شراء عين الأنا: الذي لا يُخفى عنه شيء الجزائر, سعر عين الأنا: الذي لا يُخفى عنه شيء الجزائر, عين الأنا: الذي لا يُخفى عنه شيء دزاير, acheter The Eye of the I Algérie, prix The Eye of the I Algérie, The Eye of the I livraison Algérie, buy The Eye of the I Algeria, The Eye of the I price Algeria, The Eye of the I DZ, كتب فلسفة الجزائر, فكر وفلسفة, كتب فكرية, livre philosophie Algérie, philosophie livraison Algérie, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 55; -- the-eye-of-the-i
+
+UPDATE public.books SET
+  full_description = 'قصة حقيقية لأنتوني راي هينتون الذي أمضى ثلاثين عامًا في انتظار تنفيذ حكم الإعدام بسبب جريمة لم يرتكبها. في صمت الزنزانة، اختار أن يحيا بقلبه وعقله، وأسّس ناديًا للقراءة رغم القضبان. كتاب يُعيد تعريف معنى الصمود والكرامة الإنسانية.',
+  seo_description = 'اطلب كتاب وأشرقت الشمس من جديد لـأنتوني راي هينتون بسعر 1 300 دج. مذكرات مؤثرة عن الصبر والأمل والعدالة والقدرة على النهوض بعد المعاناة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'وأشرقت الشمس من جديد, The Sun Does Shine, أنتوني راي هينتون, The Sun Does Shine, شراء وأشرقت الشمس من جديد الجزائر, سعر وأشرقت الشمس من جديد الجزائر, وأشرقت الشمس من جديد دزاير, acheter The Sun Does Shine Algérie, prix The Sun Does Shine Algérie, The Sun Does Shine livraison Algérie, buy The Sun Does Shine Algeria, The Sun Does Shine price Algeria, The Sun Does Shine DZ, روايات الجزائر, كتب أدبية, روايات عربية, roman Algérie, littérature livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 56; -- the-sun-does-shine
+
+UPDATE public.books SET
+  full_description = 'قصة ملهمة تروي حكمة الملياردير في طريق الثروة والنجاح المالي، بأسلوب سردي بسيط يكشف قوانين الوفرة والتفكير الإيجابي نحو بناء الثروة الحقيقية. يجمع الكتاب بين الرواية والحكمة العملية ليقدم رسائل عميقة حول المال والنجاح والإيمان بالنفس.',
+  seo_description = 'اطلب كتاب كتاب المليونير لـمارك فيشر بسعر 1 200 دج. قصة ملهمة تروي حكمة الملياردير في طريق الثروة بأسلوب سردي يكشف قوانين الوفرة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كتاب المليونير, The Millionaire, مارك فيشر, The Millionaire, شراء كتاب المليونير الجزائر, سعر كتاب المليونير الجزائر, كتاب المليونير دزاير, acheter The Millionaire Algérie, prix The Millionaire Algérie, The Millionaire livraison Algérie, buy The Millionaire Algeria, The Millionaire price Algeria, The Millionaire DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 57; -- kitab-al-millionaire
+
+UPDATE public.books SET
+  full_description = 'دليل شامل في ريادة الأعمال الابتكارية يكشف أسرار بناء مشاريع ناجحة من خلال التفكير الإبداعي وإيجاد الحلول غير التقليدية في بيئة الأعمال الحديثة. يناقش الكتاب أسس ريادة الأعمال الناجحة وكيفية التميز في الأسواق التنافسية.',
+  seo_description = 'اطلب كتاب السنارة لـالبروفيسور مير أحمد بسعر 1 300 دج. دليل شامل في ريادة الأعمال الابتكارية وأسرار بناء مشاريع ناجحة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'السنارة, Al-Sannara, البروفيسور مير أحمد, Al-Sannara, شراء السنارة الجزائر, سعر السنارة الجزائر, السنارة دزاير, acheter Al-Sannara Algérie, prix Al-Sannara Algérie, Al-Sannara livraison Algérie, buy Al-Sannara Algeria, Al-Sannara price Algeria, Al-Sannara DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 58; -- al-sannara
+
+UPDATE public.books SET
+  full_description = 'خارطة طريق علمية وروحية نحو التنوير والارتقاء بمستويات الوعي الإنساني، بقلم أحد أبرز أطباء الطب النفسي والباحثين في علم الوعي. يقدم هاوكينز نموذجاً فريداً لفهم مستويات الوعي البشرية ويقود القارئ نحو التحرر من الأنماط الفكرية المحدودة.',
+  seo_description = 'اطلب كتاب تجاوز مستويات الوعي لـديفيد ر. هاوكينز بسعر 1 300 دج. خارطة طريق علمية وروحية نحو التنوير والارتقاء بمستويات الوعي الإنساني. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'تجاوز مستويات الوعي, Transcending the Levels of Consciousness, ديفيد ر. هاوكينز, Transcending the Levels of Consciousness, شراء تجاوز مستويات الوعي الجزائر, سعر تجاوز مستويات الوعي الجزائر, تجاوز مستويات الوعي دزاير, acheter Transcending the Levels of Consciousness Algérie, prix Transcending the Levels of Consciousness Algérie, Transcending the Levels of Consciousness livraison Algérie, buy Transcending the Levels of Consciousness Algeria, Transcending the Levels of Consciousness price Algeria, Transcending the Levels of Consciousness DZ, كتب فلسفة الجزائر, فكر وفلسفة, كتب فكرية, livre philosophie Algérie, philosophie livraison Algérie, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 59; -- tajawoz-mostawayat-al-waai
+
+UPDATE public.books SET
+  full_description = 'يوميات ساخرة ومؤلمة لطبيب في مستهل مسيرته المهنية تكشف الواقع الحقيقي لمهنة الطب خلف الأبواب المغلقة. يمزج الكتاب بين الفكاهة السوداء والوجع الحقيقي ليكشف ما يعيشه الأطباء يومياً بعيداً عن الصورة المُثالية.',
+  seo_description = 'اطلب كتاب هذا الكتاب سيؤلمك لـآدم كاي بسعر 950 دج. يوميات ساخرة لطبيب مبتدئ تكشف الواقع الحقيقي لمهنة الطب بأسلوب مباشر وإنساني. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'هذا الكتاب سيؤلمك, This Is Going to Hurt, آدم كاي, This Is Going to Hurt, شراء هذا الكتاب سيؤلمك الجزائر, سعر هذا الكتاب سيؤلمك الجزائر, هذا الكتاب سيؤلمك دزاير, acheter This Is Going to Hurt Algérie, prix This Is Going to Hurt Algérie, This Is Going to Hurt livraison Algérie, buy This Is Going to Hurt Algeria, This Is Going to Hurt price Algeria, This Is Going to Hurt DZ, روايات الجزائر, كتب أدبية, روايات عربية, roman Algérie, littérature livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 60; -- hatha-alkitab-sayuulimuk
+
+UPDATE public.books SET
+  full_description = 'رسائل حكمة خاصة تكشف أسراراً لم تُقَل في الكتاب الأصلي الشهير. تأخذك هذه الخطابات في رحلة أعمق نحو التفكير الإيجابي وبناء الحياة التي تستحقها بالمعايير الصحيحة، مقدمةً حكمة عملية يمكن تطبيقها فوراً.',
+  seo_description = 'اطلب كتاب الخطابات السرية للراهب الذي باع سيارته الفيراري لـروبن شارما بسعر 950 دج. رسائل حكمة خاصة تكشف أسراراً لم تُقَل في الكتاب الأصلي — رحلة أعمق في التفكير الإيجابي. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الخطابات السرية للراهب الذي باع سيارته الفيراري, The Secret Letters of the Monk Who Sold His Ferrari, روبن شارما, The Secret Letters of the Monk Who Sold His Ferrari, شراء الخطابات السرية للراهب الذي باع سيارته الفيراري الجزائر, سعر الخطابات السرية للراهب الذي باع سيارته الفيراري الجزائر, الخطابات السرية للراهب الذي باع سيارته الفيراري دزاير, acheter The Secret Letters of the Monk Who Sold His Ferrari Algérie, prix The Secret Letters of the Monk Who Sold His Ferrari Algérie, The Secret Letters of the Monk Who Sold His Ferrari livraison Algérie, buy The Secret Letters of the Monk Who Sold His Ferrari Algeria, The Secret Letters of the Monk Who Sold His Ferrari price Algeria, The Secret Letters of the Monk Who Sold His Ferrari DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 61; -- al-khitabat-al-sirriya
+
+UPDATE public.books SET
+  full_description = 'رواية ملهمة تحكي رحلة محامٍ ناجح ومزدهر يُصاب بأزمة صحية تغير حياته كلياً، فيترك كل شيء ليسافر إلى الهيمالايا ويعيش مع الرهبان ويتعلم أسرار الحياة السعيدة والمؤثرة. من أكثر كتب التطوير الذاتي تأثيراً ومبيعاً في العالم.',
+  seo_description = 'اطلب كتاب الراهب الذي باع سيارته الفيراري لـروبن شارما بسعر 950 دج. رواية ملهمة تحكي رحلة اكتشاف أسرار السعادة والحكمة الروحية في دير جبلي بالهيمالايا. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الراهب الذي باع سيارته الفيراري, The Monk Who Sold His Ferrari, روبن شارما, The Monk Who Sold His Ferrari, شراء الراهب الذي باع سيارته الفيراري الجزائر, سعر الراهب الذي باع سيارته الفيراري الجزائر, الراهب الذي باع سيارته الفيراري دزاير, acheter The Monk Who Sold His Ferrari Algérie, prix The Monk Who Sold His Ferrari Algérie, The Monk Who Sold His Ferrari livraison Algérie, buy The Monk Who Sold His Ferrari Algeria, The Monk Who Sold His Ferrari price Algeria, The Monk Who Sold His Ferrari DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 62; -- al-rahib-allathi-baa
+
+UPDATE public.books SET
+  full_description = '366 فكرة تأملية يومية مستخلصة من أشهر كتب روبرت غرين في القوة والإغواء والإتقان والاستراتيجية والطبيعة البشرية. كل يوم فكرة واحدة تفتح أفقاً جديداً في فهم الذات والعالم وقوانين النجاح والتأثير في الحياة.',
+  seo_description = 'اطلب كتاب القوانين اليومية لـروبرت غرين بسعر 1 900 دج. 366 فكرة تأملية يومية مستخلصة من أشهر كتب روبرت غرين — حكمة يومية لبناء شخصية استثنائية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'القوانين اليومية, The Daily Laws, روبرت غرين, The Daily Laws, شراء القوانين اليومية الجزائر, سعر القوانين اليومية الجزائر, القوانين اليومية دزاير, acheter The Daily Laws Algérie, prix The Daily Laws Algérie, The Daily Laws livraison Algérie, buy The Daily Laws Algeria, The Daily Laws price Algeria, The Daily Laws DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 63; -- daily-laws
+
+UPDATE public.books SET
+  full_description = 'دراسة معمّقة في علم الإغواء والتأثير من خلال التاريخ والنفس البشرية. يكشف روبرت غرين القوى الخفية التي تجذب الناس وتُسيطر على قراراتهم العاطفية والاجتماعية من خلال تحليل شخصيات تاريخية بارزة وأنماط الإغواء المختلفة.',
+  seo_description = 'اطلب كتاب فن الإغواء لـروبرت غرين بسعر 3 200 دج. دراسة معمّقة في علم الإغواء والتأثير — يكشف القوى الخفية التي تجذب الناس وتُسيطر عليهم. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'فن الإغواء, The Art of Seduction, روبرت غرين, The Art of Seduction, شراء فن الإغواء الجزائر, سعر فن الإغواء الجزائر, فن الإغواء دزاير, acheter The Art of Seduction Algérie, prix The Art of Seduction Algérie, The Art of Seduction livraison Algérie, buy The Art of Seduction Algeria, The Art of Seduction price Algeria, The Art of Seduction DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 64; -- art-of-seduction
+
+UPDATE public.books SET
+  full_description = 'الكتاب الأكثر مبيعاً في تاريخ كتب التطوير الذاتي — يقدم ديل كارنيجي مهارات التواصل والتأثير الإيجابي في الناس بأسلوب عملي ومباشر. يُعلّمك كيف تكسب الأصدقاء وتؤثر في الناس وتبني علاقات ناجحة في جميع مجالات حياتك.',
+  seo_description = 'اطلب كتاب فن التعامل مع الناس لـديل كارنيجي بسعر 650 دج. الكتاب الأكثر مبيعاً في تطوير الذات — مهارات التواصل والتأثير الإيجابي في الناس. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'فن التعامل مع الناس, How to Win Friends and Influence People, ديل كارنيجي, How to Win Friends and Influence People, شراء فن التعامل مع الناس الجزائر, سعر فن التعامل مع الناس الجزائر, فن التعامل مع الناس دزاير, acheter How to Win Friends and Influence People Algérie, prix How to Win Friends and Influence People Algérie, How to Win Friends and Influence People livraison Algérie, buy How to Win Friends and Influence People Algeria, How to Win Friends and Influence People price Algeria, How to Win Friends and Influence People DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 65; -- fan-altaamal-maa-alnas
+
+UPDATE public.books SET
+  full_description = 'مبادئ الإدارة الفعّالة والقيادة الناجحة من قلم ديل كارنيجي. يقدم الكتاب أساليب عملية وإنسانية لإدارة الفرق وتحفيز الموظفين والتعامل مع التحديات الإدارية اليومية ببناء بيئة عمل منتجة ومتناسقة.',
+  seo_description = 'اطلب كتاب فن الإدارة والقيادة لـديل كارنيجي بسعر 700 دج. مبادئ الإدارة الفعّالة والقيادة الناجحة — أساليب عملية لإدارة الفرق وتحفيز الموظفين. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'فن الإدارة والقيادة, The Art of Management and Leadership, ديل كارنيجي, The Art of Management and Leadership, شراء فن الإدارة والقيادة الجزائر, سعر فن الإدارة والقيادة الجزائر, فن الإدارة والقيادة دزاير, acheter The Art of Management and Leadership Algérie, prix The Art of Management and Leadership Algérie, The Art of Management and Leadership livraison Algérie, buy The Art of Management and Leadership Algeria, The Art of Management and Leadership price Algeria, The Art of Management and Leadership DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 66; -- fan-alidara-walqiyada
+
+UPDATE public.books SET
+  full_description = 'الكتاب الكلاسيكي الذي تُرجم لعشرات اللغات وقرأه الملايين حول العالم. يقدم ديل كارنيجي استراتيجيات مجرّبة للتحرر من القلق والتوتر والخوف، والعيش بطاقة إيجابية وتركيز حقيقي على ما يهم في الحياة.',
+  seo_description = 'اطلب كتاب دع القلق وابدأ الحياة لـديل كارنيجي بسعر 650 دج. استراتيجيات مجرّبة للتحرر من القلق والتوتر والخوف والعيش بطاقة إيجابية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'دع القلق وابدأ الحياة, How to Stop Worrying and Start Living, ديل كارنيجي, How to Stop Worrying and Start Living, شراء دع القلق وابدأ الحياة الجزائر, سعر دع القلق وابدأ الحياة الجزائر, دع القلق وابدأ الحياة دزاير, acheter How to Stop Worrying and Start Living Algérie, prix How to Stop Worrying and Start Living Algérie, How to Stop Worrying and Start Living livraison Algérie, buy How to Stop Worrying and Start Living Algeria, How to Stop Worrying and Start Living price Algeria, How to Stop Worrying and Start Living DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 67; -- daa-alqalaq-wabda-alhayat
+
+UPDATE public.books SET
+  full_description = 'نظام تسويقي بسيط وثوري يمكن تطبيقه فوراً حتى بدون خبرة تسويقية سابقة. يعلمك الكتاب كيف تبني استراتيجية تسويقية واضحة في صفحة واحدة تجلب العملاء المناسبين وتُنمّي أعمالك باستمرار وبتكلفة معقولة.',
+  seo_description = 'اطلب كتاب خطة تسويق في صفحة واحدة لـألن ديب بسعر 1 200 دج. نظام تسويقي بسيط وفعّال — خارطة طريق لبناء استراتيجية تجلب العملاء وتُنمّي الأعمال. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'خطة تسويق في صفحة واحدة, The 1-Page Marketing Plan, ألن ديب, The 1-Page Marketing Plan, شراء خطة تسويق في صفحة واحدة الجزائر, سعر خطة تسويق في صفحة واحدة الجزائر, خطة تسويق في صفحة واحدة دزاير, acheter The 1-Page Marketing Plan Algérie, prix The 1-Page Marketing Plan Algérie, The 1-Page Marketing Plan livraison Algérie, buy The 1-Page Marketing Plan Algeria, The 1-Page Marketing Plan price Algeria, The 1-Page Marketing Plan DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 68; -- one-page-marketing-plan
+
+UPDATE public.books SET
+  full_description = 'رؤية مغايرة وجريئة لعالم التسويق الحديث. يكشف سكوت جيفري ميلر الأخطاء الشائعة التي يقع فيها المسوقون ويقدم بدائل فعّالة وعملية لبناء علامة تجارية قوية والتميز في السوق التنافسي بأقل الموارد وأعلى الأثر.',
+  seo_description = 'اطلب كتاب فوضى التسويق لـسكوت جيفري ميلر بسعر 1 750 دج. رؤية مغايرة لعالم التسويق تكشف الأخطاء الشائعة وتقدم بدائل لبناء علامة تجارية قوية. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'فوضى التسويق, Marketing Mess to Brand Success, سكوت جيفري ميلر, Marketing Mess to Brand Success, شراء فوضى التسويق الجزائر, سعر فوضى التسويق الجزائر, فوضى التسويق دزاير, acheter Marketing Mess to Brand Success Algérie, prix Marketing Mess to Brand Success Algérie, Marketing Mess to Brand Success livraison Algérie, buy Marketing Mess to Brand Success Algeria, Marketing Mess to Brand Success price Algeria, Marketing Mess to Brand Success DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 69; -- fowda-altasweq
+
+UPDATE public.books SET
+  full_description = 'يكشف هال إلرود كيف أن الاستيقاظ مبكراً واتباع روتين صباحي محدد يمكن أن يغير حياتك كلياً. يقدم الكتاب نظام SAVERS الشهير — الصمت، التأكيدات، التخيل، القراءة، الكتابة والرياضة — كروتين يومي يُحوّل كل جانب من جوانب حياتك.',
+  seo_description = 'اطلب كتاب معجزة الصباح لـهال إلرود بسعر 1 100 دج. روتين صباحي مُثبَت علمياً يُطور صحتك الجسدية والعقلية والمهنية في وقت واحد. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'معجزة الصباح, The Miracle Morning, هال إلرود, The Miracle Morning, شراء معجزة الصباح الجزائر, سعر معجزة الصباح الجزائر, معجزة الصباح دزاير, acheter The Miracle Morning Algérie, prix The Miracle Morning Algérie, The Miracle Morning livraison Algérie, buy The Miracle Morning Algeria, The Miracle Morning price Algeria, The Miracle Morning DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 70; -- miracle-morning
+
+UPDATE public.books SET
+  full_description = 'قصة ملهمة تروي رحلة لاعب كرة قدم أمريكي يكاد يفقد فرصته الكبرى، فيلتقي بمدرب استثنائي يُعلّمه مبادئ التميز والإصرار والقيادة الحقيقية. درس في كيفية تحويل الفشل إلى وقود للنجاح.',
+  seo_description = 'اطلب كتاب معسكر التدريب لـجون جوردون بسعر 950 دج. قصة ملهمة لفريق يتعلم مبادئ القيادة والتضامن والإصرار على النجاح. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'معسكر التدريب, Training Camp, جون جوردون, Training Camp, شراء معسكر التدريب الجزائر, سعر معسكر التدريب الجزائر, معسكر التدريب دزاير, acheter Training Camp Algérie, prix Training Camp Algérie, Training Camp livraison Algérie, buy Training Camp Algeria, Training Camp price Algeria, Training Camp DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 71; -- training-camp
+
+UPDATE public.books SET
+  full_description = 'تحليل ثري وجريء لتأثير التطبيقات الاجتماعية وخاصة تيك توك على طريقة تفكيرنا وسلوكنا وعلاقاتنا الاجتماعية. يكشف الكتاب كيف تُعيد الخوارزميات تشكيل عقولنا وعاداتنا اليومية بما قد يؤثر على صحتنا النفسية وعلاقاتنا الإنسانية. كتاب عربي أصيل.',
+  seo_description = 'اطلب كتاب متلازمة تيك توك لـإسماعيل عرفة بسعر 1 400 دج. تحليل ثري لتأثير التطبيقات الاجتماعية وخاصة تيك توك على تفكيرنا وسلوكنا. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'متلازمة تيك توك, إسماعيل عرفة, شراء متلازمة تيك توك الجزائر, سعر متلازمة تيك توك الجزائر, متلازمة تيك توك دزاير, acheter livre Algérie, prix livraison Algérie, buy book Algeria, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 72; -- tiktok-syndrome
+
+UPDATE public.books SET
+  full_description = 'رحلة عميقة في فهم طبيعة الحب وتأثيره المذهل على النفس والجسد والعلاقات. تقدم الكاتبة دليلاً نفسياً دافئاً لبناء روابط عاطفية قوية وصحية ومستدامة، مع أساليب عملية لتعميق الاتصال العاطفي والإنساني مع من نُحب.',
+  seo_description = 'اطلب كتاب قوة الحب المذهلة لـستيفاني بريليانت بسعر 1 700 دج. رحلة في فهم طبيعة الحب وتأثيره المذهل — دليل نفسي لبناء روابط عاطفية قوية ومستدامة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'قوة الحب المذهلة, The Astonishing Power of Love, ستيفاني بريليانت, The Astonishing Power of Love, شراء قوة الحب المذهلة الجزائر, سعر قوة الحب المذهلة الجزائر, قوة الحب المذهلة دزاير, acheter The Astonishing Power of Love Algérie, prix The Astonishing Power of Love Algérie, The Astonishing Power of Love livraison Algérie, buy The Astonishing Power of Love Algeria, The Astonishing Power of Love price Algeria, The Astonishing Power of Love DZ, كتب علاقات الجزائر, علاقات عاطفية, كتب الحياة والحب, livre relations Algérie, livre amour livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 73; -- quwwat-alhub-almudhila
+
+UPDATE public.books SET
+  full_description = 'مجموعة من أجمل الاقتباسات والأفكار الملهمة التي تستحق التأمل والتطبيق في الحياة اليومية. يجمع الكتاب حكمة مكثفة ونصائح ذهبية من مصادر متنوعة، كلها تستحق أن تُميّزها بالقلم الأصفر وتعود إليها مراراً.',
+  seo_description = 'اطلب كتاب مميز بالأصفر لـإتش. جاكسون براون بسعر 950 دج. مجموعة من أجمل الاقتباسات والأفكار الملهمة التي تستحق التأمل والتطبيق في الحياة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'مميز بالأصفر, Highlighted in Yellow, إتش. جاكسون براون, Highlighted in Yellow, شراء مميز بالأصفر الجزائر, سعر مميز بالأصفر الجزائر, مميز بالأصفر دزاير, acheter Highlighted in Yellow Algérie, prix Highlighted in Yellow Algérie, Highlighted in Yellow livraison Algérie, buy Highlighted in Yellow Algeria, Highlighted in Yellow price Algeria, Highlighted in Yellow DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 74; -- mumayaz-bil-asfar
+
+UPDATE public.books SET
+  full_description = 'كشف علمي ومثير يُثبت أن الملل وشرود الذهن لا يُهدران وقتك بل يُحفّزان إبداعك وابتكارك. تأخذك مانوش زمردي في رحلة بحثية ممتعة لاكتشاف قيمة التباطؤ الرقمي وإعادة الاتصال بالعقل الإبداعي في زمن الإلهاءات الرقمية المتواصلة.',
+  seo_description = 'اطلب كتاب ملول وعبقري لـمانوش زمردي بسعر 950 دج. كشف علمي لقيمة الملل وشرود الذهن في تحفيز الإبداع والابتكار الحقيقي. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'ملول وعبقري, Bored and Brilliant, مانوش زمردي, Bored and Brilliant, شراء ملول وعبقري الجزائر, سعر ملول وعبقري الجزائر, ملول وعبقري دزاير, acheter Bored and Brilliant Algérie, prix Bored and Brilliant Algérie, Bored and Brilliant livraison Algérie, buy Bored and Brilliant Algeria, Bored and Brilliant price Algeria, Bored and Brilliant DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 75; -- bored-and-brilliant
+
+UPDATE public.books SET
+  full_description = 'كيف تنتقي خياراتك الحكيمة وسط عالم مليء بالضغوط والتوقعات المتضاربة؟ يجيب الكتاب على هذا السؤال بدليل عملي يساعدك على اتخاذ قرارات أفضل في كل مجالات حياتك، وتصميم مسار يتوافق حقاً مع قيمك وأهدافك الجوهرية.',
+  seo_description = 'اطلب كتاب الحياة تخطيط لـريك كيرشنر وريك برينكمان بسعر 1 200 دج. كيف تنتقي خياراتك الحكيمة وسط عالم مليء بالضغوط — دليل لاتخاذ قرارات أفضل. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الحياة تخطيط, Life Planning, ريك كيرشنر وريك برينكمان, Life Planning, شراء الحياة تخطيط الجزائر, سعر الحياة تخطيط الجزائر, الحياة تخطيط دزاير, acheter Life Planning Algérie, prix Life Planning Algérie, Life Planning livraison Algérie, buy Life Planning Algeria, Life Planning price Algeria, Life Planning DZ, تطوير الذات الجزائر, كتب تنمية بشرية, كتب تحفيزية الجزائر, تنمية شخصية, développement personnel Algérie, livre motivation livraison, livre croissance personnelle, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 76; -- alhayat-takhtit
+
+UPDATE public.books SET
+  full_description = 'المرجع الأشهر في فهم الاختلافات النفسية بين الرجل والمرأة. يُثبت جون غراي أن هذه الاختلافات طبيعية وقابلة للتجسير بالتواصل الصحيح والفهم المتبادل. كتاب أنقذ ملايين العلاقات وغيّر طريقة تفكير الأزواج في علاقاتهم.',
+  seo_description = 'اطلب كتاب الرجال من المريخ والنساء من الزهرة لـجون غراي بسعر 1 100 دج. المرجع الأشهر في فهم الاختلافات النفسية بين الجنسين لبناء علاقات أكثر عمقاً وتفاهماً. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الرجال من المريخ والنساء من الزهرة, Men Are from Mars, Women Are from Venus, جون غراي, Men Are from Mars, Women Are from Venus, شراء الرجال من المريخ والنساء من الزهرة الجزائر, سعر الرجال من المريخ والنساء من الزهرة الجزائر, الرجال من المريخ والنساء من الزهرة دزاير, acheter Men Are from Mars, Women Are from Venus Algérie, prix Men Are from Mars, Women Are from Venus Algérie, Men Are from Mars, Women Are from Venus livraison Algérie, buy Men Are from Mars, Women Are from Venus Algeria, Men Are from Mars, Women Are from Venus price Algeria, Men Are from Mars, Women Are from Venus DZ, كتب علاقات الجزائر, علاقات عاطفية, كتب الحياة والحب, livre relations Algérie, livre amour livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 77; -- men-mars-women-venus
+
+UPDATE public.books SET
+  full_description = 'برنامج تغذوي علمي ثوري يقدمه الطبيب جويل فورمان ليُثبت أن الغذاء الصحيح الغني بالعناصر المغذية هو الطريق الأفضل لإنقاص الوزن بشكل طبيعي والوقاية من الأمراض المزمنة وعيش حياة أطول وأكثر حيوية. نهج علمي يستند إلى أبحاث موثقة.',
+  seo_description = 'اطلب كتاب كل لتعيش لـجويل فورمان بسعر 2 500 دج. برنامج تغذوي علمي ثوري لإنقاص الوزن والوقاية من الأمراض وعيش حياة أطول وأصح. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كل لتعيش, Eat to Live, جويل فورمان, Eat to Live, شراء كل لتعيش الجزائر, سعر كل لتعيش الجزائر, كل لتعيش دزاير, acheter Eat to Live Algérie, prix Eat to Live Algérie, Eat to Live livraison Algérie, buy Eat to Live Algeria, Eat to Live price Algeria, Eat to Live DZ, كتب علمية الجزائر, علوم ومعرفة, كتب معرفة, livre science Algérie, sciences livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 78; -- eat-to-live
+
+UPDATE public.books SET
+  full_description = 'يُثبت دان آريلي الباحث الاقتصادي السلوكي الشهير أن قراراتنا غير العقلانية ليست دائماً أخطاء، بل كثيراً ما تكون ميزة إنسانية فريدة تحمينا وتُسعدنا. كتاب يغير طريقة فهمك لنفسك وللطبيعة البشرية الخفية التي تحرك حياتنا.',
+  seo_description = 'اطلب كتاب الجانب الإيجابي من اللاعقلانية لـدان آريلي بسعر 2 900 دج. كيف تُفيدنا قراراتنا غير العقلانية — يُثبت أن اللاعقلانية قد تكون ميزة إنسانية فريدة. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الجانب الإيجابي من اللاعقلانية, The Upside of Irrationality, دان آريلي, The Upside of Irrationality, شراء الجانب الإيجابي من اللاعقلانية الجزائر, سعر الجانب الإيجابي من اللاعقلانية الجزائر, الجانب الإيجابي من اللاعقلانية دزاير, acheter The Upside of Irrationality Algérie, prix The Upside of Irrationality Algérie, The Upside of Irrationality livraison Algérie, buy The Upside of Irrationality Algeria, The Upside of Irrationality price Algeria, The Upside of Irrationality DZ, كتب علم النفس الجزائر, علم النفس الاجتماعي, كتب نفسية, livre psychologie Algérie, psychologie sociale livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 79; -- upside-of-irrationality
+
+UPDATE public.books SET
+  full_description = 'دراسة فريدة ومعمّقة كتبها ألكسيس كاريل الحائز على جائزة نوبل في الطب، يكشف فيها ما يجهله الإنسان عن جسده وروحه وعقله. يدعو الكتاب إلى إعادة اكتشاف الإنسانية في ضوء العلم الحديث والفكر الفلسفي العميق.',
+  seo_description = 'اطلب كتاب الإنسان ذلك المجهول لـألكسيس كاريل بسعر 2 000 دج. دراسة فريدة في طبيعة الإنسان — يكشف الحائز على نوبل ما يجهله الإنسان عن نفسه. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'الإنسان ذلك المجهول, Man the Unknown, ألكسيس كاريل, Man the Unknown, شراء الإنسان ذلك المجهول الجزائر, سعر الإنسان ذلك المجهول الجزائر, الإنسان ذلك المجهول دزاير, acheter Man the Unknown Algérie, prix Man the Unknown Algérie, Man the Unknown livraison Algérie, buy Man the Unknown Algeria, Man the Unknown price Algeria, Man the Unknown DZ, كتب فلسفة الجزائر, فكر وفلسفة, كتب فكرية, livre philosophie Algérie, philosophie livraison Algérie, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 80; -- man-unknown
+
+UPDATE public.books SET
+  full_description = 'مجموعة نصوص وخواطر مترجمة بعناية واختيار من قِبَل إيناس سمير، تُعبّر عن ألم الفقدان والنجاة والأمل بأسلوب أدبي مؤثر. قراءة تمسّ القلب وتُعبّر عمّا يصعب قوله، مجموعة تُرافقك في لحظات الصمت والتأمل العميق.',
+  seo_description = 'اطلب كتاب وتظن أنك نجوت لـإيناس سمير بسعر 1 400 دج. نصوص وخواطر تُعبّر عن ألم الفقدان والنجاة والأمل — قراءة تمسّ القلب. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'وتظن أنك نجوت, إيناس سمير, شراء وتظن أنك نجوت الجزائر, سعر وتظن أنك نجوت الجزائر, وتظن أنك نجوت دزاير, acheter livre Algérie, prix livraison Algérie, buy book Algeria, روايات الجزائر, كتب أدبية, روايات عربية, roman Algérie, littérature livraison, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 81; -- wa-tazun-annaka-najawt
+
+UPDATE public.books SET
+  full_description = 'أبو التسويق الحديث فيليب كوتلر يُقدّم رؤيته الشاملة والمرجعية لعالم التسويق. يعلّمك الكتاب كيف تُنشئ الأسواق من الصفر وتغزوها بفاعلية وتحتفظ بحصتك فيها عبر استراتيجيات تسويقية مُثبتة ومبنية على فهم عميق لسلوك المستهلك ودوافع السوق.',
+  seo_description = 'اطلب كتاب كوتلر يتحدث عن التسويق لـفيليب كوتلر بسعر 990 دج. أبو التسويق الحديث يُقدّم رؤيته الشاملة — دليل استراتيجي لإنشاء الأسواق والسيطرة عليها. توصيل لجميع ولايات الجزائر الـ 58. Derradj Shop.',
+  keywords = 'كوتلر يتحدث عن التسويق, Kotler on Marketing, فيليب كوتلر, Kotler on Marketing, شراء كوتلر يتحدث عن التسويق الجزائر, سعر كوتلر يتحدث عن التسويق الجزائر, كوتلر يتحدث عن التسويق دزاير, acheter Kotler on Marketing Algérie, prix Kotler on Marketing Algérie, Kotler on Marketing livraison Algérie, buy Kotler on Marketing Algeria, Kotler on Marketing price Algeria, Kotler on Marketing DZ, كتب إدارة وأعمال الجزائر, ريادة أعمال, كتب تسويق إدارة, livre management Algérie, livre business livraison, livre marketing, شراء كتب الجزائر, كتاب أونلاين الجزائر, كتب دزاير, livraison livre Algérie 58 wilayas, Derradj Shop',
+  updated_at = now()
+WHERE id = 82; -- kotler-marketing
+
+-- ============================================================
+-- Validation queries
+-- ============================================================
+
+-- Expect 77
+SELECT COUNT(*) AS total_books FROM public.books;
+
+-- Expect 0 (every book should now have all three fields)
+SELECT id, title, url FROM public.books
+WHERE full_description IS NULL OR seo_description IS NULL OR keywords IS NULL;
+
+-- Spot-check
+SELECT id, title, seo_description, keywords, full_description FROM public.books ORDER BY id LIMIT 3;

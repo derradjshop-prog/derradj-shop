@@ -1,0 +1,35 @@
+-- ================================================================
+-- Derradj Shop — Tighten staff_accounts read access
+-- Run in: Supabase Dashboard → SQL Editor → New Query
+--
+-- Removes the "staff_accounts_sellers_listing_select" policy added by
+-- supabase-assignment-system.sql:
+--   USING (role = 'seller' AND is_active = TRUE) TO authenticated
+-- That policy let ANY authenticated staff session — including an
+-- ordinary seller's own real, legitimate session — read every column
+-- of every other active seller's row, not just the id/full_name/
+-- role/is_active the "Assign to Seller" dropdown actually displays. A
+-- seller with devtools open could query staff_accounts directly and
+-- pull every other seller's full row.
+--
+-- Safe to drop entirely, not replace: the OTHER policy on this table,
+-- "staff_accounts_self_or_admin_select" (id = auth.uid() OR
+-- public.is_admin()), already gives admin unrestricted read on every
+-- staff row — and admin is the only place in the current codebase
+-- that lists other sellers (admin.js fetchSellers() for the
+-- assignment dropdown, fetchImpersonationTargets() for "view as
+-- seller", both admin-only pages behind admin.html's authGuard). No
+-- seller-facing page queries other staff rows — every seller/*.html
+-- query was checked and each one filters `.eq("id", session.user.id)`
+-- (its own row only). Dropping this policy costs nothing functionally
+-- for admin or for sellers, and closes the disclosure.
+--
+-- After running: Supabase Dashboard → Authentication → Policies →
+-- staff_accounts should show "staff_accounts_self_or_admin_select"
+-- still present and this one gone. Re-test: (1) admin can still open
+-- "Assign to Seller" and "View as Seller" and see the full list;
+-- (2) a seller session querying staff_accounts directly gets only its
+-- own row.
+-- ================================================================
+
+DROP POLICY IF EXISTS "staff_accounts_sellers_listing_select" ON public.staff_accounts;

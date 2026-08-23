@@ -1,0 +1,210 @@
+/* =========================
+   Admin Login Page CSS
+   ========================= */
+
+:root {
+  --navy:    #1B2A4A;
+  --emerald: #0F5132;
+  --gold:    #C9A227;
+  --ink:     #13201A;
+  --paper:   #FBF7EF;
+  --border:  #e6e3d8;
+  --muted:   #6b7280;
+  --font:    'Cairo', sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* خلفية الصفحة */
+body.signup-page {
+  margin: 0;
+  font-family: var(--font);
+  background: var(--paper);
+  min-height: 100vh;
+}
+
+/* Wrapper */
+.signup-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 70px;
+  padding-bottom: 60px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Form box */
+.signup-form {
+  width: 100%;
+  max-width: 420px;
+  background-color: #ffffff;
+  padding: 40px 36px;
+  border-radius: 18px;
+  border: 1px solid var(--border);
+  box-shadow: 0 14px 40px rgba(27, 42, 74, 0.10);
+  animation: fadeInUp 0.5s ease;
+}
+
+.login-logo {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--ink);
+  text-align: center;
+  margin-bottom: 6px;
+  font-family: var(--font);
+}
+.login-logo span { color: var(--navy); }
+
+.login-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.admin-badge {
+  display: block;
+  text-align: center;
+  background: var(--paper);
+  color: var(--navy);
+  border: 1.5px solid var(--gold);
+  font-size: 12px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 99px;
+  margin: 0 auto 24px;
+  width: fit-content;
+}
+
+/* Title */
+.signup-form h2 {
+  text-align: center;
+  margin-bottom: 26px;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--ink);
+}
+
+/* Form groups */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+
+.form-group input {
+  width: 100%;
+  padding: 11px 14px;
+  font-size: 14px;
+  font-family: var(--font);
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background-color: #ffffff;
+  color: var(--ink);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--navy);
+  box-shadow: 0 0 0 3px rgba(27, 42, 74, 0.12);
+}
+
+/* Forgot password */
+.forgot-container {
+  text-align: left;
+  margin-top: 8px;
+}
+
+.forgot-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--navy);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.forgot-link:hover {
+  color: var(--emerald);
+  text-decoration: underline;
+}
+
+/* Submit button */
+button[type="submit"] {
+  width: 100%;
+  margin-top: 16px;
+  padding: 13px;
+  font-size: 15px;
+  font-weight: 800;
+  font-family: var(--font);
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  background: var(--navy);
+  color: #ffffff;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+button[type="submit"]:hover:not(:disabled) {
+  background: #12203a;
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(27, 42, 74, 0.28);
+}
+
+button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Footer text */
+.form-footer-text {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+/* Status message */
+#statusText {
+  margin-top: 14px;
+  min-height: 18px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .signup-wrapper {
+    padding-top: 50px;
+  }
+
+  .signup-form {
+    padding: 28px 20px;
+  }
+
+  .signup-form h2 {
+    font-size: 17px;
+  }
+}

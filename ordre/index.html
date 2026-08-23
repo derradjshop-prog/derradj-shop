@@ -1,0 +1,3245 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
+
+
+
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N4NME3KN9N');
+  </script>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="robots" content="noindex, nofollow">
+  <title>اطلب الآن — Derradj Shop</title>
+  <meta name="description" content="اطلب منتجاتك من Derradj Shop — دفع مسبق (CCP / BaridiMob) أو دفع عند الاستلام، توصيل 24-48 ساعة كحد أقصى لجميع ولايات الجزائر، ضمان كامل.">
+  <link rel="canonical" href="https://derradjshop.com/ordre/">
+  <link rel="icon" type="image/png" href="../Logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../style.css" />
+
+  <!-- Supabase + communes data + app logic -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./communes.js"></script>
+  <script src="./app.js" defer></script>
+
+  <style>
+    /* ================================================================
+       CHECKOUT PAGE — Styles exclusifs à cette page uniquement
+    ================================================================ */
+
+    /* توحيد لون الأزرق مع الأزرق الكحلي (navy) المستخدم في رأس الموقع —
+       يُعيد تعريف متغيرات style.css محلياً لهذه الصفحة فقط */
+    :root {
+      --primary:       #1B2A4A;
+      --primary-dark:  #12203a;
+      --primary-light: #2f4166;
+      --primary-bg:    rgba(27,42,74,0.08);
+      --shadow-blue:   0 8px 24px rgba(27,42,74,0.28);
+    }
+
+    /* === بانر التوصيل === */
+    .shipping-banner {
+      background: linear-gradient(135deg, #059669, #047857);
+      color: #fff;
+      text-align: center;
+      padding: 9px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      border-radius: var(--radius-lg);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      box-shadow: 0 2px 10px rgba(5,150,105,0.25);
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* === رأس الصفحة === */
+    .checkout-header {
+      background: linear-gradient(135deg, #0f172a 0%, #1B2A4A 100%);
+      border-radius: var(--radius-lg);
+      padding: 14px 20px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .checkout-header h1 { font-size: 18px; font-weight: 900; color: #fff; margin: 0; }
+    .header-badges { display: flex; gap: 6px; flex-wrap: wrap; }
+    .header-badge {
+      background: rgba(255,255,255,0.12);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.9);
+      padding: 4px 10px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* === أقسام الفورم === */
+    .ch-section {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .ch-section-title {
+      font-size: 14px;
+      font-weight: 900;
+      color: var(--text);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid var(--bg-alt);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* === حقل البلد الثابت === */
+    .country-field {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      background: var(--bg-alt);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+    }
+
+    /* === حقل الهاتف المحسّن === */
+    .phone-row {
+      display: flex;
+      align-items: stretch;
+      direction: ltr; /* LTR لأن الهاتف دائماً بالأرقام */
+    }
+    .phone-code {
+      background: var(--bg-alt);
+      border: 1.5px solid var(--border);
+      border-right: none;
+      border-radius: var(--radius) 0 0 var(--radius);
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-light);
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      flex-shrink: 0;
+      gap: 5px;
+      user-select: none;
+    }
+    .phone-row input[type="tel"] {
+      flex: 1;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-left: none;
+      border-radius: 0 var(--radius) var(--radius) 0;
+      font-size: 15px;
+      color: var(--text);
+      background: var(--bg);
+      font-family: var(--font);
+      transition: border-color .2s, box-shadow .2s;
+      min-width: 0;
+    }
+    .phone-row input[type="tel"]:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
+    }
+    .phone-row.phone-valid input[type="tel"] {
+      border-color: #059669;
+    }
+    .phone-row.phone-valid .phone-code {
+      border-color: #059669;
+    }
+    .phone-row.phone-error input[type="tel"] {
+      border-color: var(--accent);
+    }
+    .phone-row.phone-error .phone-code {
+      border-color: var(--accent);
+    }
+    .field-hint { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: block; }
+
+    /* === شبكة الحقول === */
+    .fields-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+    .field-full { grid-column: 1 / -1; }
+    .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .field-wrap label { font-size: 13px; font-weight: 700; color: var(--text-light); }
+    .field-wrap input {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      color: var(--text);
+      background: var(--bg);
+      font-family: var(--font);
+      transition: border-color .2s;
+      direction: rtl;
+      text-align: right;
+      box-sizing: border-box;
+    }
+    .field-wrap input:focus {
+      outline: none;
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
+    }
+
+    /* === Dropdown ثنائي اللغة (ولاية / بلدية) — نسخة متجددة === */
+    .custom-select-wrap { position: relative; }
+
+    /* زر التشغيل */
+    .cs-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 15px;
+      font-family: var(--font);
+      color: var(--text-muted);
+      background: var(--bg);
+      cursor: pointer;
+      direction: rtl;
+      text-align: right;
+      box-sizing: border-box;
+      transition: border-color .2s, box-shadow .2s, background .15s;
+      min-height: 46px;
+    }
+    .cs-trigger:focus { outline: none; }
+    .cs-trigger.open,
+    .cs-trigger:focus-visible {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
+    }
+    .cs-trigger.disabled {
+      background: var(--bg-alt);
+      cursor: not-allowed;
+      opacity: 0.65;
+      pointer-events: none;
+    }
+    .cs-trigger.has-value { color: var(--text); }
+
+    /* نص الزر */
+    .cs-trigger-label {
+      flex: 1;
+      text-align: right;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      align-items: flex-end;
+    }
+    .cs-tl-ar { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .cs-tl-fr { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
+    /* أيقونة السهم */
+    .cs-chevron {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: transform .2s;
+    }
+    .cs-trigger.open .cs-chevron { transform: rotate(180deg); }
+
+    /* لوحة الاختيار */
+    .cs-panel {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0; left: 0;
+      background: #fff;
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .cs-panel.open {
+      display: flex;
+      animation: csDropIn .15s ease;
+    }
+    @keyframes csDropIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+
+    /* رأس اللوحة (جوال فقط) */
+    .cs-panel-header {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+      border-bottom: 1.5px solid var(--bg-alt);
+      flex-shrink: 0;
+    }
+    .cs-panel-title { font-size: 15px; font-weight: 800; color: var(--text); }
+    .cs-close-btn {
+      width: 30px; height: 30px;
+      border-radius: 99px;
+      background: var(--bg-alt);
+      border: none; cursor: pointer;
+      font-size: 13px; color: var(--text-light);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .cs-close-btn:hover { background: var(--border); }
+
+    /* شريط البحث */
+    .cs-search-bar {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--bg-alt);
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+    .cs-search-icon { width: 15px; height: 15px; color: var(--text-muted); flex-shrink: 0; }
+    .cs-search-input {
+      flex: 1; border: none; outline: none;
+      font-size: 14px; font-family: var(--font);
+      direction: rtl; background: transparent; color: var(--text); padding: 2px 0;
+    }
+    .cs-search-input::placeholder { color: var(--text-muted); }
+
+    /* القائمة */
+    .cs-list {
+      overflow-y: auto;
+      max-height: 230px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+    }
+
+    /* الفتح للأعلى (سطح المكتب: JS يضيف هذا الصف عند نقص الفراغ تحت الزر) */
+    .cs-panel.cs-flip-up { animation: csDropInUp .15s ease; }
+    @keyframes csDropInUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .cs-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--bg-alt);
+      direction: rtl; text-align: right;
+      transition: background .1s;
+      display: flex; flex-direction: column; gap: 1px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cs-item:last-child { border-bottom: none; }
+    .cs-item:hover, .cs-item.focused { background: var(--primary-bg); }
+    .cs-item.is-selected { background: rgba(27,42,74,.06); }
+    .cs-item-ar { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.4; }
+    .cs-item-fr { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .cs-item.is-selected .cs-item-ar { color: var(--primary); }
+    .cs-item.is-selected .cs-item-fr { color: rgba(27,42,74,.55); }
+    .cs-empty { padding: 20px 16px; text-align: center; color: var(--text-muted); font-size: 14px; direction: rtl; transition: color .2s; }
+    .cs-empty.cs-empty-alert { color: #dc2626; font-weight: 700; }
+    @keyframes csShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .cs-empty-shake { animation: csShake .4s ease; }
+
+    /* الخلفية المعتمة */
+    .cs-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 9998;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cs-backdrop.show { display: block; }
+
+    /* === جوال: bottom sheet === */
+    @media (max-width: 640px) {
+      .cs-panel {
+        position: fixed !important;
+        /* bottom بدون !important حتى يتمكن JS من تجاوزه عند ظهور لوحة المفاتيح */
+        bottom: 0;
+        left: 0 !important; right: 0 !important; top: auto !important;
+        border-radius: 20px 20px 0 0;
+        border: none;
+        box-shadow: 0 -4px 40px rgba(0,0,0,.2);
+        max-height: 72vh;
+        animation: none !important;
+        /* انتقال سلس عند تحريك اللوحة فوق لوحة المفاتيح */
+        transition: bottom 0.16s ease, max-height 0.16s ease;
+        /* مساحة آمنة للأجهزة ذات الشق السفلي (notch) */
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      .cs-panel.open { animation: csSlideUp .22s cubic-bezier(.22,.61,.36,1) !important; }
+      @keyframes csSlideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+      .cs-panel-header { display: flex !important; }
+      .cs-list {
+        max-height: none; flex: 1;
+        touch-action: pan-y;            /* تأكيد أن التمرير عمودي للقائمة */
+        overscroll-behavior: contain;   /* منع انتقال التمرير للصفحة */
+        -webkit-overflow-scrolling: touch;
+      }
+      .cs-item { padding: 14px 20px; min-height: 52px; }
+      .cs-item-ar { font-size: 15px; }
+      .cs-item-fr { font-size: 12px; }
+      .cs-search-bar { padding: 12px 16px; }
+      .cs-search-input { font-size: 16px; }
+    }
+
+    /* ═══════════════════════════════════════════════════
+       قسم المنتجات — تصميم احترافي ومتجاوب
+    ═══════════════════════════════════════════════════ */
+    #productsList {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 10px;
+      overflow-x: hidden;
+      min-width: 0;
+    }
+
+    /* بطاقة المنتج — يجب تجاوز display:grid من style.css العام */
+    .product-row {
+      display: block !important;       /* تجاوز grid من style.css */
+      grid-template-columns: none;
+      padding: 0 !important;
+      margin-bottom: 0 !important;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      min-width: 0;         /* منع flex item من التمدد تلقائياً */
+      width: 100%;          /* يضمن أن البطاقة لا تتجاوز الحاوية */
+      box-sizing: border-box;
+      transition: box-shadow .2s, border-color .2s;
+      box-shadow: 0 1px 6px rgba(0,0,0,.04);
+    }
+    .product-row:hover {
+      box-shadow: 0 4px 18px rgba(0,0,0,.09);
+      border-color: rgba(27,42,74,.22);
+    }
+
+    /* رأس البطاقة: رقم المنتج + زر الحذف */
+    .pr-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 12px 5px;
+    }
+    .pr-num-badge {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--primary);
+      background: var(--primary-bg);
+      padding: 2px 8px;
+      border-radius: 99px;
+    }
+
+    /* حقل اختيار المنتج */
+    .pr-select-wrap {
+      padding: 0 12px 8px;
+      overflow: hidden;
+      min-width: 0;
+    }
+    .pr-select-wrap > label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-light);
+      margin-bottom: 4px;
+    }
+    .pr-select {
+      width: 100%;
+      max-width: 100%;
+      min-width: 0;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;      /* iOS: font-size >= 16px يمنع الزوم التلقائي */
+      font-family: var(--font);
+      color: var(--text);
+      background: var(--bg-alt);
+      direction: rtl;
+      cursor: pointer;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      box-sizing: border-box;
+      display: block;
+    }
+    .pr-select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
+      background: #fff;
+    }
+    .pr-select.has-value {
+      border-color: #10b981;
+      background: #f0fdf4;
+      color: #065f46;
+      font-weight: 700;
+    }
+
+    /* الصف السفلي: كمية + سعر + مجموع */
+    .pr-bottom-row {
+      display: grid;
+      grid-template-columns: 76px 1fr 1fr;
+      border-top: 1.5px solid var(--border);
+      background: #f8fafc;
+    }
+    .pr-cell {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 10px 9px;
+      min-width: 0;
+    }
+    .pr-cell + .pr-cell { border-right: 1px solid var(--border); }
+
+    .pr-cell > label {
+      font-size: 9px;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      white-space: nowrap;
+    }
+
+    /* حقل الكمية */
+    .pr-qty-input {
+      padding: 5px 4px;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      font-family: var(--font);
+      color: var(--text);
+      background: #fff;
+      text-align: center;
+      width: 100%;
+      box-sizing: border-box;
+      transition: border-color .2s;
+    }
+    .pr-qty-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(27,42,74,.1);
+    }
+
+    /* قيم السعر والإجمالي */
+    .pr-value {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-muted);
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      transition: color .2s;
+      padding: 1px 0;
+      direction: ltr;
+      letter-spacing: 0.01em;
+    }
+    .pr-value.is-price.loaded { color: var(--text); font-weight: 800; }
+    .pr-value.is-sub          { font-size: 15px; font-weight: 900; }
+    .pr-value.is-sub.loaded   { color: var(--primary); }
+
+    /* زر الحذف */
+    .pr-delete {
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: #fef2f2;
+      color: var(--accent);
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1.5px solid #fecaca;
+      cursor: pointer;
+      transition: all .2s;
+      flex-shrink: 0;
+    }
+    .pr-delete:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* زر إضافة منتج */
+    .btn-add-product {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      box-sizing: border-box;
+      background: #fff;
+      color: var(--primary);
+      border: 1.5px dashed rgba(27,42,74,.35);
+      padding: 9px 16px;
+      border-radius: var(--radius-lg);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: var(--font);
+      margin-top: 2px;
+    }
+    .btn-add-product:hover {
+      background: var(--primary-bg);
+      border-color: var(--primary);
+      border-style: solid;
+    }
+
+    /* مجموع المنتجات + التوصيل + المجموع الكلي */
+    .products-footer {
+      background: linear-gradient(135deg, var(--primary-bg), rgba(27,42,74,.03));
+      border: 1.5px solid rgba(27,42,74,.18);
+      border-radius: var(--radius-lg);
+      padding: 10px 14px;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .pf-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .pf-line > span   { font-size: 12px; font-weight: 600; color: var(--text-light); }
+    .pf-line > strong { font-size: 13px; font-weight: 800; color: var(--text); direction: ltr; }
+    .pf-total > span   { font-size: 13px; font-weight: 800; color: var(--text); }
+    .pf-total > strong { font-size: 16px; font-weight: 900; color: var(--primary); direction: ltr; }
+    .pf-sep { border: none; border-top: 1px solid rgba(27,42,74,.2); margin: 3px 0; }
+
+    /* ── Currency layout: دج LEFT · number RIGHT ────────── */
+    .checkout-price-fixed {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      direction: ltr;
+      unicode-bidi: isolate;
+      white-space: nowrap;
+    }
+    .checkout-price-currency { order: 1; }
+    .checkout-price-number   { order: 2; }
+
+    /* === بطاقات طريقة الدفع === */
+    .pm-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    /* === صندوق الدفع المدمج (prepay) === */
+    .pm-detail-prepay {
+      background: linear-gradient(135deg, #eff6ff, #ecfdf5);
+      border: 1.5px solid rgba(27,42,74,.35);
+    }
+    .pm-method-sub-header {
+      font-size: 13px;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin: 0 0 6px;
+    }
+    .pm-method-sub-header.blue  { color: #1B2A4A; }
+    .pm-method-sub-header.green { color: #065f46; }
+    .pm-divider {
+      border: none;
+      border-top: 1px solid rgba(0,0,0,.08);
+      margin: 10px 0;
+    }
+
+    /* === الدفع عند الاستلام === */
+    .pm-detail-cod {
+      background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+      border: 1.5px solid #86efac;
+    }
+    .cod-info-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 0 2px;
+      text-align: right;
+    }
+    .cod-info-box .cod-icon  { font-size: 28px; flex-shrink: 0; }
+    .cod-info-box .cod-title { font-size: 14px; font-weight: 800; color: #065f46; margin-bottom: 3px; }
+    .cod-info-box .cod-desc  { font-size: 12px; color: #047857; line-height: 1.55; }
+    .pm-card {
+      border: 2px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 9px 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s, box-shadow .2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      position: relative;
+    }
+    .pm-card input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+    .pm-card:hover { border-color: var(--primary-light); background: rgba(27,42,74,.03); }
+    .pm-card.selected {
+      border-color: var(--primary);
+      background: var(--primary-bg);
+      box-shadow: 0 4px 16px rgba(27,42,74,.18);
+    }
+    .pm-card .pm-icon { font-size: 19px; line-height: 1; }
+    .pm-card .pm-name { font-size: 13px; font-weight: 800; color: var(--text); }
+    .pm-card small { font-size: 10px; color: var(--text-muted); }
+    .pm-card .pm-check {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #fff;
+      font-size: 11px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+    }
+    .pm-card.selected .pm-check { display: flex; }
+
+    /* صناديق تفاصيل الدفع */
+    .pm-detail-box {
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-bottom: 4px;
+      animation: fadeIn .25s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+
+    /* البطاقة الذهبية */
+    .pm-detail-carte {
+      background: linear-gradient(135deg, #eff6ff, #fefce8);
+      border: 1.5px solid rgba(180,83,9,.25);
+    }
+    .pm-detail-carte p { font-size: 14px; color: #1B2A4A; line-height: 1.8; margin: 0 0 16px; }
+    .carte-note {
+      background: rgba(27,42,74,.08);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #1B2A4A;
+      font-weight: 600;
+      margin-top: 12px;
+    }
+
+    /* زر الدفع بالبطاقة الذهبية */
+    .btn-golden-pay {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+      background: linear-gradient(135deg, #d97706, #b45309);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-lg);
+      padding: 15px 24px;
+      font-size: 16px;
+      font-weight: 900;
+      font-family: var(--font);
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform .15s, box-shadow .2s, background .2s;
+      box-shadow: 0 4px 18px rgba(180,83,9,.35);
+    }
+    .btn-golden-pay:hover {
+      background: linear-gradient(135deg, #b45309, #92400e);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 24px rgba(180,83,9,.45);
+      color: #fff;
+      text-decoration: none;
+    }
+
+    .rip-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin: 7px 0;
+    }
+    .rip-label { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 6px; }
+    .rip-value-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .rip-number {
+      font-size: 17px;
+      font-weight: 900;
+      color: var(--text);
+      letter-spacing: 1.5px;
+      direction: ltr;
+      flex: 1;
+      min-width: 0;
+      word-break: break-all;
+      overflow-wrap: break-word;
+    }
+    .btn-copy {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: var(--primary-bg);
+      color: var(--primary);
+      border: 1px solid rgba(27,42,74,.2);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s, color .2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-copy:hover { background: var(--primary); color: #fff; }
+    .btn-copy.copied { background: #059669; color: #fff; border-color: #059669; }
+
+    /* قائمة معلومات CCP */
+    .ccp-info { display: flex; flex-direction: column; gap: 0; margin: 0; }
+    .ccp-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 14px;
+      gap: 10px;
+      border-bottom: 1px solid #e9f5ee;
+      direction: ltr;
+    }
+    .ccp-row:last-child { border-bottom: none; }
+    .ccp-row-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      white-space: nowrap;
+      flex-shrink: 0;
+      min-width: 68px;
+      text-align: left;
+    }
+    .ccp-row-val {
+      font-size: 14px;
+      font-weight: 800;
+      color: #111827;
+      direction: ltr;
+      text-align: right;
+      word-break: break-all;
+      flex: 1;
+    }
+    /* صف RIP خاص */
+    .ccp-rip-row {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 8px;
+      padding: 12px 14px;
+      border-bottom: none;
+    }
+    .ccp-rip-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      direction: ltr;
+    }
+    .ccp-rip-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6b7280;
+      flex-shrink: 0;
+      text-align: left;
+    }
+    .ccp-rip-number {
+      font-size: 14px;
+      font-weight: 900;
+      color: #065f46;
+      direction: ltr;
+      letter-spacing: 0.5px;
+      word-break: break-all;
+      flex: 1;
+      text-align: right;
+    }
+    @media (max-width: 480px) {
+      .ccp-rip-top { flex-wrap: wrap; }
+      .ccp-rip-number { font-size: 13px; letter-spacing: 0; }
+      .ccp-row-label { min-width: 60px; font-size: 12px; }
+      .ccp-row-val { font-size: 13px; }
+    }
+    .pm-note {
+      font-size: 12px;
+      color: #065f46;
+      background: #d1fae5;
+      border-radius: 8px;
+      padding: 7px 12px;
+      margin-top: 8px;
+      line-height: 1.55;
+    }
+
+    /* === منطقة رفع وصل الدفع === */
+    .receipt-zone {
+      border: 2px dashed rgba(27,42,74,.3);
+      border-radius: var(--radius-lg);
+      padding: 16px 16px;
+      text-align: center;
+      background: var(--primary-bg);
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+      position: relative;
+    }
+    .receipt-zone:hover { border-color: var(--primary); background: rgba(27,42,74,.08); }
+    .receipt-zone input[type="file"] {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      cursor: pointer;
+      width: 100%;
+      height: 100%;
+    }
+    .receipt-zone .rz-icon { font-size: 28px; margin-bottom: 6px; }
+    .receipt-zone .rz-title { font-size: 14px; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
+    .receipt-zone .rz-hint { font-size: 12px; color: var(--text-light); line-height: 1.5; }
+    .receipt-preview {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #065f46;
+      font-weight: 700;
+    }
+    .receipt-preview.show { display: flex; }
+
+    /* === ملخص الطلب === */
+    .os-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      gap: 12px;
+    }
+    .os-row:last-child { border-bottom: none; }
+    .os-row.total-row { padding: 14px 0 0; border-bottom: none; }
+    .os-row .os-label { font-size: 14px; color: var(--text-light); flex: 1; }
+    .os-row .os-value { font-size: 14px; font-weight: 700; color: var(--text); text-align: left; direction: ltr; }
+    .os-row.total-row .os-label { font-size: 16px; font-weight: 900; color: var(--text); }
+    .os-row.total-row .os-value { font-size: 22px; font-weight: 900; color: var(--primary); }
+    .os-free-badge {
+      background: #d1fae5;
+      color: #065f46;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+    .os-pm-badge {
+      background: var(--primary-bg);
+      color: var(--primary);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+    }
+
+    /* === رسائل الخطأ === */
+    .field-error-msg {
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 4px;
+      display: none;
+    }
+    .has-error input,
+    .has-error .cs-input,
+    .has-error .cs-trigger { border-color: var(--accent) !important; }
+    .has-error .field-error-msg { display: block !important; }
+
+    .form-alert {
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 16px;
+      display: none;
+    }
+    .form-alert.show { display: block; }
+
+    /* === زر التأكيد === */
+    .submit-btn {
+      width: 100%;
+      background: var(--primary);
+      color: #fff;
+      padding: 14px;
+      border-radius: var(--radius-lg);
+      font-size: 16px;
+      font-weight: 900;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s, transform .15s, box-shadow .2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 6px;
+    }
+    .submit-btn:hover { background: var(--primary-dark); transform: translateY(-2px); box-shadow: var(--shadow-blue); }
+    .submit-btn:disabled { background: var(--text-muted); cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .form-terms {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      margin-top: 12px;
+      line-height: 1.6;
+    }
+    .form-terms a { color: var(--primary); text-decoration: underline; }
+
+    /* === صندوق التوصيل والضمان === */
+    .delivery-guarantee-box {
+      background: linear-gradient(135deg, #f0fdf4, #ecfdf5);
+      border: 1.5px solid #86efac;
+      border-radius: var(--radius-lg);
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+    .dg-title {
+      font-size: 13px;
+      font-weight: 900;
+      color: #065f46;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 7px;
+      border-bottom: 1.5px solid #bbf7d0;
+    }
+    .dg-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      color: #064e3b;
+      line-height: 1.55;
+    }
+    .dg-icon { flex-shrink: 0; font-size: 15px; }
+    .dg-guarantee-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #059669;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      padding: 4px 12px;
+      border-radius: 99px;
+      margin-top: 2px;
+    }
+
+    /* === طريقة التوصيل === */
+    .dm-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    /* label اختياري على وصل الدفع */
+    .receipt-optional-badge {
+      display: inline-block;
+      background: #fef9c3;
+      color: #78350f;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 99px;
+      margin-right: 6px;
+      border: 1px solid #fde68a;
+    }
+    .receipt-mandatory-badge {
+      display: inline-block;
+      background: #fef2f2;
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 10px;
+      border-radius: 99px;
+      margin-right: 6px;
+      border: 1px solid #fecaca;
+    }
+
+    /* === تجاوب الهاتف === */
+    @media (max-width: 640px) {
+      .checkout-header { flex-direction: column; align-items: flex-start; padding: 12px 14px; }
+      .fields-grid { grid-template-columns: 1fr; }
+      .field-full { grid-column: auto; }
+      .pm-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+      .pm-card { padding: 8px 6px; }
+      .pm-card .pm-icon { font-size: 17px; }
+      .ch-section { padding: 12px; }
+
+      /* قسم المنتجات على الهاتف */
+      .product-row { display: block !important; width: 100%; min-width: 0; overflow: hidden; }
+      .pr-select-wrap { padding: 0 10px 8px; overflow: hidden; }
+      .pr-select {
+        font-size: 16px !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        width: 100% !important;
+      }
+      .pr-bottom-row { grid-template-columns: 66px 1fr 1fr; }
+      .pr-cell { padding: 7px 8px 8px; min-width: 0; }
+      .pr-cell > label { font-size: 9px; white-space: nowrap; }
+      .pr-qty-input { font-size: 16px; padding: 5px 4px; }
+      .pr-value { font-size: 13px; min-height: 28px; white-space: nowrap; }
+      .pr-value.is-sub { font-size: 14px; }
+      .products-footer { padding: 9px 12px; }
+      .pf-total > strong { font-size: 14px; }
+    }
+
+    @media (max-width: 400px) {
+      .product-row { display: block !important; overflow: hidden; }
+      .pr-select-wrap { padding: 0 8px 7px; }
+      .pr-select { font-size: 16px !important; max-width: 100% !important; }
+      .pr-bottom-row { grid-template-columns: 56px 1fr 1fr; }
+      .pr-value { font-size: 12px; }
+    }
+
+    /* حماية شاملة: لا overflow أفقي في أي حال */
+    html, body {
+      overflow-x: hidden;
+      max-width: 100%;
+      width: 100%;
+    }
+    body {
+      position: relative;
+    }
+
+    /* حاوية الصفحة — عرض كامل بدون overflow */
+    .order-page {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      overflow-x: hidden;
+    }
+
+    /* العناصر الداخلية فقط — لا نُدرج .container لأن overflow-x: hidden
+       في RTL يُزيح مركز العنصر ويُنتج مسافة فارغة على اليسار */
+    #productsList,
+    .ch-section,
+    .checkout-header,
+    .shipping-banner {
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 640px) {
+      /* آمن على الجوال: القوائم المنسدلة تستخدم position:fixed ≤640px فلا تُقطع */
+      .ch-section {
+        overflow-x: hidden;
+      }
+      /* تقليل padding الحاوية الداخلية على الشاشات الصغيرة */
+      .container {
+        padding-left: 12px !important;
+        padding-right: 12px !important;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .container {
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+      }
+    }
+
+    /* === شاشات صغيرة جداً (≤375px) === */
+    @media (max-width: 375px) {
+      .rip-number {
+        font-size: 14px;
+        letter-spacing: 0.5px;
+      }
+      .pm-detail-box {
+        padding: 10px;
+      }
+      .rip-card {
+        padding: 8px 10px;
+      }
+      /* نقل زر النسخ تحت الرقم لإعطاء الرقم عرضاً كاملاً */
+      .rip-value-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+      }
+      .btn-copy {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* === شاشات 320px === */
+    @media (max-width: 320px) {
+      .ch-section {
+        padding: 8px;
+      }
+      .checkout-header {
+        padding: 10px 12px;
+      }
+      .rip-number {
+        font-size: 13px;
+        letter-spacing: 0;
+      }
+      .ccp-row-label {
+        min-width: 52px;
+        font-size: 11px;
+      }
+      .ccp-row-val {
+        font-size: 12px;
+      }
+      .pr-bottom-row {
+        grid-template-columns: 50px 1fr 1fr;
+      }
+    }
+
+    /* === Custom Product Selector — always opens downward (position:fixed) === */
+    .pr-custom-select { position: relative; }
+    .pr-cs-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 16px;
+      font-family: var(--font);
+      color: var(--text-muted);
+      background: var(--bg-alt);
+      cursor: pointer;
+      direction: rtl;
+      text-align: right;
+      box-sizing: border-box;
+      transition: border-color .2s, box-shadow .2s, background .15s;
+      min-height: 42px;
+    }
+    .pr-cs-trigger:focus { outline: none; }
+    .pr-cs-trigger.open,
+    .pr-cs-trigger:focus-visible {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(27,42,74,.1);
+    }
+    .pr-cs-trigger.has-value {
+      border-color: #10b981;
+      background: #f0fdf4;
+      color: #065f46;
+      font-weight: 700;
+    }
+    .pr-cs-label {
+      flex: 1;
+      text-align: right;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .pr-cs-chevron {
+      width: 16px;
+      height: 16px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: transform .2s;
+    }
+    .pr-cs-trigger.open .pr-cs-chevron { transform: rotate(180deg); }
+    /* position:fixed escapes overflow:hidden on any ancestor — always opens down */
+    .pr-cs-panel {
+      position: fixed;
+      background: #fff;
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,.18);
+      z-index: 99999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 280px;
+    }
+    .pr-cs-panel.open { display: flex; animation: csDropIn .15s ease; }
+    .pr-cs-list {
+      overflow-y: auto;
+      flex: 1;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
+    .pr-cs-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--bg-alt);
+      direction: rtl;
+      text-align: right;
+      transition: background .1s;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .pr-cs-item:last-child { border-bottom: none; }
+    .pr-cs-item:hover { background: var(--primary-bg); }
+    .pr-cs-item.is-selected {
+      background: rgba(27,42,74,.06);
+      color: var(--primary);
+      font-weight: 700;
+    }
+  </style>
+</head>
+
+<body>
+
+<!-- ══════════════════════ HEADER ══════════════════════ -->
+<header class="main-header" id="mainHeader">
+  <div class="header-inner">
+    <a href="../" class="logo">
+      <span>Derradj <span class="logo-accent">Shop</span></span>
+    </a>
+    <nav class="main-nav">
+      <a href="../books/"    class="nav-link">📚 الكتب</a>
+      <a href="../Electronique/"  class="nav-link">💻 إلكترونيات</a>
+      <a href="../about"     class="nav-link">من نحن</a>
+      <a href="../delivery"  class="nav-link">التوصيل</a>
+      <a href="../faq"       class="nav-link">الأسئلة الشائعة</a>
+      <a href="../contact"   class="nav-link">تواصل معنا</a>
+    </nav>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <a href="../" class="btn-header-cta">🏠 الرئيسية</a>
+      <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="mobile-menu" id="mobileMenu">
+  <a href="../books/">📚 الكتب</a>
+  <a href="../Electronique/">💻 إلكترونيات</a>
+  <a href="../about">من نحن</a>
+  <a href="../delivery">التوصيل</a>
+  <a href="../faq">الأسئلة الشائعة</a>
+  <a href="../contact">تواصل معنا</a>
+  <a href="../" class="mobile-cta-link">🏠 الرئيسية</a>
+</div>
+
+<!-- ══════════════════════ MAIN ══════════════════════ -->
+<main class="order-page">
+  <div class="container" style="max-width:800px;width:100%;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:0 20px;">
+
+    <!-- ▶ بانر التوصيل -->
+    <div class="shipping-banner">
+      🚚 التوصيل 24-48 ساعة كحد أقصى لجميع ولايات الجزائر الـ 58 — اختر ولايتك لرؤية سعر التوصيل
+    </div>
+
+    <div class="order-card" style="padding:0;background:transparent;border:none;box-shadow:none;">
+
+      <!-- رأس الصفحة -->
+      <div class="checkout-header">
+        <h1>🛒 تأكيد الطلب</h1>
+        <div class="header-badges">
+          <span class="header-badge">🔒 بيانات آمنة</span>
+          <span class="header-badge">💳 دفع مرن</span>
+          <span class="header-badge">🛡️ ضمان كامل</span>
+        </div>
+      </div>
+
+      <!-- رسالة خطأ عامة -->
+      <div class="form-alert" id="formAlert"></div>
+
+      <form id="orderForm" novalidate method="post" action="javascript:void(0)">
+
+        <!-- ══════════════ 1 · معلومات التسليم ══════════════ -->
+        <div class="ch-section">
+          <div class="ch-section-title">📍 معلومات التسليم</div>
+
+          <div class="fields-grid">
+
+            <!-- الاسم الكامل -->
+            <div class="field-wrap">
+              <label for="full_name">الاسم الكامل *</label>
+              <input type="text" id="full_name" name="full_name"
+                     placeholder="الاسم الأول والأخير" autocomplete="name">
+              <span class="field-error-msg">يرجى إدخال الاسم الكامل</span>
+            </div>
+
+            <!-- رقم الهاتف المحسّن -->
+            <div class="field-wrap">
+              <label for="phoneInput">رقم الهاتف *</label>
+              <div class="phone-row" id="phoneRow">
+                <span class="phone-code">🇩🇿 +213</span>
+<input type="tel" id="phoneInput" name="phone"
+       placeholder="0555xxxxxx"
+       inputmode="numeric" autocomplete="tel" maxlength="10"
+       dir="rtl" style="text-align:right;">
+              </div>
+              <span class="field-hint">10 أرقام تبدأ بـ 05 / 06 / 07</span>
+              <span class="field-error-msg" id="phoneError">رقم هاتف غير صحيح</span>
+            </div>
+
+            <!-- العنوان -->
+            <div class="field-wrap field-full">
+              <label for="addressInput">العنوان *</label>
+              <input type="text" id="addressInput" name="address"
+                     placeholder="الشارع، رقم المبنى، الحي، الرمز البريدي..."
+                     autocomplete="street-address">
+              <span class="field-error-msg">يرجى إدخال العنوان</span>
+            </div>
+
+            <!-- الولاية (dropdown ثنائي اللغة) -->
+            <div class="field-wrap">
+              <label>الولاية *</label>
+              <div class="custom-select-wrap" id="wilayaWrap">
+                <button type="button" class="cs-trigger" id="wilayaInput"
+                        aria-haspopup="listbox" aria-expanded="false">
+                  <svg class="cs-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                  <span class="cs-trigger-label">اختر الولاية...</span>
+                </button>
+                <div class="cs-panel" id="wilayaDropdown" role="listbox">
+                  <div class="cs-panel-header">
+                    <span class="cs-panel-title">اختر الولاية</span>
+                    <button type="button" class="cs-close-btn" aria-label="إغلاق">✕</button>
+                  </div>
+                  <div class="cs-search-bar">
+                    <svg class="cs-search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+                    <input type="text" class="cs-search-input" placeholder="ابحث عن الولاية..." autocomplete="off" inputmode="search">
+                  </div>
+                  <div class="cs-list"></div>
+                </div>
+                <input type="hidden" id="wilayaHidden" name="ولاية">
+              </div>
+              <span class="field-error-msg" id="wilayaError">يرجى اختيار الولاية</span>
+            </div>
+
+            <!-- البلدية (dropdown بحث) -->
+            <div class="field-wrap">
+              <label>البلدية / المنطقة *</label>
+              <div class="custom-select-wrap" id="communeWrap">
+                <button type="button" class="cs-trigger disabled" id="communeInput"
+                        aria-haspopup="listbox" aria-expanded="false" disabled>
+                  <svg class="cs-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+                  <span class="cs-trigger-label">اختر الولاية أولاً</span>
+                </button>
+                <div class="cs-panel" id="communeDropdown" role="listbox">
+                  <div class="cs-panel-header">
+                    <span class="cs-panel-title">اختر البلدية / المنطقة</span>
+                    <button type="button" class="cs-close-btn" aria-label="إغلاق">✕</button>
+                  </div>
+                  <div class="cs-search-bar">
+                    <svg class="cs-search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+                    <input type="text" class="cs-search-input" placeholder="ابحث عن البلدية..." autocomplete="off" inputmode="search">
+                  </div>
+                  <div class="cs-list"></div>
+                </div>
+                <input type="hidden" id="communeHidden" name="بلدية">
+              </div>
+              <span class="field-error-msg" id="communeError">يرجى اختيار البلدية</span>
+            </div>
+
+            <!-- طريقة التوصيل -->
+            <div class="field-wrap field-full" style="margin-top:4px;">
+              <label style="margin-bottom:10px;display:block;">طريقة التوصيل *</label>
+              <div class="dm-grid" role="radiogroup" aria-label="طريقة التوصيل">
+
+                <label class="pm-card selected" id="dm_home" for="dt_home">
+                  <input type="radio" name="delivery_type" id="dt_home" value="home" checked>
+                  <span class="pm-check">✓</span>
+                  <span class="pm-icon">🏠</span>
+                  <span class="pm-name">توصيل للمنزل</span>
+                  <small>يصلك الكتاب لباب منزلك</small>
+                </label>
+
+                <label class="pm-card" id="dm_office" for="dt_office">
+                  <input type="radio" name="delivery_type" id="dt_office" value="office">
+                  <span class="pm-check">✓</span>
+                  <span class="pm-icon">📮</span>
+                  <span class="pm-name">استلام من أقرب نقطة توصيل</span>
+                  <small>مكتب بريد أو وكالة قريبة</small>
+                </label>
+
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══════════════ 2 · المنتجات المطلوبة ══════════════ -->
+        <div class="ch-section">
+          <div class="ch-section-title">🔌 المنتجات المطلوبة</div>
+
+          <!-- قائمة المنتجات (ديناميكية) -->
+          <div id="productsList"></div>
+
+          <!-- رسالة خطأ المنتجات -->
+          <span class="field-error-msg" id="productsError"
+                style="display:none;font-size:14px;font-weight:600;margin-top:8px;">
+            ❌ يرجى اختيار الكتب
+          </span>
+
+          <!-- زر إضافة منتج -->
+          <button type="button" class="btn-add-product" id="addProductBtn">
+            ➕ إضافة منتج
+          </button>
+
+          <!-- ملخص التسعير -->
+          <div class="products-footer">
+            <div class="pf-line">
+              <span>المنتجات</span>
+              <strong id="productsSubtotal" dir="ltr">0 دج</strong>
+            </div>
+            <div class="pf-line" id="shippingLine" style="display:none">
+              <span>التوصيل</span>
+              <strong id="shippingDisplay" dir="ltr">—</strong>
+            </div>
+            <div class="pf-sep" id="totalSep" style="display:none"></div>
+            <div class="pf-line pf-total" id="grandTotalLine" style="display:none">
+              <span>المجموع الكلي</span>
+              <strong id="grandTotalDisplay" dir="ltr">—</strong>
+            </div>
+          </div>
+
+          <input type="hidden" id="productsTotalHidden" name="products_total" value="0">
+        </div>
+
+        <!-- ══════════════ 3 · طريقة الدفع ══════════════ -->
+        <div class="ch-section">
+          <div class="ch-section-title">💳 طريقة الدفع</div>
+
+          <!-- بطاقتا الاختيار -->
+          <div class="pm-grid" role="radiogroup" aria-label="طريقة الدفع">
+
+            <label class="pm-card" id="card_prepay" for="pay_prepay">
+              <input type="radio" name="payment_method" id="pay_prepay" value="prepaid">
+              <span class="pm-check">✓</span>
+              <span class="pm-icon">💳</span>
+              <span class="pm-name">دفع قبل التسليم</span>
+              <small>CCP / BaridiMob</small>
+            </label>
+
+            <label class="pm-card selected" id="card_cod" for="pay_cod">
+              <input type="radio" name="payment_method" id="pay_cod" value="cash_on_delivery" checked>
+              <span class="pm-check">✓</span>
+              <span class="pm-icon">🏠</span>
+              <span class="pm-name">الدفع عند الاستلام</span>
+              <small>ادفع عند وصول طلبك</small>
+            </label>
+
+          </div>
+
+          <!-- ── تفاصيل: دفع قبل التسليم (BaridiMob + CCP مدمجان) ── -->
+          <div id="detail_prepay" class="pm-detail-box pm-detail-prepay" style="display:none">
+
+            <!-- BaridiMob -->
+            <div class="pm-method-sub-header blue">📱 BaridiMob — بريدي موب</div>
+            <div class="rip-card">
+              <div class="rip-label">رقم RIP — BaridiMob</div>
+              <div class="rip-value-row">
+                <span class="rip-number" id="bm_rip">00799999001532320361</span>
+                <button type="button" class="btn-copy" id="copyBmBtn"
+                        onclick="copyRIP('bm_rip','copyBmBtn')">
+                  📋 نسخ RIP
+                </button>
+              </div>
+            </div>
+
+            <div class="pm-divider"></div>
+
+            <!-- CCP -->
+            <div class="pm-method-sub-header green">🏦 CCP / بريد الجزائر</div>
+            <div class="rip-card">
+              <div class="ccp-info">
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Clé</span>
+                  <span class="ccp-row-val">61</span>
+                </div>
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Compte</span>
+                  <span class="ccp-row-val">0015323203</span>
+                </div>
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Nom</span>
+                  <span class="ccp-row-val">DARADJ</span>
+                </div>
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Prénom</span>
+                  <span class="ccp-row-val">AMAR</span>
+                </div>
+                <div class="ccp-row">
+                  <span class="ccp-row-label">Adresse</span>
+                  <span class="ccp-row-val">BOUIRA</span>
+                </div>
+                <div class="ccp-row ccp-rip-row">
+                  <div class="ccp-rip-top">
+                    <span class="ccp-rip-label">RIP</span>
+                    <span class="ccp-rip-number" id="ccp_rip">007 99999 0015323203 61</span>
+                  </div>
+                  <button type="button" class="btn-copy" id="copyCcpBtn"
+                          onclick="copyRIP('ccp_rip','copyCcpBtn')" style="width:100%;">
+                    📋 نسخ رقم RIP
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div class="pm-note">
+              بعد التحويل، ارفع لقطة الشاشة في قسم "وصل الدفع" أدناه.
+            </div>
+          </div>
+
+          <!-- ── تفاصيل: الدفع عند الاستلام ── -->
+          <div id="detail_cod" class="pm-detail-box pm-detail-cod" style="display:block">
+            <div class="cod-info-box">
+              <span class="cod-icon">🏠</span>
+              <div>
+                <div class="cod-title">الدفع عند استلام طلبك</div>
+                <div class="cod-desc">لا دفع مسبق — ستدفع نقداً عند الاستلام. توصيل 24–48 ساعة كحد أقصى لجميع ولايات الجزائر.</div>
+              </div>
+            </div>
+          </div>
+
+          <span class="field-error-msg" id="paymentMethodError" style="display:none;margin-top:4px;">
+            يرجى اختيار طريقة الدفع
+          </span>
+        </div>
+
+        <!-- ══════════════ 4 · وصل الدفع ══════════════ -->
+        <div class="ch-section" id="receiptSection" style="display:none">
+          <div class="ch-section-title">
+            📎 وصل الدفع
+            <span class="receipt-mandatory-badge" id="receiptBadge" style="display:none;">إجباري</span>
+            <span class="receipt-optional-badge"  id="receiptOptBadge" style="display:none;">اختياري</span>
+          </div>
+
+          <p id="receiptHintText" style="font-size:12px;color:var(--text-light);margin-bottom:10px;line-height:1.5;"></p>
+
+          <div class="receipt-zone">
+            <input type="file" id="paymentReceipt" name="payment_receipt" accept="image/*">
+            <div class="rz-icon">📷</div>
+            <div class="rz-title">اضغط لرفع وصل الدفع</div>
+            <div class="rz-hint" id="receiptZoneHint">
+              صورة أو لقطة شاشة تُثبت التحويل — JPG، PNG، WEBP
+            </div>
+          </div>
+
+          <div class="receipt-preview" id="receiptPreview">
+            <span>✅</span>
+            <span id="receiptFileName">—</span>
+          </div>
+
+          <span class="field-error-msg" id="receiptError" style="display:none;margin-top:8px;">
+            يرجى رفع صورة وصل الدفع لإتمام الطلب
+          </span>
+        </div>
+
+        <!-- ══════════════ 5 · ملاحظات (اختياري) ══════════════ -->
+        <div class="ch-section">
+          <div class="ch-section-title">
+            📝 ملاحظات إضافية
+            <span style="font-size:12px;color:var(--text-muted);font-weight:400;">(اختياري)</span>
+          </div>
+          <div class="field-wrap">
+            <input type="text" id="notes" name="notes"
+                   placeholder="أي تعليمات أو ملاحظات خاصة بطلبك...">
+          </div>
+        </div>
+
+        <!-- ══════════════ 6 · ملخص الطلب ══════════════ -->
+        <div class="ch-section">
+          <div class="ch-section-title">✅ ملخص الطلب</div>
+          <div id="orderSummaryContent">
+            <p style="font-size:14px;color:var(--text-muted);text-align:center;padding:10px 0;">
+              أضف منتجاً واختر طريقة الدفع لرؤية الملخص
+            </p>
+          </div>
+        </div>
+
+        <!-- حقول مخفية -->
+        <input type="hidden" name="shipping_fee" id="shippingFeeInput" value="0">
+        <input type="hidden" name="total_price"  id="grandTotalInput"  value="0">
+
+        <!-- ══════════════ صندوق التوصيل والضمان ══════════════ -->
+        <div class="delivery-guarantee-box">
+          <div class="dg-title">🚚 التوصيل والضمان</div>
+
+          <div class="dg-item">
+            <span class="dg-icon">📦</span>
+            <span>يصلك الكتاب خلال <strong>24 إلى 48 ساعة</strong> كحد أقصى لجميع ولايات الجزائر الـ58.</span>
+          </div>
+
+          <div class="dg-item">
+            <span class="dg-icon">🏠</span>
+            <span>يمكنك اختيار <strong>التوصيل للمنزل</strong> أو <strong>الاستلام من مكتب البريد</strong> حسب ما يناسبك.</span>
+          </div>
+
+          <div class="dg-item">
+            <span class="dg-icon">🛡️</span>
+            <span>في حال وصول الكتاب تالفاً، نضمن لك <strong>الاسترجاع الكامل أو إرسال بديل</strong>.</span>
+          </div>
+
+          <div>
+            <span class="dg-guarantee-badge">✅ ضمان كامل على كل طلب</span>
+          </div>
+        </div>
+
+        <!-- ══════════════ زر التأكيد ══════════════ -->
+        <button type="submit" class="submit-btn" id="submitBtn">
+          ✅ تأكيد الطلب
+        </button>
+
+        <p class="form-terms">
+          بالضغط على "تأكيد الطلب" فأنت توافق على
+          <a href="../terms" target="_blank" rel="noopener noreferrer">الشروط والأحكام</a>
+          وسياسة التوصيل والضمان الخاصة بنا.
+        </p>
+
+      </form>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════════════════ FOOTER ══════════════════════ -->
+<footer class="main-footer">
+  <div class="footer-top">
+    <div class="footer-brand">
+      <a href="../index.html" class="footer-logo">
+        <span>Derradj <span class="logo-accent">Shop</span></span>
+      </a>
+      <p>متجر جزائري أونلاين — منتجات متنوعة مع توصيل سريع إلى جميع ولايات الجزائر.</p>
+    </div>
+    <div class="footer-links-col">
+      <h4>روابط سريعة</h4>
+      <ul>
+        <li><a href="../index.html">الرئيسية</a></li>
+        <li><a href="../about">من نحن</a></li>
+        <li><a href="../delivery">سياسة التوصيل</a></li>
+        <li><a href="../payment">الدفع والضمان</a></li>
+        <li><a href="../faq">الأسئلة الشائعة</a></li>
+      </ul>
+    </div>
+    <div class="footer-links-col">
+      <h4>تواصل معنا</h4>
+      <div class="footer-contact-list">
+        <a href="tel:+213555491316" class="footer-contact-link">
+          <span class="contact-icon">📞</span>
+          <span class="phone-number" dir="ltr">0555 49 13 16</span>
+        </a>
+        <a href="mailto:derradjshop@gmail.com">📧 derradjshop@gmail.com</a>
+      </div>
+    </div>
+    <div class="footer-links-col">
+      <h4>الدفع</h4>
+      <div class="footer-pay-badge">💳 CCP / BaridiMob</div>
+      <div class="footer-pay-badge" style="margin-top:8px;">🏠 الدفع عند الاستلام</div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Derradj Shop — جميع الحقوق محفوظة</p>
+  </div>
+</footer>
+
+<!-- ══════════════════════ SCRIPTS UI ══════════════════════ -->
+<script>
+/* ================================================================
+   UI — Page de commande Derradj Shop
+================================================================ */
+
+/* ── تنظيف الـ URL فور تحميل الصفحة ──────────────────────────────
+   يزيل أي معاملات GET (query parameters) قد تكون علقت في الرابط
+   من نقرة سابقة، ويُبقي الرابط نظيفاً:
+   https://derradjshop.com/ordre/
+   دون أي: ?full_name=…&phone=…&address=…
+──────────────────────────────────────────────────────────────── */
+(function cleanURL() {
+  if (window.location.search || window.location.hash) {
+    /* نستبدل السجل الحالي بنفس المسار بدون أي params أو hash */
+    window.history.replaceState(
+      {},
+      document.title,
+      window.location.pathname
+    );
+  }
+}());
+
+/* ── كتالوج المنتجات ─────────────────────────────────────────
+   عدّل هذه القائمة بحرية لإضافة / تعديل / حذف المنتجات.
+   السعر بالدينار الجزائري (DA).
+──────────────────────────────────────────────────────────── */
+window.PRODUCTS_CATALOG = [
+  /* ── منتجات مخفية (تحتفظ بها لضمان تطابق catalogId — لا تظهر في القائمة) ── */
+  { name: "Electronics Components Kit",          shortName: "Electronics Components Kit",        price: 7000, hidden: true,  available: true },
+  { name: "YNINCH Super Learning Kit Arduino",   shortName: "YNINCH Super Learning Kit",         price: 7300, hidden: true,  available: true },
+  /* ── الكتب (index يتطابق مع catalogId في cart.js) ────────────── */
+  { name: "العادات السبع للناس الأكثر فعالية",         shortName: "العادات السبع",              price: 1400, available: true, paymentUrl: null },
+  { name: "العادات الذرية",                             shortName: "العادات الذرية",             price:  950, available: true, paymentUrl: null },
+  { name: "قاعدة الـ 333",                              shortName: "قاعدة الـ 333",              price: 1350, available: true, paymentUrl: null },
+  { name: "الأثر المذهل للعادات البسيطة (قديم)",         shortName: "الأثر المذهل (قديم)",       price: 1200, hidden: true,  available: true, paymentUrl: null },
+  { name: "متعة عدم الكمال",                            shortName: "متعة عدم الكمال",           price: 1800, available: true, paymentUrl: null },
+  { name: "الشجاعة تنادي",                              shortName: "الشجاعة تنادي",             price: 1300, available: true, paymentUrl: null },
+  { name: "قوة الآن",                                   shortName: "قوة الآن",                  price: 1100, available: true, paymentUrl: null },
+  { name: "بروباغندا",                                  shortName: "بروباغندا",                 price: 1100, available: true, paymentUrl: null },
+  { name: "فوضى الإدارة",                               shortName: "فوضى الإدارة",              price: 1600, available: true, paymentUrl: null },
+  { name: "السعادة الحقيقية والسعادة الزائفة",          shortName: "السعادة الحقيقية",          price: 1600, available: true, paymentUrl: null },
+  { name: "مسارات السعادة",                             shortName: "مسارات السعادة",            price: 1300, available: true, paymentUrl: null },
+  { name: "في عالم الأشباح الجائعة",                    shortName: "الأشباح الجائعة",           price: 1800, available: true, paymentUrl: null },
+  { name: "تاريخ موجز للزمان",                          shortName: "تاريخ موجز للزمان",         price: 1200, available: true, paymentUrl: null },
+  { name: "الجسد لا ينسى",                              shortName: "الجسد لا ينسى",             price: 1800, hidden: true,  available: true, paymentUrl: null },
+  { name: "متعة أن تكون في الثلاثين",                   shortName: "متعة أن تكون في الثلاثين", price:  950, available: true, paymentUrl: null },
+  { name: "كن مع الشخص الذي يجعلك سعيداً",             shortName: "كن مع من يجعلك سعيداً",    price: 1200, available: true, paymentUrl: null },
+  { name: "الثالوث المظلم",                             shortName: "الثالوث المظلم",            price: 1200, hidden: true,  available: true, paymentUrl: null },
+  { name: "كيف تتقن فن البيع",                          shortName: "فن البيع",                  price: 1500, hidden: true,  available: true, paymentUrl: null },
+  { name: "الذكاء العاطفي",                             shortName: "الذكاء العاطفي",            price: 1600, available: true, paymentUrl: null },
+  { name: "كيف تبيع أي شيء لأي إنسان",                 shortName: "كيف تبيع أي شيء",          price: 1100, available: true, paymentUrl: null },
+  { name: "كيف تسوق نفسك",                              shortName: "كيف تسوق نفسك",             price: 1700, available: true, paymentUrl: null },
+  { name: "كيف تتقن إتمام الصفقات",                     shortName: "إتمام الصفقات",              price: 1500, available: true, paymentUrl: null },
+  { name: "سيكولوجية المال",                             shortName: "سيكولوجية المال",           price: 1600, available: true, paymentUrl: null },
+  { name: "العقل الباطن",                                shortName: "العقل الباطن",               price:  950, available: true, paymentUrl: null },
+  { name: "فن اللامبالاة",                               shortName: "فن اللامبالاة",              price:  900, available: true, paymentUrl: null },
+  { name: "سيكولوجية الجماهير",                          shortName: "سيكولوجية الجماهير",         price:  750, available: true, paymentUrl: null },
+  { name: "السنن النفسية لتطور الأمم",                   shortName: "السنن النفسية للأمم",         price: 1300, available: true, paymentUrl: null },
+  { name: "الآراء والمعتقدات",                           shortName: "الآراء والمعتقدات",          price: 1550, available: true, paymentUrl: null },
+  { name: "الذكر العقلاني: الذكورة الإيجابية",           shortName: "الذكر العقلاني",             price: 2100, available: true, paymentUrl: null },
+  { name: "6 مهارات لتحقيق مبيعات مختلفة مذهلة",        shortName: "6 مهارات مبيعات",            price: 1400, available: true, paymentUrl: null },
+  { name: "الأثر المذهل للعادات البسيطة",                shortName: "الأثر المذهل للعادات",       price: 1800, available: true, paymentUrl: null },
+  { name: "العادات السبع للمراهقين الأكثر فعالية",      shortName: "العادات السبع للمراهقين",     price: 1100, available: true, paymentUrl: null },
+  { name: "القائد في داخلي",                            shortName: "القائد في داخلي",             price: 1300, available: true, paymentUrl: null },
+  { name: "الأنوثة المظلمة",                            shortName: "الأنوثة المظلمة",             price:  800, available: true, paymentUrl: null },
+  { name: "لماذا لا تذهب الخراف إلى الطبيب؟",           shortName: "لماذا لا تذهب الخراف؟",      price: 1100, available: true, paymentUrl: null },
+  { name: "من صفر إلى واحد",                            shortName: "من صفر إلى واحد",            price:  850, available: true, paymentUrl: null },
+  { name: "اللطف وآثاره الجانبية الخمسة",               shortName: "اللطف وآثاره الجانبية",      price:  950, available: true, paymentUrl: null },
+  { name: "طاقة الأنوثة",                               shortName: "طاقة الأنوثة",               price:  900, available: true, paymentUrl: null },
+  { name: "ممتلئ بالفراغ",                              shortName: "ممتلئ بالفراغ",              price: 1400, available: true, paymentUrl: null },
+  { name: "أبي الذي أكره",                              shortName: "أبي الذي أكره",              price: 1100, available: true, paymentUrl: null },
+  { name: "بلورة الرأي العام",                          shortName: "بلورة الرأي العام",          price: 1100, available: true, paymentUrl: null },
+  /* ── الكتب الجديدة (catalogId 43-56) ── */
+  { name: "بوابتك للتغيير",                             shortName: "بوابتك للتغيير",             price:  950, available: true, paymentUrl: null },
+  { name: "أغنى رجل في بابل",                          shortName: "أغنى رجل في بابل",           price:  950, available: true, paymentUrl: null },
+  { name: "أريد أن أنام",                               shortName: "أريد أن أنام",               price:  850, available: true, paymentUrl: null },
+  { name: "كيف لا تموت وحيدًا",                         shortName: "كيف لا تموت وحيدًا",         price: 1300, available: true, paymentUrl: null },
+  { name: "كن أقوى من مشاعرك",                         shortName: "كن أقوى من مشاعرك",          price: 1400, available: true, paymentUrl: null },
+  { name: "تصرفي كسيدة وفكري كرجل",                    shortName: "تصرفي كسيدة وفكري كرجل",    price:  950, available: true, paymentUrl: null },
+  { name: "كبر دماغك",                                 shortName: "كبر دماغك",                  price:  950, available: true, paymentUrl: null },
+  { name: "قوانين النجاح المستدام: كيف تستمر في النجاح",shortName: "قوانين النجاح المستدام",     price:  900, available: true, paymentUrl: null },
+  { name: "كيف نحصل على السعادة ونبتعد عن الكآبة",      shortName: "كيف نحصل على السعادة",       price:  850, available: true, paymentUrl: null },
+  { name: "هل ستأكل قطتي مقلتي؟",                      shortName: "هل ستأكل قطتي مقلتي؟",      price: 2400, available: true, paymentUrl: null },
+  { name: "الوحش الذي يسكنك يمكن أن يكون لطيفًا",      shortName: "الوحش الذي يسكنك",           price: 1400, available: true, paymentUrl: null },
+  { name: "احرق بعد الكتابة",                           shortName: "احرق بعد الكتابة",           price:  950, available: true, paymentUrl: null },
+  { name: "عين الأنا: الذي لا يُخفى عنه شيء",          shortName: "عين الأنا",                  price: 1300, available: true, paymentUrl: null },
+  { name: "وأشرقت الشمس من جديد",                                                                             shortName: "وأشرقت الشمس من جديد",                      price: 1300, available: true, paymentUrl: null },
+  /* ── الكتب الجديدة (catalogId 57–82) ── */
+  { name: "كتاب المليونير",                                                                                    shortName: "كتاب المليونير",                             price: 1200, available: true, paymentUrl: null },
+  { name: "السنارة: كل شيء عن ريادة الأعمال الابتكارية",                                                      shortName: "السنارة",                                    price: 1300, available: true, paymentUrl: null },
+  { name: "تجاوز مستويات الوعي: الطريق إلى التنوير",                                                          shortName: "تجاوز مستويات الوعي",                        price: 1300, available: true, paymentUrl: null },
+  { name: "هذا الكتاب سيؤلمك: يوميات سرية لطبيب مبتدئ",                                                      shortName: "هذا الكتاب سيؤلمك",                          price:  950, available: true, paymentUrl: null },
+  { name: "الخطابات السرية للراهب الذي باع سيارته الفيراري",                                                  shortName: "الخطابات السرية للراهب",                     price:  950, available: true, paymentUrl: null },
+  { name: "الراهب الذي باع سيارته الفيراري",                                                                  shortName: "الراهب الذي باع سيارته الفيراري",            price:  950, available: true, paymentUrl: null },
+  { name: "القوانين اليومية: 366 فكرة تأملية في القوة والإغواء والإتقان والاستراتيجية والطبيعة البشرية",      shortName: "القوانين اليومية",                            price: 1900, available: true, paymentUrl: null },
+  { name: "فن الإغواء",                                                                                       shortName: "فن الإغواء",                                 price: 3200, available: true, paymentUrl: null },
+  { name: "فن التعامل مع الناس",                                                                              shortName: "فن التعامل مع الناس",                        price:  650, available: true, paymentUrl: null },
+  { name: "فن الإدارة والقيادة",                                                                              shortName: "فن الإدارة والقيادة",                        price:  700, available: true, paymentUrl: null },
+  { name: "دع القلق وابدأ الحياة",                                                                            shortName: "دع القلق وابدأ الحياة",                      price:  650, available: true, paymentUrl: null },
+  { name: "خطة تسويق في صفحة واحدة",                                                                         shortName: "خطة تسويق في صفحة واحدة",                   price: 1200, available: true, paymentUrl: null },
+  { name: "فوضى التسويق",                                                                                     shortName: "فوضى التسويق",                               price: 1750, available: true, paymentUrl: null },
+  { name: "معجزة الصباح",                                                                                     shortName: "معجزة الصباح",                               price: 1100, available: true, paymentUrl: null },
+  { name: "معسكر التدريب",                                                                                    shortName: "معسكر التدريب",                              price:  950, available: true, paymentUrl: null },
+  { name: "متلازمة تيك توك: كيف يغير تطبيق واحد العالم من حولنا؟",                                           shortName: "متلازمة تيك توك",                            price: 1400, available: true, paymentUrl: null },
+  { name: "قوة الحب المذهلة",                                                                                 shortName: "قوة الحب المذهلة",                           price: 1700, available: true, paymentUrl: null },
+  { name: "مميز بالأصفر",                                                                                     shortName: "مميز بالأصفر",                               price:  950, available: true, paymentUrl: null },
+  { name: "ملول وعبقري: إعادة اكتشاف فن الشرود المفقود",                                                     shortName: "ملول وعبقري",                                price:  950, available: true, paymentUrl: null },
+  { name: "الحياة تخطيط: انتقاء الخيارات الحكيمة وسط عالم مضطرب",                                           shortName: "الحياة تخطيط",                               price: 1200, available: true, paymentUrl: null },
+  { name: "الرجال من المريخ والنساء من الزهرة",                                                               shortName: "الرجال من المريخ والنساء من الزهرة",         price: 1100, available: true, paymentUrl: null },
+  { name: "كل لتعيش: برنامج التغذية الرائع الغني بالعناصر الغذائية لإنقاص الوزن بسرعة وثبات",               shortName: "كل لتعيش",                                   price: 2500, available: true, paymentUrl: null },
+  { name: "الجانب الإيجابي من اللاعقلانية",                                                                  shortName: "الجانب الإيجابي من اللاعقلانية",             price: 2900, available: true, paymentUrl: null },
+  { name: "الإنسان ذلك المجهول",                                                                              shortName: "الإنسان ذلك المجهول",                        price: 2000, available: true, paymentUrl: null },
+  { name: "وتظن أنك نجوت",                                                                                   shortName: "وتظن أنك نجوت",                              price: 1400, available: true, paymentUrl: null },
+  { name: "كوتلر يتحدث عن التسويق: كيف تنشئ الأسواق وتغزوها وتسيطر عليها",                                  shortName: "كوتلر يتحدث عن التسويق",                     price:  990, available: true, paymentUrl: null },
+  /* ── إلكترونيات (catalogId 83–86) ── */
+  { name: "حامل اللابتوب القابل للتعديل",                              shortName: "حامل اللابتوب",     price: 1500, available: true, paymentUrl: null },
+  { name: "ساعة ذكية Modio ST11 مع 3 أزواج أساور",                   shortName: "ساعة Modio ST11",    price: 9800, available: true, paymentUrl: null },
+  { name: "Anker SoundCore R50i VG – Bluetooth Earbuds (Black)",      shortName: "Anker R50i VG – Black", price: 4900, available: true, paymentUrl: null },
+  { name: "Anker SoundCore R50i VG – Bluetooth Earbuds (Blue)",       shortName: "Anker R50i VG – Blue",  price: 4900, hidden: true,  available: true, paymentUrl: null },
+  { name: "Airpods 4 Type-C Vrac (Garantie)",                         shortName: "Airpods 4 Type-C Vrac", price: 2900, available: true, paymentUrl: null },
+  { name: "Hoco J132A 20000mAh Power Bank USB-A 15W + USB-C PD20W with Built-in Type-C 22.5W Cable and iP 12W Cable", shortName: "Hoco J132A Power Bank", price: 3950, available: true, paymentUrl: null },
+];
+
+/* حالة التوفر تُقرأ حصراً من admin_products_catalog.stock_status —
+   راجع applyCatalogRows() أدناه (نفس المصدر الذي تكتب إليه لوحة
+   الإدارة وتقرأ منه صفحة تفاصيل المنتج). كان هنا سابقاً نظام قديم
+   منفصل يقرأ من جدول product_availability (لم تعد لوحة الإدارة
+   تكتب إليه) ويُطبّق بياناته فوق PRODUCTS_CATALOG بشكل غير متزامن،
+   ما يُنشئ سباقاً بين مصدرين مختلفين لنفس البيانات ويُفسّر عدم
+   تطابق حالة التوفر بين صفحة الطلب وباقي الموقع. أُزيل بالكامل. */
+/* ── Sticky header ──────────────────────────────────────────── */
+window.addEventListener('scroll', () => {
+  document.getElementById('mainHeader')
+    .classList.toggle('scrolled', window.scrollY > 50);
+}, { passive: true });
+
+/* ── Mobile menu ───────────────────────────────────────────── */
+const _menuBtn    = document.getElementById('mobileMenuBtn');
+const _mobileMenu = document.getElementById('mobileMenu');
+_menuBtn?.addEventListener('click', () => {
+  _mobileMenu.classList.toggle('open');
+  _menuBtn.classList.toggle('open');
+});
+document.querySelectorAll('.mobile-menu a').forEach(link => {
+  link.addEventListener('click', () => {
+    _mobileMenu.classList.remove('open');
+    _menuBtn.classList.remove('open');
+  });
+});
+
+/* ── نسخ RIP ────────────────────────────────────────────────── */
+function copyRIP(spanId, btnId) {
+  const raw = document.getElementById(spanId)?.textContent || '';
+  const text = raw.replace(/\s+/g, '').trim();
+  if (!text) return;
+
+  const doConfirm = () => {
+    const btn = document.getElementById(btnId);
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✅ تم نسخ RIP';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2500);
+  };
+
+  if (navigator.clipboard?.writeText) {
+    navigator.clipboard.writeText(text).then(doConfirm).catch(() => fallbackCopy(text, doConfirm));
+  } else {
+    fallbackCopy(text, doConfirm);
+  }
+}
+
+function fallbackCopy(text, cb) {
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); cb(); } catch(e) {}
+  document.body.removeChild(ta);
+}
+
+/* ── التحقق المباشر: الاسم ──────────────────────────────────── */
+document.getElementById('full_name')?.addEventListener('input', function () {
+  const wrap = this.closest('.field-wrap');
+  if (this.value.trim()) wrap.classList.remove('has-error');
+  else                   wrap.classList.add('has-error');
+});
+
+/* ── التحقق المباشر: العنوان ────────────────────────────────── */
+document.getElementById('addressInput')?.addEventListener('input', function () {
+  const wrap = this.closest('.field-wrap');
+  if (this.value.trim()) wrap.classList.remove('has-error');
+  else                   wrap.classList.add('has-error');
+});
+
+/* ── التحقق من رقم الهاتف (مباشر) ──────────────────────────── */
+const phoneInputEl = document.getElementById('phoneInput');
+const phoneRowEl   = document.getElementById('phoneRow');
+const phoneErrEl   = document.getElementById('phoneError');
+
+phoneInputEl?.addEventListener('input', function () {
+  this.value = this.value.replace(/\D/g, '').slice(0, 10);
+  const v    = this.value;
+  const wrap = this.closest('.field-wrap');
+  if (!v) {
+    phoneRowEl.classList.remove('phone-valid', 'phone-error');
+    wrap?.classList.remove('has-error');
+    phoneErrEl.style.display = 'none';
+  } else if (/^0[5-7]\d{8}$/.test(v)) {
+    phoneRowEl.classList.add('phone-valid');
+    phoneRowEl.classList.remove('phone-error');
+    wrap?.classList.remove('has-error');   /* إزالة has-error حتى يختفي !important */
+    phoneErrEl.style.display = 'none';
+  } else {
+    phoneRowEl.classList.add('phone-error');
+    phoneRowEl.classList.remove('phone-valid');
+    if (v.length >= 4) {
+      phoneErrEl.style.display = 'block';
+    } else {
+      wrap?.classList.remove('has-error');
+      phoneErrEl.style.display = 'none';
+    }
+  }
+});
+
+/* ── اختيار طريقة التوصيل ──────────────────────────────────── */
+const dtRadios = document.querySelectorAll('input[name="delivery_type"]');
+const dtCards  = {
+  home:   document.getElementById('dm_home'),
+  office: document.getElementById('dm_office'),
+};
+dtRadios.forEach(r => {
+  r.addEventListener('change', () => {
+    Object.keys(dtCards).forEach(k =>
+      dtCards[k].classList.toggle('selected', k === r.value));
+    recalcAll();
+  });
+});
+
+/* ── اختيار طريقة الدفع ─────────────────────────────────────── */
+const pmRadios = document.querySelectorAll('input[name="payment_method"]');
+const detailBoxes = {
+  prepaid:          document.getElementById('detail_prepay'),
+  cash_on_delivery: document.getElementById('detail_cod'),
+};
+const receiptSection = document.getElementById('receiptSection');
+const pmCards = {
+  prepaid:          document.getElementById('card_prepay'),
+  cash_on_delivery: document.getElementById('card_cod'),
+};
+
+pmRadios.forEach(radio => {
+  radio.addEventListener('change', () => {
+    Object.keys(pmCards).forEach(k =>
+      pmCards[k].classList.toggle('selected', k === radio.value));
+    Object.keys(detailBoxes).forEach(k =>
+      detailBoxes[k].style.display = (k === radio.value) ? 'block' : 'none');
+
+    document.getElementById('paymentMethodError').style.display = 'none';
+
+    if (radio.value === 'cash_on_delivery') {
+      /* الدفع عند الاستلام — لا حاجة لوصل */
+      receiptSection.style.display = 'none';
+      document.getElementById('paymentReceipt').required = false;
+    } else if (radio.value === 'prepaid') {
+      /* دفع قبل التسليم — وصل إجباري */
+      receiptSection.style.display = 'block';
+      document.getElementById('paymentReceipt').required = true;
+      document.getElementById('receiptBadge').style.display    = 'inline-block';
+      document.getElementById('receiptOptBadge').style.display = 'none';
+      document.getElementById('receiptHintText').innerHTML =
+        'ارفع لقطة شاشة أو صورة تُثبت التحويل عبر BaridiMob أو CCP.';
+      document.getElementById('receiptZoneHint').innerHTML =
+        'صورة أو لقطة شاشة تُثبت التحويل — JPG، PNG، WEBP';
+    }
+
+    updateSummary();
+  });
+});
+
+/* ── معاينة وصل الدفع ───────────────────────────────────────── */
+document.getElementById('paymentReceipt')?.addEventListener('change', function () {
+  const preview = document.getElementById('receiptPreview');
+  if (this.files?.[0]) {
+    document.getElementById('receiptFileName').textContent = this.files[0].name;
+    preview.classList.add('show');
+    document.getElementById('receiptError').style.display = 'none';
+  } else {
+    preview.classList.remove('show');
+  }
+});
+
+/*/* ══════════════════════════════════════════════════════════════
+   إدارة المنتجات — منطق كامل ومصحح
+══════════════════════════════════════════════════════════════ */
+let productCounter = 0;
+
+/* تنسيق المبلغ: دج [يسار] · الرقم [يمين] — بدون مشاكل BiDi */
+function formatDZD(n) {
+  return '<span class="checkout-price-fixed">' +
+           '<span class="checkout-price-currency">دج</span>' +
+           '<span class="checkout-price-number">' + Number(n || 0).toLocaleString('en-US') + '</span>' +
+         '</span>';
+}
+
+function formatDZDSummary(n) {
+  return '<span class="checkout-price-fixed">' +
+           '<span class="checkout-price-currency">دج</span>' +
+           '<span class="checkout-price-number">' + Number(n || 0).toLocaleString('en-US') + '</span>' +
+         '</span>';
+}
+
+/* خيارات القائمة المنسدلة — تتجاهل المخفية وغير المتوفرة */
+function buildOptions() {
+  return window.PRODUCTS_CATALOG.map(function(p, i) {
+    if (p.hidden) return '';
+    if (p.available === false) return '';
+    var display = (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج';
+    return '<option value="' + i + '" title="' + p.name + '">' + display + '</option>';
+  }).join('');
+}
+
+/* إعادة ترقيم الصفوف حسب ترتيبها الفعلي في DOM */
+function renumberRows() {
+  document.querySelectorAll('#productsList .product-row').forEach(function(row, idx) {
+    var badge = row.querySelector('.pr-num-badge');
+    if (badge) badge.textContent = '📦 منتج ' + (idx + 1);
+  });
+}
+
+/* ── تهيئة القائمة المخصصة للمنتج — تفتح دائماً لأسفل ─── */
+function initPrCustomSelect(row, hiddenSel) {
+  var trigger = row.querySelector('.pr-cs-trigger');
+  var panel   = row.querySelector('.pr-cs-panel');
+  var list    = row.querySelector('.pr-cs-list');
+
+  /* بناء عناصر القائمة — يتجاهل المخفية وغير المتوفرة */
+  list.innerHTML = window.PRODUCTS_CATALOG.map(function(p, i) {
+    if (p.hidden) return '';
+    if (p.available === false) return '';
+    return '<div class="pr-cs-item" data-value="' + i + '" role="option">' +
+      (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج' +
+      '</div>';
+  }).join('');
+
+  /* تحديد موضع اللوحة أسفل الزر مباشرة */
+  function positionPanel() {
+    var r = trigger.getBoundingClientRect();
+    panel.style.top   = (r.bottom + 4) + 'px';
+    panel.style.left  = r.left + 'px';
+    panel.style.width = r.width + 'px';
+  }
+
+  /* فتح القائمة مع إغلاق أي قائمة أخرى مفتوحة */
+  function openPanel() {
+    document.querySelectorAll('.pr-cs-panel.open').forEach(function(p) { p.classList.remove('open'); });
+    document.querySelectorAll('.pr-cs-trigger.open').forEach(function(t) {
+      t.classList.remove('open'); t.setAttribute('aria-expanded', 'false');
+    });
+    positionPanel();
+    panel.classList.add('open');
+    trigger.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+
+  function closePanel() {
+    panel.classList.remove('open');
+    trigger.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  /* مزامنة العرض المرئي مع قيمة الـ select المخفي */
+  function syncDisplay() {
+    var val  = hiddenSel.value;
+    var item = (val !== '' && val !== undefined)
+               ? list.querySelector('[data-value="' + val + '"]')
+               : null;
+    if (item) {
+      trigger.querySelector('.pr-cs-label').textContent = item.textContent;
+      trigger.classList.add('has-value');
+      list.querySelectorAll('.pr-cs-item').forEach(function(el) {
+        el.classList.toggle('is-selected', el === item);
+      });
+    } else {
+      trigger.querySelector('.pr-cs-label').textContent = '— اختر المنتج من القائمة —';
+      trigger.classList.remove('has-value');
+      list.querySelectorAll('.pr-cs-item').forEach(function(el) { el.classList.remove('is-selected'); });
+    }
+  }
+
+  /* فتح / إغلاق عند النقر على الزر */
+  trigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    panel.classList.contains('open') ? closePanel() : openPanel();
+  });
+
+  /* اختيار منتج من القائمة */
+  list.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var item = e.target.closest('.pr-cs-item');
+    if (!item) return;
+    hiddenSel.value = item.dataset.value;
+    hiddenSel.dispatchEvent(new Event('change'));
+    closePanel();
+  });
+
+  /* إغلاق عند النقر خارج الصف */
+  document.addEventListener('click', function(e) {
+    if (!row.contains(e.target)) closePanel();
+  });
+
+  /* إعادة تحديد الموضع عند التمرير أو تغيير حجم النافذة */
+  window.addEventListener('scroll', function() {
+    if (panel.classList.contains('open')) positionPanel();
+  }, { passive: true });
+  window.addEventListener('resize', function() {
+    if (panel.classList.contains('open')) positionPanel();
+  }, { passive: true });
+
+  /* مزامنة العرض عند تغيير القيمة من خارج (مثل تهيئة السلة) */
+  hiddenSel.addEventListener('change', syncDisplay);
+}
+
+/* إنشاء صف منتج جديد — المستخدم يختار بنفسه */
+function createProductRow() {
+  productCounter++;
+  const id  = productCounter;
+  const row = document.createElement('div');
+  row.className = 'product-row';
+  row.dataset.id = id;
+
+  row.innerHTML = `
+    <div class="pr-header">
+      <span class="pr-num-badge">📦 منتج —</span>
+      <button type="button" class="pr-delete" title="حذف المنتج">✕</button>
+    </div>
+    <div class="pr-select-wrap">
+      <label>اختر المنتج *</label>
+      <select class="pr-select" required
+              style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;"
+              tabindex="-1" aria-hidden="true">
+        <option value="" disabled selected></option>
+        ${buildOptions()}
+      </select>
+      <div class="pr-custom-select">
+        <button type="button" class="pr-cs-trigger" aria-haspopup="listbox" aria-expanded="false">
+          <span class="pr-cs-label">— اختر المنتج من القائمة —</span>
+          <svg class="pr-cs-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+        </button>
+        <div class="pr-cs-panel" role="listbox">
+          <div class="pr-cs-list"></div>
+        </div>
+      </div>
+    </div>
+    <div class="pr-bottom-row">
+      <div class="pr-cell">
+        <label>الكمية</label>
+        <input type="number" class="pr-qty-input" value="1" min="1" required>
+      </div>
+      <div class="pr-cell">
+        <label>السعر / وحدة</label>
+        <div class="pr-value is-price" id="price_${id}">—</div>
+      </div>
+      <div class="pr-cell">
+        <label>المجموع</label>
+        <div class="pr-value is-sub" id="sub_${id}">—</div>
+      </div>
+    </div>
+  `;
+
+  const sel   = row.querySelector('.pr-select');
+  sel.value = '';  /* ضمان عدم الاختيار التلقائي في جميع المتصفحات */
+  initPrCustomSelect(row, sel);
+  const qty   = row.querySelector('.pr-qty-input');
+  const prEl  = row.querySelector('#price_' + id);
+  const subEl = row.querySelector('#sub_' + id);
+
+  function calcRow() {
+    const idx = parseInt(sel.value);
+    const cat = isNaN(idx) ? null : window.PRODUCTS_CATALOG[idx];
+
+    if (!cat) {
+      prEl.textContent = '—';
+      prEl.classList.remove('loaded');
+      subEl.textContent = '—';
+      subEl.classList.remove('loaded');
+      sel.classList.remove('has-value');
+      recalcAll();
+      return;
+    }
+
+    const q = Math.max(1, parseInt(qty.value) || 1);
+    qty.value = q;
+
+    prEl.innerHTML = formatDZD(cat.price);
+    prEl.classList.add('loaded');
+
+    subEl.innerHTML = formatDZD(cat.price * q);
+    subEl.classList.add('loaded');
+
+    sel.classList.add('has-value');
+    recalcAll();
+  }
+
+  /* تحديث فوري عند تغيير المنتج أو الكمية */
+  sel.addEventListener('change', function() { calcRow(); updateSummary(); });
+  qty.addEventListener('input',  function() { calcRow(); updateSummary(); });
+
+  /* حذف الصف: إزالة + إعادة ترقيم + إعادة حساب */
+  row.querySelector('.pr-delete').addEventListener('click', function() {
+    row.remove();
+    renumberRows();
+    recalcAll();
+    updateSummary();
+  });
+
+  /* لا auto-select — المستخدم يختار بنفسه */
+
+  return row;
+}
+
+/* زر إضافة منتج: صف فارغ جديد + إعادة ترقيم */
+document.getElementById('addProductBtn').addEventListener('click', function() {
+  document.getElementById('productsList').appendChild(createProductRow());
+  renumberRows();
+});
+
+/* إعادة بناء القوائم بعد تحميل التوفر من Supabase */
+window._refreshProductRowsAvailability = function () {
+  document.querySelectorAll('#productsList .product-row').forEach(function (row) {
+    var trigger = row.querySelector('.pr-cs-trigger');
+    var list    = row.querySelector('.pr-cs-list');
+    var sel     = row.querySelector('.pr-select');
+    if (!list || !sel) return;
+
+    /* إعادة بناء قائمة العناصر مع استبعاد غير المتوفرة */
+    list.innerHTML = window.PRODUCTS_CATALOG.map(function(p, i) {
+      if (p.hidden || p.available === false) return '';
+      return '<div class="pr-cs-item" data-value="' + i + '" role="option">' +
+        (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج' +
+        '</div>';
+    }).join('');
+
+    /* إذا كان المنتج المحدد حالياً غير متوفر، أعد ضبط الصف */
+    var curIdx = parseInt(sel.value);
+    if (!isNaN(curIdx) && window.PRODUCTS_CATALOG[curIdx] && window.PRODUCTS_CATALOG[curIdx].available === false) {
+      sel.value = '';
+      if (trigger) trigger.textContent = 'اختر المنتج...';
+      trigger && trigger.classList.remove('has-value');
+    }
+
+    /* إعادة ربط أحداث اختيار العنصر */
+    list.querySelectorAll('.pr-cs-item').forEach(function (item) {
+      item.addEventListener('click', function () {
+        var val = parseInt(item.dataset.value);
+        var cat = (window.PRODUCTS_CATALOG || [])[val];
+        if (!cat || cat.available === false) return;
+        sel.value = val;
+        sel.dispatchEvent(new Event('change'));
+        if (trigger) {
+          trigger.textContent = item.textContent;
+          trigger.classList.add('has-value');
+        }
+        list.closest('.pr-select-wrap')?.querySelector('.pr-cs-panel')?.classList.remove('open');
+      });
+    });
+  });
+};
+
+/* تحميل المنتجات من السلة، أو إضافة صف فارغ إذا كانت السلة فارغة */
+function initProductRows() {
+
+  /* ── الحد الأقصى لعمر بيانات السلة: 48 ساعة ──────────────
+     إذا كانت البيانات أقدم من ذلك نعتبرها "قديمة" ونتجاهلها
+     حتى لا تظهر كتب من جلسات سابقة دون علم المستخدم.
+  ─────────────────────────────────────────────────────────── */
+  var CART_MAX_AGE_MS = 48 * 60 * 60 * 1000; /* 48 ساعة */
+
+  var rawItems = (function () {
+    try {
+      var raw = localStorage.getItem('derradj_cart');
+      if (!raw) return [];
+
+      /* التحقق من الطابع الزمني — هل السلة حديثة؟ */
+      var tsRaw = localStorage.getItem('derradj_cart_ts');
+      var ts    = tsRaw ? parseInt(tsRaw, 10) : 0;
+      var age   = ts > 0 ? (Date.now() - ts) : Infinity;
+
+      if (age > CART_MAX_AGE_MS) {
+        /* السلة قديمة (أكثر من 48 ساعة) — نحذفها ونعرض نموذجاً فارغاً */
+        localStorage.removeItem('derradj_cart');
+        localStorage.removeItem('derradj_cart_ts');
+        return [];
+      }
+
+      var parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  }());
+
+  /* تجاهل المنتجات المخفية أو غير الصالحة */
+  var cartItems = rawItems.filter(function (item) {
+    if (!item || typeof item.catalogId !== 'number') return false;
+    var cat = (window.PRODUCTS_CATALOG || [])[item.catalogId];
+    return cat && !cat.hidden;
+  });
+
+  /* تنظيف localStorage إذا كانت البيانات فاسدة */
+  if (rawItems.length > 0 && cartItems.length !== rawItems.length) {
+    if (cartItems.length === 0) {
+      localStorage.removeItem('derradj_cart');
+      localStorage.removeItem('derradj_cart_ts');
+    } else {
+      localStorage.setItem('derradj_cart', JSON.stringify(cartItems));
+      /* نُبقي الطابع الزمني كما هو — المستخدم أضاف المنتجات فعلاً */
+    }
+  }
+
+  var list = document.getElementById('productsList');
+
+  if (cartItems.length > 0) {
+    cartItems.forEach(function (cartItem) {
+      var row = createProductRow();
+      list.appendChild(row);
+
+      var catIdx = parseInt(cartItem.catalogId);
+      if (!isNaN(catIdx) && window.PRODUCTS_CATALOG[catIdx]) {
+        var sel = row.querySelector('.pr-select');
+        if (sel) {
+          sel.value = String(catIdx);
+          sel.classList.add('has-value');
+          sel.dispatchEvent(new Event('change'));
+        }
+        var qtyInput = row.querySelector('.pr-qty-input');
+        if (qtyInput && cartItem.qty > 0) {
+          qtyInput.value = parseInt(cartItem.qty) || 1;
+          qtyInput.dispatchEvent(new Event('input'));
+        }
+      }
+    });
+  } else {
+    list.appendChild(createProductRow());
+  }
+
+  renumberRows();
+  recalcAll();
+  updateSummary();
+}
+
+/* ── تحميل المنتجات الجديدة من admin_products_catalog ثم تهيئة الصفوف ──
+   يضيف كل منتج من لوحة الإدارة إلى PRODUCTS_CATALOG (في موضع catalog_id)
+   قبل بناء صفوف السلة حتى تظهر المنتجات الجديدة في قائمة الاختيار وملخص الطلب.
+──────────────────────────────────────────────────────────────────────── */
+(function () {
+  var SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
+  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
+
+  /* Short cache (order totals depend on this, so kept tight at 60s) —
+     avoids re-pulling the full active catalog on every load/refresh of
+     the order page, which sees far more views than completed orders. */
+  var CATALOG_CACHE_KEY = 'derradj_ordre_catalog_v1';
+  var CATALOG_CACHE_TTL = 60 * 1000;
+  function applyCatalogRows(products) {
+    if (!Array.isArray(products)) return;
+    products.forEach(function(p) {
+      if (!p.catalog_id) return;
+      /* admin_products_catalog is authoritative — always override */
+      window.PRODUCTS_CATALOG[p.catalog_id] = {
+        name:      p.product_name,
+        shortName: p.product_name,
+        price:     Number(p.price) || 0,
+        available: p.stock_status !== 'out_of_stock',
+      };
+    });
+  }
+
+  var cachedCatalog = null;
+  try {
+    var rawCatalog = sessionStorage.getItem(CATALOG_CACHE_KEY);
+    if (rawCatalog) {
+      var parsedCatalog = JSON.parse(rawCatalog);
+      if (parsedCatalog.t && Date.now() - parsedCatalog.t <= CATALOG_CACHE_TTL) cachedCatalog = parsedCatalog.d;
+    }
+  } catch (_) {}
+
+  if (cachedCatalog) {
+    applyCatalogRows(cachedCatalog);
+    initProductRows();
+  } else {
+    fetch(SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,product_name,price,stock_status,display_order&is_active=eq.true&order=display_order.asc.nullslast,created_at.desc', {
+      headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+    })
+    .then(function(r) { return r.ok ? r.json() : []; })
+    .then(function(products) {
+      if (Array.isArray(products)) {
+        try { sessionStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ t: Date.now(), d: products })); } catch (_) {}
+        applyCatalogRows(products);
+      }
+    })
+    .catch(function() { /* إذا فشل الاتصال نكمل بالكتالوج الأصلي فقط */ })
+    .finally(function() { initProductRows(); });
+  }
+}());
+
+function getProductsTotal() {
+  let total = 0;
+  document.querySelectorAll('.product-row').forEach(row => {
+    const idx = parseInt(row.querySelector('.pr-select')?.value);
+    const qty = Math.max(1, parseInt(row.querySelector('.pr-qty-input')?.value) || 1);
+    const cat = isNaN(idx) ? null : window.PRODUCTS_CATALOG[idx];
+    if (cat) total += cat.price * qty;
+  });
+  return total;
+}
+function updateGoldenPayLink() {
+  const btn = document.getElementById('goldenPayBtn');
+  if (!btn) return;
+
+  const selectedProducts = [...document.querySelectorAll('.product-row')]
+    .map(row => {
+      const select = row.querySelector('.pr-select');
+      const idx = parseInt(select?.value);
+      return isNaN(idx) ? null : window.PRODUCTS_CATALOG[idx];
+    })
+    .filter(Boolean);
+
+  if (selectedProducts.length === 0) {
+    btn.href = "#";
+    btn.innerHTML = "💳 &nbsp; اختر المنتج أولاً";
+    btn.style.pointerEvents = "none";
+    btn.style.opacity = "0.6";
+    return;
+  }
+
+  const product = selectedProducts[0];
+
+  if (product.paymentUrl) {
+    btn.href = product.paymentUrl;
+    btn.innerHTML = "💳 &nbsp; ادفع الآن بالبطاقة الذهبية";
+    btn.style.pointerEvents = "auto";
+    btn.style.opacity = "1";
+  } else {
+    btn.href = "#";
+    btn.innerHTML = "💳 &nbsp; لا يوجد رابط دفع لهذا المنتج";
+    btn.style.pointerEvents = "none";
+    btn.style.opacity = "0.6";
+  }
+}
+/* ── جدول أسعار التوصيل حسب الولاية ─────────────────────────────
+   h = توصيل للمنزل (DA) | o = استلام من أقرب نقطة (DA) | null = غير متوفر
+──────────────────────────────────────────────────────────────── */
+const SHIPPING_PRICES = {
+  1:{h:1450,o:1000}, 2:{h:800,o:550},  3:{h:950,o:650},  4:{h:750,o:550},
+  5:{h:800,o:550},   6:{h:750,o:550},  7:{h:950,o:650},  8:{h:1100,o:700},
+  9:{h:750,o:550},  10:{h:500,o:400}, 11:{h:1600,o:1100},12:{h:850,o:550},
+  13:{h:900,o:600}, 14:{h:800,o:550}, 15:{h:750,o:550},  16:{h:650,o:500},
+  17:{h:950,o:650}, 18:{h:750,o:550}, 19:{h:750,o:550},  20:{h:800,o:600},
+  21:{h:750,o:550}, 22:{h:800,o:550}, 23:{h:800,o:550},  24:{h:750,o:550},
+  25:{h:750,o:550}, 26:{h:800,o:550}, 27:{h:800,o:550},  28:{h:850,o:600},
+  29:{h:800,o:550}, 30:{h:950,o:700}, 31:{h:800,o:550},  32:{h:1100,o:700},
+  34:{h:600,o:550},35:{h:750,o:550},  36:{h:800,o:550},
+  38:{h:800,o:550},39:{h:950,o:700},  40:{h:800,o:550},
+  41:{h:750,o:550}, 42:{h:750,o:550}, 43:{h:700,o:550},  44:{h:750,o:550},
+  45:{h:1100,o:700},46:{h:800,o:550}, 47:{h:950,o:700},  48:{h:800,o:550},
+  49:{h:1450,o:1000},51:{h:900,o:650},52:{h:1200,o:1000},53:{h:1600,o:1100},
+  54:{h:1600,o:null},55:{h:950,o:700},57:{h:950,o:null}, 58:{h:1000,o:700},
+};
+
+/* يُعيد {cost, officeUnavailable} */
+function getShippingCost() {
+  if (!window.WILAYA_CODE) return { cost: 0, officeUnavailable: false };
+  const wilayaName = document.getElementById('wilayaHidden')?.value?.trim();
+  if (!wilayaName) return { cost: 0, officeUnavailable: false };
+  const code = window.WILAYA_CODE[wilayaName];
+  if (!code || !SHIPPING_PRICES[code]) return { cost: 0, officeUnavailable: false };
+  const dt = document.querySelector('input[name="delivery_type"]:checked')?.value || 'home';
+  const p = SHIPPING_PRICES[code];
+  if (dt !== 'home' && p.o === null) {
+    return { cost: p.h, officeUnavailable: true };
+  }
+  return { cost: dt === 'home' ? p.h : p.o, officeUnavailable: false };
+}
+
+function recalcAll() {
+  const subtotal = getProductsTotal();
+  const { cost: shipping, officeUnavailable } = getShippingCost();
+  const hasWilaya = !!document.getElementById('wilayaHidden')?.value?.trim();
+  const grandTotal = subtotal + (hasWilaya ? shipping : 0);
+
+  document.getElementById('productsSubtotal').innerHTML = formatDZD(subtotal);
+  document.getElementById('productsTotalHidden').value    = String(subtotal);
+  document.getElementById('shippingFeeInput').value       = hasWilaya ? String(shipping) : '0';
+  document.getElementById('grandTotalInput').value        = String(grandTotal);
+
+  const shippingLine    = document.getElementById('shippingLine');
+  const shippingDisplay = document.getElementById('shippingDisplay');
+  const totalSep        = document.getElementById('totalSep');
+  const grandTotalLine  = document.getElementById('grandTotalLine');
+  const grandTotalDisp  = document.getElementById('grandTotalDisplay');
+
+  if (hasWilaya && subtotal > 0) {
+    shippingDisplay.innerHTML = formatDZD(shipping) + (officeUnavailable ? ' <span style="font-size:11px;opacity:.7;">(منزلي فقط)</span>' : '');
+    shippingLine.style.display   = 'flex';
+    totalSep.style.display       = 'block';
+    grandTotalDisp.innerHTML     = formatDZD(grandTotal);
+    grandTotalLine.style.display = 'flex';
+  } else {
+    shippingLine.style.display   = 'none';
+    totalSep.style.display       = 'none';
+    grandTotalLine.style.display = 'none';
+  }
+
+  updateSummary();
+  updateGoldenPayLink();
+}
+/* ── ملخص الطلب ──────────────────────────────────────────────── */
+function getPaymentLabel(v) {
+  return { prepaid: '💳 دفع قبل التسليم (CCP / BaridiMob)', cash_on_delivery: '🏠 الدفع عند الاستلام' }[v] || null;
+}
+
+function updateSummary() {
+  const box      = document.getElementById('orderSummaryContent');
+  const rows     = document.querySelectorAll('.product-row');
+  const pm       = document.querySelector('input[name="payment_method"]:checked');
+  const subtotal = getProductsTotal();
+  const { cost: shipping, officeUnavailable } = getShippingCost();
+  const hasWilaya  = !!document.getElementById('wilayaHidden')?.value?.trim();
+  const grandTotal = subtotal + (hasWilaya ? shipping : 0);
+
+  let html = '';
+
+  rows.forEach(row => {
+    const idx = parseInt(row.querySelector('.pr-select')?.value);
+    const qty = Math.max(1, parseInt(row.querySelector('.pr-qty-input')?.value) || 1);
+    const cat = isNaN(idx) ? null : window.PRODUCTS_CATALOG[idx];
+    if (cat) {
+      html += `<div class="os-row">
+        <span class="os-label">${cat.name} × ${qty}</span>
+        <span class="os-value" dir="ltr">${formatDZDSummary(cat.price * qty)}</span>
+      </div>`;
+    }
+  });
+
+  if (html) {
+    const dt = document.querySelector('input[name="delivery_type"]:checked');
+    if (dt) {
+      const dtLabel = dt.value === 'home' ? '🏠 توصيل للمنزل' : '📮 استلام من نقطة توصيل';
+      html += `<div class="os-row">
+        <span class="os-label">طريقة التوصيل</span>
+        <span class="os-value"><span class="os-pm-badge">${dtLabel}</span></span>
+      </div>`;
+    }
+
+    if (hasWilaya) {
+      const noteLabel = officeUnavailable ? ' <small style="font-size:10px;opacity:.7;">(منزلي فقط)</small>' : '';
+      html += `<div class="os-row">
+        <span class="os-label">التوصيل${noteLabel}</span>
+        <span class="os-value" dir="ltr">${formatDZDSummary(shipping)}</span>
+      </div>`;
+    } else {
+      html += `<div class="os-row">
+        <span class="os-label">التوصيل</span>
+        <span class="os-value"><span class="os-free-badge">اختر الولاية</span></span>
+      </div>`;
+    }
+  }
+
+  if (pm) {
+    html += `<div class="os-row">
+      <span class="os-label">طريقة الدفع</span>
+      <span class="os-value"><span class="os-pm-badge">${getPaymentLabel(pm.value)}</span></span>
+    </div>`;
+  }
+
+  if (grandTotal > 0) {
+    html += `<div class="os-row total-row">
+      <span class="os-label">المجموع النهائي</span>
+      <span class="os-value" dir="ltr">${formatDZDSummary(grandTotal)}</span>
+    </div>`;
+  }
+
+  box.innerHTML = html || `<p style="font-size:14px;color:var(--text-muted);text-align:center;padding:10px 0;">أضف منتجاً واختر طريقة الدفع لرؤية الملخص</p>`;
+}
+
+document.getElementById('productsList').addEventListener('input', updateSummary);
+
+/* ── إخفاء رسالة "يرجى اختيار الكتب" فور اختيار كتاب صحيح ─── */
+document.getElementById('productsList').addEventListener('change', function () {
+  const anyValid = [...document.querySelectorAll('.product-row')].some(function (row) {
+    const idx = parseInt(row.querySelector('.pr-select')?.value);
+    return !isNaN(idx) && window.PRODUCTS_CATALOG[idx];
+  });
+  if (anyValid) {
+    var errEl = document.getElementById('productsError');
+    if (errEl) errEl.style.display = 'none';
+  }
+});
+
+/* ── إخفاء خطأ طريقة الدفع عند الاختيار ─────────────────────── */
+pmRadios.forEach(r => {
+  r.addEventListener('change', () => {
+    document.getElementById('paymentMethodError').style.display = 'none';
+  });
+});
+
+/* ── تفعيل الحالة الافتراضية عند التحميل: الدفع عند الاستلام ─── */
+(function () {
+  /* نجد الراديو المحدد مسبقاً في HTML ونطلق change لمزامنة حالة JS */
+  var defaultPm = document.querySelector('input[name="payment_method"]:checked');
+  if (defaultPm) {
+    defaultPm.dispatchEvent(new Event('change'));
+  }
+}());
+
+/* ── إخفاء خطأ الولاية / البلدية عند الاختيار (يتم داخل CustomSelect onSelect) ── */
+
+/* ── التحقق قبل الإرسال ─────────────────────────────────────── */
+window.validateCheckout = function () {
+  let valid = true;
+  let firstErrorEl = null;  /* أول عنصر فيه خطأ — سنتمرر إليه */
+  const alertEl = document.getElementById('formAlert');
+  alertEl.classList.remove('show');
+
+  /* دالة مساعدة: تسجّل الخطأ وتحتفظ بأول عنصر مشكلة */
+  function markError(el, msg) {
+    if (!firstErrorEl) firstErrorEl = el;
+    if (msg && !alertEl.classList.contains('show')) {
+      alertEl.textContent = msg;
+      alertEl.classList.add('show');
+    }
+  }
+
+  /* ── الاسم ─────────────────────────────────────────── */
+  const nameEl   = document.getElementById('full_name');
+  const nameWrap = nameEl.closest('.field-wrap');
+  if (!nameEl.value.trim()) {
+    nameWrap.classList.add('has-error');
+    markError(nameEl, '❌ يرجى إدخال الاسم الكامل.');
+    valid = false;
+  } else { nameWrap.classList.remove('has-error'); }
+
+  /* ── الهاتف ─────────────────────────────────────────── */
+  const phoneVal  = phoneInputEl.value.replace(/\D/g, '');
+  const phoneWrap = phoneInputEl.closest('.field-wrap');
+  if (!/^0[5-7]\d{8}$/.test(phoneVal)) {
+    phoneWrap.classList.add('has-error');
+    phoneErrEl.style.display = 'block';
+    phoneRowEl.classList.add('phone-error');
+    markError(phoneInputEl, '❌ رقم الهاتف غير صحيح — يجب أن يبدأ بـ 05 أو 06 أو 07 ويكون 10 أرقام.');
+    valid = false;
+  } else {
+    phoneWrap.classList.remove('has-error');
+    phoneErrEl.style.display = 'none';
+  }
+
+  /* ── العنوان — إجباري فقط عند التوصيل للمنزل ────────── */
+  const addrEl         = document.getElementById('addressInput');
+  const addrWrap       = addrEl.closest('.field-wrap');
+  const isHomeDelivery = document.querySelector('input[name="delivery_type"]:checked')?.value === 'home';
+  if (isHomeDelivery && !addrEl.value.trim()) {
+    addrWrap.classList.add('has-error');
+    markError(addrEl, '❌ يرجى إدخال العنوان الكامل (الشارع، رقم المبنى، الحي...).');
+    valid = false;
+  } else { addrWrap.classList.remove('has-error'); }
+
+  /* ── الولاية ─────────────────────────────────────────── */
+  const wilayaVal  = document.getElementById('wilayaHidden').value;
+  const wilayaWrap = document.getElementById('wilayaWrap').closest('.field-wrap');
+  if (!wilayaVal) {
+    wilayaWrap.classList.add('has-error');
+    document.getElementById('wilayaError').style.display = 'block';
+    markError(document.getElementById('wilayaInput'), '❌ يرجى اختيار الولاية من القائمة.');
+    valid = false;
+  } else {
+    wilayaWrap.classList.remove('has-error');
+    document.getElementById('wilayaError').style.display = 'none';
+  }
+
+  /* ── البلدية ─────────────────────────────────────────── */
+  const communeVal  = (document.getElementById('communeHidden')?.value || '').trim();
+  const communeWrap = document.getElementById('communeWrap')?.closest('.field-wrap');
+  if (!communeVal) {
+    if (communeWrap) communeWrap.classList.add('has-error');
+    document.getElementById('communeError').style.display = 'block';
+    /* نُمرر للبلدية فقط إذا كانت الولاية مختارة؛ وإلا تبقى الولاية أولوية */
+    if (wilayaVal) {
+      markError(document.getElementById('communeInput'), '❌ يرجى اختيار البلدية / المنطقة من القائمة.');
+    } else if (communeWrap && !firstErrorEl) {
+      firstErrorEl = communeWrap;
+    }
+    valid = false;
+  } else {
+    if (communeWrap) communeWrap.classList.remove('has-error');
+    document.getElementById('communeError').style.display = 'none';
+  }
+
+  /* ── المنتجات ─────────────────────────────────────────── */
+  const rows = document.querySelectorAll('.product-row');
+  const productsErrEl = document.getElementById('productsError');
+  if (!rows.length) {
+    if (!alertEl.classList.contains('show')) {
+      alertEl.textContent = '❌ يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.';
+      alertEl.classList.add('show');
+    }
+    productsErrEl.style.display = 'block';
+    if (!firstErrorEl) firstErrorEl = document.getElementById('productsList');
+    valid = false;
+  } else {
+    let ok = true;
+    let hasUnavail = false;
+    let firstBadRow = null;
+    rows.forEach(row => {
+      const idx = parseInt(row.querySelector('.pr-select')?.value);
+      const qty = parseInt(row.querySelector('.pr-qty-input')?.value);
+      if (isNaN(idx) || !window.PRODUCTS_CATALOG[idx] || isNaN(qty) || qty < 1) {
+        ok = false;
+        if (!firstBadRow) firstBadRow = row;
+        return;
+      }
+      if (window.PRODUCTS_CATALOG[idx].available === false) {
+        hasUnavail = true;
+        if (!firstBadRow) firstBadRow = row;
+      }
+    });
+    if (!ok) {
+      if (!alertEl.classList.contains('show')) {
+        alertEl.textContent = '❌ يرجى اختيار منتج وكمية صحيحة (≥ 1) لكل سطر.';
+        alertEl.classList.add('show');
+      }
+      productsErrEl.style.display = 'block';
+      if (!firstErrorEl && firstBadRow) firstErrorEl = firstBadRow;
+      valid = false;
+    }
+    if (hasUnavail) {
+      if (!alertEl.classList.contains('show')) {
+        alertEl.textContent = '❌ نفذت الكمية من بعض المنتجات التي اخترتها. يرجى إزالتها والمحاولة مرة أخرى.';
+        alertEl.classList.add('show');
+      }
+      if (!firstErrorEl && firstBadRow) firstErrorEl = firstBadRow;
+      valid = false;
+    }
+    /* إخفاء رسالة الخطأ إذا كانت المنتجات صحيحة */
+    if (ok && !hasUnavail) productsErrEl.style.display = 'none';
+  }
+
+  /* ── طريقة الدفع ─────────────────────────────────────── */
+  const pm = document.querySelector('input[name="payment_method"]:checked');
+  if (!pm) {
+    document.getElementById('paymentMethodError').style.display = 'block';
+    if (!alertEl.classList.contains('show')) {
+      alertEl.textContent = '❌ يرجى اختيار طريقة الدفع.';
+      alertEl.classList.add('show');
+    }
+    if (!firstErrorEl) firstErrorEl = document.querySelector('.pm-grid');
+    valid = false;
+  } else {
+    document.getElementById('paymentMethodError').style.display = 'none';
+  }
+
+  /* ── وصل الدفع — إجباري للدفع المسبق فقط ───────────── */
+  if (pm && pm.value === 'prepaid') {
+    const receipt = document.getElementById('paymentReceipt');
+    if (!receipt?.files?.length) {
+      document.getElementById('receiptError').style.display = 'block';
+      if (!alertEl.classList.contains('show')) {
+        alertEl.textContent = '❌ يرجى رفع صورة وصل الدفع (BaridiMob أو CCP) لإتمام الطلب.';
+        alertEl.classList.add('show');
+      }
+      if (!firstErrorEl) firstErrorEl = document.getElementById('receiptSection');
+      valid = false;
+    } else {
+      document.getElementById('receiptError').style.display = 'none';
+    }
+  }
+
+  /* ── التمرير الذكي إلى أول حقل فيه مشكلة ───────────── */
+  if (!valid && firstErrorEl) {
+    firstErrorEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    /* تركيز الحقل بعد اكتمال التمرير (400ms) */
+    if (typeof firstErrorEl.focus === 'function') {
+      setTimeout(function () {
+        try { firstErrorEl.focus(); } catch (e) {}
+      }, 450);
+    }
+  }
+  return valid;
+};
+
+/* ================================================================
+   CustomSelect — dropdown احترافي ثنائي اللغة (ولاية / بلدية)
+   Desktop : قائمة منسدلة مُحدَّدة الموضع
+   Mobile  : bottom sheet مع خلفية معتمة
+================================================================ */
+class CustomSelect {
+  constructor({ inputId, dropdownId, hiddenId, errorId, onSelect, panelTitle }) {
+    this.trigger    = document.getElementById(inputId);
+    this.panel      = document.getElementById(dropdownId);
+    this.hidden     = document.getElementById(hiddenId);
+    this.errorEl    = errorId ? document.getElementById(errorId) : null;
+    this.onSelect   = onSelect || null;
+    this.items      = [];
+    this.filtered   = [];
+    this.selected   = null;
+    const labelEl   = this.trigger.querySelector('.cs-trigger-label');
+    this._placeholder = labelEl ? labelEl.textContent.trim() : 'اختر...';
+    this._searchEl  = this.panel.querySelector('.cs-search-input');
+    this._listEl    = this.panel.querySelector('.cs-list');
+    this._titleEl   = this.panel.querySelector('.cs-panel-title');
+    this._closeBtn  = this.panel.querySelector('.cs-close-btn');
+    this._backdrop  = document.getElementById('csBackdrop');
+    if (this._titleEl && panelTitle) this._titleEl.textContent = panelTitle;
+    this._bindEvents();
+  }
+
+  setItems(items) {
+    this.items      = items;
+    this.filtered   = [...items];
+    this.selected   = null;
+    this.hidden.value = '';
+    if (this._searchEl) this._searchEl.value = '';
+    this._updateTrigger();
+  }
+
+  enable(placeholder) {
+    this._placeholder = placeholder || 'ابحث...';
+    this.trigger.classList.remove('disabled');
+    this.trigger.disabled = false;
+    this._updateTrigger();
+  }
+
+  disable(placeholder) {
+    this._placeholder = placeholder || 'اختر الولاية أولاً';
+    this.trigger.classList.add('disabled');
+    this.trigger.disabled = true;
+    this.selected = null;
+    this.hidden.value = '';
+    this._updateTrigger();
+    this._closePanel();
+  }
+
+  _bindEvents() {
+    this.trigger.addEventListener('click', (e) => {
+      if (this.trigger.classList.contains('disabled')) return;
+      e.stopPropagation();
+      this.panel.classList.contains('open') ? this._closePanel() : this._openPanel();
+    });
+
+    if (this._searchEl) {
+      this._searchEl.addEventListener('input', () => this._filter(this._searchEl.value));
+      this._searchEl.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (this.filtered.length > 0) {
+          this._select(this.filtered[0]);
+        } else {
+          this._alertNoResult();
+        }
+      });
+    }
+
+    if (this._closeBtn) {
+      this._closeBtn.addEventListener('click', () => this._closePanel());
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!this.panel.contains(e.target) && e.target !== this.trigger) this._closePanel();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.panel.classList.contains('open')) {
+        this._closePanel();
+        this.trigger.focus();
+      }
+    });
+
+    if (this._backdrop) {
+      this._backdrop.addEventListener('click', () => this._closePanel());
+    }
+  }
+
+  _filter(q) {
+    const term = q.trim().toLowerCase();
+    this.filtered = term
+      ? this.items.filter(it =>
+          it.label.toLowerCase().includes(term) ||
+          (it.sublabel && it.sublabel.toLowerCase().includes(term)) ||
+          it.value.toLowerCase().includes(term))
+      : [...this.items];
+    this._render();
+  }
+
+  _render() {
+    if (!this.filtered.length) {
+      this._listEl.innerHTML = `<div class="cs-empty">لا توجد نتائج مطابقة</div>`;
+      return;
+    }
+    this._listEl.innerHTML = this.filtered.map(it => {
+      const isSel = this.selected && it.value === this.selected.value;
+      const ar    = it.label.replace(/</g, '&lt;');
+      const fr    = it.sublabel
+        ? `<span class="cs-item-fr">${it.sublabel.replace(/</g, '&lt;')}</span>` : '';
+      return `<div class="cs-item${isSel ? ' is-selected' : ''}"
+                   data-value="${it.value.replace(/"/g, '&quot;')}"
+                   data-label="${it.label.replace(/"/g, '&quot;')}"
+                   data-sublabel="${(it.sublabel || '').replace(/"/g, '&quot;')}"
+                   role="option" aria-selected="${isSel}">
+                <span class="cs-item-ar">${ar}</span>${fr}
+              </div>`;
+    }).join('');
+
+    this._listEl.querySelectorAll('.cs-item').forEach(el => {
+      const pick = () => this._select({
+        label:    el.dataset.label,
+        value:    el.dataset.value,
+        sublabel: el.dataset.sublabel || '',
+      });
+      el.addEventListener('mousedown', e => { e.preventDefault(); pick(); });
+
+      /* تفريق بين النقر والتمرير: تجاهل الحدث إذا تحرك الإصبع أكثر من 8px */
+      let _tsY = 0;
+      el.addEventListener('touchstart', e => {
+        _tsY = e.touches[0].clientY;
+      }, { passive: true });
+      el.addEventListener('touchend', e => {
+        if (Math.abs(e.changedTouches[0].clientY - _tsY) > 8) return;
+        e.preventDefault();
+        pick();
+      });
+    });
+  }
+
+  _alertNoResult() {
+    const emptyEl = this._listEl.querySelector('.cs-empty');
+    if (!emptyEl) return;
+    emptyEl.textContent = '⚠️ لا توجد نتيجة — جرّب كلمة مختلفة';
+    emptyEl.classList.add('cs-empty-alert', 'cs-empty-shake');
+    setTimeout(() => {
+      emptyEl.classList.remove('cs-empty-shake');
+      setTimeout(() => {
+        emptyEl.textContent = 'لا توجد نتائج مطابقة';
+        emptyEl.classList.remove('cs-empty-alert');
+      }, 2000);
+    }, 400);
+  }
+
+  _select(item) {
+    this.selected     = item;
+    this.hidden.value = item.value;
+    if (this.errorEl) this.errorEl.style.display = 'none';
+    this._updateTrigger();
+    this._closePanel();
+    if (this.onSelect) this.onSelect(item.value, item.label, item.sublabel);
+  }
+
+  _updateTrigger() {
+    const labelEl = this.trigger.querySelector('.cs-trigger-label');
+    if (!labelEl) return;
+    if (this.selected) {
+      this.trigger.classList.add('has-value');
+      labelEl.innerHTML =
+        `<span class="cs-tl-ar">${this.selected.label.replace(/</g, '&lt;')}</span>` +
+        (this.selected.sublabel
+          ? `<span class="cs-tl-fr">${this.selected.sublabel.replace(/</g, '&lt;')}</span>` : '');
+    } else {
+      this.trigger.classList.remove('has-value');
+      labelEl.textContent = this._placeholder;
+    }
+  }
+
+  _openPanel() {
+    this.panel.classList.add('open');
+    this.trigger.classList.add('open');
+    this.trigger.setAttribute('aria-expanded', 'true');
+    this.filtered = [...this.items];
+    if (this._searchEl) this._searchEl.value = '';
+    this._render();
+
+    if (window.innerWidth <= 640 && this._backdrop) {
+      this._backdrop.classList.add('show');
+
+      /* قفل التمرير بأمان على iOS (بدلاً من overflow:hidden الغير موثوق) */
+      this._savedScrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top      = `-${this._savedScrollY}px`;
+      document.body.style.width    = '100%';
+
+      /* مراقبة لوحة المفاتيح لتحريك اللوحة فوقها */
+      if (window.visualViewport) {
+        this._vvHandler = () => this._adjustForKeyboard();
+        window.visualViewport.addEventListener('resize', this._vvHandler);
+        window.visualViewport.addEventListener('scroll', this._vvHandler);
+      }
+      /* على الجوال: لا تفتح لوحة المفاتيح تلقائياً — المستخدم يمسّ حقل البحث إذا أراد */
+    } else {
+      /* على الحاسوب: موضع ذكي (أعلى/أسفل) ثم تركيز البحث */
+      this._positionPanelDesktop();
+      this._desktopReposHandler = (e) => {
+        /* تجاهل التمرير الداخلي داخل لوحة الاختيار — فقط أغلق عند تمرير الصفحة */
+        if (e && e.target && this.panel.contains(e.target)) return;
+        this._closePanel();
+      };
+      window.addEventListener('scroll', this._desktopReposHandler, { passive: true, capture: true });
+      window.addEventListener('resize', this._desktopReposHandler, { passive: true });
+      if (this._searchEl) this._searchEl.focus();
+    }
+  }
+
+  /* وضع اللوحة على سطح المكتب: position:fixed يهرب من overflow:hidden للأب،
+     ويفتح للأعلى إذا كان الفراغ تحت الزر غير كاف. */
+  _positionPanelDesktop() {
+    const panel   = this.panel;
+    const trigger = this.trigger;
+    const rect    = trigger.getBoundingClientRect();
+    const vh      = window.innerHeight;
+    const gap     = 6;
+    const margin  = 12; /* هامش أمان من حافة الشاشة */
+    const searchH = panel.querySelector('.cs-search-bar')?.offsetHeight || 44;
+    const minListH = 140;
+    const idealListH = 230;
+
+    const spaceBelow = vh - rect.bottom - gap - margin;
+    const spaceAbove = rect.top - gap - margin;
+
+    /* position:fixed يتجاوز overflow:hidden على الحاويات الآباء */
+    panel.style.position = 'fixed';
+    panel.style.left     = rect.left + 'px';
+    panel.style.width    = rect.width + 'px';
+    panel.style.right    = 'auto';
+
+    let listMax;
+    const needed = idealListH + searchH + 8;
+    if (spaceBelow >= needed || spaceBelow >= spaceAbove) {
+      /* فتح للأسفل */
+      panel.classList.remove('cs-flip-up');
+      panel.style.top    = (rect.bottom + gap) + 'px';
+      panel.style.bottom = 'auto';
+      listMax = Math.max(minListH, Math.min(idealListH, spaceBelow - searchH - 8));
+    } else {
+      /* فتح للأعلى */
+      panel.classList.add('cs-flip-up');
+      panel.style.bottom = (vh - rect.top + gap) + 'px';
+      panel.style.top    = 'auto';
+      listMax = Math.max(minListH, Math.min(idealListH, spaceAbove - searchH - 8));
+    }
+    this._listEl.style.maxHeight = listMax + 'px';
+  }
+
+  /* يضبط موضع وارتفاع اللوحة فوق لوحة المفاتيح عند ظهورها */
+  _adjustForKeyboard() {
+    const vv = window.visualViewport;
+    if (!vv || window.innerWidth > 640) return;
+    /* ارتفاع لوحة المفاتيح = الفرق بين نافذة المتصفح والمساحة المرئية */
+    const keyboardH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    this.panel.style.bottom    = keyboardH + 'px';
+    this.panel.style.maxHeight = Math.floor(vv.height * 0.88) + 'px';
+  }
+
+  _closePanel() {
+    this.panel.classList.remove('open');
+    this.trigger.classList.remove('open');
+    this.trigger.setAttribute('aria-expanded', 'false');
+    if (this._backdrop) this._backdrop.classList.remove('show');
+
+    /* استعادة تمرير الصفحة بأمان (iOS) */
+    if (this._savedScrollY !== undefined) {
+      document.body.style.position = '';
+      document.body.style.top      = '';
+      document.body.style.width    = '';
+      window.scrollTo(0, this._savedScrollY);
+      this._savedScrollY = undefined;
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    /* إزالة مستمعي لوحة المفاتيح */
+    if (this._vvHandler && window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this._vvHandler);
+      window.visualViewport.removeEventListener('scroll', this._vvHandler);
+      this._vvHandler = null;
+    }
+
+    /* إزالة مستمعي إعادة الموضع على سطح المكتب */
+    if (this._desktopReposHandler) {
+      window.removeEventListener('scroll', this._desktopReposHandler, { capture: true });
+      window.removeEventListener('resize', this._desktopReposHandler);
+      this._desktopReposHandler = null;
+    }
+
+    /* إعادة ضبط الموضع المُضمَّن (يشمل وضع سطح المكتب المحسوب بـ JS) */
+    this.panel.style.position = '';
+    this.panel.style.top      = '';
+    this.panel.style.bottom   = '';
+    this.panel.style.left     = '';
+    this.panel.style.right    = '';
+    this.panel.style.width    = '';
+    this.panel.style.maxHeight = '';
+    this.panel.classList.remove('cs-flip-up');
+    if (this._listEl) this._listEl.style.maxHeight = '';
+  }
+}
+
+/* تهيئة dropdowns بعد تحميل بيانات communes من app.js */
+window.initLocationSelects = function () {
+  const wilayaData  = window._wilayaData  || [];
+  const communesMap = window._communesMap || {};
+
+  /* أسماء الولايات بالفرنسية */
+  const WILAYA_FR = {
+    "أدرار":"Adrar","الشلف":"Chlef","الأغواط":"Laghouat","أم البواقي":"Oum El Bouaghi",
+    "باتنة":"Batna","بجاية":"Béjaïa","بسكرة":"Biskra","بشار":"Béchar","البليدة":"Blida",
+    "البويرة":"Bouira","تمنراست":"Tamanrasset","تبسة":"Tébessa","تلمسان":"Tlemcen",
+    "تيارت":"Tiaret","تيزي وزو":"Tizi Ouzou","الجزائر":"Alger","الجلفة":"Djelfa",
+    "جيجل":"Jijel","سطيف":"Sétif","سعيدة":"Saïda","سكيكدة":"Skikda",
+    "سيدي بلعباس":"Sidi Bel Abbès","عنابة":"Annaba","قالمة":"Guelma",
+    "قسنطينة":"Constantine","المدية":"Médéa","مستغانم":"Mostaganem","المسيلة":"M'Sila",
+    "معسكر":"Mascara","ورقلة":"Ouargla","وهران":"Oran","البيض":"El Bayadh",
+    "إليزي":"Illizi","برج بوعريريج":"Bordj Bou Arréridj","بومرداس":"Boumerdès",
+    "الطارف":"El Tarf","تندوف":"Tindouf","تيسمسيلت":"Tissemsilt","الوادي":"El Oued",
+    "خنشلة":"Khenchela","سوق أهراس":"Souk Ahras","تيبازة":"Tipaza","ميلة":"Mila",
+    "عين الدفلى":"Aïn Defla","النعامة":"Naâma","عين تموشنت":"Aïn Témouchent",
+    "غرداية":"Ghardaïa","غليزان":"Relizane","تيميمون":"Timimoun",
+    "أولاد جلال":"Ouled Djellal","بني عباس":"Béni Abbès","عين صالح":"In Salah",
+    "عين قزام":"In Guezzam","تقرت":"Touggourt","دجانت":"Djanet",
+    "المغير":"El M'Ghair","المنيعة":"El Menia",
+  };
+
+  const enrichedWilaya = wilayaData.map(w => ({
+    ...w, sublabel: WILAYA_FR[w.value] || '',
+  }));
+
+  const communeSel = new CustomSelect({
+    inputId:    'communeInput',
+    dropdownId: 'communeDropdown',
+    hiddenId:   'communeHidden',
+    errorId:    'communeError',
+    panelTitle: 'اختر البلدية / المنطقة',
+  });
+
+  new CustomSelect({
+    inputId:    'wilayaInput',
+    dropdownId: 'wilayaDropdown',
+    hiddenId:   'wilayaHidden',
+    errorId:    'wilayaError',
+    panelTitle: 'اختر الولاية',
+    onSelect: (val) => {
+      const communes = (communesMap[val] || []).map(c => ({ label: c, value: c }));
+      communeSel.setItems(communes);
+      if (communes.length) communeSel.enable('ابحث عن البلدية أو المنطقة...');
+      else                  communeSel.disable('لا توجد بلديات متاحة');
+      recalcAll();
+    },
+  }).setItems(enrichedWilaya);
+};
+</script>
+
+<!-- خلفية معتمة للـ bottom sheet على الجوال -->
+<div id="csBackdrop" class="cs-backdrop" aria-hidden="true"></div>
+
+<!-- whatsapp-float -->
+<script src="../whatsapp-float.js" defer></script>
+</body>
+</html>

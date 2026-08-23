@@ -1,0 +1,1063 @@
+/* =========================
+   Order Section – Spacing & Layout Upgrade
+   (ضعه في آخر CSS)
+   ========================= */
+
+#order-section{
+  max-width: 980px;              /* يخلي الفورم أضيق وأجمل */
+  margin: 28px auto 60px;
+  padding: 0 14px;
+  direction: rtl;
+  text-align: right;
+}
+
+/* الكارد الرئيسي */
+#order-section .section-card{
+  padding: 26px 22px;
+  border-radius: 18px;
+  border: 1px solid #e6e6e6;
+  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+}
+
+/* العنوان + الوصف */
+#order-section h2{
+  margin: 0 0 6px;
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+#order-section .order-sub{
+  margin: 0 0 18px;
+  font-size: 15px;
+  line-height: 1.6;
+  opacity: .85;
+}
+
+/* شبكة الحقول الأساسية */
+#order-section .book-meta{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 16px;
+  margin-top: 12px;
+  margin-bottom: 14px;
+}
+
+/* labels */
+#order-section label{
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: block;
+  opacity: .9;
+}
+
+/* inputs/select/textarea */
+#order-section input,
+#order-section select,
+#order-section textarea{
+  width: 100%;
+  min-height: 48px;              /* توحيد الارتفاع */
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  padding: 12px 14px;
+  background: #fff;
+  box-sizing: border-box;
+}
+
+/* placeholder */
+#order-section input::placeholder,
+#order-section textarea::placeholder{
+  opacity: .75;
+}
+
+/* textarea أفضل */
+#order-section textarea{
+  min-height: 140px;
+  padding-top: 14px;
+  line-height: 1.7;
+  margin-top: 8px;
+}
+
+/* focus محترم */
+#order-section input:focus,
+#order-section select:focus,
+#order-section textarea:focus{
+  outline: none;
+  border-color: rgba(109,40,217,.55);
+  box-shadow: 0 0 0 4px rgba(109,40,217,.12);
+}
+
+/* الهاتف والأرقام LTR */
+#order-section input[type="tel"],
+#order-section input[type="number"]{
+  direction: ltr;
+  text-align: left;
+}
+
+/* قسم الكتب */
+#order-section .order-box{
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 16px;
+  border: 1px solid #ececec;
+  background: #fafafa;
+}
+
+#order-section .order-box-head{
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#order-section .order-box-head h3{
+  margin: 0;
+  font-size: 18px;
+}
+
+/* صف الكتاب */
+#order-section .book-row{
+  display: grid;
+  grid-template-columns: 1.6fr 1fr .7fr 48px;
+  gap: 12px;
+  align-items: end;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid #eaeaea;
+  background: #fff;
+  margin-bottom: 12px;
+}
+
+/* زر الحذف */
+#order-section .remove-row{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-size: 18px;
+}
+#order-section .remove-row:hover{
+  background:#ffe7e7;
+  border-color:#f5b7b7;
+}
+
+/* ملخص الأسعار */
+#order-section .summary{
+  margin-top: 16px;
+  padding: 14px 14px;
+  border-radius: 16px;
+  border: 1px solid #ececec;
+  background: #fff;
+}
+
+#order-section .summary-line{
+  padding: 10px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px dashed #eee;
+}
+#order-section .summary-line:last-child{ border-bottom: none; }
+
+#order-section .summary-line.total{
+  font-size: 19px;
+  padding-top: 12px;
+}
+
+/* strong خليها واضحة */
+#order-section .summary-line strong{
+  direction: ltr;
+  text-align: left;
+}
+
+/* أزرار أسفل */
+#order-section .cta-row{
+  margin-top: 18px;
+  gap: 12px;
+}
+
+#order-section .btn-primary,
+#order-section .btn-secondary{
+  min-height: 48px;
+  border-radius: 14px;
+}
+
+/* الشروط */
+#order-section .terms{
+  margin-top: 12px;
+  line-height: 1.6;
+}
+
+/* Responsive للموبايل */
+@media (max-width: 900px){
+  #order-section{ max-width: 720px; }
+}
+
+@media (max-width: 860px){
+  #order-section .book-meta{
+    grid-template-columns: 1fr;
+  }
+  #order-section .book-row{
+    grid-template-columns: 1fr;
+  }
+  #order-section .btn-primary,
+  #order-section .btn-secondary{
+    width: 100%;
+  }
+}
+ /* ✅ RTL عربي كامل لهذا القسم فقط */
+    #order-section{direction:rtl;text-align:right}
+    #order-section *{box-sizing:border-box}
+    #order-section label{display:block;text-align:right}
+
+    #order-section .order-sub{opacity:.85;font-size:14px;margin:0 0 14px;text-align:right}
+
+    /* inputs + textarea + select بالعربي */
+    #order-section input,
+    #order-section textarea,
+    #order-section select{
+      direction:rtl;
+      text-align:right;
+      padding-right:14px;
+      padding-left:14px;
+    }
+
+    /* الهاتف والأرقام LTR */
+    #order-section input[type="tel"],
+    #order-section input[type="number"]{
+      direction:ltr;
+      text-align:left;
+    }
+
+    /* placeholder عربي */
+    #order-section input::placeholder,
+    #order-section textarea::placeholder{
+      direction:rtl;
+      text-align:right;
+    }
+
+    #order-section select{
+      width:100%;
+      padding:12px 14px;
+      border-radius:12px;
+      border:1px solid #ddd;
+      font-size:16px;
+      background:#fff;
+      /* سهم select للجهة اليسرى في RTL */
+      background-position:left 14px center;
+    }
+
+    #order-section .order-box{
+      margin-top:14px;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      padding:12px;
+      background:#fafafa
+    }
+
+    #order-section .order-box-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:10px;
+      direction:rtl;
+    }
+
+    #order-section .order-box h3{margin:0;font-size:16px;text-align:right}
+
+    #order-section .btn-secondary.small{
+      padding:10px 12px;
+      border-radius:12px;
+      font-size:14px
+    }
+
+    #order-section .book-row{
+      display:grid;
+      grid-template-columns: 1.6fr 1fr .7fr 44px;
+      gap:10px;
+      align-items:end;
+      background:#fff;
+      border:1px solid #e5e7eb;
+      border-radius:14px;
+      padding:10px;
+      margin-bottom:10px;
+      direction:rtl;
+      text-align:right;
+    }
+
+    /* زر الحذف في RTL */
+    #order-section .row-actions{
+      display:flex;
+      justify-content:flex-start;
+    }
+
+    #order-section .remove-row{
+      width:38px;
+      height:38px;
+      border-radius:12px;
+      border:1px solid #e5e7eb;
+      background:#fff;
+      cursor:pointer;
+      font-size:16px;
+      line-height:1
+    }
+
+    #order-section .remove-row:hover{
+      background:#ffe7e7;
+      border-color:#f5b7b7
+    }
+
+    #order-section .summary{
+      margin-top:14px;
+      border:1px solid #e5e7eb;
+      border-radius:16px;
+      padding:12px;
+      background:#fff;
+      direction:rtl;
+    }
+
+    /* ترتيب السطر من اليمين لليسار مع بقاء الرقم واضح */
+    #order-section .summary-line{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:8px 4px;
+      border-bottom:1px dashed #eee;
+    }
+    #order-section .summary-line:last-child{border-bottom:none}
+    #order-section .summary-line span{text-align:right}
+    #order-section .summary-line strong{direction:ltr;text-align:left}
+
+    #order-section .summary-line.total{font-size:18px}
+
+    #order-section .terms{
+      font-size:13px;
+      opacity:.85;
+      margin-top:10px;
+      text-align:right
+    }
+
+    @media (max-width: 860px){
+      #order-section .book-row{grid-template-columns:1fr;}
+      #order-section .row-actions{justify-content:flex-start}
+    }
+/* =========================
+   Mobile UX Fix – Order Section
+   ========================= */
+
+/* شاشات صغيرة جدًا (هواتف) */
+@media (max-width: 480px){
+
+  /* المسافات العامة */
+  #order-section{
+    margin: 16px auto 40px;
+    padding: 0 10px;
+  }
+
+  /* الكارد */
+  #order-section .section-card{
+    padding: 18px 14px;
+    border-radius: 16px;
+  }
+
+  /* العنوان */
+  #order-section h2{
+    font-size: 22px;
+    margin-bottom: 8px;
+  }
+
+  #order-section .order-sub{
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  /* كل الحقول عمود واحد */
+  #order-section .book-meta{
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  /* inputs أصغر شوي */
+  #order-section input,
+  #order-section select,
+  #order-section textarea{
+    min-height: 46px;
+    font-size: 15px;
+    border-radius: 12px;
+  }
+
+  #order-section textarea{
+    min-height: 120px;
+  }
+
+  /* قسم الكتب */
+  #order-section .order-box{
+    padding: 12px;
+    margin-top: 16px;
+  }
+
+  #order-section .order-box-head{
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  #order-section .order-box-head h3{
+    font-size: 16px;
+  }
+
+  /* صف الكتاب: عمودي */
+  #order-section .book-row{
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+  }
+
+  /* زر الحذف */
+  #order-section .remove-row{
+    width: 36px;
+    height: 36px;
+    font-size: 16px;
+  }
+
+  /* ملخص الأسعار */
+  #order-section .summary{
+    padding: 12px;
+    margin-top: 14px;
+  }
+
+  #order-section .summary-line{
+    padding: 8px 2px;
+    font-size: 14px;
+  }
+
+  #order-section .summary-line.total{
+    font-size: 17px;
+  }
+
+  /* الأزرار */
+  #order-section .cta-row{
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  #order-section .btn-primary,
+  #order-section .btn-secondary{
+    width: 100%;
+    min-height: 46px;
+    font-size: 15px;
+  }
+
+  /* الشروط */
+  #order-section .terms{
+    font-size: 12.5px;
+    line-height: 1.6;
+  }
+}
+/* =========================
+   Fix Thin Font – Order Section
+   ========================= */
+
+/* النصوص الأساسية */
+#order-section{
+  font-weight: 500; /* يثقل الخط بشكل مريح */
+}
+
+/* العنوان */
+#order-section h2{
+  font-weight: 700;
+}
+
+/* العناوين الصغيرة (labels) */
+#order-section label{
+  font-weight: 600;
+  color: #111827; /* أغمق شوي */
+}
+
+/* النصوص داخل الحقول */
+#order-section input,
+#order-section textarea,
+#order-section select{
+  font-weight: 500;
+  color: #111827;
+}
+
+/* placeholder (كان خفيف بزاف) */
+#order-section input::placeholder,
+#order-section textarea::placeholder{
+  font-weight: 400;
+  color: #6b7280; /* رمادي أوضح */
+}
+
+/* ملخص الأسعار */
+#order-section .summary-line span{
+  font-weight: 500;
+}
+
+#order-section .summary-line strong{
+  font-weight: 700;
+}
+
+/* الشروط */
+#order-section .terms{
+  font-weight: 500;
+}
+
+/* تحسين إضافي للهاتف */
+@media (max-width: 480px){
+  #order-section{
+    font-weight: 500;
+  }
+
+  #order-section input,
+  #order-section textarea,
+  #order-section select{
+    font-size: 15.5px;
+    font-weight: 500;
+  }
+
+  #order-section label{
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+/* =========================
+   Fix Select Arrow (RTL) – Mobile Friendly
+   ========================= */
+
+/* نخلي السهم ثابت وواضح */
+#order-section select{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  background-color: #fff;
+
+  /* سهم مخصص (SVG) على اليسار في RTL */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23111827' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: 18px 18px;
+
+  /* في RTL السهم يكون يسار */
+  background-position: left 14px center;
+
+  /* padding: يمين للنص، ويسار للسهم */
+  padding-right: 14px;
+  padding-left: 46px;
+
+  cursor: pointer;
+}
+
+/* تحسين على الهاتف: كبر السهم وزيد مساحة */
+@media (max-width: 480px){
+  #order-section select{
+    background-size: 20px 20px;
+    background-position: left 12px center;
+    padding-left: 50px; /* مساحة للسهم */
+    min-height: 48px;
+  }
+}
+
+/* اختياري: لو كان عندك border خفيف في الهاتف */
+#order-section select:focus{
+  outline: none;
+  border-color: rgba(109,40,217,.55);
+  box-shadow: 0 0 0 4px rgba(109,40,217,.12);
+}
+.summary-line strong{
+  direction: ltr;
+  unicode-bidi: plaintext;
+  white-space: nowrap;
+}
+/* ===== CTA buttons enhancement ===== */
+#order-section .cta-row{
+  display: flex;
+  gap: 14px;
+  margin-top: 22px;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+/* الزر الأساسي */
+#order-section .btn-primary{
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
+  color: #fff;
+  border: none;
+  padding: 14px 22px;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(109,40,217,.25);
+  transition: transform .15s ease, box-shadow .15s ease, opacity .15s;
+}
+
+#order-section .btn-primary:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(109,40,217,.35);
+  opacity: .95;
+}
+
+#order-section .btn-primary:active{
+  transform: translateY(0);
+  box-shadow: 0 6px 14px rgba(109,40,217,.25);
+}
+
+/* الزر الثانوي */
+#order-section .btn-secondary{
+  background: #111827;
+  color: #fff;
+  padding: 14px 20px;
+  border-radius: 14px;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background .15s ease, transform .15s ease;
+}
+
+#order-section .btn-secondary:hover{
+  background: #000;
+  transform: translateY(-1px);
+}
+
+/* الموبايل */
+@media (max-width: 768px){
+  #order-section .cta-row{
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #order-section .btn-primary,
+  #order-section .btn-secondary{
+    width: 100%;
+    justify-content: center;
+    font-size: 16px;
+  }
+}
+
+/* نص الشروط */
+#order-section .terms{
+  margin-top: 14px;
+  font-size: 13px;
+  opacity: .85;
+  line-height: 1.6;
+}
+
+#order-section .terms a{
+  color: #6d28d9;
+  font-weight: 600;
+  text-decoration: underline;
+}
+/* ✅ Phone input LTR (override any RTL rule) */
+#order-section #phoneInput{
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}
+
+/* ✅ placeholder LTR too */
+#order-section #phoneInput::placeholder{
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate !important;
+}
+/* =========================
+   Delivery UI — Match Derradj Shop Style
+   ========================= */
+
+#order-section .delivery-box{
+  margin-top: 14px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+/* عنوان القسم مثل بقية الأقسام */
+#order-section .delivery-head{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin: 0 0 10px;
+}
+
+#order-section .delivery-head h3{
+  margin:0;
+  font-size:16px;
+  font-weight:800;
+}
+
+#order-section .delivery-head small{
+  font-size:12px;
+  opacity:.75;
+}
+
+/* الشبكة */
+#order-section .delivery-options{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+/* البطاقة */
+#order-section .delivery-card{
+  display:block;
+  cursor:pointer;
+}
+
+#order-section .delivery-card input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+/* شكل البطاقة مطابق لستايل book-row/summary */
+#order-section .delivery-card-inner{
+  border:1px solid #e5e7eb;
+  border-radius:16px;                 /* نفس section-card تقريبًا */
+  background:#fff;
+  padding:14px 14px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  transition: box-shadow .15s ease, border-color .15s ease, transform .15s ease;
+}
+
+/* hover بسيط نفس روح الموقع */
+#order-section .delivery-card:hover .delivery-card-inner{
+  border-color:#d7dbe3;
+  box-shadow: 0 10px 22px rgba(0,0,0,.06);
+  transform: translateY(-1px);
+}
+
+#order-section .delivery-right{
+  text-align:right;
+}
+
+#order-section .delivery-title{
+  font-size:15px;
+  font-weight:900;
+  margin:0;
+}
+
+#order-section .delivery-sub{
+  font-size:12px;
+  opacity:.75;
+  margin-top:4px;
+}
+
+/* يسار البطاقة: السعر + علامة الصح */
+#order-section .delivery-left{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-shrink:0;
+}
+
+/* ✅ دج على اليسار بشكل نظيف + بدون فراغات غريبة */
+#order-section .delivery-price{
+  font-weight:900;
+  font-size:14px;
+  direction:ltr;
+  unicode-bidi: isolate;
+  white-space:nowrap;
+}
+
+/* علامة الاختيار */
+#order-section .delivery-check{
+  width:22px;
+  height:22px;
+  border-radius:999px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  font-size:13px;
+  font-weight:900;
+  background:#e5e7eb;
+  color:#111827;
+  opacity:0;
+  transition: .15s ease;
+}
+
+/* Selected */
+#order-section .delivery-card input:checked + .delivery-card-inner{
+  border-color: rgba(109,40,217,.70);
+  box-shadow: 0 0 0 4px rgba(109,40,217,.12);
+}
+
+#order-section .delivery-card input:checked + .delivery-card-inner .delivery-check{
+  background:#6d28d9;
+  color:#fff;
+  opacity:1;
+}
+
+/* موبايل */
+@media (max-width: 680px){
+  #order-section .delivery-options{
+    grid-template-columns:1fr;
+  }
+  #order-section .delivery-card-inner{
+    padding:14px 12px;
+  }
+}
+/* =========================
+   Fix Delivery Font Weight
+   ========================= */
+
+/* عنوان "سعر التوصيل" */
+#order-section .delivery-head h3{
+  font-weight: 600;   /* بدل 800 */
+}
+
+/* عنوان الخيار (التوصيل للمكتب / للمنزل) */
+#order-section .delivery-title{
+  font-weight: 600;   /* كان ثقيل */
+  font-size: 15px;
+}
+
+/* النص الصغير تحت العنوان */
+#order-section .delivery-sub{
+  font-weight: 400;
+  font-size: 13px;
+  opacity: .75;
+}
+
+/* السعر */
+#order-section .delivery-price{
+  font-weight: 600;   /* واضح بدون ما يكون مزعج */
+  font-size: 14px;
+}
+
+/* علامة الصح */
+#order-section .delivery-check{
+  font-weight: 700;
+}
+/* =========================
+   Delivery Options – Clean & Calm
+   ========================= */
+
+/* الحاوية العامة */
+#order-section .delivery-box{
+  margin-top: 18px;
+}
+
+/* عنوان القسم */
+#order-section .delivery-head{
+  margin-bottom: 12px;
+}
+
+#order-section .delivery-head h3{
+  font-size: 16px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* شبكة الخيارات */
+#order-section .delivery-options{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;              /* 👈 مسافة مريحة */
+}
+
+/* كرت التوصيل */
+#order-section .delivery-option{
+  border: 1px solid #e5e7eb;
+  border-radius: 16px;
+  padding: 16px 18px;     /* 👈 تنفّس داخلي */
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: border .2s ease, box-shadow .2s ease, background .2s;
+}
+
+/* عند المرور */
+#order-section .delivery-option:hover{
+  background: #fafafa;
+  border-color: #d1d5db;
+}
+
+/* الخيار المحدد */
+#order-section .delivery-option.active{
+  border-color: #c4b5fd;                 /* بنفسجي هادئ */
+  background: #faf9ff;                   /* خلفية خفيفة جدًا */
+  box-shadow: 0 6px 18px rgba(124,58,237,.12);
+}
+
+/* النص */
+#order-section .delivery-title{
+  font-size: 15px;
+  font-weight: 600;
+  color: #111827;
+}
+
+#order-section .delivery-sub{
+  font-size: 13px;
+  font-weight: 400;
+  color: #6b7280;
+  margin-top: 4px;
+}
+
+/* السعر */
+#order-section .delivery-price{
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  direction: ltr;
+}
+
+/* دائرة الصح */
+#order-section .delivery-check{
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid #d1d5db;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  color: transparent;
+  margin-left: 12px;
+  transition: all .2s ease;
+}
+
+/* الصح عند التحديد */
+#order-section .delivery-option.active .delivery-check{
+  background: #7c3aed;   /* بنفسجي أهدأ */
+  border-color: #7c3aed;
+  color: #fff;
+}
+
+/* 📱 الهاتف */
+@media (max-width: 768px){
+  #order-section .delivery-options{
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  #order-section .delivery-option{
+    padding: 14px 16px;
+  }
+}
+/* ===== Delivery cards (office/home) ===== */
+#order-section .delivery-box{
+  margin-top:16px;
+  padding:16px;
+  border:1px solid #ececec;
+  border-radius:16px;
+  background:#fff;
+}
+
+#order-section .delivery-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:12px;
+  margin-bottom:12px;
+}
+
+#order-section .delivery-head h3{
+  margin:0;
+  font-size:18px;
+  font-weight:600; /* خفيف ومريح */
+}
+
+#order-section .delivery-sub{
+  margin:0;
+  font-size:13px;
+  opacity:.75;
+}
+
+#order-section .delivery-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+#order-section .delivery-card{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px;
+  border-radius:16px;
+  border:1px solid #e5e7eb;
+  background:#fafafa;
+  cursor:pointer;
+  user-select:none;
+}
+
+#order-section .delivery-card input{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+}
+
+#order-section .delivery-card .check{
+  width:22px;height:22px;
+  border-radius:999px;
+  border:2px solid #cbd5e1;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  flex:0 0 22px;
+}
+
+#order-section .delivery-card .check::after{
+  content:"";
+  width:10px;height:10px;
+  border-radius:999px;
+  background:#6d28d9;
+  transform:scale(0);
+  transition:transform .12s ease;
+}
+
+#order-section .delivery-info{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  flex:1;
+}
+
+#order-section .delivery-info strong{
+  font-weight:600; /* مش غليظ */
+}
+
+#order-section .delivery-info small{
+  font-size:12px;
+  opacity:.75;
+}
+
+#order-section .delivery-price{
+  direction:ltr;
+  unicode-bidi:isolate;
+  white-space:nowrap;
+  font-weight:700;
+}
+
+#order-section .delivery-card:has(input:checked){
+  background:#fff;
+  border-color:rgba(109,40,217,.45);
+  box-shadow:0 0 0 4px rgba(109,40,217,.10);
+}
+
+#order-section .delivery-card:has(input:checked) .check{
+  border-color:#6d28d9;
+}
+#order-section .delivery-card:has(input:checked) .check::after{
+  transform:scale(1);
+}
+
+@media (max-width: 720px){
+  #order-section .delivery-grid{ grid-template-columns:1fr; }
+}
