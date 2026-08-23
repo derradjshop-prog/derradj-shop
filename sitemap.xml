@@ -1321,4 +1321,13 @@
       <image:loc>https://derradjshop.com/Electronique/smartwatch/modio-sm03-smart-watch-22-sim-bluetooth-53/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/modio-sm06-smart-watch-22-sim-bluetooth-53/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/smartwatch/modio-sm06-smart-watch-22-sim-bluetooth-53/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
