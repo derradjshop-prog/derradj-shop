@@ -3126,6 +3126,20 @@ img { max-width: 100%; height: auto; }
   }
 }
 
+/* ─── Electronics/category grid load-failure message — shown only if
+   js/products-loader.js's live fetch fails entirely (see
+   showElectronicsLoadError() in products-loader.js). The static SEO
+   fallback for #homeElectronicsGrid/#electronicsGrid now lives only in
+   a <noscript> block next to each grid, never inside the live grid
+   itself, so there is nothing to reveal/hide here on the happy path. ─── */
+.products-load-error {
+  text-align: center;
+  padding: 20px 0 14px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
 /* ─── Bestsellers skeleton — reserves the same footprint as a real
    .product-card so #bestsellers-section never blanks/collapses while
    its picks are being fetched, and swapping skeleton → real cards in

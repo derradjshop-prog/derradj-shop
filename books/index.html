@@ -759,7 +759,13 @@ document.addEventListener('derradj:catalog-loaded', function (e) {
   /* مصدر الكتب الحقيقي: products-loader.js يجلب admin_products_catalog
      (نفس مصدر الإلكترونيات بالضبط) ويُطلق هذا الحدث عند الجلب. */
   document.addEventListener('derradj:catalog-loaded', e => {
-    ALL_BOOKS = (e.detail.products || []).filter(p => p.category === 'books').map(mapRow);
+    const books = (e.detail.products || []).filter(p => p.category === 'books').map(mapRow);
+    /* Randomize display order at load time only — skipped when the admin
+       has best-selling sort mode on, since that real-sales order is the
+       intended feature, not arbitrary order. Shuffling once here (not
+       inside renderBooks()) keeps the order stable while the visitor
+       filters/searches, instead of re-shuffling on every keystroke. */
+    ALL_BOOKS = e.detail.bookSortMode === 'best_selling' ? books : window.shuffleProducts(books);
     renderBooks();
   });
 

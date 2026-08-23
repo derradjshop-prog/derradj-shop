@@ -251,6 +251,24 @@
     </div>`;
   }
 
+  /* ── Display-time randomization — Fisher–Yates, non-mutating. Never
+     touches the source array (window.SUPABASE_PRODUCTS, the
+     sessionStorage cache, or Supabase itself), so admin-configured
+     display_order / bestseller_picks order stays intact everywhere
+     except the customer-facing card grids built from the copy this
+     returns. Exposed on window so books/index.html's own render path
+     (which doesn't go through buildCard()) can reuse it instead of
+     duplicating the algorithm. ── */
+  function shuffleArray(arr) {
+    const copy = arr.slice();
+    for (let i = copy.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+  window.shuffleProducts = shuffleArray;
+
   function esc(v) {
     return String(v ?? '')
       .replaceAll('&', '&amp;').replaceAll('<', '&lt;')
@@ -384,45 +402,72 @@
     });
   }
 
+  /* ── Build a DocumentFragment from a list of products in one shot —
+     the whole card list is serialized to a string and parsed once via
+     <template>, so the final order is fully assembled in memory before
+     touching the live grid. Used together with grid.replaceChildren()
+     so the grid goes from its initial skeleton straight to the final
+     list in a single DOM mutation — never an intermediate/partial
+     render, never a second pass. ── */
+  function buildCardsFragment(products) {
+    const tpl = document.createElement('template');
+    tpl.innerHTML = products.map(buildCard).join('');
+    return tpl.content;
+  }
+
+  /* ── Load-failure message for the electronics/category grid — the
+     static SEO fallback now lives only in a <noscript> block next to
+     each grid (never inside the live grid itself), so on a genuine
+     fetch failure there is nothing real to fall back to in the live
+     DOM. Shown only if the live fetch never completes/returns nothing,
+     instead of leaving the loading skeleton shimmering forever. ── */
+  function showElectronicsLoadError() {
+    const msg = '<p class="products-load-error">تعذر تحميل المنتجات، يرجى تحديث الصفحة.</p>';
+    const g1 = document.getElementById('homeElectronicsGrid');
+    const g2 = document.getElementById('electronicsGrid');
+    if (g1) g1.innerHTML = msg;
+    if (g2) g2.innerHTML = msg;
+  }
+
   /* ── Render products into homepage or electronics category page ──
-     Clears the grid first: the static HTML shipped by
-     scripts/generate-product-pages.js pre-fills these containers with
-     a crawlable server-rendered fallback (same .product-card markup)
-     so search engines and no-JS visitors see real product links
-     immediately. Once live data loads, this replaces that fallback
-     entirely instead of appending after it — otherwise every product
-     would render twice. ── */
+     The grid starts out containing only a loading skeleton (see
+     index.html/Electronique/index.html) — no real product cards ever
+     exist in it before this runs. The full shuffled list is built as
+     an in-memory DocumentFragment first, then swapped in with a single
+     replaceChildren() call, so visitors only ever see
+     skeleton → final shuffled list, never an intermediate render. ── */
   function renderHomepageProducts(products) {
     /* Support both the homepage grid and the Electronique category page grid */
     const grid = document.getElementById('homeElectronicsGrid')
               || document.getElementById('electronicsGrid');
     if (!grid) return;
 
-    /* Only non-books go in the electronics/products section */
-    const elec = products.filter(p => p.category !== 'books');
-    if (!elec.length) return;
+    /* Only non-books go in the electronics/products section. Shuffled at
+       display time only — the fetch above is still ordered by the
+       admin's display_order, untouched in window.SUPABASE_PRODUCTS. */
+    const elec = shuffleArray(products.filter(p => p.category !== 'books'));
+    if (!elec.length) { showElectronicsLoadError(); return; }
 
-    grid.innerHTML = '';
-    elec.forEach(p => {
-      grid.insertAdjacentHTML('beforeend', buildCard(p));
-    });
+    grid.replaceChildren(buildCardsFragment(elec));
   }
 
   /* ── Render the homepage books carousel — mirrors
      renderHomepageProducts(); books/index.html keeps its own
      richer search/filter grid and sources from window.SUPABASE_PRODUCTS
-     directly instead of going through this generic card builder. ── */
-  function renderHomepageBooks(products) {
+     directly instead of going through this generic card builder.
+     Shuffled at display time only when book_sort_mode is 'manual' —
+     when the admin has turned on best-selling sort, that real-sales
+     order is the intended customer-facing feature and must not be
+     scrambled by randomization. ── */
+  function renderHomepageBooks(products, bookSortMode) {
     const grid = document.getElementById('homeBooksGrid');
     if (!grid) return;
 
-    const books = products.filter(p => p.category === 'books');
+    let books = products.filter(p => p.category === 'books');
     if (!books.length) return;
+    if (bookSortMode !== 'best_selling') books = shuffleArray(books);
 
-    grid.innerHTML = '';
-    books.forEach(p => {
-      grid.insertAdjacentHTML('beforeend', buildCard(p));
-    });
+    grid.replaceChildren(buildCardsFragment(books));
   }
 
   /* ── Manually-curated "Best-Selling Products" homepage section —
@@ -463,10 +508,46 @@
     }
   }
 
+  /* ── Bestsellers display order: positions 1-4 follow a fixed
+     category pattern (Electronics, then exactly one Book randomly
+     placed among positions 2-4, the rest Electronics); position 5
+     onward is a plain full shuffle of everything left. This is the
+     only storefront section whose curated picks can mix Electronics
+     and Books in one list (admin can add either category to
+     bestseller_picks), so it's the only place this pattern applies.
+     Falls back to a plain shuffle of the whole list when there aren't
+     enough eligible items to build the pattern safely (fewer than 3
+     Electronics, or no Books) — never duplicates or fabricates
+     products to force the shape. ── */
+  function composeBestsellerOrder(picks) {
+    const electronics = picks.filter(p => p.category !== 'books');
+    const books = picks.filter(p => p.category === 'books');
+
+    if (electronics.length < 3 || books.length < 1) {
+      return shuffleArray(picks);
+    }
+
+    const chosenElectronics = shuffleArray(electronics).slice(0, 3);
+    const chosenBook = shuffleArray(books)[0];
+    const bookPosition = 1 + Math.floor(Math.random() * 3); // index 1, 2, or 3
+
+    const firstFour = [chosenElectronics[0], null, null, null];
+    let elecIdx = 1;
+    for (let i = 1; i <= 3; i++) {
+      firstFour[i] = i === bookPosition ? chosenBook : chosenElectronics[elecIdx++];
+    }
+
+    const usedIds = new Set(firstFour.map(p => p.id));
+    const remaining = picks.filter(p => !usedIds.has(p.id));
+    return firstFour.concat(shuffleArray(remaining));
+  }
+
   /* ── Render the curated bestsellers section — reuses buildCard(p)
      unchanged so cards are pixel-identical to every other section.
      Hides the whole section (not just an empty grid) when there are
-     no picks, per the "hide instead of showing empty" requirement. ── */
+     no picks, per the "hide instead of showing empty" requirement.
+     Order composed at display time only — bestseller_picks.display_order
+     in Supabase (the admin's curated ranking) is never touched. ── */
   function renderHomepageBestsellers(picks) {
     const section = document.getElementById('bestsellers-section');
     const grid = document.getElementById('homeBestsellersGrid');
@@ -477,10 +558,7 @@
       return;
     }
 
-    grid.innerHTML = '';
-    picks.forEach(p => {
-      grid.insertAdjacentHTML('beforeend', buildCard(p));
-    });
+    grid.replaceChildren(buildCardsFragment(composeBestsellerOrder(picks)));
     section.style.display = '';
   }
 
@@ -588,15 +666,18 @@
       }
       window.SUPABASE_CATEGORIES = categories;
 
-      let products = cacheGet(CATALOG_CACHE_KEY, CATALOG_CACHE_TTL);
-      if (!Array.isArray(products) || !products.length) {
+      let cached = cacheGet(CATALOG_CACHE_KEY, CATALOG_CACHE_TTL);
+      let products, bookSortMode;
+      if (!cached || !Array.isArray(cached.products) || !cached.products.length) {
         products = await fetchProducts();
-        if (!Array.isArray(products) || !products.length) return;
-        const bookSortMode = await fetchBookSortMode();
+        if (!Array.isArray(products) || !products.length) { showElectronicsLoadError(); return; }
+        bookSortMode = await fetchBookSortMode();
         const bookSales = bookSortMode === 'best_selling' ? await fetchBookSales() : new Map();
         products = sortProductsForBookMode(products, bookSortMode, bookSales);
-        cacheSet(CATALOG_CACHE_KEY, products);
+        cacheSet(CATALOG_CACHE_KEY, { products, bookSortMode });
       } else {
+        products = cached.products;
+        bookSortMode = cached.bookSortMode;
         const liveStock = await fetchLiveStockStatuses();
         if (liveStock) {
           products.forEach(p => {
@@ -609,7 +690,7 @@
 
       extendCatalog(products);
       renderHomepageProducts(products);
-      renderHomepageBooks(products);
+      renderHomepageBooks(products, bookSortMode);
 
       /* Extend search after search-products.js has run */
       if (window.SEARCH_PRODUCTS) {
@@ -620,10 +701,11 @@
 
       /* Let pages with their own render logic (books/index.html) know
          the live catalog is ready, instead of going through buildCard(). */
-      document.dispatchEvent(new CustomEvent('derradj:catalog-loaded', { detail: { products } }));
+      document.dispatchEvent(new CustomEvent('derradj:catalog-loaded', { detail: { products, bookSortMode } }));
 
     } catch (err) {
       console.warn('[products-loader] Failed to load Supabase products:', err.message);
+      showElectronicsLoadError();
     }
   }
 

@@ -827,6 +827,18 @@ function buildStaticProductCard(p) {
     </div>`;
 }
 
+/* Guards against silently regenerating content into a file that
+   accidentally contains two whole HTML documents concatenated together
+   (e.g. from a bad git merge) — indexOf()/match() below would then only
+   ever touch the first copy, leaving the second stale and drifting out
+   of sync, exactly like the index.html corruption fixed 2026-08-23. */
+function assertSingleDocument(html, label) {
+  const count = (html.match(/<!DOCTYPE html>/gi) || []).length;
+  if (count > 1) {
+    throw new Error(`[generate-product-pages] ${label} contains ${count} <!DOCTYPE html> documents concatenated together (likely a bad merge) — refusing to write into a corrupted file. Fix the duplication first.`);
+  }
+}
+
 function injectStaticGrid(filePath, gridId, rows) {
   const label = path.relative(ROOT, filePath);
   if (!fs.existsSync(filePath)) {
@@ -834,6 +846,7 @@ function injectStaticGrid(filePath, gridId, rows) {
     return;
   }
   const html = fs.readFileSync(filePath, 'utf8');
+  assertSingleDocument(html, label);
   const startMarker = `<!--STATIC_FALLBACK:${gridId}:START-->`;
   const endMarker = `<!--STATIC_FALLBACK:${gridId}:END-->`;
   const startIdx = html.indexOf(startMarker);
@@ -886,6 +899,7 @@ function updateCatalogSchema(filePath, mutateFn) {
     return;
   }
   const html = fs.readFileSync(filePath, 'utf8');
+  assertSingleDocument(html, label);
   const m = html.match(/(<script type="application\/ld\+json">)([\s\S]*?)(<\/script>)/);
   if (!m) {
     console.warn(`[generate-product-pages] no JSON-LD <script> found in ${label} — skipping schema update`);
