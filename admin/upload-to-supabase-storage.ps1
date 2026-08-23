@@ -12,7 +12,7 @@
 #   3. Paste the key as the $SERVICE_ROLE_KEY value below
 #
 # HOW TO RUN (from the repo root):
-#   cd "C:\Users\Social Media\Desktop\derradj-shop"
+#   cd <path-to-derradj-shop>
 #   .\admin\upload-to-supabase-storage.ps1
 #
 # AFTER SUCCESS:
@@ -27,10 +27,13 @@ $SUPABASE_URL  = "https://jbmcbjzcedqpvnhbmrhk.supabase.co"
 $BUCKET        = "product-images"
 $STORAGE_BASE  = "$SUPABASE_URL/storage/v1/object/public/$BUCKET"
 
-# Resolve shop root (one level up from /admin/)
+# Resolve shop root (one level up from /admin/) — always relative to
+# this script's own location, so it works regardless of which machine
+# or path the repo is checked out to.
 $SHOP_ROOT = Split-Path $PSScriptRoot -Parent
 if (-not $SHOP_ROOT -or -not (Test-Path $SHOP_ROOT)) {
-    $SHOP_ROOT = "C:\Users\Social Media\Desktop\derradj-shop"
+    Write-Host "  ERROR: Could not resolve the repo root from this script's location." -ForegroundColor Red
+    exit 1
 }
 
 # ── GUARD ─────────────────────────────────────────────────────────────

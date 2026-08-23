@@ -1,1 +1,23 @@
 node_modules/
+
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editor temp files
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Local-only tooling state
+.claude/scheduled_tasks.lock
