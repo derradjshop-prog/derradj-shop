@@ -1348,4 +1348,13 @@
       <image:loc>https://derradjshop.com/Electronique/telephones/nokia-101-dual-sim-feature-phone/main.webp</image:loc>
     </image:image>
   </url>
+  <url>
+    <loc>https://derradjshop.com/product/nokia-1280-classic-feature-phone/</loc>
+    <lastmod>2026-08-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/telephones/nokia-1280-classic-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
 </urlset>
