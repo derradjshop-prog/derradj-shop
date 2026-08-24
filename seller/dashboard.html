@@ -921,8 +921,10 @@
     completed:     "✅ مكتمل",
   };
 
-  /* حصّة Mehdi من الربح — نصيب الإدارة 100 دج ثابتة لكل طلب، والباقي لـ Mehdi */
-  const MY_SHARE_PER_ORDER = 100;
+  /* حصّة Mehdi من الربح — 70% من الربح لـ Mehdi، والـ 30% الباقية لصاحب المنصة.
+     مصدر النسبة الوحيد؛ نفس الثابت مكرر في admin/admin.js لعدم وجود ملف JS
+     مشترك بين لوحة الأدمن ولوحة البائع. */
+  const MEHDI_PROFIT_SHARE = 0.70;
 
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
@@ -1101,27 +1103,29 @@
     document.getElementById("stat-ord-progress").textContent = inProgress;
     document.getElementById("stat-ord-done").textContent     = done;
 
-    /* إجمالي ربح Mehdi — مجموع (ربح كل طلب - 100 دج نصيب الإدارة)، لكل طلب
-       أُدخلت تكلفة كتابه (أو كتبه)، وفقط للطلبات المؤكد تسليمها
-       (is_confirmed === true) من الأدمن. النصيب 100 دج مرة واحدة لكل طلب
-       بغض النظر عن عدد المنتجات داخله. */
+    /* إجمالي ربح Mehdi — 70% من مجموع ربح كل طلب أُدخلت تكلفة كتابه (أو
+       كتبه)، وفقط للطلبات المؤكد تسليمها (is_confirmed === true) من الأدمن.
+       النسبة تُحسب على مستوى الطلب الواحد ثم تُجمع، حتى تطابق قيمة كل طلب
+       المعروضة في مودال التفاصيل بالضبط (بدل حساب النسبة على المجموع الكلي
+       دفعة واحدة، ما قد يعطي فرق تقريب بسيط). */
     let totalMehdiProfit = 0;
+    let totalMyShare = 0;
     orders.filter(o => o.is_confirmed === true).forEach(o => {
       const itemsWithCost = (o.order_items || []).filter(it =>
         it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
       if (!itemsWithCost.length) return;
       const orderProfit = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
-      totalMehdiProfit += orderProfit - MY_SHARE_PER_ORDER;
+      const orderMehdiShare = Math.round(orderProfit * MEHDI_PROFIT_SHARE);
+      totalMehdiProfit += orderMehdiShare;
+      totalMyShare += orderProfit - orderMehdiShare; // derived, so the two always sum to orderProfit exactly
     });
     document.getElementById("stat-ord-profit").textContent = fmtMoney(totalMehdiProfit);
 
-    /* المبلغ المستحق لـ Derradj Abdellah (صاحب المنصة) — 100 دج لكل طلب
-       مؤكَّد التسليم (is_confirmed === true)، بصرف النظر عن إدخال تكلفة
-       الشراء أو عن عدد المنتجات داخل الطلب. الرسم ثابت لكل طلب مسلَّم،
-       ولا يعتمد على بيانات التكلفة/الربح (بعكس بطاقة "ربحك" أعلاه). */
-    const eligibleOrderCount = orders.filter(o => o.is_confirmed === true).length;
+    /* المبلغ المستحق لـ Derradj Abdellah (صاحب المنصة) — 30% من ربح كل طلب
+       مؤكَّد التسليم (is_confirmed === true) وأُدخلت تكلفة منتجاته. لا يظهر
+       أي مبلغ عن الطلبات التي لم تُدخل تكلفتها بعد، لأن الربح غير معروف. */
     const owedEl = document.getElementById("stat-ord-owed");
-    if (owedEl) owedEl.textContent = fmtMoney(eligibleOrderCount * MY_SHARE_PER_ORDER);
+    if (owedEl) owedEl.textContent = fmtMoney(totalMyShare);
   }
 
   /* ═══════════════════════════════════════════════════════════
@@ -1290,7 +1294,8 @@
        حالة التسليم. الرسالة البديلة تظهر فقط إن لم تُدخَل أي تكلفة بعد. ── */
     const itemsWithCost = items.filter(it => it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
     const totalProfit   = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
-    const mehdiShare     = totalProfit - MY_SHARE_PER_ORDER;
+    const mehdiShare     = Math.round(totalProfit * MEHDI_PROFIT_SHARE);
+    const myShare        = totalProfit - mehdiShare; // derived, so the two always sum to totalProfit exactly
     const profitSummaryHTML = !itemsWithCost.length ? `
       <div class="modal-section">
         <div class="modal-section-title">حصتك من الربح</div>
@@ -1303,9 +1308,9 @@
         <div class="modal-section-title">حصتك من الربح</div>
         <div class="price-summary-box" style="background:linear-gradient(135deg,#f0fdf4,#ecfdf5);border-color:#bbf7d0;">
           <div class="price-row"><span>الربح الكلي${itemsWithCost.length < items.length ? " (جزئي)" : ""}</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span></div>
-          <div class="price-row grand"><span>حصتك</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(mehdiShare))}</span></div>
-          <div class="price-row"><span>حقوق المنصة</span><span class="pv">${esc(fmtMoney(MY_SHARE_PER_ORDER))}</span></div>
-          <p style="margin:8px 0 0;font-size:12px;color:var(--text-light);text-align:center;">ربحك 100% — حقوق المنصة 100 دج فقط</p>
+          <div class="price-row grand"><span>حصتك (70%)</span><span class="pv" style="color:#0F5132;">${esc(fmtMoney(mehdiShare))}</span></div>
+          <div class="price-row"><span>حقوق المنصة (30%)</span><span class="pv">${esc(fmtMoney(myShare))}</span></div>
+          <p style="margin:8px 0 0;font-size:12px;color:var(--text-light);text-align:center;">حصتك 70% من الربح — حقوق المنصة 30%</p>
         </div>
       </div>`;
 

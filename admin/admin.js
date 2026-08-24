@@ -69,8 +69,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     office: "📮 استلام من أقرب نقطة توصيل",
   };
 
-  /* حصص الأرباح — نصيبي 100 دج ثابتة لكل طلب، والباقي لـ Mehdi */
-  const MY_SHARE_PER_ORDER = 100;
+  /* حصص الأرباح — Mehdi يأخذ 70% من الربح، والـ 30% الباقية لصاحب المنصة (أنا).
+     مصدر النسبة الوحيد؛ نفس الثابت مكرر في seller/dashboard.html لعدم وجود
+     ملف JS مشترك بين لوحة الأدمن ولوحة البائع. */
+  const MEHDI_PROFIT_SHARE = 0.70;
 
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
@@ -1222,15 +1224,16 @@ ${itemsText}
     /* ── Order-level profit summary (only counts items with a cost entered) ── */
     const itemsWithCost = items.filter(it => it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
     const totalProfit   = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
-    const mehdiProfit   = totalProfit - MY_SHARE_PER_ORDER;
+    const mehdiProfit   = Math.round(totalProfit * MEHDI_PROFIT_SHARE);
+    const myShare        = totalProfit - mehdiProfit; // derived (not Math.round(totalProfit*0.3)), so the two always sum to totalProfit exactly
     const profitSummaryHTML = itemsWithCost.length ? `
       <div class="modal-totals profit-summary">
         <div class="total-row">
           <span>💰 الربح الكلي${itemsWithCost.length < items.length ? " (جزئي — التكلفة غير مدخلة لكل المنتجات)" : ""}</span>
           <span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span>
         </div>
-        <div class="total-row"><span>🤝 Mehdi</span><span class="total-val">${esc(fmtMoney(mehdiProfit))}</span></div>
-        <div class="total-row grand"><span>👤 أنا</span><span class="total-val" style="color:#0F5132;">${esc(fmtMoney(MY_SHARE_PER_ORDER))}</span></div>
+        <div class="total-row"><span>🤝 Mehdi (70%)</span><span class="total-val">${esc(fmtMoney(mehdiProfit))}</span></div>
+        <div class="total-row grand"><span>👤 أنا (30%)</span><span class="total-val" style="color:#0F5132;">${esc(fmtMoney(myShare))}</span></div>
       </div>` : ``;
 
     /* ── Receipt ── */
