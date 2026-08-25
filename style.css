@@ -900,6 +900,39 @@ input, select, textarea { font-family: inherit; }
 }
 .product-card-btns .btn-order-card:hover { background: #f9fafb; border-color: #9ca3af; box-shadow: none; }
 
+/* ── Digital-subscription card CTA — same shared '.product-card-btns'
+   row as Books/Electronics, but "📱 اطلب عبر الواتساب" is much longer
+   than "🛒 أضف للسلة" and was cramped against the shared button's
+   default 1.3 flex share and 12px padding. Scoped to the
+   .product-card-btns--wa modifier (added only on subscription cards
+   in buildCard()) so Books/Electronics keep their existing button
+   sizing untouched. ── */
+.product-card-btns--wa .btn-order-card {
+  flex: 0.85 1 0;
+  padding: 0 8px;
+}
+.product-card-btns--wa .btn-add-cart {
+  flex: 2 1 0;
+  padding: 0 10px;
+  font-size: 12.5px;
+}
+/* Narrow 2-column phone grid — same 640px breakpoint already used
+   elsewhere for this component (see .product-cta-buttons on the
+   product page). Even the favored flex share above can't fit the
+   full label at that width, so stack the two buttons full-width
+   instead of shrinking or clipping the text further. */
+@media (max-width: 640px) {
+  .product-card-btns--wa {
+    flex-direction: column;
+  }
+  .product-card-btns--wa .btn-order-card,
+  .product-card-btns--wa .btn-add-cart {
+    flex: none;
+    width: 100%;
+    font-size: 13px;
+  }
+}
+
 .products-cta-row { text-align: center; }
 
 /* === 10. MARKETING BANNER === */
@@ -1940,6 +1973,8 @@ input, select, textarea { font-family: inherit; }
   }
   .product-page .product-cta-buttons.wa-only .btn-whatsapp-sb {
     width: 100%;
+    padding: 14px 18px;
+    font-size: 13.5px;
   }
 }
 /* Very narrow phones: even half-width can be tight for the longer
@@ -3888,6 +3923,18 @@ img { max-width: 100%; height: auto; }
   transition: background .2s, color .2s;
 }
 .btn-whatsapp-sb:hover { background: #12203a; color: #fff; text-decoration: none; }
+
+/* ── Subscriptions-only WhatsApp CTA on the product detail page —
+   the shared .btn-whatsapp-sb padding below (14px 10px) was tuned for
+   the 3-button trio (buy-now/whatsapp/cart) and reads cramped as this
+   page's lone, full-width button. Scoped to .wa-only so Books/
+   Electronics' .btn-whatsapp-sb inside the 3-button trio is
+   untouched. ── */
+.product-cta-buttons.wa-only .btn-whatsapp-sb {
+  padding: 15px 28px;
+  font-size: 14.5px;
+  gap: 10px;
+}
 
 .product-cta-buttons { flex-wrap: nowrap; }
 .btn-buy-now-sb,

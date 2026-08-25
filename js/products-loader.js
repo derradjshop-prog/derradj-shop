@@ -244,8 +244,8 @@
        (WHATSAPP_NUMBER_SUBSCRIPTIONS above). */
     const cartBtn = p.category === 'subscriptions'
       ? (isAvail
-          ? `<a href="https://wa.me/${WHATSAPP_NUMBER_SUBSCRIPTIONS}?text=${encodeURIComponent(subscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart">📱 اطلب عبر الواتساب</a>`
-          : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`)
+          ? `<a href="https://wa.me/${WHATSAPP_NUMBER_SUBSCRIPTIONS}?text=${encodeURIComponent(subscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart btn-add-cart--wa">📱 اطلب عبر الواتساب</a>`
+          : `<button class="btn-add-cart btn-add-cart--wa" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`)
       : isAvail
       ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
       : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
@@ -286,7 +286,7 @@
         </a>
         ${summary ? `<p class="product-card-summary">${esc(summary)}</p>` : ''}
         <div class="product-prices">${priceHTML(p.price, p.old_price)}</div>
-        <div class="product-card-btns">
+        <div class="product-card-btns${p.category === 'subscriptions' ? ' product-card-btns--wa' : ''}">
           <a href="${url}" class="btn-order-card">${icon} تفاصيل</a>
           ${cartBtn}
         </div>
