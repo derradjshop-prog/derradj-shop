@@ -587,37 +587,48 @@
   }
 
   /* ── Bestsellers display order: positions 1-4 follow a fixed
-     category pattern (Electronics, then exactly one Book randomly
-     placed among positions 2-4, the rest Electronics); position 5
-     onward is a plain full shuffle of everything left. This is the
-     only storefront section whose curated picks can mix Electronics
-     and Books in one list (admin can add either category to
-     bestseller_picks), so it's the only place this pattern applies.
-     Falls back to a plain shuffle of the whole list when there aren't
-     enough eligible items to build the pattern safely (fewer than 3
-     Electronics, or no Books) — never duplicates or fabricates
-     products to force the shape. ── */
+     category pattern — Electronics, Subscription, Electronics (a
+     different product than position 1), Books — position 5 onward is
+     a plain full shuffle of everything left. Each slot pulls the
+     highest-priority eligible pick still unused from its category
+     (picks already arrive ordered by the admin's curated
+     display_order, then shuffled per-category here the same way the
+     rest of this section always has for variety). If a category has
+     no eligible pick left for its slot, that slot falls back to the
+     next unused pick from any category rather than showing empty —
+     the fixed pattern only holds fully when all three categories have
+     enough eligible products. ── */
   function composeBestsellerOrder(picks) {
-    const electronics = picks.filter(p => p.category !== 'books');
-    const books = picks.filter(p => p.category === 'books');
+    const electronics = shuffleArray(picks.filter(p => p.category !== 'books' && p.category !== 'subscriptions'));
+    const subscriptions = shuffleArray(picks.filter(p => p.category === 'subscriptions'));
+    const books = shuffleArray(picks.filter(p => p.category === 'books'));
 
-    if (electronics.length < 3 || books.length < 1) {
-      return shuffleArray(picks);
+    const used = new Set();
+    function takeFrom(pool) {
+      const item = pool.find(p => !used.has(p.id));
+      if (item) used.add(item.id);
+      return item || null;
     }
 
-    const chosenElectronics = shuffleArray(electronics).slice(0, 3);
-    const chosenBook = shuffleArray(books)[0];
-    const bookPosition = 1 + Math.floor(Math.random() * 3); // index 1, 2, or 3
+    const firstFour = [
+      takeFrom(electronics),
+      takeFrom(subscriptions),
+      takeFrom(electronics),
+      takeFrom(books),
+    ];
 
-    const firstFour = [chosenElectronics[0], null, null, null];
-    let elecIdx = 1;
-    for (let i = 1; i <= 3; i++) {
-      firstFour[i] = i === bookPosition ? chosenBook : chosenElectronics[elecIdx++];
+    const fallbackPool = shuffleArray(picks.filter(p => !used.has(p.id)));
+    for (let i = 0; i < firstFour.length; i++) {
+      if (firstFour[i]) continue;
+      const fb = fallbackPool.shift();
+      if (fb) {
+        used.add(fb.id);
+        firstFour[i] = fb;
+      }
     }
 
-    const usedIds = new Set(firstFour.map(p => p.id));
-    const remaining = picks.filter(p => !usedIds.has(p.id));
-    return firstFour.concat(shuffleArray(remaining));
+    const remaining = shuffleArray(picks.filter(p => !used.has(p.id)));
+    return firstFour.filter(Boolean).concat(remaining);
   }
 
   /* ── Render the curated bestsellers section — reuses buildCard(p)
