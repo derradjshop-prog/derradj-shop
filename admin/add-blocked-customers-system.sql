@@ -24,7 +24,7 @@
 -- 1. blocked_customers — one row per block (kept on unblock, just
 --    flagged inactive, so history is never lost).
 -- 2. public.normalize_phone() — strips everything but digits, so
---    "0555 49 13 16" / "0555-49-13-16" / "0555491316" all match.
+--    "+213 542 94 99 67" / "0542-94-99-67" / "0542949967" all match.
 --    (Checkout already stores phone as digits-only via
 --    onlyDigits10() in ordre/app.js — this is mainly defensive.)
 -- 3. public.is_phone_blocked(text) — SECURITY DEFINER helper.
