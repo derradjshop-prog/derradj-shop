@@ -146,6 +146,16 @@
     return html;
   }
 
+  /* ── WhatsApp order-message text for a subscription card/product —
+     mirrors js/product-template.js's product-details page message so
+     the wording is consistent wherever a customer starts the order
+     from. Not used for books/electronics, which keep the plain
+     inquiry-style WhatsApp message they already had. ── */
+  function subscriptionOrderMessage(p, name) {
+    const fmt = n => Number(n).toLocaleString('en-US');
+    return `السلام عليكم، أريد طلب:\n${name}${p.duration ? ' — ' + p.duration : ''}\nالسعر: ${fmt(p.price)} دج`;
+  }
+
   /* ── Electronics subcategory → actual /Electronique/ folder name.
      admin_products_catalog.subcategory uses underscores (power_bank,
      smart_watch) but those two folders on disk use hyphens — every
@@ -218,11 +228,17 @@
     const imgSrc   = resolveImage(p);
     const summary  = cardSummary(p);
 
-    const cartBtn = isAvail
+    const name = arName(p);
+    /* Digital subscriptions order through WhatsApp only — no cart, no
+       buy-now (see js/product-template.js's product-details page for
+       the same rule). Reuses the site's one WhatsApp number. */
+    const cartBtn = p.category === 'subscriptions'
+      ? (isAvail
+          ? `<a href="https://wa.me/213542949967?text=${encodeURIComponent(subscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart">📱 اطلب عبر الواتساب</a>`
+          : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`)
+      : isAvail
       ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
       : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
-
-    const name = arName(p);
     /* Main card title: electronics always show a non-Arabic title —
        English when product_name/product_name_ar has one, otherwise
        product_name_fr (French) as an interim fallback for the couple
@@ -365,7 +381,7 @@
   }
 
   async function fetchProducts() {
-    const SELECT  = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active,display_order,show_on_homepage';
+    const SELECT  = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active,display_order,show_on_homepage,duration';
     const BASE    = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true`;
 
     /* First try: ordered by display_order ASC NULLS LAST, then created_at DESC */
@@ -403,6 +419,7 @@
         if (p.main_image) entry.image = resolveImage(p);
         if (p.slug)       entry.slug  = p.slug;
         entry.supabaseId = p.id;
+        entry.category  = p.category;
       } else {
         /* Add new entry */
         window.SHOP_CATALOG.push({
@@ -414,6 +431,7 @@
           available:  p.stock_status !== 'out_of_stock',
           supabaseId: p.id,
           slug:       p.slug,
+          category:   p.category,
         });
       }
     });

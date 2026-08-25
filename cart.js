@@ -262,7 +262,12 @@
           if (!item || typeof item.catalogId !== 'number' || !Number.isFinite(item.catalogId)) return false;
           if (!item.qty || item.qty < 1) return false;
           const p = catalog.find(c => c.catalogId === item.catalogId);
-          return p && !p.hidden;
+          /* Digital subscriptions order through WhatsApp only — never
+             through the cart/checkout flow. A subscription that made it
+             into localStorage before this rule existed (or any other
+             way) must never survive to checkout, so it's stripped here
+             exactly like a hidden/unknown product. */
+          return p && !p.hidden && p.category !== 'subscriptions';
         });
         if (valid.length !== parsed.length) {
           if (valid.length === 0) {
@@ -280,6 +285,14 @@
     add (catalogId) {
       const p = window.SHOP_CATALOG.find(c => c.catalogId === catalogId);
       if (!p || p.hidden) return false;
+
+      /* الاشتراكات الرقمية تُطلب عبر الواتساب فقط — لا تدخل السلة إطلاقاً.
+         حماية على مستوى منطق السلة نفسه (وليس فقط بإخفاء الزر) حتى لا
+         يدخل أي اشتراك رقمي السلة مهما كان مصدر الاستدعاء. */
+      if (p.category === 'subscriptions') {
+        showToast('يُطلب هذا المنتج عبر الواتساب فقط.', 'warn');
+        return false;
+      }
 
       /* حماية: رفض المنتجات غير المتوفرة */
       if (p.available === false) {

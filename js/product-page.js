@@ -16,6 +16,29 @@
 
   const { esc, escAttr, buildProductView, pickNames } = window.ProductTemplate;
 
+  /* Mirrors js/products-loader.js's subscriptionOrderMessage() — same
+     WhatsApp order-message wording wherever a subscription card
+     appears (related products, other plans). */
+  function subscriptionOrderMessage(p, name) {
+    const fmt = n => Number(n).toLocaleString('en-US');
+    return `السلام عليكم، أريد طلب:\n${name}${p.duration ? ' — ' + p.duration : ''}\nالسعر: ${fmt(p.price)} دج`;
+  }
+
+  /* ── WhatsApp CTA on related-product / other-plan cards ──
+     Those cards are themselves one big `<a class="rp-card">` linking
+     to the product page, so a real nested `<a href="wa.me/...">` for
+     the WhatsApp action isn't valid HTML (nested anchors) — a plain
+     [data-wa-href] element + this one delegated handler opens the
+     chat in a new tab instead, mirroring how [data-add-to-cart]
+     (cart.js) is delegated from document for the exact same reason. */
+  document.addEventListener('click', function (e) {
+    const el = e.target.closest('[data-wa-href]');
+    if (!el) return;
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(el.dataset.waHref, '_blank', 'noopener,noreferrer');
+  });
+
   /* ── Same admin_products_catalog → book-shape mapping the build-time
      generator uses (scripts/generate-product-pages.js's toBookRow),
      minus the filesystem check — the browser can't stat local files,
@@ -140,6 +163,7 @@
           available: view.isAvail,
           supabaseId: view.supabaseId,
           slug: view.slug,
+          category: p.category,
         });
       }
     }
@@ -326,8 +350,11 @@
           ? `<span class="rp-stock rp-avail">✅ متوفر</span>`
           : `<span class="rp-stock rp-unavail">🔴 نفذت الكمية</span>`;
         const rpName = pickNames(p).ar || p.product_name;
-        const cartBtnHtml = (isAvail && p.catalog_id)
-          ? `<span class="rp-btn rp-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</span>`
+        /* Other plans are always subscriptions — WhatsApp ordering only,
+           same as everywhere else this category appears (see
+           [data-wa-href] delegated handler below). */
+        const cartBtnHtml = isAvail
+          ? `<span class="rp-btn rp-add-cart" data-wa-href="${escAttr('https://wa.me/213542949967?text=' + encodeURIComponent(subscriptionOrderMessage(p, rpName)))}">📱 اطلب عبر الواتساب</span>`
           : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
         return `<a href="${url}" class="rp-card">
           <img src="${escAttr(imgSrc)}" alt="${escAttr(rpName)} — Derradj Shop"
@@ -432,8 +459,15 @@
 
         /* أضف إلى السلة مباشرة من البطاقة — يعتمد على نفس نظام
            التفويض بالحدث في cart.js ([data-add-to-cart] على مستوى
-           document)، فلا حاجة لأي منطق سلة إضافي هنا. */
-        const cartBtnHtml = (isAvail && p.catalog_id)
+           document)، فلا حاجة لأي منطق سلة إضافي هنا. Digital
+           subscriptions never enter the cart — WhatsApp only (see
+           [data-wa-href] delegated handler below), same rule as the
+           product-details page and every other card on the site. */
+        const cartBtnHtml = p.category === 'subscriptions'
+          ? (isAvail
+              ? `<span class="rp-btn rp-add-cart" data-wa-href="${escAttr('https://wa.me/213542949967?text=' + encodeURIComponent(subscriptionOrderMessage(p, rpName)))}">📱 اطلب عبر الواتساب</span>`
+              : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`)
+          : (isAvail && p.catalog_id)
           ? `<span class="rp-btn rp-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</span>`
           : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
 

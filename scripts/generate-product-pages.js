@@ -814,6 +814,13 @@ function staticCardPriceHtml(price, oldPrice) {
   }
   return html;
 }
+/* Mirrors js/products-loader.js's subscriptionOrderMessage() so the
+   static (no-JS/crawler) card and the live JS-rendered card send the
+   exact same WhatsApp order message. */
+function staticSubscriptionOrderMessage(p, name) {
+  const fmt = n => Number(n).toLocaleString('en-US');
+  return `السلام عليكم، أريد طلب:\n${name}${p.duration ? ' — ' + p.duration : ''}\nالسعر: ${fmt(p.price)} دج`;
+}
 function staticCardSummary(p) {
   const raw = (p.short_description || p.full_description || '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
   if (!raw) return '';
@@ -843,7 +850,15 @@ function buildStaticProductCard(p) {
   const titleDirAttr = titleInfo.isEnglish ? ' dir="ltr"' : '';
   const fallbackAttr = (!isBook && !isSubscription && p.main_image) ? `data-fallback="${escAttr(p.main_image)}" ` : '';
   const onerror = `onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}"`;
-  const cartBtn = isAvail
+  /* Digital subscriptions order through WhatsApp only — mirrors
+     js/products-loader.js's buildCard() and js/product-template.js's
+     product-details page (see those for why: no cart, no buy-now for
+     this category). */
+  const cartBtn = isSubscription
+    ? (isAvail
+        ? `<a href="https://wa.me/213542949967?text=${encodeURIComponent(staticSubscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart">📱 اطلب عبر الواتساب</a>`
+        : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`)
+    : isAvail
     ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
     : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 

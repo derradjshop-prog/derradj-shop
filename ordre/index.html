@@ -2100,6 +2100,7 @@ function buildOptions() {
   return window.PRODUCTS_CATALOG.map(function(p, i) {
     if (p.hidden) return '';
     if (p.available === false) return '';
+    if (p.category === 'subscriptions') return ''; /* WhatsApp ordering only — never through this form */
     var display = (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج';
     return '<option value="' + i + '" title="' + p.name + '">' + display + '</option>';
   }).join('');
@@ -2119,10 +2120,11 @@ function initPrCustomSelect(row, hiddenSel) {
   var panel   = row.querySelector('.pr-cs-panel');
   var list    = row.querySelector('.pr-cs-list');
 
-  /* بناء عناصر القائمة — يتجاهل المخفية وغير المتوفرة */
+  /* بناء عناصر القائمة — يتجاهل المخفية وغير المتوفرة والاشتراكات الرقمية */
   list.innerHTML = window.PRODUCTS_CATALOG.map(function(p, i) {
     if (p.hidden) return '';
     if (p.available === false) return '';
+    if (p.category === 'subscriptions') return '';
     return '<div class="pr-cs-item" data-value="' + i + '" role="option">' +
       (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج' +
       '</div>';
@@ -2318,9 +2320,9 @@ window._refreshProductRowsAvailability = function () {
     var sel     = row.querySelector('.pr-select');
     if (!list || !sel) return;
 
-    /* إعادة بناء قائمة العناصر مع استبعاد غير المتوفرة */
+    /* إعادة بناء قائمة العناصر مع استبعاد غير المتوفرة والاشتراكات الرقمية */
     list.innerHTML = window.PRODUCTS_CATALOG.map(function(p, i) {
-      if (p.hidden || p.available === false) return '';
+      if (p.hidden || p.available === false || p.category === 'subscriptions') return '';
       return '<div class="pr-cs-item" data-value="' + i + '" role="option">' +
         (p.shortName || p.name) + ' — ' + p.price.toLocaleString('en-US') + ' دج' +
         '</div>';
@@ -2383,11 +2385,13 @@ function initProductRows() {
     } catch { return []; }
   }());
 
-  /* تجاهل المنتجات المخفية أو غير الصالحة */
+  /* تجاهل المنتجات المخفية أو غير الصالحة، وكذلك أي اشتراك رقمي قديم
+     تسلّل إلى السلة قبل هذه القاعدة — الاشتراكات تُطلب عبر الواتساب
+     فقط ولا يجوز أن تصل لصفحة الطلب/الدفع إطلاقاً. */
   var cartItems = rawItems.filter(function (item) {
     if (!item || typeof item.catalogId !== 'number') return false;
     var cat = (window.PRODUCTS_CATALOG || [])[item.catalogId];
-    return cat && !cat.hidden;
+    return cat && !cat.hidden && cat.category !== 'subscriptions';
   });
 
   /* تنظيف localStorage إذا كانت البيانات فاسدة */
@@ -2455,6 +2459,7 @@ function initProductRows() {
         shortName: p.product_name,
         price:     Number(p.price) || 0,
         available: p.stock_status !== 'out_of_stock',
+        category:  p.category,
       };
     });
   }
@@ -2472,7 +2477,7 @@ function initProductRows() {
     applyCatalogRows(cachedCatalog);
     initProductRows();
   } else {
-    fetch(SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,product_name,price,stock_status,display_order&is_active=eq.true&order=display_order.asc.nullslast,created_at.desc', {
+    fetch(SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,product_name,price,stock_status,display_order,category&is_active=eq.true&order=display_order.asc.nullslast,created_at.desc', {
       headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
     })
     .then(function(r) { return r.ok ? r.json() : []; })

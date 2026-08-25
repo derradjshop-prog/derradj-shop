@@ -1931,6 +1931,16 @@ input, select, textarea { font-family: inherit; }
     height: 15px;
     flex-shrink: 0;
   }
+  /* Digital subscriptions render only the WhatsApp button (no cart/
+     buy-now) — the two-column grid above assumes all three exist, so
+     a lone "wa" cell would only fill half the row and leave the "cart"
+     half blank. Reset to a plain single-item flex row instead. */
+  .product-page .product-cta-buttons.wa-only {
+    display: flex;
+  }
+  .product-page .product-cta-buttons.wa-only .btn-whatsapp-sb {
+    width: 100%;
+  }
 }
 /* Very narrow phones: even half-width can be tight for the longer
    labels, so stack row 1 too rather than shrinking text further. */
