@@ -63,6 +63,7 @@
       books: 'كتب', electronics: 'إلكترونيات', earbuds: 'سماعات',
       laptop: 'إكسسوارات لابتوب', smart_watch: 'ساعات ذكية',
       power_bank: 'بطاريات محمولة', other: 'منتجات أخرى',
+      subscriptions: 'اشتراكات رقمية',
     };
     return m[cat] || cat || 'منتجات';
   }
@@ -99,13 +100,18 @@
     const isAvail   = p.stock_status !== 'out_of_stock';
     const pageUrl   = `${SITE_URL}/product/${encodeURIComponent(slug)}/`;
     const galleryRaw = Array.isArray(p.gallery_images) ? p.gallery_images.filter(Boolean) : [];
-    const isElectronics = p.category !== 'books';
+    const isSubscription = p.category === 'subscriptions';
+    const isElectronics = p.category !== 'books' && !isSubscription;
 
-    /* For electronics (non-books) serve images from the local
-       repository under /Electronique/{subcategory}/{slug}/. The
-       main image is always `main.webp` in that folder; gallery
-       images reuse their original filename (last path segment).
-       For books we preserve the existing behaviour. */
+    /* For electronics serve images from the local repository under
+       /Electronique/{subcategory}/{slug}/. The main image is always
+       `main.webp` in that folder; gallery images reuse their original
+       filename (last path segment). Subscriptions use a flat
+       /subscriptions/{slug}/ folder instead — a subscription plan has
+       no "subcategory of specs" the way electronics does, it's grouped
+       by service (the `subcategory` column stores the service name,
+       e.g. "netflix") which isn't a folder-worthy classification. Books
+       keep the existing behaviour. */
     /* subcategory → folder name: admin_products_catalog stores
        power_bank/smart_watch with underscores, but those two folders
        on disk use hyphens — every other subcategory's folder matches
@@ -119,9 +125,11 @@
        Storage on every single page load (the dominant Cached Egress
        source). Strip those before using the value as a folder name. */
     const subdir = sanitizeSubdir(SUBCATEGORY_DIR[p.subcategory] || p.subcategory);
-    const folderBase = (isElectronics
+    const folderBase = isElectronics
       ? `/Electronique/${encodeURIComponent(subdir)}/${encodeURIComponent(slug)}`
-      : null);
+      : isSubscription
+      ? `/subscriptions/${encodeURIComponent(slug)}`
+      : null;
 
     function filenameFromUrl(u) {
       try { return String(u || '').split('/').filter(Boolean).pop() || '';} catch { return ''; }
@@ -132,16 +140,18 @@
        otherwise prefer `main.webp`. */
     const mainFilename = (p.main_image && filenameFromUrl(p.main_image)) || 'main.webp';
 
-    const gallery = (isElectronics)
+    const gallery = isElectronics
       ? galleryRaw.map(u => `${folderBase}/${encodeURIComponent(filenameFromUrl(u) || 'gallery-1.png')}`)
+      : isSubscription
+      ? [] /* subscriptions show a single logo/plan image — no gallery */
       : galleryRaw.slice();
 
-    /* Visible main image (relative/local path for repo). For
-       electronics use the determined filename under the product
-       folder; otherwise fall back to supplied main_image / first
+    /* Visible main image (relative/local path for repo). Electronics
+       and subscriptions both use the determined filename under their
+       product folder; books fall back to supplied main_image / first
        gallery image / logo. */
-    const imgSrc = isElectronics
-      ? `${folderBase}/${encodeURIComponent(mainFilename)}`
+    const imgSrc = (isElectronics || isSubscription)
+      ? `${folderBase}/${encodeURIComponent(isSubscription ? 'main.webp' : mainFilename)}`
       : (p.main_image || gallery[0] || `${SITE_URL}/Logo.jpg`);
 
     const allImgs = [imgSrc, ...gallery.filter(u => u && u !== imgSrc)];
@@ -279,12 +289,14 @@
       }
     };
 
+    const categoryPageUrl = isSubscription ? `${SITE_URL}/subscriptions/` : `${SITE_URL}/Electronique/`;
+
     const breadcrumbLd = {
       '@context': 'https://schema.org',
       '@type': 'BreadcrumbList',
       'itemListElement': [
         { '@type': 'ListItem', 'position': 1, 'name': 'Derradj Shop', 'item': SITE_URL },
-        { '@type': 'ListItem', 'position': 2, 'name': catAr,          'item': `${SITE_URL}/Electronique/` },
+        { '@type': 'ListItem', 'position': 2, 'name': catAr,          'item': categoryPageUrl },
         { '@type': 'ListItem', 'position': 3, 'name': schemaName,     'item': pageUrl }
       ]
     };
@@ -296,7 +308,7 @@
 
       <div class="breadcrumb">
         <a href="/">الرئيسية</a><span>›</span>
-        <a href="/Electronique/">${esc(catAr)}</a><span>›</span>
+        <a href="${escAttr(categoryPageUrl.replace(SITE_URL, ''))}">${esc(catAr)}</a><span>›</span>
         <span>${esc(arName)}</span>
       </div>
 
@@ -339,10 +351,22 @@
               <span class="feature-check">✓</span>
               <span><strong>النوع:</strong> ${esc(p.subcategory)}</span>
             </div>` : ''}
-            <div class="product-feature">
+            ${isSubscription && p.duration ? `<div class="product-feature">
+              <span class="feature-check">✓</span>
+              <span><strong>المدة:</strong> ${esc(p.duration)}</span>
+            </div>` : ''}
+            ${isSubscription && p.activation_method ? `<div class="product-feature">
+              <span class="feature-check">✓</span>
+              <span><strong>طريقة التفعيل:</strong> ${esc(p.activation_method)}</span>
+            </div>` : ''}
+            ${isSubscription && p.warranty_info ? `<div class="product-feature">
+              <span class="feature-check">✓</span>
+              <span><strong>الضمان:</strong> ${esc(p.warranty_info)}</span>
+            </div>` : ''}
+            ${!isSubscription ? `<div class="product-feature">
               <span class="feature-check">✓</span>
               <span>توصيل لجميع ولايات الجزائر الـ 58</span>
-            </div>
+            </div>` : ''}
             <div class="product-feature">
               <span class="feature-check">✓</span>
               <span>الدفع مسبق أو عند الاستلام</span>
@@ -383,14 +407,23 @@
             يمكنك الدفع مسبقاً عبر CCP / BaridiMob أو الدفع عند الاستلام.
           </p>
         </div>
-        <div class="info-card">
+        ${isSubscription ? `<div class="info-card">
+          <h2>⚡ التفعيل والضمان</h2>
+          <p style="color:#475569;line-height:1.9;font-size:14px;">
+            ${esc(p.activation_method) || 'يتم التفعيل بعد تأكيد الطلب مباشرة.'}
+            ${p.warranty_info ? '<br>' + esc(p.warranty_info) : ''}
+          </p>
+        </div>` : `<div class="info-card">
           <h2>🚚 التوصيل</h2>
           <p style="color:#475569;line-height:1.9;font-size:14px;">
             ${SHIPPING_NOTICE_AR}
             يمكنك الاستلام من أقرب نقطة توصيل أو التوصيل للمنزل.
           </p>
-        </div>
+        </div>`}
       </div>
+
+      ${isSubscription ? `<!-- Other plans for the same service — filled by loadOtherPlans() -->
+      <div id="otherPlans"></div>` : ''}
 
       <!-- Related products — filled by loadRelatedProducts() -->
       <div id="relatedProducts"></div>
@@ -403,6 +436,8 @@
       productName: arName,
       price: p.price,
       mainImage: imgSrc,
+      isSubscription,
+      subcategory: p.subcategory || null,
       meta: {
         title,
         description: desc,

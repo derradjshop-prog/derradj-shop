@@ -85,6 +85,7 @@
     <nav class="main-nav">
       <a href="books/" class="nav-link">📚 الكتب</a>
       <a href="Electronique/" class="nav-link">💻 إلكترونيات</a>
+      <a href="subscriptions/" class="nav-link">💎 الاشتراكات الرقمية</a>
       <a href="about"       class="nav-link">من نحن</a>
       <a href="faq"         class="nav-link">الأسئلة الشائعة</a>
       <a href="contact"     class="nav-link">تواصل معنا</a>
@@ -154,6 +155,7 @@
 <div class="mobile-menu" id="mobileMenu">
   <a href="books/">📚 الكتب</a>
   <a href="Electronique/">💻 إلكترونيات</a>
+  <a href="subscriptions/">💎 الاشتراكات الرقمية</a>
   <a href="about">من نحن</a>
   <a href="faq">الأسئلة الشائعة</a>
   <a href="contact">تواصل معنا</a>
@@ -212,6 +214,29 @@
     <div class="product-carousel" id="homeBestsellersGrid">
       <!--SKELETON:START--><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><!--SKELETON:END-->
     </div>
+  </div>
+</section>
+
+<!-- ===================== DIGITAL SUBSCRIPTIONS ===================== -->
+<!-- Same rendering path as Electronics/Books — js/products-loader.js's
+     renderHomepageSubscriptions() fills #homeSubscriptionsGrid and hides
+     this whole section (not just the grid) when there are no active
+     subscriptions flagged show_on_homepage, so it never shows an empty
+     shell to visitors. Placed immediately after bestsellers per the
+     admin's requested homepage order. -->
+<section class="products-section section-wrap product-slider-section" id="subscriptions-section" style="background:#fff;">
+  <div class="container">
+    <div class="section-header product-slider-header centered">
+      <div class="section-label">💎 اشتراكات رقمية</div>
+      <h2 class="section-title">اشتراكات وخدمات رقمية</h2>
+      <p class="section-subtitle">اشتراكات ChatGPT، Netflix، Canva Pro وغيرها — تفعيل فوري وأسعار مناسبة</p>
+    </div>
+    <div class="product-carousel" id="homeSubscriptionsGrid">
+      <!--SKELETON:START--><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><div class="product-card skeleton-card" aria-hidden="true"><div class="skeleton-img"></div><div class="skeleton-info"><div class="skeleton-line skeleton-line--title"></div><div class="skeleton-line"></div><div class="skeleton-line skeleton-line--price"></div></div></div><!--SKELETON:END-->
+    </div>
+    <noscript><div class="product-carousel">
+      <!--STATIC_FALLBACK:homeSubscriptionsGrid:START--><!--STATIC_FALLBACK:homeSubscriptionsGrid:END-->
+    </div></noscript>
   </div>
 </section>
 

@@ -29,6 +29,7 @@ const SITE_URL = 'https://derradjshop.com';
 const ROOT = path.join(__dirname, '..');
 const PRODUCT_DIR = path.join(ROOT, 'product');
 const BOOKS_DIR = path.join(ROOT, 'books');
+const SUBSCRIPTIONS_DIR = path.join(ROOT, 'subscriptions');
 const CACHE_FILE = path.join(__dirname, '.image-dims-cache.json');
 
 /* ── Supabase REST ──
@@ -49,6 +50,7 @@ const PRODUCT_COLUMNS = [
   'short_description', 'full_description',
   'seo_title', 'seo_description', 'keywords', 'brand',
   'author', 'translator', 'year', 'updated_at',
+  'duration', 'activation_method', 'warranty_info', 'show_on_homepage',
 ].join(',');
 
 async function fetchActiveProducts() {
@@ -332,6 +334,36 @@ async function localizeElectronicsImagesIfMissing(p) {
   }
 }
 
+/* ── Auto-localize a subscription product's logo the first time it's
+   seen — mirrors localizeBookCoverIfMissing() (flat /subscriptions/
+   {slug}/main.webp folder, no subcategory-dir nesting, since a
+   subscription plan doesn't have "specs" the way electronics does). ── */
+async function localizeSubscriptionImageIfMissing(p) {
+  if (!p.slug || !p.main_image || !/^https?:\/\//.test(p.main_image)) return;
+  const dest = path.join(SUBSCRIPTIONS_DIR, p.slug, 'main.webp');
+  if (fs.existsSync(dest)) return;
+  try {
+    const buf = await downloadToFile(p.main_image);
+    fs.mkdirSync(path.join(SUBSCRIPTIONS_DIR, p.slug), { recursive: true });
+    fs.writeFileSync(dest, buf);
+    console.log(`[generate-product-pages] localized image for subscriptions/${p.slug}/ (${(buf.length / 1024).toFixed(0)}KB from Supabase Storage, one-time)`);
+  } catch (err) {
+    console.warn(`[generate-product-pages] could not localize image for subscriptions/${p.slug}: ${err.message} — will keep serving it from Supabase Storage until this succeeds.`);
+  }
+}
+
+function probeLocalSubscriptionImageDims(slug) {
+  for (const name of ['main.webp', 'main.png', 'main.jpg']) {
+    const file = path.join(SUBSCRIPTIONS_DIR, slug, name);
+    if (!fs.existsSync(file)) continue;
+    try {
+      const dims = getImageSize(fs.readFileSync(file));
+      if (dims) return dims;
+    } catch (_) { /* try next extension */ }
+  }
+  return null;
+}
+
 /* ── Local electronics image dims (repo files) ── */
 function probeLocalElectronicsImageDims(subcategory, slug, filename) {
   const folder = path.join(ROOT, 'Electronique', subcategory || 'other', slug || '');
@@ -412,6 +444,7 @@ function renderPage(view, dims) {
       <a href="/"              class="nav-link">الرئيسية</a>
       <a href="/books/"        class="nav-link">📚 الكتب</a>
       <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
+      <a href="/subscriptions/" class="nav-link">💎 الاشتراكات الرقمية</a>
       <a href="/about"    class="nav-link">من نحن</a>
       <a href="/faq"      class="nav-link">الأسئلة الشائعة</a>
       <a href="/contact"  class="nav-link">تواصل معنا</a>
@@ -444,6 +477,7 @@ function renderPage(view, dims) {
   <a href="/">الرئيسية</a>
   <a href="/books/">📚 الكتب</a>
   <a href="/Electronique/">💻 إلكترونيات</a>
+  <a href="/subscriptions/">💎 الاشتراكات الرقمية</a>
   <a href="/about">من نحن</a>
   <a href="/faq">الأسئلة الشائعة</a>
   <a href="/contact">تواصل معنا</a>
@@ -559,6 +593,7 @@ function renderBookPage(view, dims) {
       <a href="/"              class="nav-link">الرئيسية</a>
       <a href="/books/"        class="nav-link" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
       <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
+      <a href="/subscriptions/" class="nav-link">💎 الاشتراكات الرقمية</a>
       <a href="/about"    class="nav-link">من نحن</a>
       <a href="/faq"      class="nav-link">الأسئلة الشائعة</a>
       <a href="/contact"  class="nav-link">تواصل معنا</a>
@@ -591,6 +626,7 @@ function renderBookPage(view, dims) {
   <a href="/">الرئيسية</a>
   <a href="/books/" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
   <a href="/Electronique/">💻 إلكترونيات</a>
+  <a href="/subscriptions/">💎 الاشتراكات الرقمية</a>
   <a href="/about">من نحن</a>
   <a href="/faq">الأسئلة الشائعة</a>
   <a href="/contact">تواصل معنا</a>
@@ -643,6 +679,7 @@ function buildSitemap(products, books) {
     { loc: `${SITE_URL}/`,                  freq: 'weekly',  pri: '1.0' },
     { loc: `${SITE_URL}/books/`,            freq: 'weekly',  pri: '0.9' },
     { loc: `${SITE_URL}/Electronique/`,     freq: 'weekly',  pri: '0.9' },
+    { loc: `${SITE_URL}/subscriptions/`,    freq: 'weekly',  pri: '0.9' },
     { loc: `${SITE_URL}/about`,        freq: 'monthly', pri: '0.5' },
     { loc: `${SITE_URL}/contact`,      freq: 'monthly', pri: '0.5' },
     { loc: `${SITE_URL}/faq`,          freq: 'monthly', pri: '0.5' },
@@ -718,7 +755,7 @@ ${urls.map(urlBlock).join('\n')}
    so this fallback is fully replaced, never duplicated. ── */
 const STATIC_CARD_CAT_ICON = {
   books: '📚', electronics: '💻', earbuds: '🎧', laptop: '💻',
-  smart_watch: '⌚', power_bank: '🔋', other: '📦',
+  smart_watch: '⌚', power_bank: '🔋', other: '📦', subscriptions: '💎',
 };
 const STATIC_CARD_AR_RE = /[؀-ۿ]/;
 function staticCardArName(p) {
@@ -753,6 +790,10 @@ function staticCardResolveImage(p) {
   if (p.category === 'books') {
     const slug = p.slug || '';
     return slug ? `/books/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
+  }
+  if (p.category === 'subscriptions') {
+    const slug = p.slug || '';
+    return slug ? `/subscriptions/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
   }
   if (!p.main_image) return '/Logo.jpg';
   const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
@@ -793,13 +834,14 @@ function buildStaticProductCard(p) {
   const imgSrc  = staticCardResolveImage(p);
   const summary = staticCardSummary(p);
   const name    = staticCardArName(p);
-  /* Books keep the Arabic main title unchanged — electronics always
-     show a non-Arabic title (mirrors js/products-loader.js buildCard()
-     / electronicsTitle()). */
-  const titleInfo = isBook ? { text: name, isEnglish: false } : staticCardElectronicsTitle(p);
+  /* Books and subscriptions keep the Arabic main title unchanged —
+     electronics always shows a non-Arabic title (mirrors
+     js/products-loader.js buildCard() / electronicsTitle()). */
+  const isSubscription = p.category === 'subscriptions';
+  const titleInfo = (isBook || isSubscription) ? { text: name, isEnglish: false } : staticCardElectronicsTitle(p);
   const mainTitle = titleInfo.text;
   const titleDirAttr = titleInfo.isEnglish ? ' dir="ltr"' : '';
-  const fallbackAttr = (!isBook && p.main_image) ? `data-fallback="${escAttr(p.main_image)}" ` : '';
+  const fallbackAttr = (!isBook && !isSubscription && p.main_image) ? `data-fallback="${escAttr(p.main_image)}" ` : '';
   const onerror = `onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}"`;
   const cartBtn = isAvail
     ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
@@ -954,18 +996,23 @@ function listItemsForCategory(rows, kind) {
     const url = kind === 'books'
       ? `${SITE_URL}/books/${encodeURIComponent(p.slug)}/`
       : `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`;
-    if (kind === 'electronics') {
+    if (kind === 'electronics' || kind === 'subscriptions') {
       try { name = ProductTemplate.buildProductView(p).productName || name; } catch (_) { /* keep raw name */ }
     }
     return { '@type': 'ListItem', position: i + 1, url, name };
   });
 }
 
-function refreshCatalogSchemas(products, books) {
+/* `products` here is electronics-only (subscriptions have their own
+   subset — see main()) and `subscriptions` is that subscriptions-only
+   subset. The homepage's hasOfferCatalog still lists every non-book
+   product regardless of category (offerItemsForCatalog(allProducts,
+   books)), so subscriptions appear there automatically. */
+function refreshCatalogSchemas(products, books, subscriptions) {
   updateCatalogSchema(path.join(ROOT, 'index.html'), data => {
     const business = findFirstJsonLdNode(data, n => n && n.hasOfferCatalog);
     if (!business) return false;
-    const items = offerItemsForCatalog(products, books);
+    const items = offerItemsForCatalog(products.concat(subscriptions), books);
     business.hasOfferCatalog.itemListElement = items;
     business.hasOfferCatalog.numberOfItems = items.length;
     return true;
@@ -988,6 +1035,15 @@ function refreshCatalogSchemas(products, books) {
     list.numberOfItems = items.length;
     return true;
   });
+
+  updateCatalogSchema(path.join(SUBSCRIPTIONS_DIR, 'index.html'), data => {
+    const list = findFirstJsonLdNode(data, n => n && n['@type'] === 'ItemList');
+    if (!list) return false;
+    const items = listItemsForCategory(subscriptions, 'subscriptions');
+    list.itemListElement = items;
+    list.numberOfItems = items.length;
+    return true;
+  });
 }
 
 /* ── Main ── */
@@ -996,7 +1052,17 @@ async function main() {
   const rows = await fetchActiveProducts();
   const products = rows.filter(p => p.category !== 'books');
   const books    = rows.filter(p => p.category === 'books');
-  console.log(`[generate-product-pages] ${products.length} product(s), ${books.length} book(s) found.`);
+  /* `products` (everything non-book) is what actually gets a
+     /product/{slug}/ page below — electronics and subscriptions share
+     that same generation loop/URL prefix, differing only in how their
+     images are localized/measured (flat /subscriptions/ folder vs
+     /Electronique/{subcategory}/ folder). These two subsets are only
+     used afterwards, to keep each category's own grid/schema (the
+     Electronique page, the subscriptions page) from including the
+     other's rows. */
+  const electronicsOnly = products.filter(p => p.category !== 'subscriptions');
+  const subscriptionsOnly = products.filter(p => p.category === 'subscriptions');
+  console.log(`[generate-product-pages] ${electronicsOnly.length} electronics product(s), ${subscriptionsOnly.length} subscription(s), ${books.length} book(s) found.`);
 
   const cache = loadCache();
   const writtenSlugs = new Set();
@@ -1022,11 +1088,17 @@ async function main() {
     }
     console.log(`[generate-product-pages] processing product/${p.slug}/ (catalog_id=${p.catalog_id})...`);
     try {
-      await localizeElectronicsImagesIfMissing(p);
+      if (p.category === 'subscriptions') {
+        await localizeSubscriptionImageIfMissing(p);
+      } else {
+        await localizeElectronicsImagesIfMissing(p);
+      }
       const view = ProductTemplate.buildProductView(p);
       let dims = null;
       try {
-        if (view.mainImage && !/^https?:\/\//.test(view.mainImage) && view.mainImage.startsWith('/')) {
+        if (view.mainImage && view.mainImage.startsWith('/subscriptions/')) {
+          dims = probeLocalSubscriptionImageDims(p.slug || '');
+        } else if (view.mainImage && !/^https?:\/\//.test(view.mainImage) && view.mainImage.startsWith('/')) {
           /* local repo path like /Electronique/{sub}/{slug}/filename */
           const parts = view.mainImage.split('/').filter(Boolean);
           const sub = parts[1] || 'other';
@@ -1140,10 +1212,14 @@ async function main() {
      discoverability gap this phase targets is electronics/Arduino, not
      books, so keep the fix scoped to that instead of bloating the
      homepage for content that isn't at risk of being orphaned. */
-  injectStaticGrid(path.join(ROOT, 'Electronique', 'index.html'), 'electronicsGrid', products);
-  injectStaticGrid(path.join(ROOT, 'index.html'), 'homeElectronicsGrid', products);
+  injectStaticGrid(path.join(ROOT, 'Electronique', 'index.html'), 'electronicsGrid', electronicsOnly);
+  injectStaticGrid(path.join(ROOT, 'index.html'), 'homeElectronicsGrid', electronicsOnly);
+  /* Subscriptions — same reasoning as electronics above: small catalog,
+     so the added static weight is negligible and worth the crawlability. */
+  injectStaticGrid(path.join(SUBSCRIPTIONS_DIR, 'index.html'), 'subscriptionsGrid', subscriptionsOnly);
+  injectStaticGrid(path.join(ROOT, 'index.html'), 'homeSubscriptionsGrid', subscriptionsOnly.filter(p => p.show_on_homepage !== false));
 
-  refreshCatalogSchemas(products, books);
+  refreshCatalogSchemas(electronicsOnly, books, subscriptionsOnly);
 
   const sitemap = buildSitemap(products, books);
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap);

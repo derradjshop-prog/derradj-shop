@@ -90,7 +90,7 @@
          every product/book page (the static HTML is already pre-rendered;
          this is just a live refresh), so select(*) here meant re-pulling
          every text/gallery column on every pageview site-wide. */
-      const SELECT = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,full_description,seo_title,seo_description,keywords,gallery_images,brand,slug,author,translator,year,updated_at';
+      const SELECT = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,full_description,seo_title,seo_description,keywords,gallery_images,brand,slug,author,translator,year,updated_at,duration,activation_method,warranty_info';
       const apiUrl = `${SB_URL}/rest/v1/admin_products_catalog?${field}=eq.${encodeURIComponent(slug)}&is_active=eq.true&select=${SELECT}&limit=1`;
 
       const res = await fetch(apiUrl, {
@@ -123,6 +123,7 @@
     applyMeta(view.meta);
     document.getElementById('pdContent').innerHTML = view.bodyHtml;
 
+    if (view.isSubscription) loadOtherPlans(view.slug, view.subcategory);
     loadRelatedProducts(view.slug, view.catalogId);
     wireInteractions(view, p);
 
@@ -288,6 +289,71 @@
     });
   }
 
+  /* ── "خطط أخرى" — other plans of the same subscription service
+     (e.g. Netflix 1-screen / 2-screens / 5-screens), matched by the
+     shared `subcategory` value (the service name/slug an admin types
+     when adding each plan as its own catalog row — see
+     admin/products-manager.js). Only rendered on subscription product
+     pages; a no-op when the product has no subcategory set or no
+     sibling plans exist. ── */
+  async function loadOtherPlans(currentSlug, subcategory) {
+    const container = document.getElementById('otherPlans');
+    if (!container || !subcategory) return;
+
+    try {
+      const products = await getCatalogProducts(2500);
+      const pool = products && products.length ? products : window.SUPABASE_PRODUCTS || [];
+      const siblings = pool.filter(p =>
+        p.category === 'subscriptions' &&
+        p.subcategory === subcategory &&
+        p.slug !== currentSlug
+      );
+      if (!siblings.length) return;
+
+      const cardsHtml = siblings.map(p => {
+        const url = `/product/${encodeURIComponent(p.slug)}/`;
+        const isAvail = p.stock_status !== 'out_of_stock';
+        const imgSrc = p.slug ? `/subscriptions/${encodeURIComponent(p.slug)}/main.webp` : '/Logo.jpg';
+        const fmt = n => Number(n).toLocaleString('en-US');
+        let priceRow = `<span class="rp-price">${fmt(p.price)} دج</span>`;
+        let discTag = '';
+        if (p.old_price) {
+          priceRow += ` <span class="rp-old-price">${fmt(p.old_price)} دج</span>`;
+          const pct = Math.round((1 - p.price / p.old_price) * 100);
+          if (pct > 0) discTag = `<span class="rp-discount">-${pct}%</span>`;
+        }
+        const stockBadgeHtml = isAvail
+          ? `<span class="rp-stock rp-avail">✅ متوفر</span>`
+          : `<span class="rp-stock rp-unavail">🔴 نفذت الكمية</span>`;
+        const rpName = pickNames(p).ar || p.product_name;
+        const cartBtnHtml = (isAvail && p.catalog_id)
+          ? `<span class="rp-btn rp-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</span>`
+          : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
+        return `<a href="${url}" class="rp-card">
+          <img src="${escAttr(imgSrc)}" alt="${escAttr(rpName)} — Derradj Shop"
+               class="rp-img" loading="lazy" onerror="this.src='/Logo.jpg'">
+          <div class="rp-body">
+            <div class="rp-name">${esc(rpName)}</div>
+            <div class="rp-price-row">${priceRow}${discTag}</div>
+            ${stockBadgeHtml}
+            ${cartBtnHtml}
+          </div>
+        </a>`;
+      }).join('');
+
+      container.innerHTML = `
+        <div class="rp-section">
+          <h2 class="rp-title">💎 خطط أخرى لنفس الخدمة</h2>
+          <div class="rp-outer" style="overflow-x:auto;">
+            <div class="rp-track" style="animation:none;transform:none;">${cardsHtml}</div>
+          </div>
+        </div>
+      `;
+    } catch (err) {
+      console.warn('[other plans]', err.message);
+    }
+  }
+
   async function loadRelatedProducts(currentSlug, currentCatalogId) {
     const container = document.getElementById('relatedProducts');
     if (!container) return;
@@ -330,6 +396,8 @@
         let imgSrc = p.main_image || '/Logo.jpg';
         if (isBook) {
           imgSrc = p.slug ? `/books/${encodeURIComponent(p.slug)}/main.webp` : imgSrc;
+        } else if (p.category === 'subscriptions') {
+          imgSrc = p.slug ? `/subscriptions/${encodeURIComponent(p.slug)}/main.webp` : imgSrc;
         } else {
           /* subcategory → folder name: power_bank/smart_watch use
              underscores in Supabase but hyphens on disk. Free-text values
@@ -369,8 +437,9 @@
           ? `<span class="rp-btn rp-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</span>`
           : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
 
+        const canFallback = !isBook && p.category !== 'subscriptions' && p.main_image;
         return `<a href="${url}" class="rp-card">
-          <img src="${escAttr(imgSrc)}" ${!isBook && p.main_image ? `data-fallback="${escAttr(p.main_image)}" ` : ''}alt="${escAttr(rpName)} — Derradj Shop"
+          <img src="${escAttr(imgSrc)}" ${canFallback ? `data-fallback="${escAttr(p.main_image)}" ` : ''}alt="${escAttr(rpName)} — Derradj Shop"
                class="rp-img" loading="lazy" onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}">
           <div class="rp-body">
             <div class="rp-name">${esc(rpName)}</div>

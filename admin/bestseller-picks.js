@@ -34,6 +34,8 @@
     if (!img) return '';
     if (p.category === 'books') {
       if (!/^https?:\/\//.test(img)) img = '/books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
+    } else if (p.category === 'subscriptions') {
+      if (!/^https?:\/\//.test(img)) img = '/subscriptions/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
     } else if (/^https?:\/\//.test(img)) {
       const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
       const subdir = String(SUBCATEGORY_DIR[p.subcategory] || p.subcategory || 'other')
@@ -52,7 +54,7 @@
   function thumbImgHtml(p, cssClass) {
     const thumbSrc = resolveThumbSrc(p);
     if (!thumbSrc) return `<div class="${cssClass}-ph">📦</div>`;
-    const rawFallback = p.category !== 'books' && thumbSrc !== p.main_image ? escAttr(p.main_image || '') : '';
+    const rawFallback = p.category !== 'books' && p.category !== 'subscriptions' && thumbSrc !== p.main_image ? escAttr(p.main_image || '') : '';
     return `<img src="${escAttr(thumbSrc)}" class="${cssClass}" alt=""` +
       (rawFallback ? ` data-fallback="${rawFallback}"` : '') +
       ` onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.outerHTML='<div class=${cssClass}-ph>📦</div>'}">`;

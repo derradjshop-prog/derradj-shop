@@ -78,6 +78,8 @@ function resolveTarget(searchParams) {
 
   const segments = category === 'books'
     ? ['books', slug]
+    : category === 'subscriptions'
+    ? ['subscriptions', slug]
     : ['Electronique', sanitizeSubdir(subcategory), slug];
 
   for (const seg of segments) {

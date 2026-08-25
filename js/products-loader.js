@@ -23,6 +23,7 @@
     smart_watch: '⌚',
     power_bank:  '🔋',
     other:       '📦',
+    subscriptions: '💎',
   };
 
   /* ── Electronics subcategories — single source of truth is the
@@ -50,7 +51,7 @@
     power_bank:  'power-bank',
   };
   function resolveCategorySlug(p) {
-    if (!p || p.category === 'books') return null;
+    if (!p || p.category === 'books' || p.category === 'subscriptions') return null;
     const byId = LEGACY_SUBCATEGORY_BY_CATALOG_ID[p.catalog_id];
     if (byId) return byId;
     const raw = p.subcategory;
@@ -123,6 +124,7 @@
       books: 'كتب', electronics: 'إلكترونيات', earbuds: 'سماعات',
       laptop: 'إكسسوارات لابتوب', smart_watch: 'ساعات ذكية',
       power_bank: 'بطاريات محمولة', other: 'منتجات أخرى',
+      subscriptions: 'اشتراكات رقمية',
     };
     return m[cat] || cat;
   }
@@ -175,6 +177,10 @@
       const slug = p.slug || '';
       return slug ? `/books/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
     }
+    if (p.category === 'subscriptions') {
+      const slug = p.slug || '';
+      return slug ? `/subscriptions/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
+    }
     let img = p.main_image || '';
     if (!img) return '/Logo.jpg';
     const sub = subcategoryDir(String(p.subcategory || 'other'));
@@ -191,7 +197,7 @@
      giving up on the generic logo — so a missing local mirror shows
      the actual product photo instead of silently degrading. ── */
   function imgFallbackAttrs(p) {
-    if (p.category === 'books' || !p.main_image) return '';
+    if (p.category === 'books' || p.category === 'subscriptions' || !p.main_image) return '';
     return `data-fallback="${escAttr(p.main_image)}" `;
   }
   const IMG_ONERROR = `onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}"`;
@@ -225,10 +231,21 @@
        title unchanged. Everything else on the card (alt text, search
        index, SEO/H1 on the product page) keeps using the Arabic name
        regardless of category. */
-    const titleInfo = isBook ? { text: name, isEnglish: false } : electronicsTitle(p);
+    const titleInfo = (isBook || p.category === 'subscriptions')
+      ? { text: name, isEnglish: false }
+      : electronicsTitle(p);
     const mainTitle = titleInfo.text;
     const titleDirAttr = titleInfo.isEnglish ? ' dir="ltr"' : '';
-    const subcatAttr = subcat ? ` data-subcategory="${escAttr(subcat.slug)}"` : '';
+    /* Subscriptions have no `categories`-table subcategory — the
+       subcategory column instead holds the service name an admin typed
+       (e.g. "netflix"), used as-is to group plans of the same service
+       on subscriptions/index.html's filter chips (see that page's
+       inline script). */
+    const subcatAttr = subcat
+      ? ` data-subcategory="${escAttr(subcat.slug)}"`
+      : (p.category === 'subscriptions' && p.subcategory)
+      ? ` data-subcategory="${escAttr(p.subcategory)}"`
+      : '';
     return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}"${subcatAttr}>
       <div class="${badgeCls}" data-avail-badge="${p.catalog_id}">${badgeTxt}</div>
       <a href="${url}" class="product-img-area" style="text-decoration:none;">
@@ -348,7 +365,7 @@
   }
 
   async function fetchProducts() {
-    const SELECT  = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active,display_order';
+    const SELECT  = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active,display_order,show_on_homepage';
     const BASE    = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true`;
 
     /* First try: ordered by display_order ASC NULLS LAST, then created_at DESC */
@@ -442,13 +459,46 @@
               || document.getElementById('electronicsGrid');
     if (!grid) return;
 
-    /* Only non-books go in the electronics/products section. Shuffled at
-       display time only — the fetch above is still ordered by the
-       admin's display_order, untouched in window.SUPABASE_PRODUCTS. */
-    const elec = shuffleArray(products.filter(p => p.category !== 'books'));
+    /* Only non-books, non-subscriptions go in the electronics/products
+       section (subscriptions get their own section — see
+       renderHomepageSubscriptions below). Shuffled at display time only —
+       the fetch above is still ordered by the admin's display_order,
+       untouched in window.SUPABASE_PRODUCTS. */
+    const elec = shuffleArray(products.filter(p => p.category !== 'books' && p.category !== 'subscriptions'));
     if (!elec.length) { showElectronicsLoadError(); return; }
 
     grid.replaceChildren(buildCardsFragment(elec));
+  }
+
+  /* ── Render the homepage/category-page subscriptions grid — mirrors
+     renderHomepageProducts() above. Respects the per-product
+     show_on_homepage admin toggle (defaults true when unset, so
+     nothing needs backfilling) — the subscriptions category page grid
+     (#subscriptionsGrid) always shows every active subscription
+     regardless of that flag, same as how the Electronique page shows
+     every active electronics product regardless of its homepage-only
+     analog. ── */
+  function renderHomepageSubscriptions(products) {
+    const homeGrid = document.getElementById('homeSubscriptionsGrid');
+    const pageGrid = document.getElementById('subscriptionsGrid');
+    if (!homeGrid && !pageGrid) return;
+
+    const all = products.filter(p => p.category === 'subscriptions');
+
+    if (homeGrid) {
+      const section = document.getElementById('subscriptions-section');
+      const forHome = shuffleArray(all.filter(p => p.show_on_homepage !== false));
+      if (forHome.length) {
+        homeGrid.replaceChildren(buildCardsFragment(forHome));
+        if (section) section.style.display = '';
+      } else if (section) {
+        section.style.display = 'none';
+      }
+    }
+
+    if (pageGrid) {
+      pageGrid.replaceChildren(all.length ? buildCardsFragment(shuffleArray(all)) : document.createDocumentFragment());
+    }
   }
 
   /* ── Render the homepage books carousel — mirrors
@@ -691,6 +741,7 @@
       extendCatalog(products);
       renderHomepageProducts(products);
       renderHomepageBooks(products, bookSortMode);
+      renderHomepageSubscriptions(products);
 
       /* Extend search after search-products.js has run */
       if (window.SEARCH_PRODUCTS) {
