@@ -8,6 +8,14 @@
 (function () {
   'use strict';
 
+  /* ── Digital subscription pages set window.WHATSAPP_NUMBER/DISPLAY
+     before this script runs (subscriptions/index.html, and generated
+     subscription product pages via scripts/generate-product-pages.js)
+     so the footer shows their dedicated WhatsApp number — every other
+     page keeps the site-wide default. ── */
+  var WA_NUMBER  = window.WHATSAPP_NUMBER  || '213542949967';
+  var WA_DISPLAY = window.WHATSAPP_DISPLAY || '+213 542 94 99 67';
+
   var FOOTER_HTML = `
     <div class="footer-top">
       <div class="footer-brand">
@@ -16,9 +24,9 @@
         </a>
         <p>متجر جزائري أونلاين — منتجات متنوعة مع توصيل سريع إلى جميع ولايات الجزائر.</p>
         <div class="footer-contact-list">
-          <a href="tel:+213542949967" class="footer-contact-link">
+          <a href="tel:+${WA_NUMBER}" class="footer-contact-link">
             <span class="contact-icon">📞</span>
-            <span class="phone-number" dir="ltr">+213 542 94 99 67</span>
+            <span class="phone-number" dir="ltr">${WA_DISPLAY}</span>
           </a>
           <a href="mailto:derradjshop@gmail.com">📧 derradjshop@gmail.com</a>
           <span>📍 الجزائر العاصمة، الجزائر</span>

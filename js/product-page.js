@@ -14,7 +14,7 @@
   const SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
 
-  const { esc, escAttr, buildProductView, pickNames } = window.ProductTemplate;
+  const { esc, escAttr, buildProductView, pickNames, WHATSAPP_NUMBER_SUBSCRIPTIONS } = window.ProductTemplate;
 
   /* Mirrors js/products-loader.js's subscriptionOrderMessage() — same
      WhatsApp order-message wording wherever a subscription card
@@ -354,7 +354,7 @@
            same as everywhere else this category appears (see
            [data-wa-href] delegated handler below). */
         const cartBtnHtml = isAvail
-          ? `<span class="rp-btn rp-add-cart" data-wa-href="${escAttr('https://wa.me/213542949967?text=' + encodeURIComponent(subscriptionOrderMessage(p, rpName)))}">📱 اطلب عبر الواتساب</span>`
+          ? `<span class="rp-btn rp-add-cart" data-wa-href="${escAttr('https://wa.me/' + WHATSAPP_NUMBER_SUBSCRIPTIONS + '?text=' + encodeURIComponent(subscriptionOrderMessage(p, rpName)))}">📱 اطلب عبر الواتساب</span>`
           : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
         return `<a href="${url}" class="rp-card">
           <img src="${escAttr(imgSrc)}" alt="${escAttr(rpName)} — Derradj Shop"
@@ -465,7 +465,7 @@
            product-details page and every other card on the site. */
         const cartBtnHtml = p.category === 'subscriptions'
           ? (isAvail
-              ? `<span class="rp-btn rp-add-cart" data-wa-href="${escAttr('https://wa.me/213542949967?text=' + encodeURIComponent(subscriptionOrderMessage(p, rpName)))}">📱 اطلب عبر الواتساب</span>`
+              ? `<span class="rp-btn rp-add-cart" data-wa-href="${escAttr('https://wa.me/' + WHATSAPP_NUMBER_SUBSCRIPTIONS + '?text=' + encodeURIComponent(subscriptionOrderMessage(p, rpName)))}">📱 اطلب عبر الواتساب</span>`
               : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`)
           : (isAvail && p.catalog_id)
           ? `<span class="rp-btn rp-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</span>`

@@ -1,7 +1,11 @@
 (function () {
   'use strict';
 
-  var WHATSAPP_NUMBER = '213542949967';
+  /* ── Digital subscription pages set window.WHATSAPP_NUMBER before this
+     script runs (subscriptions/index.html, and generated subscription
+     product pages via scripts/generate-product-pages.js) to route to
+     their own dedicated number — every other page keeps the default. ── */
+  var WHATSAPP_NUMBER = window.WHATSAPP_NUMBER || '213542949967';
   var BRAND = 'Derradj Shop';
 
   // Resolve social.png relative to this script, so it works from any page depth.

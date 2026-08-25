@@ -503,7 +503,7 @@ function renderPage(view, dims) {
 </div>
 
 <!-- ════ SCRIPTS ════════════════════════════════════════════ -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+${view.isSubscription ? `<script>window.WHATSAPP_NUMBER = ${JSON.stringify(ProductTemplate.WHATSAPP_NUMBER_SUBSCRIPTIONS)}; window.WHATSAPP_DISPLAY = ${JSON.stringify(ProductTemplate.WHATSAPP_DISPLAY_SUBSCRIPTIONS)};</script>\n` : ''}<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/search-products.js"></script>
 <script src="/js/products-loader.js"></script>
 <script src="/cart.js"></script>
@@ -856,7 +856,7 @@ function buildStaticProductCard(p) {
      this category). */
   const cartBtn = isSubscription
     ? (isAvail
-        ? `<a href="https://wa.me/213542949967?text=${encodeURIComponent(staticSubscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart">📱 اطلب عبر الواتساب</a>`
+        ? `<a href="https://wa.me/${ProductTemplate.WHATSAPP_NUMBER_SUBSCRIPTIONS}?text=${encodeURIComponent(staticSubscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart">📱 اطلب عبر الواتساب</a>`
         : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`)
     : isAvail
     ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`

@@ -146,6 +146,15 @@
     return html;
   }
 
+  /* ── Digital subscriptions route to their own dedicated WhatsApp
+     number — mirrors WHATSAPP_NUMBER_SUBSCRIPTIONS in
+     js/product-template.js (this file runs standalone on pages that
+     don't load that module, e.g. the homepage/category grids, so the
+     value is mirrored here rather than imported — update both if it
+     ever changes). Books/electronics keep the site's default number,
+     set directly where their card button is built. ── */
+  var WHATSAPP_NUMBER_SUBSCRIPTIONS = '213555491316';
+
   /* ── WhatsApp order-message text for a subscription card/product —
      mirrors js/product-template.js's product-details page message so
      the wording is consistent wherever a customer starts the order
@@ -231,10 +240,11 @@
     const name = arName(p);
     /* Digital subscriptions order through WhatsApp only — no cart, no
        buy-now (see js/product-template.js's product-details page for
-       the same rule). Reuses the site's one WhatsApp number. */
+       the same rule). Routes to their own dedicated WhatsApp number
+       (WHATSAPP_NUMBER_SUBSCRIPTIONS above). */
     const cartBtn = p.category === 'subscriptions'
       ? (isAvail
-          ? `<a href="https://wa.me/213542949967?text=${encodeURIComponent(subscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart">📱 اطلب عبر الواتساب</a>`
+          ? `<a href="https://wa.me/${WHATSAPP_NUMBER_SUBSCRIPTIONS}?text=${encodeURIComponent(subscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart">📱 اطلب عبر الواتساب</a>`
           : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`)
       : isAvail
       ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
