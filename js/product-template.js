@@ -12,12 +12,20 @@
   const SITE_URL = 'https://derradjshop.com';
 
   /* ── WhatsApp destination number — category-aware. Digital
-     subscriptions (category === 'subscriptions') use a dedicated
-     number; every other category keeps the site-wide default. This
-     is the single source of truth other files reuse (js/product-page.js,
-     scripts/generate-product-pages.js) instead of hardcoding their own
-     copy — update only here. ── */
-  const WHATSAPP_NUMBER = '213542949967';
+     subscriptions (category === 'subscriptions') use a dedicated,
+     hardcoded number that is intentionally NOT part of the
+     centralized business-contact system (see js/business-contact.js
+     header comment). Every other category uses the site-wide
+     business number, admin-editable in site_settings.business_phone;
+     WHATSAPP_NUMBER below is only the build-time/no-JS default —
+     js/business-contact.js overwrites it at runtime via the
+     data-business-wa attribute on the button (see waBtn below), so a
+     number change in the admin dashboard never requires regenerating
+     this page. WHATSAPP_NUMBER_SUBSCRIPTIONS coincidentally starts
+     equal to that default but is a separate, independent value —
+     changing one must never change the other. ── */
+  const WHATSAPP_NUMBER = '213555491316';
+  const WHATSAPP_DISPLAY = '0555 49 13 16';
   const WHATSAPP_NUMBER_SUBSCRIPTIONS = '213555491316';
   const WHATSAPP_DISPLAY_SUBSCRIPTIONS = '0555 49 13 16';
 
@@ -272,9 +280,15 @@
     /* Subscriptions being out of stock disables the (only) ordering
        action, matching the disabled-state pattern the cart/buy-now
        buttons already use for books/electronics. */
+    /* Non-subscription buttons carry data-business-wa + data-wa-message
+       so js/business-contact.js can rewrite the href at runtime if the
+       admin changes the business number — the href below is only the
+       build-time/no-JS fallback. Subscription buttons are left exactly
+       as-is (no data-business-wa) since that number is excluded from
+       the centralized system. */
     const waBtn = (isSubscription && !isAvail)
       ? `<button class="btn-whatsapp-sb" disabled style="opacity:.6;cursor:not-allowed;">🔴 نفذت الكمية</button>`
-      : `<a href="https://wa.me/${waNumber}?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-sb">${waIcon} ${isSubscription ? 'اطلب عبر الواتساب' : 'الطلب عبر الواتساب'}</a>`;
+      : `<a href="https://wa.me/${waNumber}?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-sb"${isSubscription ? '' : ` data-business-wa data-wa-message="${escAttr(waMsgText)}"`}>${waIcon} ${isSubscription ? 'اطلب عبر الواتساب' : 'الطلب عبر الواتساب'}</a>`;
 
     /* ── Structured data ── */
     const absoluteAllImgs = allImgs.map(u => (/^https?:\/\//.test(u) ? u : SITE_URL + u));
@@ -492,7 +506,7 @@
     esc, escAttr, fmtPrice, stockBadge, catLabelAr, buildProductView, SITE_URL,
     SHIPPING_NOTICE_AR, SHIPPING_NOTICE_AR_SHORT, SHIPPING_NOTICE_EN,
     isArabic, pickNames, truncateAtWord, buildKeywords,
-    WHATSAPP_NUMBER, WHATSAPP_NUMBER_SUBSCRIPTIONS, WHATSAPP_DISPLAY_SUBSCRIPTIONS,
+    WHATSAPP_NUMBER, WHATSAPP_DISPLAY, WHATSAPP_NUMBER_SUBSCRIPTIONS, WHATSAPP_DISPLAY_SUBSCRIPTIONS,
   };
 
   if (typeof module !== 'undefined' && module.exports) {

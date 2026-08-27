@@ -12,9 +12,18 @@
      before this script runs (subscriptions/index.html, and generated
      subscription product pages via scripts/generate-product-pages.js)
      so the footer shows their dedicated WhatsApp number — every other
-     page keeps the site-wide default. ── */
-  var WA_NUMBER  = window.WHATSAPP_NUMBER  || '213542949967';
-  var WA_DISPLAY = window.WHATSAPP_DISPLAY || '+213 542 94 99 67';
+     page keeps the site-wide business number. That number is
+     admin-editable (site_settings.business_phone); js/business-contact.js
+     resolves it into window.BUSINESS_PHONE before this script runs and
+     is the source of truth here — the literal below is only the
+     fallback for the rare case business-contact.js hasn't run yet. When
+     no override is active, the tel link/number are also tagged with
+     data-business-tel/data-business-phone-display so business-contact.js
+     can update them at runtime if the admin changes the number, without
+     a page rebuild. ── */
+  var OVERRIDDEN = !!window.WHATSAPP_NUMBER;
+  var WA_NUMBER  = window.WHATSAPP_NUMBER  || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.intl)    || '213555491316';
+  var WA_DISPLAY = window.WHATSAPP_DISPLAY || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.display) || '0555 49 13 16';
 
   var FOOTER_HTML = `
     <div class="footer-top">
@@ -24,9 +33,9 @@
         </a>
         <p>متجر جزائري أونلاين — منتجات متنوعة مع توصيل سريع إلى جميع ولايات الجزائر.</p>
         <div class="footer-contact-list">
-          <a href="tel:+${WA_NUMBER}" class="footer-contact-link">
+          <a href="tel:+${WA_NUMBER}" class="footer-contact-link"${OVERRIDDEN ? '' : ' data-business-tel'}>
             <span class="contact-icon">📞</span>
-            <span class="phone-number" dir="ltr">${WA_DISPLAY}</span>
+            <span class="phone-number" dir="ltr"${OVERRIDDEN ? '' : ' data-business-phone-display'}>${WA_DISPLAY}</span>
           </a>
           <a href="mailto:derradjshop@gmail.com">📧 derradjshop@gmail.com</a>
           <span>📍 الجزائر العاصمة، الجزائر</span>

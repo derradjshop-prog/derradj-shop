@@ -160,6 +160,14 @@
   }
 
   /* ── مساعد: ترجمة كود الخطأ إلى رسالة واضحة ─────────── */
+  /* رقم التواصل المعروض هنا هو رقم العمل المركزي (site_settings.business_phone
+     عبر window.BUSINESS_PHONE، يضبطه js/business-contact.js) — وليس رقم
+     الاشتراكات الرقمية المستقل. يبقى الرقم الافتراضي كنسخة احتياطية إذا لم
+     يُحمَّل business-contact.js بعد. */
+  function bizPhoneDisplay() {
+    return (window.BUSINESS_PHONE && window.BUSINESS_PHONE.display) || "0555 49 13 16";
+  }
+
   function friendlyError(err) {
     const code = err?.code || "";
     const msg  = (err?.message || "").toLowerCase();
@@ -171,21 +179,21 @@
       return (
         "❌ خطأ في إعدادات قاعدة البيانات (RLS).\n\n" +
         "يجب تشغيل ملف supabase-setup.sql في لوحة تحكم Supabase لتفعيل صلاحية الإرسال.\n\n" +
-        "للمساعدة تواصل معنا: +213 542 94 99 67"
+        "للمساعدة تواصل معنا: " + bizPhoneDisplay()
       );
     }
     if (code === "42703" || msg.includes("column") || msg.includes("does not exist")) {
       return (
         "❌ عمود مفقود في الجدول (schema mismatch).\n" +
         "الخطأ: " + (err?.message || "") + "\n\n" +
-        "تواصل معنا: +213 542 94 99 67"
+        "تواصل معنا: " + bizPhoneDisplay()
       );
     }
     if (code === "23502" || msg.includes("null value") || msg.includes("not-null")) {
       return (
         "❌ حقل إجباري فارغ.\n" +
         "الخطأ: " + (err?.message || "") + "\n\n" +
-        "تواصل معنا: +213 542 94 99 67"
+        "تواصل معنا: " + bizPhoneDisplay()
       );
     }
     if (msg.includes("fetch") || msg.includes("network") || msg.includes("failed to fetch")) {
@@ -194,7 +202,7 @@
     return (
       "❌ حدث خطأ أثناء إرسال الطلب.\n" +
       "تأكد من اتصالك بالإنترنت وحاول مجدداً.\n\n" +
-      "أو تواصل معنا مباشرة: +213 542 94 99 67"
+      "أو تواصل معنا مباشرة: " + bizPhoneDisplay()
     );
   }
 

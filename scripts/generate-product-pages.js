@@ -503,7 +503,8 @@ function renderPage(view, dims) {
 </div>
 
 <!-- ════ SCRIPTS ════════════════════════════════════════════ -->
-${view.isSubscription ? `<script>window.WHATSAPP_NUMBER = ${JSON.stringify(ProductTemplate.WHATSAPP_NUMBER_SUBSCRIPTIONS)}; window.WHATSAPP_DISPLAY = ${JSON.stringify(ProductTemplate.WHATSAPP_DISPLAY_SUBSCRIPTIONS)};</script>\n` : ''}<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+${view.isSubscription ? `<script>window.WHATSAPP_NUMBER = ${JSON.stringify(ProductTemplate.WHATSAPP_NUMBER_SUBSCRIPTIONS)}; window.WHATSAPP_DISPLAY = ${JSON.stringify(ProductTemplate.WHATSAPP_DISPLAY_SUBSCRIPTIONS)};</script>\n` : ''}<script src="/js/business-contact.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/search-products.js"></script>
 <script src="/js/products-loader.js"></script>
 <script src="/cart.js"></script>
@@ -652,6 +653,7 @@ function renderBookPage(view, dims) {
 </div>
 
 <!-- ════ SCRIPTS ════════════════════════════════════════════ -->
+<script src="/js/business-contact.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/search-products.js"></script>
 <script src="/js/products-loader.js"></script>

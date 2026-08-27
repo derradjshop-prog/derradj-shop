@@ -4,9 +4,14 @@
   /* ── Digital subscription pages set window.WHATSAPP_NUMBER before this
      script runs (subscriptions/index.html, and generated subscription
      product pages via scripts/generate-product-pages.js) to route to
-     their own dedicated number — every other page keeps the default. ── */
-  var WHATSAPP_NUMBER = window.WHATSAPP_NUMBER || '213542949967';
+     their own dedicated, independent number — every other page uses the
+     site-wide business number, resolved by js/business-contact.js into
+     window.BUSINESS_PHONE (admin-editable; site_settings.business_phone).
+     The literal below is only the fallback before that resolves. ── */
+  var OVERRIDDEN = !!window.WHATSAPP_NUMBER;
+  var WHATSAPP_NUMBER = window.WHATSAPP_NUMBER || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.intl) || '213555491316';
   var BRAND = 'Derradj Shop';
+  var floatLink = null;
 
   // Resolve social.png relative to this script, so it works from any page depth.
   var SCRIPT_SRC = (document.currentScript && document.currentScript.src) || '';
@@ -120,6 +125,7 @@
     a.appendChild(img);
 
     document.body.appendChild(a);
+    floatLink = a;
 
     // Rebuild message late, in case h1 was inserted by another script after DOMContentLoaded
     setTimeout(function () {
@@ -127,6 +133,15 @@
       a.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(updated);
     }, 600);
   }
+
+  // Business number resolved (or changed) after this button was already
+  // built — refresh its href. Never fires when a subscriptions-style
+  // override is active, since that page doesn't load business-contact.js.
+  document.addEventListener('business-phone-ready', function (e) {
+    if (OVERRIDDEN || !floatLink || !e.detail) return;
+    WHATSAPP_NUMBER = e.detail.intl;
+    floatLink.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(buildMessage());
+  });
 
   function init() {
     injectStyles();
