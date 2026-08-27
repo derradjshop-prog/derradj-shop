@@ -26,6 +26,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let ALL_MESSAGES = [];
   let ALL_REVIEWS  = [];
   let ALL_SELLERS  = [];
+  let ALL_AGENTS   = [];
+  let ALL_AGENT_EARNINGS = [];
   let EDIT_REVIEW_ID    = null;
   let ORD_ASSIGN_FILTER = '';      /* '' | 'unassigned' | 'completed' | <sellerId> */
   let CURRENT_ROLE = '';
@@ -92,6 +94,22 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     return `<span class="badge badge-assign-${esc(status)}">${esc(ASSIGN_LABELS[status] || status)}</span>`;
   }
 
+  /* ── Call-agent delivery lifecycle — independent of is_confirmed
+     above and of the seller assignment_status. See
+     20260827030000_add_agent_role_and_commission_schema.sql. ── */
+  const DELIVERY_LABELS = {
+    pending:          "🆕 قيد الانتظار",
+    confirmed:        "✅ تم التأكيد",
+    shipped:          "🚚 تم الشحن",
+    out_for_delivery: "🚗 جاري التسليم",
+    delivered:        "📦 تم أخذ الطلبية",
+    cancelled:        "❌ ملغاة",
+  };
+  function deliveryBadge(status) {
+    const s = status || "pending";
+    return `<span class="badge badge-delivery-${esc(s)}">${esc(DELIVERY_LABELS[s] || s)}</span>`;
+  }
+
   /* ─────────────────────────────────────────────────────────
      حالة الطلب — is_confirmed (boolean)
      NULL  → قيد المعالجة
@@ -130,6 +148,12 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       return null;
     }
 
+    /* حساب موظفة متابعة (Agent) — نفس معاملة البائع أعلاه. */
+    if (String(staff.role || "").toLowerCase() === "agent") {
+      location.href = "../agent/dashboard.html";
+      return null;
+    }
+
     if (!staff.is_active || String(staff.role || "").toLowerCase() !== "admin") {
       await supabase.auth.signOut();
       location.href = "login.html";
@@ -154,7 +178,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         notes, created_at,
         assigned_to, assigned_by, assigned_at, assignment_status,
         completed_by, completed_at,
+        assigned_agent_id, agent_commission, commission_paid, delivery_status,
+        confirmed_at, shipped_at, out_for_delivery_at, delivered_at, cancelled_at,
         assigned_staff:staff_accounts!orders_assigned_to_fkey ( id, full_name, email ),
+        assigned_agent:staff_accounts!orders_assigned_agent_id_fkey ( id, full_name, email ),
         order_items (
           id, product_name, quantity, unit_price, subtotal, purchase_cost,
           updated_at, updated_by,
@@ -179,6 +206,36 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       .eq("role", "seller")
       .eq("is_active", true)
       .order("full_name");
+    if (error) throw error;
+    return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     FETCH — موظفات المتابعة النشطات (لقائمة "تعيين لموظفة")
+  ───────────────────────────────────────────────────────── */
+  async function fetchAgents() {
+    const { data, error } = await supabase
+      .from("staff_accounts")
+      .select("id, full_name, email")
+      .eq("role", "agent")
+      .eq("is_active", true)
+      .order("full_name");
+    if (error) throw error;
+    return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     FETCH — كل عمولات الموظفات (لتبويب "الموظفون")
+  ───────────────────────────────────────────────────────── */
+  async function fetchAgentEarnings() {
+    const { data, error } = await supabase
+      .from("agent_earnings")
+      .select(`
+        id, amount, created_at, agent_id, order_id,
+        order:orders!agent_earnings_order_id_fkey ( order_number, full_name )
+      `)
+      .order("created_at", { ascending: false })
+      .limit(2000);
     if (error) throw error;
     return data || [];
   }
@@ -306,6 +363,79 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
+     AGENTS TAB (الموظفون) — رصيد كل موظفة + عدد الطلبيات المكتملة +
+     قائمة عمولاتها القابلة للفلترة بالشهر. متاح لكل أدمن (ليس حصراً
+     على الأدمن الرئيسي، بخلاف تبويبي البائعين/المحظورين).
+  ───────────────────────────────────────────────────────── */
+  function renderAgentsTab() {
+    const container = document.getElementById("tab-agents");
+    if (!container) return;
+    const rows = ALL_AGENTS.map(a => {
+      const earnings = ALL_AGENT_EARNINGS.filter(e => e.agent_id === a.id);
+      const total = earnings.reduce((s, e) => s + Number(e.amount || 0), 0);
+      return { agent: a, count: earnings.length, total };
+    });
+    container.innerHTML = `
+      <p class="modal-sec-lbl" style="margin-bottom:14px;">الموظفون (متابعة الطلبيات)</p>
+      <div class="detail-rows">
+        ${rows.length ? rows.map(r => `
+          <div class="detail-row" style="cursor:pointer;" data-action="view-agent-earnings" data-agent-id="${esc(r.agent.id)}">
+            <span class="dr-key">📞 ${esc(r.agent.full_name || r.agent.email)}</span>
+            <span class="dr-val">
+              <strong>${esc(fmtMoney(r.total))}</strong>
+              <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">${r.count} طلبية مكتملة — اضغط لعرض التفاصيل</span>
+            </span>
+          </div>`).join("")
+        : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا يوجد موظفو متابعة بعد</p>`}
+      </div>`;
+  }
+
+  function renderAgentEarningsList(list) {
+    const box = document.getElementById("agentEarningsList");
+    if (!box) return;
+    if (!list.length) {
+      box.innerHTML = `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0;">لا توجد أرباح في هذه الفترة</p>`;
+      return;
+    }
+    box.innerHTML = `<div class="detail-rows">${list.map(e => `
+      <div class="detail-row">
+        <span class="dr-key">طلب #${esc(e.order?.order_number ?? "—")} — ${esc(e.order?.full_name || "—")}</span>
+        <span class="dr-val">${esc(fmtMoney(e.amount))}<span style="display:block;font-size:11px;color:var(--text-muted);">${esc(fmtDate(e.created_at))}</span></span>
+      </div>`).join("")}</div>`;
+  }
+
+  function showAgentEarningsModal(agentId) {
+    const agent = ALL_AGENTS.find(a => a.id === agentId);
+    if (!agent) return;
+    const earnings = ALL_AGENT_EARNINGS.filter(e => e.agent_id === agentId);
+    const months = [...new Set(earnings.map(e => new Date(e.created_at).toISOString().slice(0, 7)))].sort().reverse();
+
+    document.getElementById("modalTitle").textContent = "أرباح: " + (agent.full_name || agent.email);
+    document.getElementById("modalBody").innerHTML = `
+      <div style="margin-bottom:14px;">
+        <select class="filter-select" id="agentEarningsMonthFilter" data-agent-id="${esc(agentId)}" style="width:100%;">
+          <option value="">📋 كل الفترات</option>
+          ${months.map(m => `<option value="${esc(m)}">${esc(m)}</option>`).join("")}
+        </select>
+      </div>
+      <div id="agentEarningsList"></div>`;
+    renderAgentEarningsList(earnings);
+    document.getElementById("agentEarningsMonthFilter")
+      .addEventListener("change", e => handleAgentEarningsMonthFilter(e.target));
+    openModal();
+  }
+
+  function handleAgentEarningsMonthFilter(select) {
+    const agentId = select.dataset.agentId;
+    const month   = select.value;
+    const earnings = ALL_AGENT_EARNINGS.filter(e => e.agent_id === agentId);
+    const filtered = month
+      ? earnings.filter(e => new Date(e.created_at).toISOString().slice(0, 7) === month)
+      : earnings;
+    renderAgentEarningsList(filtered);
+  }
+
+  /* ─────────────────────────────────────────────────────────
      ASSIGN / REASSIGN / REMOVE — الطلبات
   ───────────────────────────────────────────────────────── */
   async function assignOrder(orderId, sellerId) {
@@ -331,6 +461,58 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         assignment_status: "pending_admin",
       })
       .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     ASSIGN / REASSIGN / REMOVE — موظفة المتابعة (call agent)
+     منفصل تماماً عن تعيين البائع أعلاه — نفس الطلب يمكن أن يُعيَّن
+     لبائع (لتجهيز/بيع المنتج) ولموظفة متابعة (لتأكيد الطلب مع
+     الزبون وتتبع التوصيل) في آن واحد.
+  ───────────────────────────────────────────────────────── */
+  async function assignOrderAgent(orderId, agentId) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ assigned_agent_id: agentId })
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  async function removeOrderAgentAssignment(orderId) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ assigned_agent_id: null })
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     DELIVERY LIFECYCLE (admin-only) — تم الشحن / جاري التسليم /
+     تم أخذ الطلبية. أول اثنتين تحديث عادي (الأدمن يملك صلاحية
+     UPDATE كاملة عبر orders_admin_update)، وتُختَم توقيتاتهما
+     تلقائياً بواسطة trg_orders_guard_agent_update على القاعدة.
+     "تم أخذ الطلبية" يستدعي دالة ذرية (mark_order_delivered) تُنشئ
+     صف عمولة الموظفة وتُعلّم commission_paid دفعة واحدة، بشكل idempotent
+     — انظر 20260827030100_add_agent_order_workflow_rls_and_functions.sql.
+  ───────────────────────────────────────────────────────── */
+  async function markOrderShipped(orderId) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ delivery_status: "shipped" })
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  async function markOrderOutForDelivery(orderId) {
+    const { error } = await supabase
+      .from("orders")
+      .update({ delivery_status: "out_for_delivery" })
+      .eq("id", orderId);
+    if (error) throw error;
+  }
+
+  async function markOrderDelivered(orderId) {
+    const { error } = await supabase.rpc("mark_order_delivered", { p_order_id: orderId });
     if (error) throw error;
   }
 
@@ -689,6 +871,74 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
+     AGENT SECTION — تعيين موظفة متابعة + متابعة التوصيل (طلبات فقط،
+     لا يوجد مكافئ لها في مودال الرسائل).
+  ───────────────────────────────────────────────────────── */
+  function buildAgentSectionHTML(o) {
+    const status = o.delivery_status || "pending";
+    const agent  = o.assigned_agent;
+
+    let adminControls = "";
+    if (isAdmin()) {
+      if (ALL_AGENTS.length <= 1) {
+        const onlyAgent = ALL_AGENTS[0];
+        adminControls = `
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            ${onlyAgent ? `<button class="btn-confirm" data-action="assign-agent" data-id="${esc(o.id)}" data-agent-id="${esc(onlyAgent.id)}">
+              ➡️ تعيين لـ ${esc(onlyAgent.full_name || onlyAgent.email)}
+            </button>` : `<span style="font-size:12px;color:var(--text-muted);">لا يوجد موظفو متابعة نشطون بعد</span>`}
+            ${agent ? `<button class="btn-delete" data-action="unassign-agent" data-id="${esc(o.id)}">🔒 إزالة التعيين</button>` : ""}
+          </div>`;
+      } else {
+        const agentOptions = ALL_AGENTS.map(a =>
+          `<option value="${esc(a.id)}" ${o.assigned_agent_id === a.id ? "selected" : ""}>${esc(a.full_name || a.email)}</option>`
+        ).join("");
+        adminControls = `
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+            <select class="filter-select" id="assignAgentSelect" style="flex:1;min-width:160px;">
+              <option value="">— اختر موظفة —</option>
+              ${agentOptions}
+            </select>
+            <button class="btn-confirm" data-action="assign-agent" data-id="${esc(o.id)}">
+              ${agent ? "🔁 إعادة تعيين" : "➡️ تعيين لموظفة"}
+            </button>
+            ${agent ? `<button class="btn-delete" data-action="unassign-agent" data-id="${esc(o.id)}">🔒 إزالة التعيين</button>` : ""}
+          </div>`;
+      }
+    }
+
+    /* الأزرار مفعّلة فقط عند الانتقال الصحيح التالي — trg_orders_guard_agent_update
+       على القاعدة يرفض أي انتقال آخر بغض النظر عن حالة هذه الأزرار هنا. */
+    const statusControls = isAdmin() ? `
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;">
+        <button class="btn-confirm" data-action="mark-shipped" data-id="${esc(o.id)}" ${status !== "confirmed" ? "disabled" : ""}>🚚 تم الشحن</button>
+        <button class="btn-confirm" data-action="mark-ofd" data-id="${esc(o.id)}" ${status !== "shipped" ? "disabled" : ""}>🚗 جاري التسليم</button>
+        <button class="btn-confirm" data-action="mark-delivered" data-id="${esc(o.id)}" ${status !== "out_for_delivery" ? "disabled" : ""}>📦 تم أخذ الطلبية</button>
+      </div>` : "";
+
+    return `
+      <div class="m-section">
+        <div class="m-title">متابعة التوصيل (موظفة المتابعة)</div>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="i-lbl">حالة التوصيل</span>
+            <span class="i-val">${deliveryBadge(status)}</span>
+          </div>
+          <div class="info-item">
+            <span class="i-lbl">الموظفة المعيّنة</span>
+            <span class="i-val">${agent ? esc(agent.full_name || agent.email) : "غير معيّنة"}</span>
+          </div>
+          <div class="info-item">
+            <span class="i-lbl">العمولة</span>
+            <span class="i-val">${esc(fmtMoney(o.agent_commission))} ${o.commission_paid ? "· ✅ مدفوعة" : ""}</span>
+          </div>
+        </div>
+        ${adminControls}
+        ${statusControls}
+      </div>`;
+  }
+
+  /* ─────────────────────────────────────────────────────────
      HANDLE ASSIGN / UNASSIGN — الطلبات والرسائل
   ───────────────────────────────────────────────────────── */
   async function handleAssign(entityType, entityId, btn) {
@@ -748,6 +998,122 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       alert("❌ فشل إزالة التعيين:\n" + (err.message || ""));
       btn.disabled = false;
       btn.textContent = "🔒 الاحتفاظ به مع الأدمن";
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     HANDLE ASSIGN / UNASSIGN — موظفة المتابعة
+  ───────────────────────────────────────────────────────── */
+  async function handleAssignAgent(orderId, btn) {
+    const agentId = btn.dataset.agentId || document.getElementById("assignAgentSelect")?.value;
+    if (!agentId) { alert("⚠️ يرجى اختيار موظفة أولاً"); return; }
+
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳...";
+    try {
+      await assignOrderAgent(orderId, agentId);
+      const agent = ALL_AGENTS.find(a => a.id === agentId);
+      const order = ALL_ORDERS.find(o => o.id === orderId);
+      if (order) {
+        order.assigned_agent_id = agentId;
+        order.assigned_agent    = agent ? { id: agent.id, full_name: agent.full_name, email: agent.email } : null;
+      }
+      renderTable(getFiltered());
+      if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
+    } catch (err) {
+      console.error("Assign agent error:", err);
+      alert("❌ فشل تعيين الموظفة:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  async function handleUnassignAgent(orderId, btn) {
+    btn.disabled = true;
+    btn.textContent = "⏳...";
+    try {
+      await removeOrderAgentAssignment(orderId);
+      const order = ALL_ORDERS.find(o => o.id === orderId);
+      if (order) { order.assigned_agent_id = null; order.assigned_agent = null; }
+      renderTable(getFiltered());
+      if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
+    } catch (err) {
+      console.error("Unassign agent error:", err);
+      alert("❌ فشل إزالة التعيين:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = "🔒 إزالة التعيين";
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     HANDLE DELIVERY LIFECYCLE — تم الشحن / جاري التسليم / تم أخذ الطلبية
+  ───────────────────────────────────────────────────────── */
+  async function handleMarkShipped(orderId, btn) {
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳...";
+    try {
+      await markOrderShipped(orderId);
+      const order = ALL_ORDERS.find(o => o.id === orderId);
+      if (order) { order.delivery_status = "shipped"; order.shipped_at = new Date().toISOString(); }
+      renderTable(getFiltered());
+      if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
+    } catch (err) {
+      console.error("Mark shipped error:", err);
+      alert("❌ فشل تحديث الحالة:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  async function handleMarkOutForDelivery(orderId, btn) {
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳...";
+    try {
+      await markOrderOutForDelivery(orderId);
+      const order = ALL_ORDERS.find(o => o.id === orderId);
+      if (order) { order.delivery_status = "out_for_delivery"; order.out_for_delivery_at = new Date().toISOString(); }
+      renderTable(getFiltered());
+      if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
+    } catch (err) {
+      console.error("Mark out-for-delivery error:", err);
+      alert("❌ فشل تحديث الحالة:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = prevText;
+    }
+  }
+
+  /* mark_order_delivered() على القاعدة تُنشئ صف agent_earnings وتُعلّم
+     commission_paid=true ذرياً — نُعيد جلب الطلب هنا (بدل تحديث الكاش
+     يدوياً) لضمان أن commission_paid المعروض يطابق ما فعلته الدالة
+     فعلاً على القاعدة، ولتحديث تبويب "الموظفون" بنفس الرحلة. */
+  async function handleMarkDelivered(orderId, btn) {
+    if (!confirm("هل تريد تأكيد استلام الزبون للطلبية؟\nسيتم دفع عمولة الموظفة المعيّنة تلقائياً (إن وُجدت).")) return;
+    btn.disabled = true;
+    const prevText = btn.textContent;
+    btn.textContent = "⏳...";
+    try {
+      await markOrderDelivered(orderId);
+      const order = ALL_ORDERS.find(o => o.id === orderId);
+      if (order) {
+        order.delivery_status = "delivered";
+        order.delivered_at = new Date().toISOString();
+        if (order.assigned_agent_id) order.commission_paid = true;
+      }
+      if (order?.assigned_agent_id) {
+        ALL_AGENT_EARNINGS = await fetchAgentEarnings().catch(() => ALL_AGENT_EARNINGS);
+        if (isAdmin()) renderAgentsTab();
+      }
+      renderTable(getFiltered());
+      if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
+      showToast("📦 تم تأكيد استلام الطلبية" + (order?.assigned_agent_id ? " ودفع عمولة الموظفة" : ""));
+    } catch (err) {
+      console.error("Mark delivered error:", err);
+      alert("❌ فشل تحديث الحالة:\n" + (err.message || ""));
+      btn.disabled = false;
+      btn.textContent = prevText;
     }
   }
 
@@ -824,6 +1190,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
             <span class="m-order-total">${esc(fmtMoney(o.total_price))}</span>
             <span class="m-order-count">${totalQty} كتب</span>
           </div>
+          <div class="m-order-meta" style="margin-top:6px;">
+            ${deliveryBadge(o.delivery_status)}
+            ${o.assigned_agent ? `<span style="font-size:11px;color:var(--text-light);">📞 ${esc(o.assigned_agent.full_name || "")}</span>` : ""}
+          </div>
           <div class="m-card-actions">
             <button class="btn-details" data-id="${esc(o.id)}" data-action="details">عرض التفاصيل الكاملة</button>
             <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
@@ -899,7 +1269,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       cnt + " طلب" + (cnt !== ALL_ORDERS.length ? ` (من ${ALL_ORDERS.length})` : "");
 
     if (!cnt) {
-      tbody.innerHTML = `<tr><td colspan="12" class="empty">لا توجد طلبات مطابقة</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="13" class="empty">لا توجد طلبات مطابقة</td></tr>`;
       return;
     }
 
@@ -955,6 +1325,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
           </td>
           <td class="nowrap"><span class="pm-tag">${esc(PM_LABELS[o.payment_method] || o.payment_method || "—")}</span></td>
           <td class="nowrap">${confirmBadge(o.is_confirmed)}</td>
+          <td class="nowrap">
+            ${deliveryBadge(o.delivery_status)}
+            ${o.assigned_agent ? `<div style="font-size:11px;color:var(--text-light);margin-top:3px;">📞 ${esc(o.assigned_agent.full_name || "")}</div>` : ""}
+          </td>
           <td class="nowrap">${assignCell}</td>
           <td class="td-actions">
             <div class="actions-col">
@@ -1307,7 +1681,8 @@ ${itemsText}
         ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
       </div>
 
-      ${buildAssignmentSectionHTML(o, "order")}`;
+      ${buildAssignmentSectionHTML(o, "order")}
+      ${buildAgentSectionHTML(o)}`;
   }
 
 
@@ -1767,6 +2142,7 @@ ${itemsText}
         : tab === "contact"     ? "📞 اتصال العمل"
         : tab === "sellers"     ? "👤 إدارة البائعين"
         : tab === "blocked"     ? "🚫 العملاء المحظورون"
+        : tab === "agents"      ? "📞 الموظفون (متابعة الطلبيات)"
         : "📚 إدارة المنتجات";
 
         /* فتح التبويب يصفّر عداد "غير مُشاهد" الخاص به */
@@ -1788,6 +2164,13 @@ ${itemsText}
       const btn = e.target.closest('[data-action="unblock"]');
       if (!btn) return;
       await handleUnblock(btn.dataset.id, btn);
+    });
+
+    /* ── Agents tab — open earnings detail modal ─────────────── */
+    document.getElementById("tab-agents")?.addEventListener("click", e => {
+      const row = e.target.closest('[data-action="view-agent-earnings"]');
+      if (!row) return;
+      showAgentEarningsModal(row.dataset.agentId);
     });
 
     /* ── Messages search & refresh ─────────────────────────── */
@@ -1857,7 +2240,8 @@ ${itemsText}
     document.getElementById("modalBody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
-      if (["confirm", "revert", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message", "start-impersonation"]
+      if (["confirm", "revert", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message", "start-impersonation",
+           "assign-agent", "unassign-agent", "mark-shipped", "mark-ofd", "mark-delivered"]
             .includes(btn.dataset.action) && !isAdmin()) return;
       if (btn.dataset.action === "confirm")          await handleConfirm(btn.dataset.id, btn);
       if (btn.dataset.action === "revert")           await handleRevert(btn.dataset.id, btn);
@@ -1871,6 +2255,11 @@ ${itemsText}
       if (btn.dataset.action === "start-impersonation") await handleStartImpersonation(btn);
       if (btn.dataset.action === "copy-message")     await handleCopyMessage(btn.dataset.id, btn);
       if (btn.dataset.action === "save-cost")        await handleSaveCost(btn.dataset.itemId, btn.dataset.orderId, btn);
+      if (btn.dataset.action === "assign-agent")     await handleAssignAgent(btn.dataset.id, btn);
+      if (btn.dataset.action === "unassign-agent")   await handleUnassignAgent(btn.dataset.id, btn);
+      if (btn.dataset.action === "mark-shipped")     await handleMarkShipped(btn.dataset.id, btn);
+      if (btn.dataset.action === "mark-ofd")         await handleMarkOutForDelivery(btn.dataset.id, btn);
+      if (btn.dataset.action === "mark-delivered")   await handleMarkDelivered(btn.dataset.id, btn);
     });
 
     /* ── Mobile: Orders cards ──────────────────────────────── */
@@ -2031,15 +2420,21 @@ ${itemsText}
         document.getElementById("navBtnSellers").style.display = "";
         document.getElementById("navBtnBlocked").style.display = "";
       }
+      /* "الموظفون" متاح لأي أدمن (ليس حصراً على الأدمن الرئيسي) —
+         هذا التبويب للعرض/التعيين فقط، لا يتضمن أي إعداد مالي حساس
+         مثل "إظهار المبلغ المستحق". */
+      document.getElementById("navBtnAgents").style.display = "";
 
       /* حساب "غير مُشاهد منذ آخر زيارة" قبل أي بيانات جديدة تصل عبر Realtime */
       const lastSeenOrders   = sessionStorage.getItem("admin_orders_last_seen");
       const lastSeenMessages = sessionStorage.getItem("admin_messages_last_seen");
 
-      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS] = await Promise.all([
+      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS] = await Promise.all([
         fetchOrders(), fetchMessages(),
         fetchReviews().catch(() => []),
         fetchSellers().catch(() => []),
+        fetchAgents().catch(() => []),
+        fetchAgentEarnings().catch(() => []),
       ]);
 
       if (lastSeenOrders)   UNSEEN_ORDERS   = ALL_ORDERS.filter(o => new Date(o.created_at)   > new Date(lastSeenOrders)).length;
@@ -2064,6 +2459,7 @@ ${itemsText}
         ALL_BLOCKED = await fetchBlockedCustomers().catch(() => []);
         renderBlockedTab();
       }
+      renderAgentsTab();
       bindEvents();
       setupRealtime();
 

@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta name="google-site-verification" content="xAG1KPt7FYfYFhoMWhxJzRKARB_nGV_BlbzUsZl1wbQ" />
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-N4NME3KN9N"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-N4NME3KN9N');
+  </script>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>لوحة موظفة المتابعة — Derradj Shop</title>
+  <meta name="robots" content="noindex, nofollow"/>
+  <link rel="icon" type="image/png" href="../Logo.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --font:       'Cairo', sans-serif;
+      --navy:       #1B2A4A;
+      --emerald:    #0F5132;
+      --gold:       #C9A227;
+      --ink:        #13201A;
+      --paper:      #FBF7EF;
+      --bg:         var(--paper);
+      --white:      #ffffff;
+      --border:     #e6e3d8;
+      --text:       var(--ink);
+      --text-light: #5b6b62;
+      --text-muted: #8b968f;
+      --primary:    var(--navy);
+      --primary-bg: #eef1f6;
+      --green:      var(--emerald);
+      --green-light:#d7ece0;
+      --radius:     10px;
+      --radius-lg:  16px;
+      --shadow-sm:  0 1px 3px rgba(19,32,26,.08);
+    }
+
+    body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ━━ HEADER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .agent-header {
+      background: var(--navy);
+      color: #fff;
+      padding: 0 20px;
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 16px rgba(0,0,0,.25);
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 8px; padding-bottom: 8px;
+    }
+    .header-logo { font-size: 18px; font-weight: 900; }
+    .header-logo span { color: var(--gold); }
+    .header-right { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+    .agent-badge {
+      background: rgba(255,255,255,.1);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 5px 14px;
+      border-radius: 99px;
+      border: 1px solid rgba(255,255,255,.15);
+    }
+
+    .btn-logout {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.2);
+      color: #fff;
+      padding: 8px 18px;
+      min-height: 44px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s;
+    }
+    .btn-logout:hover { background: rgba(255,255,255,.18); }
+
+    /* ━━ MAIN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .agent-main { padding: 20px 16px 60px; max-width: 760px; margin: 0 auto; }
+
+    /* ━━ EARNINGS WIDGET ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .earnings-widget {
+      display: flex; gap: 10px; margin-bottom: 18px; flex-wrap: wrap;
+    }
+    .stat-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      box-shadow: var(--shadow-sm);
+      border-right: 5px solid;
+      flex: 1;
+      min-width: 120px;
+    }
+    .stat-card.s-balance { border-right-color: var(--gold); }
+    .stat-card.s-done    { border-right-color: var(--emerald); }
+    .stat-card.s-month   { border-right-color: var(--navy); }
+    .stat-num   { font-size: 24px; font-weight: 900; line-height: 1.1; }
+    .stat-label { font-size: 11px; color: var(--text-light); font-weight: 700; }
+
+    /* ━━ TABS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .tabs-bar {
+      display: flex; gap: 4px; margin-bottom: 16px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 6px; box-shadow: var(--shadow-sm);
+    }
+    .tab-btn {
+      flex: 1; padding: 12px 14px; min-height: 44px; border: none;
+      border-radius: var(--radius); font-family: var(--font);
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      transition: background .2s, color .2s; background: transparent;
+      color: var(--text-light); display: flex; align-items: center;
+      justify-content: center; gap: 8px;
+    }
+    .tab-btn.active { background: var(--navy); color: #fff; }
+    .tab-btn:not(.active):hover { background: var(--primary-bg); color: var(--navy); }
+    .tab-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      min-width: 20px; height: 20px; padding: 0 5px; border-radius: 99px;
+      font-size: 11px; font-weight: 900; background: rgba(255,255,255,.25);
+    }
+    .tab-btn:not(.active) .tab-badge { background: #eee; color: var(--text-light); }
+    .tab-btn:not(.active) .tab-badge.unread { background: #dc2626; color: #fff; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ━━ CONTROLS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .controls-bar {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 12px 14px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      margin-bottom: 14px; box-shadow: var(--shadow-sm);
+    }
+    .search-input {
+      flex: 1; min-width: 160px; padding: 11px 14px; min-height: 44px;
+      border: 1.5px solid var(--border); border-radius: var(--radius);
+      font-size: 14px; font-family: var(--font); color: var(--text);
+    }
+    .search-input:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,42,74,.12); }
+    .filter-select {
+      padding: 11px 12px; min-height: 44px; border: 1.5px solid var(--border);
+      border-radius: var(--radius); font-size: 13px; font-family: var(--font);
+      color: var(--text); background: var(--white); cursor: pointer;
+    }
+    .btn-refresh {
+      padding: 11px 20px; min-height: 44px; background: var(--navy); color: #fff;
+      border: none; border-radius: var(--radius); font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: var(--font); transition: background .2s; white-space: nowrap;
+    }
+    .btn-refresh:hover:not(:disabled) { background: #12203a; }
+    .btn-refresh:disabled { background: var(--text-muted); cursor: default; }
+
+    /* ━━ ORDER / MESSAGE CARDS ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .card-list { display: flex; flex-direction: column; gap: 10px; }
+    .o-card, .m-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 16px; box-shadow: var(--shadow-sm);
+    }
+    .o-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 8px; }
+    .o-card-name { font-size: 15px; font-weight: 800; }
+    .o-card-sub  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .o-card-grid { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 6px; }
+    .o-price { font-size: 16px; font-weight: 900; color: var(--navy); direction: ltr; }
+    .o-meta  { font-size: 13px; color: var(--text-light); font-weight: 600; }
+
+    /* ── Compact in-card status strip (5 short steps, no timestamps) —
+       same physical left/width connector trick as the modal's .h-line;
+       see the note on buildTimeline() for why it stays correct under
+       dir="rtl". Sized down for a card instead of the full modal. ── */
+    .mc-timeline { display: flex; margin: 0 0 12px; }
+    .mc-step {
+      position: relative; flex: 1 1 0; min-width: 0;
+      display: flex; flex-direction: column; align-items: center; text-align: center;
+    }
+    .mc-line {
+      position: absolute; left: 50%; top: 9px; width: 100%;
+      height: 2px; background: var(--border); z-index: 0;
+    }
+    .mc-line.line-done { background: var(--emerald); }
+    .mc-dot {
+      width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 9px; font-weight: 900; color: var(--text-muted);
+      background: var(--white); border: 2px solid var(--border);
+      z-index: 1; margin-bottom: 3px;
+    }
+    .mc-dot.done      { background: var(--emerald); border-color: var(--emerald); color: #fff; }
+    .mc-dot.cancelled { background: #dc2626; border-color: #dc2626; color: #fff; }
+    .mc-label {
+      font-size: 9.5px; font-weight: 700; color: var(--text); line-height: 1.15;
+      white-space: normal; word-break: break-word; max-width: 100%;
+    }
+    .mc-label.muted { color: var(--text-muted); font-weight: 600; }
+
+    .o-actions {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
+    }
+    .o-actions > * {
+      width: 100%; box-sizing: border-box; justify-content: center;
+      text-align: center; white-space: normal; line-height: 1.25;
+      min-height: 44px; padding: 10px 8px; font-size: 13px;
+      display: flex; align-items: center; gap: 5px;
+      border-radius: 8px; font-weight: 800; cursor: pointer;
+      font-family: var(--font); text-decoration: none;
+      transition: background .15s, color .15s;
+    }
+
+    .btn-call    { background: #eef1f6; color: var(--navy); border: 1.5px solid #c8d0dd; }
+    .btn-call:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .btn-confirm { background: var(--green-light); color: var(--emerald); border: 1.5px solid #a9d6bd; }
+    .btn-confirm:hover:not(:disabled) { background: var(--emerald); color: #fff; border-color: var(--emerald); }
+    .btn-confirm:disabled { background: #f1f1ea; color: var(--text-muted); border-color: var(--border); cursor: default; }
+    .btn-delete  { background: #fee2e2; color: #dc2626; border: 1.5px solid #fca5a5; }
+    .btn-delete:hover:not(:disabled) { background: #dc2626; color: #fff; border-color: #dc2626; }
+    .btn-block   { background: #fef3c7; color: #92400e; border: 1.5px solid #fcd34d; }
+    .btn-block:hover:not(:disabled) { background: #92400e; color: #fff; border-color: #92400e; }
+    .btn-details { background: var(--primary-bg); color: var(--navy); border: 1.5px solid #c8d0dd; }
+    .btn-details:hover { background: var(--navy); color: #fff; border-color: var(--navy); }
+    .btn-cancel  { background: #f1f1ea; color: #6b6b5f; border: 1.5px solid #d8d8cc; }
+    .btn-cancel:hover:not(:disabled) { background: #6b6b5f; color: #fff; border-color: #6b6b5f; }
+    [disabled] { opacity: .55; cursor: default !important; }
+
+    /* ━━ MESSAGES ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .m-card-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; margin-bottom: 4px; }
+    .m-name  { font-weight: 800; font-size: 14px; }
+    .m-time  { font-size: 11px; color: var(--text-muted); white-space: nowrap; }
+    .m-phone { font-size: 13px; color: var(--text-light); margin-bottom: 8px; direction: ltr; text-align: right; }
+    .m-body  { font-size: 13px; line-height: 1.6; margin-bottom: 10px; white-space: pre-wrap; }
+    .m-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .m-actions > * {
+      min-height: 44px; padding: 10px 8px; font-size: 13px; font-weight: 800;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
+      border-radius: 8px; cursor: pointer; font-family: var(--font);
+      text-decoration: none; transition: background .15s, color .15s;
+    }
+
+    /* ━━ EMPTY STATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      padding: 56px 20px; color: var(--text-muted); text-align: center;
+    }
+    .empty-state .es-icon { font-size: 40px; opacity: .6; }
+    .empty-state .es-text { font-size: 14px; font-weight: 600; }
+
+    /* ━━ LIVE TOAST — slides in from the bottom, auto-dismisses ━━ */
+    .live-toast {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%) translateY(28px);
+      background: var(--navy); color: #fff; padding: 12px 20px;
+      border-radius: 12px; font-size: 13px; font-weight: 700;
+      box-shadow: 0 8px 28px rgba(0,0,0,.3); z-index: 4000;
+      opacity: 0; transition: opacity .25s ease, transform .25s ease; pointer-events: none;
+      max-width: 90vw; display: flex; align-items: center; gap: 8px;
+    }
+    .live-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .live-toast.success { background: var(--emerald); }
+    .live-toast.error   { background: #dc2626; }
+
+    /* ━━ CONFIRM MODAL — replaces native confirm()/alert() ━━━━━━━━
+       Reusable via the showConfirm({title,message,confirmText,intent})
+       promise-based helper — see #confirmOverlay markup + JS below. ━━ */
+    .confirm-overlay {
+      position: fixed; inset: 0; z-index: 5000;
+      background: rgba(19, 32, 26, .55);
+      backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .confirm-overlay.open { display: flex; }
+    .confirm-box {
+      background: var(--white); border-radius: 16px; width: 100%; max-width: 340px;
+      padding: 26px 22px 22px; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      transform: scale(.9) translateY(8px); opacity: 0;
+      transition: transform .2s ease, opacity .2s ease;
+    }
+    .confirm-overlay.open .confirm-box { transform: scale(1) translateY(0); opacity: 1; }
+    .confirm-icon {
+      width: 60px; height: 60px; border-radius: 50%; margin: 0 auto 14px;
+      display: flex; align-items: center; justify-content: center; font-size: 28px;
+    }
+    .confirm-icon.danger  { background: #fde2e2; }
+    .confirm-icon.warning { background: #fbeec9; }
+    .confirm-icon.success { background: var(--green-light); }
+    .confirm-title   { font-size: 17px; font-weight: 900; color: var(--text); margin-bottom: 8px; }
+    .confirm-message { font-size: 13.5px; color: var(--text-light); line-height: 1.65; margin-bottom: 22px; }
+    .confirm-actions { display: flex; gap: 10px; }
+    .confirm-actions button {
+      flex: 1; min-height: 46px; border-radius: 10px; border: none;
+      font-family: var(--font); font-size: 14px; font-weight: 800; cursor: pointer;
+      transition: filter .15s ease, transform .05s ease;
+    }
+    .confirm-actions button:active { transform: scale(.97); }
+    .confirm-btn-cancel { background: #eef0ee; color: #4b564f; }
+    .confirm-btn-cancel:hover { background: #e2e5e1; }
+    .confirm-btn-ok.danger  { background: #dc2626; color: #fff; }
+    .confirm-btn-ok.warning { background: var(--gold); color: var(--ink); }
+    .confirm-btn-ok.success { background: var(--emerald); color: #fff; }
+    .confirm-btn-ok:hover { filter: brightness(.93); }
+
+    @media (max-width: 380px) {
+      .confirm-box { padding: 22px 18px 18px; }
+    }
+
+    /* ━━ MODAL (order details bottom-sheet) ━━━━━━━━━━━━━━━━━ */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(19,32,26,.55);
+      z-index: 1000; display: none; align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--white); border-radius: 18px 18px 0 0; width: 100%; max-width: 560px;
+      max-height: 92vh; max-height: 92svh;
+      display: flex; flex-direction: column; box-shadow: 0 -8px 40px rgba(0,0,0,.25); overflow: hidden;
+    }
+    @media (min-width: 600px) {
+      .modal-overlay { align-items: center; padding: 16px; }
+      .modal-box { border-radius: 18px; max-height: calc(100vh - 32px); }
+    }
+    .modal-header {
+      background: var(--navy); color: #fff; padding: 14px 18px;
+      display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+    }
+    .modal-title { font-size: 15px; font-weight: 900; }
+    .modal-close {
+      background: rgba(255,255,255,.1); border: none; color: #fff;
+      width: 36px; height: 36px; border-radius: 8px; font-size: 16px;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background .2s; flex-shrink: 0;
+    }
+    .modal-close:hover { background: rgba(255,255,255,.22); }
+    .modal-body { padding: 16px 18px; overflow-y: auto; flex: 1; overscroll-behavior: contain; }
+    .modal-footer { padding: 14px 18px; border-top: 1px solid var(--border); flex-shrink: 0; background: var(--white); display: flex; gap: 8px; flex-wrap: wrap; }
+    .modal-footer > * { flex: 1; min-height: 46px; }
+
+    .modal-section { margin-bottom: 20px; }
+    .modal-section:last-child { margin-bottom: 0; }
+    .modal-section-title {
+      display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800;
+      color: var(--text-light); text-transform: uppercase; letter-spacing: .5px;
+      margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid var(--bg);
+    }
+    .modal-info-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 14px;
+    }
+    .modal-info-item { display: flex; flex-direction: column; gap: 3px; }
+    .modal-info-item.full { grid-column: 1 / -1; }
+    .mi-lbl { font-size: 10px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: .3px; }
+    .mi-val { font-size: 14px; font-weight: 700; color: var(--text); word-break: break-word; }
+
+    .product-cards { display: flex; flex-direction: column; gap: 8px; }
+    .product-card {
+      display: flex; align-items: center; gap: 12px; background: var(--white);
+      border: 1px solid var(--border); border-radius: var(--radius); padding: 10px 12px;
+    }
+    .product-icon {
+      width: 40px; height: 40px; flex-shrink: 0; border-radius: 8px;
+      background: var(--primary-bg); display: flex; align-items: center;
+      justify-content: center; font-size: 18px;
+    }
+    .product-info { flex: 1; min-width: 0; }
+    .product-name { font-size: 13px; font-weight: 700; margin-bottom: 4px; line-height: 1.3; }
+    .product-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .product-qty { font-size: 12px; font-weight: 700; color: var(--navy); background: var(--primary-bg); padding: 2px 9px; border-radius: 99px; }
+    .product-price { font-size: 13px; font-weight: 800; direction: ltr; }
+
+    .price-summary-box { background: var(--bg); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 14px 16px; }
+    .price-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; font-size: 13px; color: var(--text-light); }
+    .price-row .pv { direction: ltr; font-weight: 700; }
+    .price-row.grand { border-top: 2px solid var(--border); margin-top: 6px; padding-top: 12px; font-size: 17px; font-weight: 900; color: var(--text); }
+    .price-row.grand .pv { color: var(--navy); }
+
+    /* ── Horizontal status timeline (order detail modal) ──────
+       Physical left/width (not right) used for the connector so the
+       math stays correct regardless of dir="rtl" — see inline note
+       in buildTimeline(). ── */
+    .h-timeline {
+      display: flex; overflow-x: auto; scroll-snap-type: x proximity;
+      padding: 4px 2px 6px; -webkit-overflow-scrolling: touch;
+    }
+    .h-step {
+      position: relative; flex: 1 1 0; min-width: 58px;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; scroll-snap-align: start; padding-top: 2px;
+    }
+    .h-line {
+      position: absolute; left: 50%; top: 13px; width: 100%;
+      height: 2px; background: var(--border); z-index: 0;
+    }
+    .h-line.line-done { background: var(--emerald); }
+    .h-dot {
+      width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 900; color: var(--text-muted);
+      background: var(--white); border: 2px solid var(--border);
+      z-index: 1; margin-bottom: 6px;
+    }
+    .h-dot.done      { background: var(--emerald); border-color: var(--emerald); color: #fff; }
+    .h-dot.cancelled { background: #dc2626; border-color: #dc2626; color: #fff; }
+    .h-label { font-size: 10.5px; font-weight: 700; color: var(--text); line-height: 1.3; padding: 0 2px; }
+    .h-label.muted { color: var(--text-muted); font-weight: 600; }
+    .h-time { font-size: 9.5px; color: var(--text-muted); margin-top: 2px; direction: ltr; }
+
+    @media (max-width: 480px) {
+      .agent-main { padding: 14px 10px 60px; }
+      .stat-card  { padding: 12px 12px; }
+      .stat-num   { font-size: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════ -->
+<header class="agent-header" id="agentHeader">
+  <div class="header-logo">Derradj <span>Shop</span></div>
+  <div class="header-right">
+    <span class="agent-badge" id="agentBadge">📞</span>
+    <button class="btn-logout" id="logoutBtn">خروج</button>
+  </div>
+</header>
+
+<!-- ══ MAIN ════════════════════════════════════════════════ -->
+<main class="agent-main">
+
+  <!-- Earnings widget -->
+  <div class="earnings-widget">
+    <div class="stat-card s-balance">
+      <span class="stat-num" id="stat-balance">—</span>
+      <span class="stat-label">💰 رصيدي</span>
+    </div>
+    <div class="stat-card s-done">
+      <span class="stat-num" id="stat-done">—</span>
+      <span class="stat-label">✅ طلبيات مكتملة</span>
+    </div>
+    <div class="stat-card s-month">
+      <span class="stat-num" id="stat-month">—</span>
+      <span class="stat-label">📅 رصيد هذا الشهر</span>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs-bar">
+    <button class="tab-btn active" data-tab="orders">
+      📦 الطلبيات
+      <span class="tab-badge" id="tab-badge-orders">—</span>
+    </button>
+    <button class="tab-btn" data-tab="messages">
+      ✉️ الرسائل
+      <span class="tab-badge" id="tab-badge-messages">—</span>
+    </button>
+  </div>
+
+  <!-- ══ Tab: Orders ══════════════════════════════════════ -->
+  <div class="tab-content active" id="tab-orders">
+    <div class="controls-bar">
+      <input type="text" class="search-input" id="ordSearchInput" placeholder="🔍 بحث بالاسم أو الهاتف..."/>
+      <select class="filter-select" id="ordStatusFilter">
+        <option value="active" selected>📋 النشطة</option>
+        <option value="archived">✅ المكتملة/الملغاة</option>
+        <option value="">الكل</option>
+      </select>
+      <button class="btn-refresh" id="ordRefreshBtn">↻ تحديث</button>
+    </div>
+    <div class="card-list" id="ordersList"></div>
+  </div>
+
+  <!-- ══ Tab: Messages ════════════════════════════════════ -->
+  <div class="tab-content" id="tab-messages">
+    <div class="controls-bar">
+      <input type="text" class="search-input" id="msgSearchInput" placeholder="🔍 بحث بالاسم أو الهاتف أو الرسالة..."/>
+      <button class="btn-refresh" id="msgRefreshBtn">↻ تحديث</button>
+    </div>
+    <div class="card-list" id="msgList"></div>
+  </div>
+
+</main>
+
+<!-- ══ MODAL — order detail bottom sheet ═════════════════════ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">تفاصيل الطلب</span>
+      <button class="modal-close" id="modalClose">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM MODAL — replaces native confirm()/alert() ══════ -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-icon" id="confirmIcon"></div>
+    <div class="confirm-title" id="confirmTitle"></div>
+    <div class="confirm-message" id="confirmMessage"></div>
+    <div class="confirm-actions">
+      <button type="button" class="confirm-btn-cancel" id="confirmCancelBtn">إلغاء</button>
+      <button type="button" class="confirm-btn-ok" id="confirmOkBtn"></button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ── Supabase ──────────────────────────────────────────── */
+  if (!window.supabase?.createClient) { showToast("❌ Supabase غير محمّل.", "error"); return; }
+
+  const SUPABASE_URL      = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  /* ── State ─────────────────────────────────────────────── */
+  let ALL_ORDERS      = [];
+  let ALL_MESSAGES     = [];
+  let BLOCKED_PHONES   = new Set();
+  let ACTIVE_ORDER_ID  = null;
+  let CURRENT_STAFF_ID = '';
+  let UNSEEN_MESSAGES  = 0;
+
+  const PM_LABELS = {
+    carte_doree:      "💳 البطاقة الذهبية",
+    baridimob:        "📱 BaridiMob",
+    ccp:              "🏦 CCP / RIP",
+    prepaid:          "💳 دفع مسبق (CCP / BaridiMob)",
+    cash_on_delivery: "🚪 دفع عند الاستلام",
+  };
+  const DT_LABELS = {
+    home:   "🏠 توصيل للمنزل",
+    office: "📮 استلام من أقرب نقطة توصيل",
+  };
+  const TIMELINE_STEPS = [
+    { key: "created_at",          label: "📝 استُلم الطلب" },
+    { key: "confirmed_at",        label: "✅ تم التأكيد" },
+    { key: "shipped_at",          label: "🚚 تم الشحن" },
+    { key: "out_for_delivery_at", label: "🚗 جاري التسليم" },
+    { key: "delivered_at",        label: "📦 تم أخذ الطلبية" },
+  ];
+  /* Short labels for the compact in-card strip — same keys/order as
+     TIMELINE_STEPS, no emoji (dropped to keep 5 steps + connectors
+     inside an 18-20px-circle strip from overflowing a phone card). */
+  const CARD_TIMELINE_STEPS = [
+    { key: "created_at",          label: "استُلم" },
+    { key: "confirmed_at",        label: "تأكيد" },
+    { key: "shipped_at",          label: "شحن" },
+    { key: "out_for_delivery_at", label: "جاري التسليم" },
+    { key: "delivered_at",        label: "تم الأخذ" },
+  ];
+
+  /* ── Helpers ───────────────────────────────────────────── */
+  function esc(v) {
+    return String(v ?? "")
+      .replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+  }
+  function fmtDate(v) {
+    if (!v) return "—";
+    return new Date(v).toLocaleString("ar-DZ", {
+      year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit",
+    });
+  }
+  /* Compact "DD/MM HH:MM" (Western digits, 24h) — for the horizontal
+     timeline, where fmtDate()'s full ar-DZ format is too wide. */
+  function fmtShort(v) {
+    if (!v) return "";
+    const d = new Date(v);
+    const p2 = n => String(n).padStart(2, "0");
+    return `${p2(d.getDate())}/${p2(d.getMonth() + 1)} ${p2(d.getHours())}:${p2(d.getMinutes())}`;
+  }
+  function fmtMoney(n) { return Number(n || 0).toLocaleString("fr-DZ") + " دج"; }
+  function normPhone(v) { return String(v || "").replace(/\D/g, ""); }
+  function emptyStateHTML(icon, text) {
+    return `<div class="empty-state"><div class="es-icon">${icon}</div><div class="es-text">${esc(text)}</div></div>`;
+  }
+  function disabledAttr(cond) { return cond ? "disabled" : ""; }
+
+  /* ── Auth guard — agent role only ─────────────────────── */
+  async function authGuard() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { location.href = "../admin/login.html"; return null; }
+
+    const { data: staff, error } = await supabase
+      .from("staff_accounts")
+      .select("id, full_name, email, role, is_active")
+      .eq("id", session.user.id)
+      .maybeSingle();
+
+    if (error || !staff || !staff.is_active || staff.role !== "agent") {
+      await supabase.auth.signOut();
+      location.href = "../admin/login.html";
+      return null;
+    }
+    return staff;
+  }
+
+  /* ── Fetchers ──────────────────────────────────────────── */
+  async function fetchMyOrders() {
+    const { data, error } = await supabase
+      .from("orders")
+      .select(`
+        id, order_number, full_name, phone, address, wilaya, commune,
+        delivery_type, shipping_fee, subtotal, total_price,
+        payment_method, receipt_url, notes, created_at,
+        delivery_status, confirmed_at, shipped_at, out_for_delivery_at,
+        delivered_at, cancelled_at,
+        order_items ( id, product_name, quantity, unit_price, subtotal )
+      `)
+      .eq("assigned_agent_id", CURRENT_STAFF_ID)
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    return data || [];
+  }
+
+  /* Shared inbox — RLS (messages_agent_select_unblocked) already
+     scopes this to non-blocked numbers only; nothing to filter here. */
+  async function fetchMessages() {
+    const { data, error } = await supabase
+      .from("messages")
+      .select("id, name, contact, message, created_at")
+      .order("created_at", { ascending: false })
+      .limit(500);
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function fetchBlockedPhones() {
+    const { data, error } = await supabase
+      .from("blocked_customers")
+      .select("phone")
+      .eq("is_active", true);
+    if (error) { console.warn("fetchBlockedPhones:", error.message); return new Set(); }
+    return new Set((data || []).map(r => normPhone(r.phone)));
+  }
+
+  async function fetchEarnings() {
+    const { data, error } = await supabase
+      .from("agent_earnings")
+      .select("amount, created_at")
+      .eq("agent_id", CURRENT_STAFF_ID)
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    const rows = data || [];
+    const now = new Date();
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const total = rows.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const month = rows
+      .filter(r => new Date(r.created_at) >= monthStart)
+      .reduce((s, r) => s + Number(r.amount || 0), 0);
+    return { total, count: rows.length, month };
+  }
+
+  /* ── Writes — RLS + guard_agent_order_update() enforce every
+     boundary described here server-side too; the client checks are
+     just UX (disabling buttons before the click even happens). ── */
+  async function confirmOrder(orderId) {
+    const { error } = await supabase.from("orders")
+      .update({ delivery_status: "confirmed" }).eq("id", orderId);
+    if (error) throw error;
+  }
+  async function cancelOrder(orderId) {
+    const { error } = await supabase.from("orders")
+      .update({ delivery_status: "cancelled" }).eq("id", orderId);
+    if (error) throw error;
+  }
+  async function deleteOrder(orderId) {
+    const { error } = await supabase.from("orders").delete().eq("id", orderId);
+    if (error) throw error;
+  }
+  async function blockPhone(phone) {
+    const { error } = await supabase.from("blocked_customers")
+      .insert({ phone, blocked_by: CURRENT_STAFF_ID });
+    if (error) throw error;
+  }
+
+  /* ── Earnings widget ───────────────────────────────────── */
+  function renderEarnings(e) {
+    document.getElementById("stat-balance").textContent = fmtMoney(e.total);
+    document.getElementById("stat-done").textContent    = e.count;
+    document.getElementById("stat-month").textContent   = fmtMoney(e.month);
+  }
+
+  async function refreshEarnings() {
+    try { renderEarnings(await fetchEarnings()); }
+    catch (err) { console.warn("refreshEarnings:", err.message); }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     ORDERS
+  ═══════════════════════════════════════════════════════════ */
+  function getFilteredOrders() {
+    const q  = (document.getElementById("ordSearchInput")?.value || "").trim().toLowerCase();
+    const st = document.getElementById("ordStatusFilter")?.value || "";
+    return ALL_ORDERS.filter(o => {
+      const isArchived = o.delivery_status === "delivered" || o.delivery_status === "cancelled";
+      if (st === "active"   && isArchived)  return false;
+      if (st === "archived" && !isArchived) return false;
+      if (!q) return true;
+      return (o.full_name || "").toLowerCase().includes(q) || (o.phone || "").includes(q);
+    });
+  }
+
+  function buildOrderActions(o) {
+    const phone = (o.phone || "").trim();
+    const btns = [];
+    btns.push(`<button class="btn-details" data-id="${esc(o.id)}" data-action="ord-details">📋 عرض التفاصيل</button>`);
+    if (phone) btns.push(`<a href="tel:${esc(phone)}" class="btn-call">📞 اتصال</a>`);
+    if (o.delivery_status === "pending") {
+      btns.push(`<button class="btn-confirm" data-id="${esc(o.id)}" data-action="ord-confirm">✅ تأكيد الطلبية</button>`);
+    }
+    btns.push(`<button class="btn-delete" data-id="${esc(o.id)}" data-action="ord-delete">🗑 حذف الطلبية</button>`);
+    btns.push(`<button class="btn-block" data-id="${esc(o.id)}" data-action="ord-block">🚫 حظر الرقم</button>`);
+    return btns.join("");
+  }
+
+  /* Compact 5-step strip embedded in each order card — no timestamps
+     (kept only in the detail modal's own buildTimeline()/.h-timeline,
+     which this does not touch). A connector segment is Emerald when
+     the step it leads INTO is done, so the emerald run always ends
+     exactly at the furthest-completed step and nothing beyond it. */
+  function buildCardTimeline(o) {
+    const isCancelled = o.delivery_status === "cancelled";
+    const steps = isCancelled
+      ? [{ key: "created_at", label: "استُلم" }, { key: "cancelled_at", label: "ملغاة" }]
+      : CARD_TIMELINE_STEPS;
+    return `<div class="mc-timeline">${steps.map((s, i) => {
+      const done = !!o[s.key];
+      const dotClass = done ? (s.key === "cancelled_at" ? "cancelled" : "done") : "";
+      return `
+        <div class="mc-step">
+          ${i > 0 ? `<div class="mc-line ${done ? "line-done" : ""}"></div>` : ""}
+          <div class="mc-dot ${dotClass}">${done ? "✓" : ""}</div>
+          <div class="mc-label ${done ? "" : "muted"}">${esc(s.label)}</div>
+        </div>`;
+    }).join("")}</div>`;
+  }
+
+  function buildOrderCard(o) {
+    const items = o.order_items || [];
+    const totalQty = items.reduce((s, it) => s + (Number(it.quantity) || 0), 0);
+    return `
+      <div class="o-card" data-id="${esc(o.id)}">
+        <div class="o-card-head">
+          <div>
+            <div class="o-card-name">${esc(o.full_name || "—")}</div>
+            <div class="o-card-sub">#${esc(o.order_number ?? "—")}</div>
+          </div>
+        </div>
+        <div class="o-card-grid">
+          <span class="o-price">${esc(fmtMoney(o.total_price))}</span>
+          <span class="o-meta">📍 ${esc(o.wilaya || "—")}</span>
+          <span class="o-meta">📦 ${totalQty} كتب</span>
+        </div>
+        ${buildCardTimeline(o)}
+        <div class="o-actions">${buildOrderActions(o)}</div>
+      </div>`;
+  }
+
+  function renderOrders() {
+    const filtered = getFilteredOrders();
+    const activeCount = ALL_ORDERS.filter(o => o.delivery_status !== "delivered" && o.delivery_status !== "cancelled").length;
+    document.getElementById("tab-badge-orders").textContent = activeCount;
+
+    const list = document.getElementById("ordersList");
+    if (!filtered.length) {
+      list.innerHTML = emptyStateHTML("📦", "لا توجد طلبيات في هذا القسم حالياً");
+      return;
+    }
+    list.innerHTML = filtered.map(buildOrderCard).join("");
+  }
+
+  /* Horizontal timeline, first step on the right (dir="rtl" on <html>
+     makes a plain flex-row lay DOM order right-to-left on its own —
+     no explicit reversing needed). The connector line inside step i
+     (i>0) reaches back to step i-1's dot using PHYSICAL left/width
+     (not right), which is what actually lands it there regardless of
+     text direction: left:50% anchors its left edge at this step's own
+     center, and width:100% extends it exactly one step further along
+     the physical x-axis — which under RTL flex-row is where the
+     previous DOM sibling (i-1) sits. Physical right/left in CSS never
+     flip with dir, only the flex layout order does. */
+  function buildTimeline(o) {
+    const isCancelled = o.delivery_status === "cancelled";
+    const steps = isCancelled
+      ? [{ key: "created_at", label: "📝 استُلم الطلب" }, { key: "cancelled_at", label: "❌ تم الإلغاء" }]
+      : TIMELINE_STEPS;
+    return `<div class="h-timeline">${steps.map((s, i) => {
+      const val  = o[s.key];
+      const done = !!val;
+      const prevDone = i > 0 && !!o[steps[i - 1].key];
+      const dotClass = done ? (s.key === "cancelled_at" ? "cancelled" : "done") : "";
+      return `
+        <div class="h-step">
+          ${i > 0 ? `<div class="h-line ${prevDone ? "line-done" : ""}"></div>` : ""}
+          <div class="h-dot ${dotClass}">${done ? "✓" : ""}</div>
+          <div class="h-label ${done ? "" : "muted"}">${s.label}</div>
+          ${done ? `<div class="h-time">${esc(fmtShort(val))}</div>` : ""}
+        </div>`;
+    }).join("")}</div>`;
+  }
+
+  function showOrderModal(orderId) {
+    const o = ALL_ORDERS.find(x => x.id === orderId);
+    if (!o) return;
+    ACTIVE_ORDER_ID = orderId;
+    const items  = o.order_items || [];
+    const isHome = o.delivery_type === "home";
+
+    const productsHTML = items.length
+      ? `<div class="product-cards">${items.map(it => `
+          <div class="product-card">
+            <div class="product-icon">📦</div>
+            <div class="product-info">
+              <div class="product-name">${esc(it.product_name)}</div>
+              <div class="product-meta">
+                <span class="product-qty">× ${esc(it.quantity)}</span>
+                <span class="product-price">${esc(fmtMoney(it.unit_price))}</span>
+              </div>
+            </div>
+          </div>`).join("")}</div>`
+      : `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:10px 0;">لا توجد منتجات</p>`;
+
+    const receiptHTML = o.receipt_url
+      ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" class="btn-details" style="display:inline-flex;margin-top:10px;">🧾 فتح وصل الدفع</a>`
+      : "";
+
+    document.getElementById("modalTitle").textContent = "طلب #" + (o.order_number ?? "—") + " — " + (o.full_name || "—");
+
+    document.getElementById("modalBody").innerHTML = `
+      <div class="modal-section">
+        <div class="modal-section-title">🏷 حالة الطلب</div>
+        ${buildTimeline(o)}
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">👤 معلومات الزبون</div>
+        <div class="modal-info-grid">
+          <div class="modal-info-item"><span class="mi-lbl">الاسم</span><span class="mi-val">${esc(o.full_name || "—")}</span></div>
+          <div class="modal-info-item"><span class="mi-lbl">الهاتف</span><span class="mi-val" dir="ltr">${esc(o.phone || "—")}</span></div>
+        </div>
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">🚚 معلومات التوصيل</div>
+        <div class="modal-info-grid">
+          <div class="modal-info-item"><span class="mi-lbl">الولاية</span><span class="mi-val">${esc(o.wilaya || "—")}</span></div>
+          <div class="modal-info-item"><span class="mi-lbl">البلدية</span><span class="mi-val">${esc(o.commune || "—")}</span></div>
+          ${isHome ? `<div class="modal-info-item full"><span class="mi-lbl">العنوان</span><span class="mi-val">${esc(o.address || "—")}</span></div>` : ""}
+          <div class="modal-info-item"><span class="mi-lbl">طريقة التوصيل</span><span class="mi-val">${esc(DT_LABELS[o.delivery_type] || o.delivery_type || "—")}</span></div>
+          <div class="modal-info-item"><span class="mi-lbl">طريقة الدفع</span><span class="mi-val">${esc(PM_LABELS[o.payment_method] || o.payment_method || "—")}</span></div>
+        </div>
+        ${receiptHTML}
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">📦 المنتجات المطلوبة</div>
+        ${productsHTML}
+      </div>
+
+      <div class="modal-section">
+        <div class="modal-section-title">💰 ملخص السعر</div>
+        <div class="price-summary-box">
+          <div class="price-row"><span>مجموع المنتجات</span><span class="pv">${esc(fmtMoney(o.subtotal))}</span></div>
+          <div class="price-row"><span>التوصيل</span><span class="pv" style="color:var(--emerald);">${esc(fmtMoney(o.shipping_fee))}</span></div>
+          <div class="price-row grand"><span>الإجمالي الكلي</span><span class="pv">${esc(fmtMoney(o.total_price))}</span></div>
+        </div>
+      </div>
+
+      ${o.notes ? `
+      <div class="modal-section">
+        <div class="modal-section-title">📝 ملاحظات الزبون</div>
+        <div style="background:#fef9c3;border:1px solid #fde68a;border-radius:8px;padding:12px;font-size:13px;color:#78350f;line-height:1.6;">${esc(o.notes)}</div>
+      </div>` : ""}`;
+
+    const footerBtns = [];
+    if (o.delivery_status === "pending") {
+      footerBtns.push(`<button class="btn-confirm" data-id="${esc(o.id)}" data-action="ord-confirm">✅ تأكيد الطلبية</button>`);
+    }
+    if (o.delivery_status === "pending" || o.delivery_status === "confirmed") {
+      footerBtns.push(`<button class="btn-cancel" data-id="${esc(o.id)}" data-action="ord-cancel">❌ إلغاء الطلبية</button>`);
+    }
+    if ((o.phone || "").trim()) {
+      footerBtns.push(`<a href="tel:${esc((o.phone || "").trim())}" class="btn-call">📞 اتصال</a>`);
+    }
+    document.getElementById("modalFooter").innerHTML = footerBtns.join("");
+
+    openModal();
+  }
+
+  async function withBusyButton(btn, fn) {
+    if (!btn) return fn();
+    btn.disabled = true;
+    const prev = btn.innerHTML;
+    btn.innerHTML = "⏳...";
+    try { await fn(); }
+    finally { if (document.body.contains(btn)) { btn.disabled = false; btn.innerHTML = prev; } }
+  }
+
+  async function handleConfirm(orderId, btn) {
+    const o = ALL_ORDERS.find(x => x.id === orderId);
+    const name = o?.full_name || "هذه الطلبية";
+    const ok = await showConfirm({
+      title: "تأكيد الطلبية",
+      message: `تأكيد طلبية "${name}"؟`,
+      confirmText: "نعم، أكّد",
+      intent: "success",
+    });
+    if (!ok) return;
+    try {
+      await withBusyButton(btn, () => confirmOrder(orderId));
+      const o = ALL_ORDERS.find(x => x.id === orderId);
+      if (o) { o.delivery_status = "confirmed"; o.confirmed_at = new Date().toISOString(); }
+      renderOrders();
+      if (ACTIVE_ORDER_ID === orderId) showOrderModal(orderId);
+    } catch (err) {
+      showToast("❌ فشل تأكيد الطلبية: " + (err.message || ""), "error");
+    }
+  }
+
+  async function handleCancel(orderId, btn) {
+    const ok = await showConfirm({
+      title: "إلغاء الطلبية",
+      message: "هل تريد إلغاء هذه الطلبية؟",
+      confirmText: "نعم، ألغِ",
+      intent: "warning",
+    });
+    if (!ok) return;
+    try {
+      await withBusyButton(btn, () => cancelOrder(orderId));
+      const o = ALL_ORDERS.find(x => x.id === orderId);
+      if (o) { o.delivery_status = "cancelled"; o.cancelled_at = new Date().toISOString(); }
+      renderOrders();
+      if (ACTIVE_ORDER_ID === orderId) showOrderModal(orderId);
+    } catch (err) {
+      showToast("❌ فشل إلغاء الطلبية: " + (err.message || ""), "error");
+    }
+  }
+
+  async function handleDelete(orderId, btn) {
+    const o = ALL_ORDERS.find(x => x.id === orderId);
+    const name = o?.full_name || "هذه الطلبية";
+    const ok = await showConfirm({
+      title: "حذف الطلبية",
+      message: `هل أنت متأكد من حذف طلبية "${name}"؟ لا يمكن التراجع عن هذا الإجراء.`,
+      confirmText: "نعم، احذف",
+      intent: "danger",
+    });
+    if (!ok) return;
+    try {
+      await withBusyButton(btn, () => deleteOrder(orderId));
+      ALL_ORDERS = ALL_ORDERS.filter(x => x.id !== orderId);
+      renderOrders();
+      if (ACTIVE_ORDER_ID === orderId) closeModal();
+    } catch (err) {
+      showToast("❌ فشل حذف الطلبية: " + (err.message || ""), "error");
+    }
+  }
+
+  async function handleBlock(orderId, btn) {
+    const o = ALL_ORDERS.find(x => x.id === orderId);
+    const phone = (o?.phone || "").trim();
+    if (!phone) return;
+    const ok = await showConfirm({
+      title: "حظر الرقم",
+      message: `سيتم حظر الرقم ${phone} نهائيا ولن يتمكن من إرسال طلبيات أو رسائل.`,
+      confirmText: "نعم، احظر",
+      intent: "warning",
+    });
+    if (!ok) return;
+    try {
+      await withBusyButton(btn, () => blockPhone(phone));
+      BLOCKED_PHONES.add(normPhone(phone));
+      showToast("✅ تم حظر الرقم", "success");
+      ALL_MESSAGES = ALL_MESSAGES.filter(m => normPhone(m.contact) !== normPhone(phone));
+      renderMessages();
+    } catch (err) {
+      if (err.code === "23505") showToast("⚠️ هذا الرقم محظور بالفعل", "error");
+      else showToast("❌ فشل حظر الرقم: " + (err.message || ""), "error");
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     MESSAGES (shared inbox, minus blocked numbers)
+  ═══════════════════════════════════════════════════════════ */
+  function getFilteredMessages() {
+    const q = (document.getElementById("msgSearchInput")?.value || "").trim().toLowerCase();
+    const visible = ALL_MESSAGES.filter(m => !BLOCKED_PHONES.has(normPhone(m.contact)));
+    if (!q) return visible;
+    return visible.filter(m =>
+      (m.name || "").toLowerCase().includes(q) ||
+      (m.contact || "").includes(q) ||
+      (m.message || "").toLowerCase().includes(q)
+    );
+  }
+
+  function buildMessageCard(m) {
+    const phone = (m.contact || "").trim();
+    return `
+      <div class="m-card" data-id="${esc(m.id)}">
+        <div class="m-card-head">
+          <span class="m-name">${esc(m.name || "—")}</span>
+          <span class="m-time">${esc(fmtDate(m.created_at))}</span>
+        </div>
+        <div class="m-phone">${esc(phone || "—")}</div>
+        <div class="m-body">${esc(m.message || "—")}</div>
+        <div class="m-actions">
+          ${phone ? `<a href="tel:${esc(phone)}" class="btn-call">📞 اتصال</a>` : ""}
+          <button class="btn-block" data-id="${esc(m.id)}" data-action="msg-block">🚫 حظر الرقم</button>
+        </div>
+      </div>`;
+  }
+
+  function renderMessages() {
+    const filtered = getFilteredMessages();
+    document.getElementById("tab-badge-messages").textContent = filtered.length;
+    const badgeEl = document.getElementById("tab-badge-messages");
+    badgeEl.classList.toggle("unread", UNSEEN_MESSAGES > 0);
+    if (UNSEEN_MESSAGES > 0) badgeEl.textContent = UNSEEN_MESSAGES + " جديد";
+
+    const list = document.getElementById("msgList");
+    if (!filtered.length) {
+      list.innerHTML = emptyStateHTML("✉️", "لا توجد رسائل حالياً");
+      return;
+    }
+    list.innerHTML = filtered.map(buildMessageCard).join("");
+  }
+
+  async function handleBlockMessage(msgId, btn) {
+    const m = ALL_MESSAGES.find(x => x.id === msgId);
+    const phone = (m?.contact || "").trim();
+    if (!phone) return;
+    const ok = await showConfirm({
+      title: "حظر الرقم",
+      message: `سيتم حظر الرقم ${phone} نهائيا ولن يتمكن من إرسال طلبيات أو رسائل.`,
+      confirmText: "نعم، احظر",
+      intent: "warning",
+    });
+    if (!ok) return;
+    try {
+      await withBusyButton(btn, () => blockPhone(phone));
+      BLOCKED_PHONES.add(normPhone(phone));
+      showToast("✅ تم حظر الرقم", "success");
+      renderMessages();
+    } catch (err) {
+      if (err.code === "23505") showToast("⚠️ هذا الرقم محظور بالفعل", "error");
+      else showToast("❌ فشل حظر الرقم: " + (err.message || ""), "error");
+    }
+  }
+
+  /* ── Unread tracking (per-device, localStorage) ─────────── */
+  function getLastSeenMessages() {
+    return localStorage.getItem("derradj_agent_msgs_seen") || "";
+  }
+  function markMessagesSeen() {
+    if (!ALL_MESSAGES.length) return;
+    localStorage.setItem("derradj_agent_msgs_seen", ALL_MESSAGES[0].created_at);
+    UNSEEN_MESSAGES = 0;
+    renderMessages();
+  }
+  function computeUnseenMessages() {
+    const lastSeen = getLastSeenMessages();
+    if (!lastSeen) { UNSEEN_MESSAGES = 0; return; }
+    UNSEEN_MESSAGES = ALL_MESSAGES.filter(m =>
+      new Date(m.created_at) > new Date(lastSeen) && !BLOCKED_PHONES.has(normPhone(m.contact))
+    ).length;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     MODAL
+  ═══════════════════════════════════════════════════════════ */
+  function openModal()  { document.getElementById("modal").classList.add("open"); }
+  function closeModal() {
+    document.getElementById("modal").classList.remove("open");
+    document.getElementById("modalFooter").innerHTML = "";
+    ACTIVE_ORDER_ID = null;
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     CONFIRM MODAL — promise-based replacement for native confirm().
+     Usage: const ok = await showConfirm({ title, message, confirmText, intent });
+     intent: 'danger' | 'warning' | 'success'. Resolves true/false;
+     never rejects (backdrop click / Escape / إلغاء all resolve false).
+  ═══════════════════════════════════════════════════════════ */
+  const CONFIRM_ICONS = { danger: "🗑️", warning: "🚫", success: "✅" };
+  let CONFIRM_RESOLVE = null;
+
+  function showConfirm({ title = "", message = "", confirmText = "تأكيد", intent = "success", icon } = {}) {
+    document.getElementById("confirmIcon").className   = "confirm-icon " + intent;
+    document.getElementById("confirmIcon").textContent  = icon || CONFIRM_ICONS[intent] || "❓";
+    document.getElementById("confirmTitle").textContent = title;
+    document.getElementById("confirmMessage").textContent = message;
+    const okBtn = document.getElementById("confirmOkBtn");
+    okBtn.className   = "confirm-btn-ok " + intent;
+    okBtn.textContent = confirmText;
+
+    document.getElementById("confirmOverlay").classList.add("open");
+    return new Promise(resolve => { CONFIRM_RESOLVE = resolve; });
+  }
+
+  function closeConfirm(result) {
+    document.getElementById("confirmOverlay").classList.remove("open");
+    if (CONFIRM_RESOLVE) { CONFIRM_RESOLVE(result); CONFIRM_RESOLVE = null; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
+     LIVE NOTIFICATIONS
+  ═══════════════════════════════════════════════════════════ */
+  /* type: 'success' | 'error' | omitted (neutral/info — live order &
+     message notifications). The leading emoji already embedded in
+     every call site's message string doubles as the toast's icon. */
+  function showToast(message, type) {
+    const el = document.createElement("div");
+    el.className = "live-toast" + (type ? " " + type : "");
+    el.textContent = message;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => el.classList.add("show"));
+    setTimeout(() => { el.classList.remove("show"); setTimeout(() => el.remove(), 300); }, 3000);
+  }
+
+  function setupRealtime() {
+    supabase
+      .channel("agent-dashboard-" + CURRENT_STAFF_ID)
+      .on("postgres_changes",
+          { event: "*", schema: "public", table: "orders", filter: `assigned_agent_id=eq.${CURRENT_STAFF_ID}` },
+          payload => {
+            const o = payload.new;
+            const idx = ALL_ORDERS.findIndex(x => x.id === o.id);
+            if (idx === -1) { ALL_ORDERS.unshift(o); showToast("📦 طلبية جديدة معيّنة لك: " + (o.full_name || "—")); }
+            else { ALL_ORDERS[idx] = { ...ALL_ORDERS[idx], ...o }; }
+            renderOrders();
+            if (ACTIVE_ORDER_ID === o.id) showOrderModal(o.id);
+          })
+      /* The admin's "تم أخذ الطلبية" button pays the commission via
+         mark_order_delivered() — this is what makes رصيدي/رصيد هذا الشهر
+         update the moment that happens, not just on next page load. */
+      .on("postgres_changes",
+          { event: "INSERT", schema: "public", table: "agent_earnings", filter: `agent_id=eq.${CURRENT_STAFF_ID}` },
+          () => { refreshEarnings(); showToast("💰 تم إضافة عمولة جديدة إلى رصيدك"); })
+      /* Shared inbox — no filter; blocked numbers are excluded client-side
+         (BLOCKED_PHONES) as a defensive check in case a realtime payload
+         ever arrives ahead of the RLS-backed initial SELECT. */
+      .on("postgres_changes",
+          { event: "INSERT", schema: "public", table: "messages" },
+          payload => {
+            const m = payload.new;
+            if (BLOCKED_PHONES.has(normPhone(m.contact))) return;
+            ALL_MESSAGES.unshift(m);
+            UNSEEN_MESSAGES++;
+            showToast("✉️ رسالة جديدة من: " + (m.name || "—"));
+            renderMessages();
+          })
+      .subscribe();
+  }
+
+  /* ── Events ────────────────────────────────────────────── */
+  function bindEvents() {
+    document.getElementById("logoutBtn").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      location.href = "../admin/login.html";
+    });
+
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tab = btn.dataset.tab;
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
+        btn.classList.add("active");
+        document.getElementById("tab-" + tab).classList.add("active");
+        if (tab === "messages") markMessagesSeen();
+      });
+    });
+
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    document.getElementById("modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
+    document.addEventListener("keydown", e => {
+      if (e.key !== "Escape") return;
+      closeModal();
+      closeConfirm(false);
+    });
+
+    /* ── Confirm modal ────────────────────────────────────────── */
+    document.getElementById("confirmOkBtn").addEventListener("click", () => closeConfirm(true));
+    document.getElementById("confirmCancelBtn").addEventListener("click", () => closeConfirm(false));
+    document.getElementById("confirmOverlay").addEventListener("click", e => {
+      if (e.target.id === "confirmOverlay") closeConfirm(false);
+    });
+
+    document.getElementById("ordSearchInput").addEventListener("input", renderOrders);
+    document.getElementById("ordStatusFilter").addEventListener("change", renderOrders);
+    document.getElementById("ordRefreshBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("ordRefreshBtn");
+      btn.disabled = true; btn.textContent = "⏳ جاري التحديث...";
+      try { ALL_ORDERS = await fetchMyOrders(); renderOrders(); }
+      catch (err) { showToast("❌ فشل التحديث: " + (err.message || ""), "error"); }
+      btn.disabled = false; btn.textContent = "↻ تحديث";
+    });
+
+    document.getElementById("ordersList").addEventListener("click", async e => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (btn.dataset.action === "ord-details") showOrderModal(id);
+      if (btn.dataset.action === "ord-confirm") await handleConfirm(id, btn);
+      if (btn.dataset.action === "ord-delete")  await handleDelete(id, btn);
+      if (btn.dataset.action === "ord-block")   await handleBlock(id, btn);
+    });
+
+    document.getElementById("modalFooter").addEventListener("click", async e => {
+      const btn = e.target.closest("[data-action]");
+      if (!btn) return;
+      const id = btn.dataset.id;
+      if (btn.dataset.action === "ord-confirm") await handleConfirm(id, btn);
+      if (btn.dataset.action === "ord-cancel")  await handleCancel(id, btn);
+    });
+
+    document.getElementById("msgSearchInput").addEventListener("input", renderMessages);
+    document.getElementById("msgRefreshBtn").addEventListener("click", async () => {
+      const btn = document.getElementById("msgRefreshBtn");
+      btn.disabled = true; btn.textContent = "⏳ جاري التحديث...";
+      try { ALL_MESSAGES = await fetchMessages(); renderMessages(); }
+      catch (err) { showToast("❌ فشل التحديث: " + (err.message || ""), "error"); }
+      btn.disabled = false; btn.textContent = "↻ تحديث";
+    });
+
+    document.getElementById("msgList").addEventListener("click", async e => {
+      const btn = e.target.closest("[data-action='msg-block']");
+      if (!btn) return;
+      await handleBlockMessage(btn.dataset.id, btn);
+    });
+  }
+
+  /* ── Boot ──────────────────────────────────────────────── */
+  async function boot() {
+    try {
+      const staff = await authGuard();
+      if (!staff) return;
+      CURRENT_STAFF_ID = staff.id;
+
+      document.getElementById("agentBadge").textContent =
+        "📞" + (staff.full_name ? " " + staff.full_name : "");
+
+      const [orders, messages, blocked, earnings] = await Promise.all([
+        fetchMyOrders(), fetchMessages(), fetchBlockedPhones(), fetchEarnings(),
+      ]);
+      ALL_ORDERS = orders;
+      ALL_MESSAGES = messages;
+      BLOCKED_PHONES = blocked;
+      computeUnseenMessages();
+
+      renderEarnings(earnings);
+      renderOrders();
+      renderMessages();
+      bindEvents();
+      setupRealtime();
+    } catch (err) {
+      console.error("Boot error:", err);
+      showToast("❌ خطأ في تحميل الصفحة: " + (err.message || JSON.stringify(err)), "error");
+    }
+  }
+
+  boot();
+
+})();
+</script>
+</body>
+</html>

@@ -153,6 +153,14 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // 2.6) حساب موظفة متابعة (Agent) — يُحوَّل تلقائياً إلى لوحتها،
+      //      بنفس آلية تحويل البائع أعلاه.
+      if (role === 'agent') {
+        setStatus("↪️ هذا حساب موظفة متابعة — يتم تحويلك إلى لوحتها...", true);
+        window.location.href = "../agent/dashboard.html";
+        return;
+      }
+
       if (role !== 'admin') {
         setStatus("🚫 هذا الحساب غير مصرح له بالدخول");
         await supabase.auth.signOut();

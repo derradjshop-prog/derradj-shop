@@ -239,6 +239,12 @@
     .badge-assign-pending_admin { background: #e0e7ff; color: #3730a3; }
     .badge-assign-assigned      { background: #dbeafe; color: #1d4ed8; }
     .badge-assign-completed     { background: #d1fae5; color: #065f46; }
+    .badge-delivery-pending          { background: #fef3c7; color: #92400e; }
+    .badge-delivery-confirmed        { background: #d1fae5; color: #065f46; }
+    .badge-delivery-shipped          { background: #dbeafe; color: #1d4ed8; }
+    .badge-delivery-out_for_delivery { background: #ede9fe; color: #5b21b6; }
+    .badge-delivery-delivered        { background: #d1fae5; color: #065f46; }
+    .badge-delivery-cancelled        { background: #fee2e2; color: #991b1b; }
 
     .pm-tag {
       display: inline-block;
@@ -1044,6 +1050,9 @@
     <button class="tab-btn" data-tab="blocked" id="navBtnBlocked" style="display:none;">
       🚫 المحظورون
     </button>
+    <button class="tab-btn" data-tab="agents" id="navBtnAgents" style="display:none;">
+      📞 الموظفون
+    </button>
   </div>
 
   <!-- Tab: Orders -->
@@ -1098,6 +1107,7 @@
         <col style="width:7%">  <!-- الإجمالي -->
         <col style="width:9%">  <!-- طريقة الدفع -->
         <col style="width:9%">  <!-- حالة التأكيد -->
+        <col style="width:9%">  <!-- حالة التوصيل -->
         <col style="width:8%">  <!-- التعيين -->
         <col style="width:12%"> <!-- الإجراءات -->
       </colgroup>
@@ -1113,12 +1123,13 @@
           <th>الإجمالي</th>
           <th>طريقة الدفع</th>
           <th>حالة التأكيد</th>
+          <th>حالة التوصيل</th>
           <th>التعيين</th>
           <th>الإجراءات</th>
         </tr>
       </thead>
       <tbody id="ordersTbody">
-        <tr><td colspan="12" class="empty">⏳ جاري التحميل...</td></tr>
+        <tr><td colspan="13" class="empty">⏳ جاري التحميل...</td></tr>
       </tbody>
     </table>
   </div>
@@ -1180,6 +1191,9 @@
 
   <!-- Tab: Blocked customers — main-admin-only, rendered by admin.js -->
   <div class="tab-content" id="tab-blocked"></div><!-- /tab-blocked -->
+
+  <!-- Tab: Call agents (الموظفون) — balances/earnings, rendered by admin.js -->
+  <div class="tab-content" id="tab-agents"></div><!-- /tab-agents -->
 
   <!-- ══ Tab: Reviews ════════════════════════════════════════ -->
   <div class="tab-content" id="tab-reviews">
