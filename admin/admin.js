@@ -69,11 +69,6 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     office: "📮 استلام من أقرب نقطة توصيل",
   };
 
-  /* حصص الأرباح — Mehdi يأخذ 70% من الربح، والـ 30% الباقية لصاحب المنصة (أنا).
-     مصدر النسبة الوحيد؛ نفس الثابت مكرر في seller/dashboard.html لعدم وجود
-     ملف JS مشترك بين لوحة الأدمن ولوحة البائع. */
-  const MEHDI_PROFIT_SHARE = 0.70;
-
   /* ── Helpers ───────────────────────────────────────────── */
   function esc(v) {
     return String(v ?? "")
@@ -634,8 +629,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const status   = entity.assignment_status || "pending_admin";
     const assignee = entity.assigned_staff;
 
-    /* Exactly one seller account exists in this system today (Mehdi) —
-       so the decision is the literal two-button choice the workflow is
+    /* When exactly one seller account exists in this system,
+       the decision is the literal two-button choice the workflow is
        built around: assign to that seller, or keep it with admin. If a
        second seller account is ever added, fall back to a dropdown
        instead of guessing which one was meant. */
@@ -1221,21 +1216,6 @@ ${itemsText}
         }).join("")
       : `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:10px 0;">لا توجد منتجات</p>`;
 
-    /* ── Order-level profit summary (only counts items with a cost entered) ── */
-    const itemsWithCost = items.filter(it => it.purchase_cost !== null && it.purchase_cost !== undefined && it.purchase_cost !== "");
-    const totalProfit   = itemsWithCost.reduce((s, it) => s + (Number(it.subtotal || 0) - Number(it.purchase_cost)), 0);
-    const mehdiProfit   = Math.round(totalProfit * MEHDI_PROFIT_SHARE);
-    const myShare        = totalProfit - mehdiProfit; // derived (not Math.round(totalProfit*0.3)), so the two always sum to totalProfit exactly
-    const profitSummaryHTML = itemsWithCost.length ? `
-      <div class="modal-totals profit-summary">
-        <div class="total-row">
-          <span>💰 الربح الكلي${itemsWithCost.length < items.length ? " (جزئي — التكلفة غير مدخلة لكل المنتجات)" : ""}</span>
-          <span class="total-val" style="color:#0F5132;">${esc(fmtMoney(totalProfit))}</span>
-        </div>
-        <div class="total-row"><span>🤝 Mehdi (70%)</span><span class="total-val">${esc(fmtMoney(mehdiProfit))}</span></div>
-        <div class="total-row grand"><span>👤 أنا (30%)</span><span class="total-val" style="color:#0F5132;">${esc(fmtMoney(myShare))}</span></div>
-      </div>` : ``;
-
     /* ── Receipt ── */
     const receiptHTML = o.receipt_url
       ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" class="btn-receipt"
@@ -1309,8 +1289,6 @@ ${itemsText}
           <span class="total-val">${esc(fmtMoney(o.total_price))}</span>
         </div>
       </div>
-
-      ${profitSummaryHTML}
 
       ${receiptHTML}
 

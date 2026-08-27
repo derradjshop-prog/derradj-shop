@@ -88,6 +88,23 @@
       transition: background .2s;
     }
     .btn-view-as:hover { background: #1d4ed8; color: #fff; }
+    .btn-home {
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.18);
+      color: #fff;
+      padding: 7px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .btn-home:hover { background: rgba(255,255,255,.18); }
 
     /* ━━ MAIN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .admin-main { padding: 28px 24px; max-width: 1600px; margin: 0 auto; }
@@ -619,6 +636,7 @@
       .header-logo  { font-size: 15px; }
       .admin-badge  { display: none; }
       .btn-logout   { padding: 6px 12px; font-size: 12px; }
+      .btn-home     { padding: 6px 12px; font-size: 12px; }
     }
 
     @media (max-width: 480px) {
@@ -979,6 +997,7 @@
 <header class="admin-header">
   <div class="header-logo">Derradj <span>Shop</span> — Admin</div>
   <div class="header-right">
+    <a class="btn-home" href="../index.html">🏠 الصفحة الرئيسية</a>
     <span class="admin-badge" id="adminBadge">...</span>
     <button class="btn-view-as" id="viewAsBtn" style="display:none;">👁 معاينة كمستخدم</button>
     <button class="btn-logout" id="logoutBtn">خروج</button>
