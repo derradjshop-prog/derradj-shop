@@ -1009,56 +1009,7 @@
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
-<<<<<<< HEAD
       <image:loc>https://derradjshop.com/Electronique/laptop/adjustable-laptop-stand/1782472767626-na0lytm.jpeg</image:loc>
-=======
-      <image:loc>https://derradjshop.com/Electronique/power-bank/hoco-j123c-60000mah-power-bank-pd-20w/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/chatgpt-plus-56-1-month-subscription/</loc>
-    <lastmod>2026-08-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/subscriptions/chatgpt-plus-56-1-month-subscription/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/hoco-j132a-20000mah-power-bank/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/power-bank/hoco-j132a-20000mah-power-bank/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/capcut-pro-1-month-subscription/</loc>
-    <lastmod>2026-08-27</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/subscriptions/capcut-pro-1-month-subscription/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/soundcore-r50i-nc-true-wireless-earbuds/</loc>
-    <lastmod>2026-08-21</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/airpods/soundcore-r50i-nc-true-wireless-earbuds/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/soundcore-r50i-true-wireless-earbuds/</loc>
-    <lastmod>2026-08-26</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/airpods/soundcore-r50i-true-wireless-earbuds/main.webp</image:loc>
->>>>>>> 5cc3252cbf3b8d2f02817fbad91282e309e52c33
     </image:image>
   </url>
   <url>
@@ -1104,6 +1055,15 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://derradjshop.com/Electronique/Arduino%20Kits/arduino-uno-r3-super-starter-kit-with-200-components/1782473075897-64d2ydr.png</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/capcut-pro-1-month-subscription/</loc>
+    <lastmod>2026-08-27</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/subscriptions/capcut-pro-1-month-subscription/main.webp</image:loc>
     </image:image>
   </url>
   <url>

@@ -5,7 +5,8 @@
   "description": "Derradj Shop — static site build scripts",
   "scripts": {
     "generate:products": "node scripts/generate-product-pages.js",
-    "local-image-server": "node scripts/local-image-server.js"
+    "local-image-server": "node scripts/local-image-server.js",
+    "validate": "node scripts/validate-repository.js"
   },
   "engines": {
     "node": ">=18"
