@@ -672,9 +672,38 @@ function renderBookPage(view, dims) {
 `;
 }
 
-/* ── Sitemap (static + books + electronics, with image extension) ── */
-function buildSitemap(products, books) {
+/* Reads the sitemap.xml already on disk (if any) and returns a
+   Map<loc, lastmod> — used only to carry forward <lastmod> values that
+   haven't meaningfully changed, so re-running this script doesn't touch
+   dates that don't need touching. Tolerant of a partially-conflicted
+   file (leftover git conflict markers): the regex just won't match
+   inside a broken <url> block, so that one entry falls back to `today`
+   instead of blowing up the whole parse — everything else still reads
+   fine, since only the entries git actually flagged as conflicting are
+   malformed. */
+function readExistingLastmods(sitemapPath) {
+  const map = new Map();
+  if (!fs.existsSync(sitemapPath)) return map;
+  const xml = fs.readFileSync(sitemapPath, 'utf8');
+  const urlBlockRe = /<url>([\s\S]*?)<\/url>/g;
+  let m;
+  while ((m = urlBlockRe.exec(xml))) {
+    const block = m[1];
+    const loc = /<loc>(.*?)<\/loc>/.exec(block);
+    const lastmod = /<lastmod>(.*?)<\/lastmod>/.exec(block);
+    if (loc && lastmod) map.set(loc[1], lastmod[1]);
+  }
+  return map;
+}
+
+/* ── Sitemap (static + books + electronics, with image extension) ──
+   Deterministic by design: given the same catalog data and the same
+   existing sitemap.xml, this produces byte-identical output. That's
+   what stops the recurring merge conflicts this used to cause — see
+   the "changedStaticPages" comment at the call site for the history. */
+function buildSitemap(products, books, changedStaticPages) {
   const today = new Date().toISOString().slice(0, 10);
+  const existingLastmods = readExistingLastmods(path.join(ROOT, 'sitemap.xml'));
   const urls = [];
 
   const STATIC = [
@@ -690,16 +719,30 @@ function buildSitemap(products, books) {
     { loc: `${SITE_URL}/return-policy`,freq: 'monthly', pri: '0.5' },
     { loc: `${SITE_URL}/terms`,        freq: 'yearly',  pri: '0.3' },
   ];
-  STATIC.forEach(u => urls.push({ ...u, lastmod: today }));
+  /* Static pages get a fresh "today" lastmod only the first time they
+     ever appear, or when changedStaticPages[loc] says this run actually
+     rewrote that page's content (home/Electronique/subscriptions grids).
+     Every other static page (about/contact/faq/delivery/payment/
+     return-policy/terms/books) never gets touched by this script, so
+     its lastmod simply carries forward forever until a human commits a
+     real content edit to that page — at which point they can bump it
+     by hand, the same way `p.updated_at` is a human/admin action for
+     catalog rows below. */
+  STATIC.forEach(u => {
+    const forceToday = changedStaticPages && changedStaticPages[u.loc];
+    const lastmod = forceToday ? today : (existingLastmods.get(u.loc) || today);
+    urls.push({ ...u, lastmod });
+  });
 
   /* Books — from Supabase (admin_products_catalog, category='books') */
+  const bookUrls = [];
   books.forEach(p => {
     if (!p.slug) return;
     const b = toBookRow(p);
     const image = b.image ? (/^https?:\/\//.test(b.image) ? b.image : `${SITE_URL}${b.image}`) : null;
-    urls.push({
+    bookUrls.push({
       loc: `${SITE_URL}/books/${p.slug}/`,
-      lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : today,
+      lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : (existingLastmods.get(`${SITE_URL}/books/${p.slug}/`) || today),
       freq: 'monthly',
       pri: '0.8',
       image,
@@ -707,27 +750,34 @@ function buildSitemap(products, books) {
   });
 
   /* Electronics products — from Supabase */
+  const productUrls = [];
   products.forEach(p => {
     if (!p.slug) return;
+    const loc = `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`;
+    const lastmod = p.updated_at ? String(p.updated_at).slice(0, 10) : (existingLastmods.get(loc) || today);
     try {
       const view = ProductTemplate.buildProductView(p);
-      urls.push({
-        loc: `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`,
-        lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : today,
-        freq: 'weekly',
-        pri: '0.8',
-        image: view.meta && view.meta.ogImage ? view.meta.ogImage : null,
-      });
+      productUrls.push({ loc, lastmod, freq: 'weekly', pri: '0.8', image: view.meta && view.meta.ogImage ? view.meta.ogImage : null });
     } catch (err) {
-      urls.push({
-        loc: `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`,
-        lastmod: p.updated_at ? String(p.updated_at).slice(0, 10) : today,
-        freq: 'weekly',
-        pri: '0.8',
-        image: p.main_image || null,
-      });
+      productUrls.push({ loc, lastmod, freq: 'weekly', pri: '0.8', image: p.main_image || null });
     }
   });
+
+  /* Sort books/products by URL so output order depends only on catalog
+     content, not on whatever order Supabase happened to return rows in
+     — otherwise two runs over identical data could still reorder the
+     file and produce a spurious diff/conflict. The 11 STATIC entries
+     keep their deliberate, priority-ordered placement at the top. */
+  bookUrls.sort((a, b) => a.loc.localeCompare(b.loc));
+  productUrls.sort((a, b) => a.loc.localeCompare(b.loc));
+  urls.push(...bookUrls, ...productUrls);
+
+  /* Defensive dedupe by loc (DB has a unique slug constraint per
+     category already, but a sitemap with a repeated <loc> is invalid
+     regardless of why it happened, so guard here too). Keeps the first
+     occurrence, which is always the STATIC entry if one exists. */
+  const seen = new Set();
+  const deduped = urls.filter(u => (seen.has(u.loc) ? false : (seen.add(u.loc), true)));
 
   const urlBlock = u => `  <url>
     <loc>${u.loc}</loc>
@@ -742,7 +792,7 @@ function buildSitemap(products, books) {
   return `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
-${urls.map(urlBlock).join('\n')}
+${deduped.map(urlBlock).join('\n')}
 </urlset>
 `;
 }
@@ -898,11 +948,15 @@ function assertSingleDocument(html, label) {
   }
 }
 
+/* Returns true only if the file's on-disk content actually changed —
+   callers use this to decide whether a static page's sitemap <lastmod>
+   should be bumped to today, instead of bumping it unconditionally on
+   every run (see buildSitemap). */
 function injectStaticGrid(filePath, gridId, rows) {
   const label = path.relative(ROOT, filePath);
   if (!fs.existsSync(filePath)) {
     console.warn(`[generate-product-pages] ${label} not found — skipping static grid fallback for #${gridId}`);
-    return;
+    return false;
   }
   const html = fs.readFileSync(filePath, 'utf8');
   assertSingleDocument(html, label);
@@ -912,14 +966,16 @@ function injectStaticGrid(filePath, gridId, rows) {
   const endIdx = html.indexOf(endMarker);
   if (startIdx === -1 || endIdx === -1 || endIdx < startIdx) {
     console.warn(`[generate-product-pages] static fallback markers for #${gridId} not found in ${label} — skipping`);
-    return;
+    return false;
   }
   const cardsHtml = rows.filter(p => p.slug).map(buildStaticProductCard).join('\n');
   const newHtml = html.slice(0, startIdx + startMarker.length) + cardsHtml + html.slice(endIdx);
-  if (newHtml !== html) {
+  const changed = newHtml !== html;
+  if (changed) {
     fs.writeFileSync(filePath, newHtml);
     console.log(`[generate-product-pages] refreshed static fallback grid #${gridId} in ${label} (${rows.length} item(s))`);
   }
+  return changed;
 }
 
 /* ── Catalog-wide structured data on index.html / books/index.html /
@@ -1229,16 +1285,30 @@ async function main() {
      discoverability gap this phase targets is electronics/Arduino, not
      books, so keep the fix scoped to that instead of bloating the
      homepage for content that isn't at risk of being orphaned. */
-  injectStaticGrid(path.join(ROOT, 'Electronique', 'index.html'), 'electronicsGrid', electronicsOnly);
-  injectStaticGrid(path.join(ROOT, 'index.html'), 'homeElectronicsGrid', electronicsOnly);
+  const electronicsPageChanged = injectStaticGrid(path.join(ROOT, 'Electronique', 'index.html'), 'electronicsGrid', electronicsOnly);
+  const homeElectronicsChanged = injectStaticGrid(path.join(ROOT, 'index.html'), 'homeElectronicsGrid', electronicsOnly);
   /* Subscriptions — same reasoning as electronics above: small catalog,
      so the added static weight is negligible and worth the crawlability. */
-  injectStaticGrid(path.join(SUBSCRIPTIONS_DIR, 'index.html'), 'subscriptionsGrid', subscriptionsOnly);
-  injectStaticGrid(path.join(ROOT, 'index.html'), 'homeSubscriptionsGrid', subscriptionsOnly.filter(p => p.show_on_homepage !== false));
+  const subscriptionsPageChanged = injectStaticGrid(path.join(SUBSCRIPTIONS_DIR, 'index.html'), 'subscriptionsGrid', subscriptionsOnly);
+  const homeSubscriptionsChanged = injectStaticGrid(path.join(ROOT, 'index.html'), 'homeSubscriptionsGrid', subscriptionsOnly.filter(p => p.show_on_homepage !== false));
 
   refreshCatalogSchemas(electronicsOnly, books, subscriptionsOnly);
 
-  const sitemap = buildSitemap(products, books);
+  /* Only the 3 static pages whose visible content this script actually
+     injects (home, Electronique, subscriptions) ever have a legitimate
+     reason for their sitemap <lastmod> to move — and only on a run
+     where their grid content really changed. Every other static page
+     (about/contact/faq/...) has its lastmod carried forward untouched
+     by buildSitemap below. See that function for why: bumping all of
+     them to "today" on every run (the old behaviour) was the cause of
+     the recurring sitemap.xml merge conflicts. */
+  const changedStaticPages = {
+    [`${SITE_URL}/`]: homeElectronicsChanged || homeSubscriptionsChanged,
+    [`${SITE_URL}/Electronique/`]: electronicsPageChanged,
+    [`${SITE_URL}/subscriptions/`]: subscriptionsPageChanged,
+  };
+
+  const sitemap = buildSitemap(products, books, changedStaticPages);
   fs.writeFileSync(path.join(ROOT, 'sitemap.xml'), sitemap);
   console.log('[generate-product-pages] sitemap.xml regenerated.');
 
