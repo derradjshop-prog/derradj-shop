@@ -500,6 +500,14 @@
   </div>
 </div>
 
+<!-- ══ Manual install fallback — shown only if beforeinstallprompt never fires ══ -->
+<div class="install-banner" id="installFallbackBanner">
+  <span class="ib-text">📲 لتثبيت التطبيق:<br>افتح قائمة المتصفح ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</span>
+  <div class="ib-actions">
+    <button class="btn-install-dismiss" id="installFallbackDismissBtn">إغلاق</button>
+  </div>
+</div>
+
 <!-- ══ MAIN ════════════════════════════════════════════════ -->
 <main class="agent-main">
 
@@ -1479,13 +1487,18 @@
 
   function initInstallBanner() {
     const banner = document.getElementById("installBanner");
+    const fallback = document.getElementById("installFallbackBanner");
     if (!banner) return;
     try {
       if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) return;
 
+      let promptFired = false;
+
       window.addEventListener("beforeinstallprompt", e => {
+        promptFired = true;
         e.preventDefault();
         DEFERRED_INSTALL_PROMPT = e;
+        if (fallback) fallback.style.display = "none";
         banner.style.display = "flex";
       });
 
@@ -1503,10 +1516,28 @@
         banner.style.display = "none";
       });
 
+      document.getElementById("installFallbackDismissBtn")?.addEventListener("click", () => {
+        if (fallback) fallback.style.display = "none";
+      });
+
       window.addEventListener("appinstalled", () => {
+        promptFired = true;
         banner.style.display = "none";
+        if (fallback) fallback.style.display = "none";
         DEFERRED_INSTALL_PROMPT = null;
       });
+
+      /* Chrome fires beforeinstallprompt within moments of the page
+         qualifying. If it still hasn't fired after a few seconds, this
+         browser doesn't support it (or the page doesn't currently
+         qualify) — show manual "add to home screen" instructions
+         instead of leaving Rania with no way to install at all. This
+         does not depend on Notification.permission in any way. */
+      if (fallback) {
+        setTimeout(() => {
+          if (!promptFired) fallback.style.display = "flex";
+        }, 4000);
+      }
     } catch (err) { console.warn("initInstallBanner:", err); }
   }
 
@@ -1536,14 +1567,20 @@
 
       seedNotificationBaseline();
       initNotifyButton();
-      registerServiceWorker();
-      initInstallBanner();
       setInterval(pollForUpdates, 30000);
     } catch (err) {
       console.error("Boot error:", err);
       showToast("❌ خطأ في تحميل الصفحة: " + (err.message || JSON.stringify(err)), "error");
     }
   }
+
+  /* Registered immediately (not inside boot()) — beforeinstallprompt
+     can fire within moments of page load, and Chrome does not re-fire
+     or queue it for a listener attached late. Waiting on authGuard()
+     and the initial data fetches was causing the event to be missed,
+     so the install banner never appeared. */
+  registerServiceWorker();
+  initInstallBanner();
 
   boot();
 

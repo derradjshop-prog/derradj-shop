@@ -1,6 +1,7 @@
 {
   "name": "Derradj Agent",
   "short_name": "Agent",
+  "id": "/agent/dashboard.html",
   "start_url": "/agent/dashboard.html",
   "scope": "/agent/",
   "display": "standalone",
