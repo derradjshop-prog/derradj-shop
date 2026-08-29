@@ -131,6 +131,7 @@
     .install-overlay.open .install-box { transform: scale(1) translateY(0); opacity: 1; }
     .install-title { font-size: 17px; font-weight: 900; color: var(--navy); margin-bottom: 10px; }
     .install-message { font-size: 13.5px; color: var(--text-light); line-height: 1.65; margin-bottom: 20px; }
+    .install-note { display: none; font-size: 12px; color: var(--text-light); line-height: 1.6; margin: -12px 0 18px; }
     .install-actions { display: flex; flex-direction: column; gap: 10px; }
     .install-actions button {
       min-height: 46px; border-radius: 10px; border: none;
@@ -496,11 +497,13 @@
   </div>
 </header>
 
-<!-- ══ PWA install popup — shown only when a real beforeinstallprompt fires ══ -->
+<!-- ══ PWA install popup — real install prompt when supported, manual
+     instructions otherwise (feature-detected, no browser sniffing) ══ -->
 <div class="install-overlay" id="installOverlay">
   <div class="install-box" id="installBox">
-    <div class="install-title">📲 تثبيت تطبيق Derradj Agent</div>
+    <div class="install-title" id="installTitle">📲 تثبيت تطبيق Derradj Agent</div>
     <div class="install-message" id="installMessage">ثبّت التطبيق على هاتفك للوصول السريع إلى لوحة الوكلاء واستقبال التنبيهات.</div>
+    <div class="install-note" id="installNote"></div>
     <div class="install-actions">
       <button class="install-btn-primary" id="installPrimaryBtn">⬇️ تنزيل التطبيق</button>
       <button class="install-btn-secondary" id="installSecondaryBtn">ليس الآن</button>
@@ -1488,13 +1491,22 @@
   function showInstallPopup(mode) {
     const overlay = document.getElementById("installOverlay");
     if (!overlay) return;
+    const title = document.getElementById("installTitle");
     const msg = document.getElementById("installMessage");
+    const note = document.getElementById("installNote");
     const primaryBtn = document.getElementById("installPrimaryBtn");
     if (mode === "manual") {
-      if (msg) msg.textContent = "افتح قائمة المتصفح ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».";
+      if (title) title.textContent = "📲 لتثبيت تطبيق Derradj Agent";
+      if (msg) msg.textContent = "افتح قائمة المتصفح ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية» إذا ظهر الخيار.";
+      if (note) {
+        note.textContent = "إذا لم يظهر خيار التثبيت، جرّب فتح الصفحة في Chrome على Android.";
+        note.style.display = "block";
+      }
       if (primaryBtn) primaryBtn.style.display = "none";
     } else {
+      if (title) title.textContent = "📲 تثبيت تطبيق Derradj Agent";
       if (msg) msg.textContent = "ثبّت التطبيق على هاتفك للوصول السريع إلى لوحة الوكلاء واستقبال التنبيهات.";
+      if (note) { note.textContent = ""; note.style.display = "none"; }
       if (primaryBtn) primaryBtn.style.display = "";
     }
     overlay.classList.add("open");
@@ -1512,6 +1524,17 @@
 
       let dismissed = false;
 
+      /* Feature detection, not browser sniffing: Chromium-based browsers
+         (Chrome, Brave, Samsung Internet, Edge...) all expose this IDL
+         attribute on window when they implement the install-prompt API,
+         whether or not the event ends up firing for this page load.
+         Browsers that never implement the API (Firefox Android, many
+         in-app WebViews) never expose it either — so its absence is a
+         reliable, standards-based signal that beforeinstallprompt will
+         structurally never fire here, and manual instructions are the
+         only honest option. */
+      const promptCapable = "onbeforeinstallprompt" in window;
+
       window.addEventListener("beforeinstallprompt", e => {
         e.preventDefault();
         DEFERRED_INSTALL_PROMPT = e;
@@ -1519,7 +1542,7 @@
       });
 
       document.getElementById("installPrimaryBtn")?.addEventListener("click", async () => {
-        if (!DEFERRED_INSTALL_PROMPT) { showInstallPopup("manual"); return; }
+        if (!DEFERRED_INSTALL_PROMPT) return;
         try {
           DEFERRED_INSTALL_PROMPT.prompt();
           await DEFERRED_INSTALL_PROMPT.userChoice;
@@ -1545,6 +1568,12 @@
         DEFERRED_INSTALL_PROMPT = null;
         hideInstallPopup();
       });
+
+      /* Browser structurally cannot fire the real event — show manual
+         instructions now instead of waiting on something that will
+         never happen. If it somehow fires anyway, the listener above
+         still switches the popup into "prompt" mode. */
+      if (!promptCapable && !dismissed) showInstallPopup("manual");
     } catch (err) { console.warn("initInstallPopup:", err); }
   }
 
