@@ -15,6 +15,10 @@
   <title>لوحة موظفة المتابعة — Derradj Shop</title>
   <meta name="robots" content="noindex, nofollow"/>
   <link rel="icon" type="image/png" href="../Logo.png">
+  <link rel="manifest" href="/agent/manifest.json">
+  <meta name="theme-color" content="#1B2A4A">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="/agent/icons/icon-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -92,6 +96,51 @@
       transition: background .2s;
     }
     .btn-logout:hover { background: rgba(255,255,255,.18); }
+
+    .btn-notify {
+      background: rgba(201,162,39,.15);
+      border: 1px solid rgba(201,162,39,.4);
+      color: var(--gold);
+      padding: 8px 14px;
+      min-height: 44px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: var(--font);
+      transition: background .2s;
+      white-space: nowrap;
+    }
+    .btn-notify:hover { background: rgba(201,162,39,.28); }
+
+    /* ━━ PWA INSTALL BANNER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .install-banner {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      flex-wrap: wrap;
+    }
+    .install-banner .ib-text { flex: 1; min-width: 160px; }
+    .install-banner .ib-actions { display: flex; gap: 8px; }
+    .btn-install {
+      background: var(--navy); color: #fff; border: none;
+      padding: 8px 16px; min-height: 40px; border-radius: 8px;
+      font-size: 12.5px; font-weight: 800; cursor: pointer;
+      font-family: var(--font);
+    }
+    .btn-install-dismiss {
+      background: transparent; color: var(--text-light); border: 1px solid var(--border);
+      padding: 8px 12px; min-height: 40px; border-radius: 8px;
+      font-size: 12.5px; font-weight: 700; cursor: pointer;
+      font-family: var(--font);
+    }
 
     /* ━━ MAIN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .agent-main { padding: 20px 16px 60px; max-width: 760px; margin: 0 auto; }
@@ -437,9 +486,19 @@
   <div class="header-logo">Derradj <span>Shop</span></div>
   <div class="header-right">
     <span class="agent-badge" id="agentBadge">📞</span>
+    <button class="btn-notify" id="notifyPermBtn" style="display:none;">🔔 تفعيل الاشعارات</button>
     <button class="btn-logout" id="logoutBtn">خروج</button>
   </div>
 </header>
+
+<!-- ══ PWA install banner — hidden unless beforeinstallprompt fires ══ -->
+<div class="install-banner" id="installBanner">
+  <span class="ib-text">📲 تثبيت التطبيق على الهاتف</span>
+  <div class="ib-actions">
+    <button class="btn-install" id="installBtn">تثبيت</button>
+    <button class="btn-install-dismiss" id="installDismissBtn">إغلاق</button>
+  </div>
+</div>
 
 <!-- ══ MAIN ════════════════════════════════════════════════ -->
 <main class="agent-main">
@@ -1252,6 +1311,205 @@
     });
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     PWA — install banner, notification permission, service-worker
+     registration, and polling-based local notifications.
+
+     LIMITATION: this is Supabase polling + a service-worker
+     showNotification(), not server-side push. There is no Firebase,
+     VAPID, or push server involved. Notifications only fire while
+     this dashboard/PWA is open and actively polling (or for the
+     short window Android keeps a service worker alive right after
+     the page closes) — they cannot wake the app once it has been
+     fully terminated by the OS.
+  ═══════════════════════════════════════════════════════════ */
+  let SW_REGISTRATION       = null;
+  let POLL_IN_PROGRESS      = false;
+  let DEFERRED_INSTALL_PROMPT = null;
+
+  function lastOrderKey() { return `agent_last_order_id_${CURRENT_STAFF_ID}`; }
+  function lastMsgKey()   { return `agent_last_msg_id_${CURRENT_STAFF_ID}`; }
+
+  /* Stored as {id, created_at} rather than a bare id — order/message
+     ids are UUIDs (not sortable), so created_at is what makes "is this
+     genuinely newer" a reliable comparison across polls. */
+  function readLastSeen(key) {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return (parsed && parsed.created_at) ? parsed : null;
+    } catch (err) { return null; }
+  }
+  function writeLastSeen(key, item) {
+    try { localStorage.setItem(key, JSON.stringify({ id: item.id, created_at: item.created_at })); }
+    catch (err) { /* localStorage unavailable — degrade silently, no notifications */ }
+  }
+
+  /* First load ever (empty localStorage) must never notify — this just
+     seeds the baseline. A pre-existing baseline is left untouched, so
+     items that arrived while the agent was logged out still notify on
+     the next poll after logging back in. */
+  function seedNotificationBaseline() {
+    try {
+      if (!readLastSeen(lastOrderKey()) && ALL_ORDERS.length)   writeLastSeen(lastOrderKey(), ALL_ORDERS[0]);
+      if (!readLastSeen(lastMsgKey())   && ALL_MESSAGES.length) writeLastSeen(lastMsgKey(), ALL_MESSAGES[0]);
+    } catch (err) { console.warn("seedNotificationBaseline:", err); }
+  }
+
+  function findNewItems(list, lastSeen) {
+    if (!lastSeen) return [];
+    const lastTime = new Date(lastSeen.created_at).getTime();
+    return list.filter(item => {
+      const t = new Date(item.created_at).getTime();
+      return t > lastTime || (t === lastTime && item.id !== lastSeen.id);
+    });
+  }
+
+  /* Short, unobtrusive beep via Web Audio API — no audio file, no
+     dependency. Browsers may block audio before a user gesture; if so
+     this just silently no-ops and notification logic continues. */
+  function playBeep() {
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (!Ctx) return;
+      const ctx  = new Ctx();
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = 880;
+      osc.connect(gain).connect(ctx.destination);
+      const now = ctx.currentTime;
+      gain.gain.setValueAtTime(0.0001, now);
+      gain.gain.exponentialRampToValueAtTime(0.2, now + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.2);
+      osc.start(now);
+      osc.stop(now + 0.22);
+      osc.onended = () => { try { ctx.close(); } catch (err) {} };
+    } catch (err) { console.warn("playBeep:", err); }
+  }
+
+  async function sendSwNotification({ title, body, tag, url }) {
+    try {
+      if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
+      if (!("serviceWorker" in navigator)) return;
+      const reg = SW_REGISTRATION || await navigator.serviceWorker.ready;
+      if (!reg || !reg.active) return;
+      reg.active.postMessage({
+        type: "NOTIFY",
+        title, body,
+        icon: "/agent/icons/icon-192.png",
+        badge: "/agent/icons/icon-192.png",
+        tag,
+        url: url || "/agent/dashboard.html",
+      });
+      playBeep();
+    } catch (err) { console.warn("sendSwNotification:", err); }
+  }
+
+  function notifyNewOrder(o) {
+    sendSwNotification({
+      title: "طلبية جديدة",
+      body: `${o.full_name || "—"} — ${o.wilaya || "—"} — ${fmtMoney(o.total_price)}`,
+      tag: "order-" + o.id,
+    });
+  }
+  function notifyNewMessage(m) {
+    sendSwNotification({
+      title: "رسالة جديدة",
+      body: (m.message || "").slice(0, 140),
+      tag: "msg-" + m.id,
+    });
+  }
+
+  /* Automatic 30s polling — reuses the existing fetchMyOrders()/
+     fetchMessages() fetchers (same ones the manual "تحديث" buttons
+     use) so there is no second/independent data-fetching system. */
+  async function pollForUpdates() {
+    if (POLL_IN_PROGRESS) return;
+    POLL_IN_PROGRESS = true;
+    try {
+      const [orders, messages] = await Promise.all([fetchMyOrders(), fetchMessages()]);
+      const newOrders = findNewItems(orders, readLastSeen(lastOrderKey()));
+      const newMsgs   = findNewItems(messages, readLastSeen(lastMsgKey()))
+        .filter(m => !BLOCKED_PHONES.has(normPhone(m.contact)));
+
+      ALL_ORDERS   = orders;
+      ALL_MESSAGES = messages;
+      computeUnseenMessages();
+      renderOrders();
+      renderMessages();
+
+      newOrders.slice().reverse().forEach(notifyNewOrder);
+      newMsgs.slice().reverse().forEach(notifyNewMessage);
+
+      if (orders.length)   writeLastSeen(lastOrderKey(), orders[0]);
+      if (messages.length) writeLastSeen(lastMsgKey(), messages[0]);
+    } catch (err) {
+      console.warn("pollForUpdates:", err);
+    } finally {
+      POLL_IN_PROGRESS = false;
+    }
+  }
+
+  function initNotifyButton() {
+    const btn = document.getElementById("notifyPermBtn");
+    if (!btn) return;
+    try {
+      if (typeof Notification === "undefined") { btn.style.display = "none"; return; }
+      if (Notification.permission === "granted") { btn.style.display = "none"; return; }
+      btn.style.display = "";
+      btn.addEventListener("click", async () => {
+        try {
+          const result = await Notification.requestPermission();
+          if (result === "granted") btn.style.display = "none";
+          // "denied" — browsers refuse to re-prompt anyway; keep the
+          // dashboard fully usable, don't force anything further.
+        } catch (err) { console.warn("Notification.requestPermission:", err); }
+      });
+    } catch (err) { console.warn("initNotifyButton:", err); btn.style.display = "none"; }
+  }
+
+  async function registerServiceWorker() {
+    try {
+      if (!("serviceWorker" in navigator)) return;
+      SW_REGISTRATION = await navigator.serviceWorker.register("/agent/sw.js", { scope: "/agent/" });
+    } catch (err) { console.warn("Service worker registration failed:", err); }
+  }
+
+  function initInstallBanner() {
+    const banner = document.getElementById("installBanner");
+    if (!banner) return;
+    try {
+      if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) return;
+
+      window.addEventListener("beforeinstallprompt", e => {
+        e.preventDefault();
+        DEFERRED_INSTALL_PROMPT = e;
+        banner.style.display = "flex";
+      });
+
+      document.getElementById("installBtn")?.addEventListener("click", async () => {
+        if (!DEFERRED_INSTALL_PROMPT) return;
+        try {
+          DEFERRED_INSTALL_PROMPT.prompt();
+          await DEFERRED_INSTALL_PROMPT.userChoice;
+        } catch (err) { console.warn("install prompt:", err); }
+        DEFERRED_INSTALL_PROMPT = null;
+        banner.style.display = "none";
+      });
+
+      document.getElementById("installDismissBtn")?.addEventListener("click", () => {
+        banner.style.display = "none";
+      });
+
+      window.addEventListener("appinstalled", () => {
+        banner.style.display = "none";
+        DEFERRED_INSTALL_PROMPT = null;
+      });
+    } catch (err) { console.warn("initInstallBanner:", err); }
+  }
+
   /* ── Boot ──────────────────────────────────────────────── */
   async function boot() {
     try {
@@ -1275,6 +1533,12 @@
       renderMessages();
       bindEvents();
       setupRealtime();
+
+      seedNotificationBaseline();
+      initNotifyButton();
+      registerServiceWorker();
+      initInstallBanner();
+      setInterval(pollForUpdates, 30000);
     } catch (err) {
       console.error("Boot error:", err);
       showToast("❌ خطأ في تحميل الصفحة: " + (err.message || JSON.stringify(err)), "error");

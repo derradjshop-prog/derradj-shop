@@ -1,0 +1,26 @@
+{
+  "name": "Derradj Agent",
+  "short_name": "Agent",
+  "start_url": "/agent/dashboard.html",
+  "scope": "/agent/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#FBF7EF",
+  "theme_color": "#1B2A4A",
+  "dir": "rtl",
+  "lang": "ar",
+  "icons": [
+    {
+      "src": "/agent/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/agent/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
