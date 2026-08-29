@@ -979,14 +979,27 @@ function injectStaticGrid(filePath, gridId, rows) {
 }
 
 /* ── Catalog-wide structured data on index.html / books/index.html /
-   Electronique/index.html ── these 3 pages hand-author their own
-   JSON-LD (LocalBusiness.hasOfferCatalog on the homepage, ItemList on
-   the two category pages) which drifts out of sync with Supabase the
-   moment a product is added/removed/renamed. Regenerate just the
-   catalog-derived fields (itemListElement / numberOfItems) in place,
-   from the same `products`/`books` arrays the sitemap is built from,
-   leaving every other hand-written field (name, description,
-   breadcrumb, LocalBusiness address/hours/etc.) untouched. ── */
+   Electronique/index.html ── these pages hand-author their own JSON-LD
+   which drifts out of sync with Supabase the moment a product is
+   added/removed/renamed. Regenerate just the catalog-derived fields
+   (itemListElement / numberOfItems) in place, from the same
+   `products`/`books` arrays the sitemap is built from, leaving every
+   other hand-written field (name, description, breadcrumb,
+   LocalBusiness address/hours/etc.) untouched.
+
+   The homepage is the one exception: it must NOT carry a product/book
+   catalog in its structured data. A LocalBusiness.hasOfferCatalog full
+   of Offer→itemOffered{@type:Product|Book} entries makes Google treat
+   every catalog row as a Product-rich-result candidate, and since those
+   stub entries carry only name+url (no image/description/availability/
+   offers of their own), Search Console reports them as invalid Product
+   snippets — that's the "offers, review, ou aggregateRating manquant"
+   error, all attributed to the homepage URL. The homepage only needs
+   LocalBusiness/Store + WebSite; each product/book's own Product schema
+   already lives on its own page (see product/{slug}/ and books/{slug}/
+   generation below). So instead of populating hasOfferCatalog, we
+   actively strip it from the homepage's LocalBusiness node on every
+   regen, so it can never silently reappear. ── */
 function findFirstJsonLdNode(node, predicate, seen) {
   seen = seen || new Set();
   if (!node || typeof node !== 'object' || seen.has(node)) return null;
@@ -1038,31 +1051,6 @@ function updateCatalogSchema(filePath, mutateFn) {
   }
 }
 
-function offerItemsForCatalog(products, books) {
-  const items = [];
-  books.forEach(p => {
-    if (!p.slug || !p.product_name) return;
-    items.push({
-      '@type': 'Offer',
-      price: String(p.price),
-      priceCurrency: 'DZD',
-      itemOffered: { '@type': 'Book', name: p.product_name, url: `${SITE_URL}/books/${encodeURIComponent(p.slug)}/` },
-    });
-  });
-  products.forEach(p => {
-    if (!p.slug) return;
-    let name = p.product_name;
-    try { name = ProductTemplate.buildProductView(p).productName || name; } catch (_) { /* keep raw name */ }
-    items.push({
-      '@type': 'Offer',
-      price: String(p.price),
-      priceCurrency: 'DZD',
-      itemOffered: { '@type': 'Product', name, url: `${SITE_URL}/product/${encodeURIComponent(p.slug)}/` },
-    });
-  });
-  return items;
-}
-
 function listItemsForCategory(rows, kind) {
   return rows.filter(p => p.slug).map((p, i) => {
     let name = p.product_name;
@@ -1078,16 +1066,12 @@ function listItemsForCategory(rows, kind) {
 
 /* `products` here is electronics-only (subscriptions have their own
    subset — see main()) and `subscriptions` is that subscriptions-only
-   subset. The homepage's hasOfferCatalog still lists every non-book
-   product regardless of category (offerItemsForCatalog(allProducts,
-   books)), so subscriptions appear there automatically. */
+   subset. */
 function refreshCatalogSchemas(products, books, subscriptions) {
   updateCatalogSchema(path.join(ROOT, 'index.html'), data => {
-    const business = findFirstJsonLdNode(data, n => n && n.hasOfferCatalog);
+    const business = findFirstJsonLdNode(data, n => n && Array.isArray(n['@type']) && n['@type'].includes('LocalBusiness'));
     if (!business) return false;
-    const items = offerItemsForCatalog(products.concat(subscriptions), books);
-    business.hasOfferCatalog.itemListElement = items;
-    business.hasOfferCatalog.numberOfItems = items.length;
+    delete business.hasOfferCatalog;
     return true;
   });
 
