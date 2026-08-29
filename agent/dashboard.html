@@ -113,33 +113,38 @@
     }
     .btn-notify:hover { background: rgba(201,162,39,.28); }
 
-    /* ━━ PWA INSTALL BANNER ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
-    .install-banner {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      background: var(--white);
-      border-bottom: 1px solid var(--border);
-      padding: 10px 16px;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      flex-wrap: wrap;
+    /* ━━ PWA INSTALL POPUP — mirrors .confirm-overlay/.confirm-box ━━
+       Shown only when a real beforeinstallprompt event is available. ━━ */
+    .install-overlay {
+      position: fixed; inset: 0; z-index: 6000;
+      background: rgba(19, 32, 26, .45);
+      display: none; align-items: center; justify-content: center; padding: 20px;
     }
-    .install-banner .ib-text { flex: 1; min-width: 160px; }
-    .install-banner .ib-actions { display: flex; gap: 8px; }
-    .btn-install {
-      background: var(--navy); color: #fff; border: none;
-      padding: 8px 16px; min-height: 40px; border-radius: 8px;
-      font-size: 12.5px; font-weight: 800; cursor: pointer;
-      font-family: var(--font);
+    .install-overlay.open { display: flex; }
+    .install-box {
+      background: var(--white); border-radius: 16px; width: 100%; max-width: 340px;
+      padding: 24px 22px 20px; text-align: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,.3);
+      transform: scale(.9) translateY(8px); opacity: 0;
+      transition: transform .2s ease, opacity .2s ease;
     }
-    .btn-install-dismiss {
-      background: transparent; color: var(--text-light); border: 1px solid var(--border);
-      padding: 8px 12px; min-height: 40px; border-radius: 8px;
-      font-size: 12.5px; font-weight: 700; cursor: pointer;
-      font-family: var(--font);
+    .install-overlay.open .install-box { transform: scale(1) translateY(0); opacity: 1; }
+    .install-title { font-size: 17px; font-weight: 900; color: var(--navy); margin-bottom: 10px; }
+    .install-message { font-size: 13.5px; color: var(--text-light); line-height: 1.65; margin-bottom: 20px; }
+    .install-actions { display: flex; flex-direction: column; gap: 10px; }
+    .install-actions button {
+      min-height: 46px; border-radius: 10px; border: none;
+      font-family: var(--font); font-size: 14px; font-weight: 800; cursor: pointer;
+      transition: filter .15s ease, transform .05s ease;
+    }
+    .install-actions button:active { transform: scale(.97); }
+    .install-btn-primary { background: var(--emerald); color: #fff; }
+    .install-btn-primary:hover { filter: brightness(.93); }
+    .install-btn-secondary { background: #eef0ee; color: #4b564f; }
+    .install-btn-secondary:hover { background: #e2e5e1; }
+
+    @media (max-width: 380px) {
+      .install-box { padding: 20px 16px 16px; }
     }
 
     /* ━━ MAIN ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
@@ -491,20 +496,15 @@
   </div>
 </header>
 
-<!-- ══ PWA install banner — hidden unless beforeinstallprompt fires ══ -->
-<div class="install-banner" id="installBanner">
-  <span class="ib-text">📲 تثبيت التطبيق على الهاتف</span>
-  <div class="ib-actions">
-    <button class="btn-install" id="installBtn">تثبيت</button>
-    <button class="btn-install-dismiss" id="installDismissBtn">إغلاق</button>
-  </div>
-</div>
-
-<!-- ══ Manual install fallback — shown only if beforeinstallprompt never fires ══ -->
-<div class="install-banner" id="installFallbackBanner">
-  <span class="ib-text">📲 لتثبيت التطبيق:<br>افتح قائمة المتصفح ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».</span>
-  <div class="ib-actions">
-    <button class="btn-install-dismiss" id="installFallbackDismissBtn">إغلاق</button>
+<!-- ══ PWA install popup — shown only when a real beforeinstallprompt fires ══ -->
+<div class="install-overlay" id="installOverlay">
+  <div class="install-box" id="installBox">
+    <div class="install-title">📲 تثبيت تطبيق Derradj Agent</div>
+    <div class="install-message" id="installMessage">ثبّت التطبيق على هاتفك للوصول السريع إلى لوحة الوكلاء واستقبال التنبيهات.</div>
+    <div class="install-actions">
+      <button class="install-btn-primary" id="installPrimaryBtn">⬇️ تنزيل التطبيق</button>
+      <button class="install-btn-secondary" id="installSecondaryBtn">ليس الآن</button>
+    </div>
   </div>
 </div>
 
@@ -1485,60 +1485,67 @@
     } catch (err) { console.warn("Service worker registration failed:", err); }
   }
 
-  function initInstallBanner() {
-    const banner = document.getElementById("installBanner");
-    const fallback = document.getElementById("installFallbackBanner");
-    if (!banner) return;
+  function showInstallPopup(mode) {
+    const overlay = document.getElementById("installOverlay");
+    if (!overlay) return;
+    const msg = document.getElementById("installMessage");
+    const primaryBtn = document.getElementById("installPrimaryBtn");
+    if (mode === "manual") {
+      if (msg) msg.textContent = "افتح قائمة المتصفح ⋮ ثم اختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».";
+      if (primaryBtn) primaryBtn.style.display = "none";
+    } else {
+      if (msg) msg.textContent = "ثبّت التطبيق على هاتفك للوصول السريع إلى لوحة الوكلاء واستقبال التنبيهات.";
+      if (primaryBtn) primaryBtn.style.display = "";
+    }
+    overlay.classList.add("open");
+  }
+
+  function hideInstallPopup() {
+    document.getElementById("installOverlay")?.classList.remove("open");
+  }
+
+  function initInstallPopup() {
+    const overlay = document.getElementById("installOverlay");
+    if (!overlay) return;
     try {
       if (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) return;
 
-      let promptFired = false;
+      let dismissed = false;
 
       window.addEventListener("beforeinstallprompt", e => {
-        promptFired = true;
         e.preventDefault();
         DEFERRED_INSTALL_PROMPT = e;
-        if (fallback) fallback.style.display = "none";
-        banner.style.display = "flex";
+        if (!dismissed) showInstallPopup("prompt");
       });
 
-      document.getElementById("installBtn")?.addEventListener("click", async () => {
-        if (!DEFERRED_INSTALL_PROMPT) return;
+      document.getElementById("installPrimaryBtn")?.addEventListener("click", async () => {
+        if (!DEFERRED_INSTALL_PROMPT) { showInstallPopup("manual"); return; }
         try {
           DEFERRED_INSTALL_PROMPT.prompt();
           await DEFERRED_INSTALL_PROMPT.userChoice;
         } catch (err) { console.warn("install prompt:", err); }
         DEFERRED_INSTALL_PROMPT = null;
-        banner.style.display = "none";
+        hideInstallPopup();
       });
 
-      document.getElementById("installDismissBtn")?.addEventListener("click", () => {
-        banner.style.display = "none";
+      document.getElementById("installSecondaryBtn")?.addEventListener("click", () => {
+        dismissed = true;
+        hideInstallPopup();
       });
 
-      document.getElementById("installFallbackDismissBtn")?.addEventListener("click", () => {
-        if (fallback) fallback.style.display = "none";
+      overlay.addEventListener("click", e => {
+        if (e.target === overlay) {
+          dismissed = true;
+          hideInstallPopup();
+        }
       });
 
       window.addEventListener("appinstalled", () => {
-        promptFired = true;
-        banner.style.display = "none";
-        if (fallback) fallback.style.display = "none";
+        dismissed = true;
         DEFERRED_INSTALL_PROMPT = null;
+        hideInstallPopup();
       });
-
-      /* Chrome fires beforeinstallprompt within moments of the page
-         qualifying. If it still hasn't fired after a few seconds, this
-         browser doesn't support it (or the page doesn't currently
-         qualify) — show manual "add to home screen" instructions
-         instead of leaving Rania with no way to install at all. This
-         does not depend on Notification.permission in any way. */
-      if (fallback) {
-        setTimeout(() => {
-          if (!promptFired) fallback.style.display = "flex";
-        }, 4000);
-      }
-    } catch (err) { console.warn("initInstallBanner:", err); }
+    } catch (err) { console.warn("initInstallPopup:", err); }
   }
 
   /* ── Boot ──────────────────────────────────────────────── */
@@ -1578,9 +1585,9 @@
      can fire within moments of page load, and Chrome does not re-fire
      or queue it for a listener attached late. Waiting on authGuard()
      and the initial data fetches was causing the event to be missed,
-     so the install banner never appeared. */
+     so the install popup never appeared. */
   registerServiceWorker();
-  initInstallBanner();
+  initInstallPopup();
 
   boot();
 
