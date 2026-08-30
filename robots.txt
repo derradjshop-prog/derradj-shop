@@ -4,6 +4,7 @@ Allow: /
 # Exclude admin, seller, and test pages
 Disallow: /admin/
 Disallow: /seller/
+Disallow: /agent/
 Disallow: /ordre/Essai/
 Disallow: /ordre/js/
 Disallow: /ordre/success.html
