@@ -140,10 +140,23 @@
       const qty = Math.max(1, parseInt(row.querySelector(".pr-qty-input")?.value) || 1);
       const cat = (window.PRODUCTS_CATALOG || [])[idx];
       if (!isNaN(idx) && cat && !cat.hidden && cat.available !== false) {
-        items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty });
+        items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty, category: cat.category || null });
       }
     });
     return items;
+  }
+
+  /* ── عمولة موظفة متابعة الطلبيات (وكيلة الطلبات) ──────────
+     تعتمد على العدد الإجمالي لنسخ الكتب في الطلب (مجموع الكميات،
+     وليس عدد المنتجات المختلفة) — لا علاقة لها بالإلكترونيات أو
+     الاشتراكات. 0 كتاب = 0 دج. 1 كتاب = 100 دج. كل نسخة إضافية
+     تضيف 50 دج: عمولة = 100 + ((إجمالي_عدد_الكتب - 1) × 50). */
+  function calcAgentCommission(items) {
+    const totalBookQty = items
+      .filter(it => it.category === 'books')
+      .reduce((s, it) => s + (parseInt(it.qty, 10) || 0), 0);
+    if (totalBookQty <= 0) return 0;
+    return 100 + (totalBookQty - 1) * 50;
   }
 
   /* ── التحقق من توفر جميع المنتجات المحددة ──────────── */
@@ -237,10 +250,11 @@
     }
     const wilayaCode   = WILAYA_CODE[wilaya] || null;
 
-    const items       = getProductItems();
-    const subtotal    = items.reduce((s, it) => s + it.subtotal, 0);
-    const shippingFee = Math.max(0, parseInt(document.getElementById("shippingFeeInput")?.value || "0", 10) || 0);
-    const totalPrice  = subtotal + shippingFee;
+    const items          = getProductItems();
+    const subtotal       = items.reduce((s, it) => s + it.subtotal, 0);
+    const shippingFee    = Math.max(0, parseInt(document.getElementById("shippingFeeInput")?.value || "0", 10) || 0);
+    const totalPrice     = subtotal + shippingFee;
+    const agentCommission = calcAgentCommission(items);
 
     /* ── سجّل البيانات قبل الإرسال (للتشخيص) ──────────── */
     console.log("📦 Order payload:", {
@@ -336,6 +350,7 @@
         is_confirmed:   null,
         receipt_url:    receiptUrl,
         notes:          notes,
+        agent_commission: agentCommission,
       };
       console.log("📝 Inserting order:", orderPayload);
 
