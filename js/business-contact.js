@@ -38,14 +38,14 @@
 
   if (root.WHATSAPP_NUMBER) return; // Subscriptions override active — stay out entirely.
 
-  var DEFAULT_PHONE = { local: '0555491316', display: '0555 49 13 16', intl: '213555491316' };
+  var DEFAULT_PHONE = { local: '0776922882', display: '0776 92 28 82', intl: '213776922882' };
 
   var SUPABASE_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
   var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
   var CACHE_KEY = 'dz_business_phone_v1';
 
-  /* Accepts 0555491316 / 0555 49 13 16 / 0555-49-13-16 / 213555491316 /
-     +213555491316 / 00213555491316 — returns null if it isn't a
+  /* Accepts 0776922882 / 0776 92 28 82 / 0776-92-28-82 / 213776922882 /
+     +213776922882 / 00213776922882 — returns null if it isn't a
      10-digit Algerian mobile/local number once normalized. */
   function normalize(raw) {
     var digits = String(raw == null ? '' : raw).replace(/\D/g, '');

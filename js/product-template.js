@@ -24,10 +24,10 @@
      this page. WHATSAPP_NUMBER_SUBSCRIPTIONS coincidentally starts
      equal to that default but is a separate, independent value —
      changing one must never change the other. ── */
-  const WHATSAPP_NUMBER = '213555491316';
-  const WHATSAPP_DISPLAY = '0555 49 13 16';
-  const WHATSAPP_NUMBER_SUBSCRIPTIONS = '213555491316';
-  const WHATSAPP_DISPLAY_SUBSCRIPTIONS = '0555 49 13 16';
+  const WHATSAPP_NUMBER = '213776922882';
+  const WHATSAPP_DISPLAY = '0776 92 28 82';
+  const WHATSAPP_NUMBER_SUBSCRIPTIONS = '213776922882';
+  const WHATSAPP_DISPLAY_SUBSCRIPTIONS = '0776 92 28 82';
 
   /* ── Single source of truth for the shipping-duration message.
      book-template.js reuses these via the ProductTemplate API

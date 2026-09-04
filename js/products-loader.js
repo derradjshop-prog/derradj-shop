@@ -153,7 +153,7 @@
      value is mirrored here rather than imported — update both if it
      ever changes). Books/electronics keep the site's default number,
      set directly where their card button is built. ── */
-  var WHATSAPP_NUMBER_SUBSCRIPTIONS = '213555491316';
+  var WHATSAPP_NUMBER_SUBSCRIPTIONS = '213776922882';
 
   /* ── WhatsApp order-message text for a subscription card/product —
      mirrors js/product-template.js's product-details page message so

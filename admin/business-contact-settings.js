@@ -58,10 +58,10 @@
       const { data, error } = await sb.from('site_settings')
         .select('value').eq('key', SETTING_KEY).maybeSingle();
       if (error) throw error;
-      CURRENT = normalize(data?.value?.local) || { local: '0555491316', display: '0555 49 13 16', intl: '213555491316' };
+      CURRENT = normalize(data?.value?.local) || { local: '0776922882', display: '0776 92 28 82', intl: '213776922882' };
     } catch (err) {
       console.warn('[BC] failed to load business_phone:', err.message || err);
-      CURRENT = { local: '0555491316', display: '0555 49 13 16', intl: '213555491316' };
+      CURRENT = { local: '0776922882', display: '0776 92 28 82', intl: '213776922882' };
       showToast('❌ فشل تحميل الرقم الحالي: ' + (err.message || ''), 'error');
     }
   }
@@ -85,7 +85,7 @@
 
         <label style="font-size:13px;font-weight:800;color:#1e293b;display:block;margin-bottom:6px;">رقم جديد</label>
         <input type="tel" id="bcPhoneInput" class="search-input" style="direction:ltr;text-align:right;font-size:16px;"
-               placeholder="0555491316" value="${esc(CURRENT.local)}">
+               placeholder="0776922882" value="${esc(CURRENT.local)}">
         <div id="bcError" style="color:#dc2626;font-size:12.5px;font-weight:700;margin-top:6px;display:none;"></div>
 
         <button type="button" id="bcSaveBtn" style="margin-top:16px;padding:11px 24px;background:#059669;color:#fff;border:none;border-radius:10px;font-weight:800;font-size:14px;cursor:pointer;font-family:'Cairo',sans-serif;">
@@ -93,7 +93,7 @@
         </button>
 
         <p style="color:#94a3b8;font-size:12px;margin-top:18px;">
-          تنسيقات مقبولة: 0555491316 — 0555 49 13 16 — 0555-49-13-16 — 213555491316
+          تنسيقات مقبولة: 0776922882 — 0776 92 28 82 — 0776-92-28-82 — 213776922882
         </p>
       </div>
     `;
@@ -112,7 +112,7 @@
     const normalized = normalize(input.value);
 
     if (!normalized) {
-      errBox.textContent = '⚠ رقم غير صالح. أدخل رقم جزائري من 10 أرقام يبدأ بـ 0 (مثال: 0555491316).';
+      errBox.textContent = '⚠ رقم غير صالح. أدخل رقم جزائري من 10 أرقام يبدأ بـ 0 (مثال: 0776922882).';
       errBox.style.display = '';
       return;
     }

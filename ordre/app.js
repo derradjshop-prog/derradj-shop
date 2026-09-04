@@ -166,7 +166,7 @@
      الاشتراكات الرقمية المستقل. يبقى الرقم الافتراضي كنسخة احتياطية إذا لم
      يُحمَّل business-contact.js بعد. */
   function bizPhoneDisplay() {
-    return (window.BUSINESS_PHONE && window.BUSINESS_PHONE.display) || "0555 49 13 16";
+    return (window.BUSINESS_PHONE && window.BUSINESS_PHONE.display) || "0776 92 28 82";
   }
 
   function friendlyError(err) {

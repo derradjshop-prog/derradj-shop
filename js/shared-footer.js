@@ -22,8 +22,8 @@
      can update them at runtime if the admin changes the number, without
      a page rebuild. ── */
   var OVERRIDDEN = !!window.WHATSAPP_NUMBER;
-  var WA_NUMBER  = window.WHATSAPP_NUMBER  || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.intl)    || '213555491316';
-  var WA_DISPLAY = window.WHATSAPP_DISPLAY || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.display) || '0555 49 13 16';
+  var WA_NUMBER  = window.WHATSAPP_NUMBER  || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.intl)    || '213776922882';
+  var WA_DISPLAY = window.WHATSAPP_DISPLAY || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.display) || '0776 92 28 82';
 
   var FOOTER_HTML = `
     <div class="footer-top">

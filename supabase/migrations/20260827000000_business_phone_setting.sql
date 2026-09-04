@@ -12,7 +12,7 @@
 --      authenticated staff member exactly as before.
 --
 -- Explicitly OUT of scope: the Electronic Subscriptions WhatsApp
--- number (213555491316, WHATSAPP_NUMBER_SUBSCRIPTIONS in
+-- number (213776922882, WHATSAPP_NUMBER_SUBSCRIPTIONS in
 -- js/product-template.js / js/products-loader.js). That number stays
 -- a hardcoded literal in application code and is never read from this
 -- row — the two happen to start out equal but are independent
@@ -22,9 +22,9 @@
 -- staff_accounts.
 -- ================================================================
 
--- 1. Default value — 0555491316 local / 213555491316 international.
+-- 1. Default value — 0776922882 local / 213776922882 international.
 INSERT INTO public.site_settings (key, value)
-VALUES ('business_phone', '{"local":"0555491316","display":"0555 49 13 16","intl":"213555491316"}'::jsonb)
+VALUES ('business_phone', '{"local":"0776922882","display":"0776 92 28 82","intl":"213776922882"}'::jsonb)
 ON CONFLICT (key) DO NOTHING;
 
 -- 2. Public read (storefront needs this anonymously) — already granted

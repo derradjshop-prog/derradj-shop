@@ -9,7 +9,7 @@
      window.BUSINESS_PHONE (admin-editable; site_settings.business_phone).
      The literal below is only the fallback before that resolves. ── */
   var OVERRIDDEN = !!window.WHATSAPP_NUMBER;
-  var WHATSAPP_NUMBER = window.WHATSAPP_NUMBER || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.intl) || '213555491316';
+  var WHATSAPP_NUMBER = window.WHATSAPP_NUMBER || (window.BUSINESS_PHONE && window.BUSINESS_PHONE.intl) || '213776922882';
   var BRAND = 'Derradj Shop';
   var floatLink = null;
 

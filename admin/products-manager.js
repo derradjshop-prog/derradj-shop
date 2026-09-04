@@ -263,6 +263,62 @@
     }
   }
 
+  /* Ascii-only filename base derived from the product's slug (already
+     lowercase/dash-only by convention — see the pmSlug hint), falling
+     back to the English/Arabic name fields for a not-yet-slugged draft. */
+  function slugFilenameBase() {
+    const raw = (getValue('pmSlug') || getValue('pmNameEn') || getValue('pmName') || 'product').trim();
+    const slug = raw
+      .toLowerCase()
+      .normalize('NFKD').replace(/[̀-ͯ]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return slug || 'product';
+  }
+
+  const IMAGE_EXT_BY_MIME = {
+    'image/webp': 'webp', 'image/png': 'png', 'image/jpeg': 'jpg',
+    'image/jpg': 'jpg', 'image/gif': 'gif', 'image/svg+xml': 'svg', 'image/avif': 'avif',
+  };
+
+  function extFromUrl(url) {
+    try {
+      const clean = url.split('?')[0].split('#')[0];
+      const m = clean.match(/\.([a-zA-Z0-9]{2,5})$/);
+      if (m) return m[1].toLowerCase();
+    } catch { /* fall through to mime-based extension */ }
+    return null;
+  }
+
+  /* Downloads the image at `url` (Supabase Storage URL, local repo path,
+     or an in-memory blob: preview URL for a not-yet-saved staged image)
+     as an actual image file — never a redirect/HTML page — by fetching
+     it into a blob and triggering the save via a temporary <a download>. */
+  async function downloadImage(url, baseFilename, btn) {
+    if (!url) { showToast('❌ لا توجد صورة لتنزيلها', 'error'); return; }
+    const original = btn ? btn.innerHTML : null;
+    if (btn) { btn.disabled = true; btn.innerHTML = '⏳'; }
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const blob = await resp.blob();
+      const ext = extFromUrl(url) || IMAGE_EXT_BY_MIME[blob.type] || 'jpg';
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${baseFilename}.${ext}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(blobUrl), 4000);
+    } catch (err) {
+      console.error('Download error:', err);
+      showToast('❌ فشل تنزيل الصورة: ' + (err.message || ''), 'error');
+    } finally {
+      if (btn) { btn.disabled = false; btn.innerHTML = original; }
+    }
+  }
+
   function showToast(msg, type = 'success', opts = {}) {
     const old = document.getElementById('pm-toast');
     if (old) old.remove();
@@ -741,6 +797,15 @@
       display:flex; align-items:center; justify-content:center;
       z-index:1;
     }
+    .pm-gal-dl {
+      display:block; width:72px; margin-top:4px;
+      background:#FBF7EF; color:#1B2A4A;
+      border:1.5px solid #1B2A4A; border-radius:6px;
+      font-size:9px; font-weight:800; line-height:1.3;
+      padding:3px 2px; cursor:pointer; white-space:normal;
+      font-family:inherit;
+    }
+    .pm-gal-dl:hover:not(:disabled) { background:#1B2A4A; color:#FBF7EF; }
 
     /* ── Save button ─────────────────────────────────── */
     .pm-save {
@@ -1220,6 +1285,7 @@
           <div class="pm-url-row">
             <input type="text" id="pmMainUrl" placeholder="https://... أو مسار محلي مثل Electronique/.../main.webp (اختياري إذا رفعت الصورة)">
             <button type="button" class="btn-copy-msg" data-pma="copy-url" data-copy-target="pmMainUrl">📋 نسخ</button>
+            <button type="button" class="btn-copy-msg" id="pmMainDownloadBtn">⬇️ تنزيل الصورة</button>
           </div>
         </div>
 
@@ -1596,6 +1662,15 @@
       const btn = e.target.closest('[data-pma="copy-url"]');
       if (!btn) return;
       copyFieldValue(btn.dataset.copyTarget, btn);
+    });
+
+    /* Download the currently displayed main image (staged preview or
+       already-saved URL) as a real image file */
+    document.getElementById('pmMainDownloadBtn')?.addEventListener('click', e => {
+      const btn = e.currentTarget;
+      const img = document.querySelector('#pmMainPrev img');
+      const src = img?.src || getValue('pmMainUrl');
+      downloadImage(src, `${slugFilenameBase()}-main`, btn);
     });
 
     /* Gallery area click */
@@ -2842,10 +2917,18 @@
       <img src="${esc(previewUrl)}" class="pm-gal-img" alt="">
       <div class="pm-gal-set-main">⭐ تعيين كرئيسية</div>
       <button type="button" class="pm-gal-rm" title="إزالة">×</button>
+      <button type="button" class="pm-gal-dl">⬇️ تنزيل الصورة</button>
     `;
     wrap.querySelector('.pm-gal-rm').addEventListener('click', e => {
       e.stopPropagation();
       removeGalleryItem(id);
+    });
+    wrap.querySelector('.pm-gal-dl').addEventListener('click', e => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      const idx = PM_GALLERY_ITEMS.findIndex(it => it.id === id);
+      const src = wrap.querySelector('.pm-gal-img')?.src;
+      downloadImage(src, `${slugFilenameBase()}-${idx >= 0 ? idx + 2 : 2}`, btn);
     });
     wrap.addEventListener('click', () => useAsMainImage(id));
     container.appendChild(wrap);
