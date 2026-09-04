@@ -379,6 +379,64 @@
       text-decoration: none; transition: background .15s, color .15s;
     }
 
+    /* ━━ ADD PRODUCT TAB ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+    .prod-form {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 18px; max-width: 460px;
+      margin-bottom: 22px; box-shadow: var(--shadow-sm);
+    }
+    .prod-fld { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .prod-fld label { font-size: 13px; font-weight: 700; color: var(--text-light); }
+    .prod-fld input[type="text"], .prod-fld input[type="number"], .prod-fld select {
+      padding: 11px 14px; min-height: 44px; border: 1.5px solid var(--border);
+      border-radius: var(--radius); font-size: 14px; font-family: var(--font);
+      color: var(--text); background: var(--white);
+    }
+    .prod-fld select { cursor: pointer; }
+    .prod-fld input:focus, .prod-fld select:focus { outline: none; border-color: var(--navy); box-shadow: 0 0 0 3px rgba(27,42,74,.12); }
+
+    .prod-upload-box {
+      border: 1.5px dashed var(--border); border-radius: var(--radius);
+      padding: 18px; text-align: center; cursor: pointer; transition: border-color .2s;
+    }
+    .prod-upload-box:hover { border-color: var(--gold); }
+    .prod-upload-box.loaded { border-style: solid; border-color: var(--emerald); }
+    .prod-upload-box img { max-width: 100%; max-height: 160px; border-radius: 8px; display: block; margin: 0 auto 8px; }
+
+    .btn-prod-submit {
+      width: 100%; padding: 13px; min-height: 46px; background: var(--navy); color: #fff;
+      border: none; border-radius: var(--radius); font-size: 14px; font-weight: 800;
+      cursor: pointer; font-family: var(--font); transition: background .2s;
+    }
+    .btn-prod-submit:hover:not(:disabled) { background: #12203a; }
+    .btn-prod-submit:disabled { background: var(--text-muted); cursor: default; }
+
+    .prod-section-title { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 12px; }
+
+    .prod-list { display: flex; flex-direction: column; gap: 10px; max-width: 460px; }
+    .prod-item {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 10px 14px; box-shadow: var(--shadow-sm);
+    }
+    .prod-item img { width: 44px; height: 44px; object-fit: cover; border-radius: 6px; border: 1px solid var(--border); }
+    .prod-item-noimg {
+      width: 44px; height: 44px; flex-shrink: 0; border-radius: 6px; background: var(--primary-bg);
+      display: flex; align-items: center; justify-content: center; font-size: 18px;
+    }
+    .prod-item-name { font-size: 13px; font-weight: 700; color: var(--text); }
+
+    .prod-badge {
+      display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 99px;
+      font-size: 11px; font-weight: 800; white-space: nowrap;
+    }
+    .prod-badge.pending   { background: #fef3c7; color: #92400e; }
+    .prod-badge.published { background: var(--green-light); color: var(--emerald); }
+
+    @media (max-width: 480px) {
+      .prod-form, .prod-list { max-width: 100%; }
+    }
+
     /* ━━ EMPTY STATE ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
     .empty-state {
       display: flex; flex-direction: column; align-items: center; gap: 10px;
@@ -614,6 +672,9 @@
       <span class="tab-badge" id="tab-badge-messages">—</span>
       <span class="tab-unread-dot" id="tab-unread-dot-messages"></span>
     </button>
+    <button class="tab-btn" data-tab="add-product">
+      ➕ إضافة منتج
+    </button>
   </div>
 
   <!-- ══ Tab: Orders ══════════════════════════════════════ -->
@@ -637,6 +698,49 @@
       <button class="btn-refresh" id="msgRefreshBtn">↻ تحديث</button>
     </div>
     <div class="card-list" id="msgList"></div>
+  </div>
+
+  <!-- ══ Tab: Add product (pending admin review) ═══════════ -->
+  <div class="tab-content" id="tab-add-product">
+    <form class="prod-form" id="prodForm" autocomplete="off">
+      <div class="prod-fld">
+        <label for="prodCategory">الفئة *</label>
+        <select id="prodCategory" required>
+          <option value="" selected disabled>اختر الفئة...</option>
+          <option value="__new__">+ فئة جديدة</option>
+        </select>
+        <input type="text" id="prodNewCategoryName" placeholder="اسم الفئة الجديدة" style="display:none; margin-top:8px;">
+      </div>
+
+      <div class="prod-fld">
+        <label for="prodName">اسم المنتج *</label>
+        <input type="text" id="prodName" placeholder="مثال: Arduino Uno R3" required>
+      </div>
+
+      <div class="prod-fld">
+        <label>صورة المنتج *</label>
+        <div class="prod-upload-box" id="prodUploadBox">
+          <div id="prodUploadPrev">
+            <div>📷 انقر لرفع صورة المنتج</div>
+          </div>
+          <input type="file" id="prodImageInput" accept="image/*" style="display:none;">
+        </div>
+        <input type="hidden" id="prodImageUrl">
+      </div>
+
+      <div class="prod-fld">
+        <label for="prodPrice">السعر (دج) *</label>
+        <input type="number" id="prodPrice" min="1" step="1" placeholder="مثال: 2500">
+      </div>
+
+      <button type="submit" class="btn-prod-submit" id="prodSubmitBtn">📤 إرسال للمراجعة</button>
+      <p class="status-msg" id="prodStatusMsg" style="text-align:center;font-size:13px;font-weight:700;margin-top:12px;min-height:18px;"></p>
+    </form>
+
+    <div class="prod-section-title">🛒 منتجاتي المُرسلة</div>
+    <div class="prod-list" id="prodListWrap">
+      <div class="empty-state"><div class="es-text">⏳ جاري التحميل...</div></div>
+    </div>
   </div>
 
 
@@ -704,6 +808,9 @@
   let ACTIVE_ORDER_ID  = null;
   let CURRENT_STAFF_ID = '';
   let UNSEEN_MESSAGES  = 0;
+  let CATEGORIES       = [];
+  let MY_PRODUCTS      = [];
+  let ADD_PRODUCT_LOADED = false;
 
   const PM_LABELS = {
     carte_doree:      "💳 البطاقة الذهبية",
@@ -1333,6 +1440,208 @@
   }
 
   /* ═══════════════════════════════════════════════════════════
+     ADD PRODUCT TAB — quick "submit for admin review" flow.
+     Mirrors seller/dashboard.html's qadd* pattern (image upload path
+     convention, admin_products_catalog insert shape). A parallel DB
+     migration enforces server-side (via a trigger) that only a fixed
+     set of fields survive an agent-role insert and forces
+     status/is_active/submitted_by regardless of payload — the client
+     validation below is only for a good UX, not the security boundary.
+  ═══════════════════════════════════════════════════════════ */
+  async function fetchCategories() {
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order");
+    if (error) { console.error("fetchCategories:", error); return []; }
+    return data || [];
+  }
+
+  async function fetchMyProducts() {
+    const { data, error } = await supabase
+      .from("admin_products_catalog")
+      .select("id,product_name,main_image,status")
+      .eq("submitted_by", CURRENT_STAFF_ID)
+      .order("submitted_at", { ascending: false })
+      .limit(10);
+    if (error) { console.error("fetchMyProducts:", error); return []; }
+    return data || [];
+  }
+
+  function renderCategoryOptions() {
+    const sel = document.getElementById("prodCategory");
+    if (!sel) return;
+    const prevValue = sel.value;
+    const opts = CATEGORIES.map(c =>
+      `<option value="${esc(c.slug)}">${esc((c.icon ? c.icon + " " : "") + c.name)}</option>`
+    ).join("");
+    sel.innerHTML =
+      `<option value="" selected disabled>اختر الفئة...</option>` +
+      opts +
+      `<option value="__new__">+ فئة جديدة</option>`;
+    if (prevValue && [...sel.options].some(o => o.value === prevValue)) sel.value = prevValue;
+  }
+
+  function productStatusBadge(status) {
+    return status === "published"
+      ? `<span class="prod-badge published">✅ منشور</span>`
+      : `<span class="prod-badge pending">⏳ قيد المراجعة</span>`;
+  }
+
+  function renderMyProducts() {
+    const wrap = document.getElementById("prodListWrap");
+    if (!wrap) return;
+    if (!MY_PRODUCTS.length) {
+      wrap.innerHTML = emptyStateHTML("🛒", "لم ترسل أي منتج بعد.");
+      return;
+    }
+    wrap.innerHTML = MY_PRODUCTS.map(p => `
+      <div class="prod-item">
+        ${p.main_image ? `<img src="${esc(p.main_image)}" alt="">` : `<div class="prod-item-noimg">📦</div>`}
+        <div style="flex:1;">
+          <div class="prod-item-name">${esc(p.product_name || "—")}</div>
+        </div>
+        ${productStatusBadge(p.status)}
+      </div>`).join("");
+  }
+
+  async function loadAddProductTab() {
+    const [cats, products] = await Promise.all([fetchCategories(), fetchMyProducts()]);
+    CATEGORIES = cats;
+    MY_PRODUCTS = products;
+    renderCategoryOptions();
+    renderMyProducts();
+  }
+
+  /* Lowercase + trim + collapse runs of non-alphanumeric (ASCII-only,
+     so Arabic names fall through to the timestamp fallback rather than
+     producing an empty/garbled slug) into "-", then strip leading/
+     trailing "-". */
+  function slugifyCategoryName(name) {
+    const base = String(name || "")
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "");
+    return base || `cat-${Date.now()}`;
+  }
+
+  /* Same bucket/path convention as seller/dashboard.html's
+     uploadQaddImage() / admin/products-manager.js uploadMainImage(). */
+  async function uploadProdImage(file) {
+    const box  = document.getElementById("prodUploadBox");
+    const prev = document.getElementById("prodUploadPrev");
+    prev.innerHTML = `<div>⏳ جاري الرفع...</div>`;
+    try {
+      const ext  = file.name.split(".").pop();
+      const path = `products/${Date.now()}-${Math.random().toString(36).slice(2, 9)}.${ext}`;
+
+      const { error: upErr } = await supabase.storage.from("admin-product-images").upload(path, file, { cacheControl: "3600", upsert: false });
+      if (upErr) throw upErr;
+
+      const { data: { publicUrl } } = supabase.storage.from("admin-product-images").getPublicUrl(path);
+      document.getElementById("prodImageUrl").value = publicUrl;
+      prev.innerHTML = `<img src="${esc(publicUrl)}" alt=""><div>✅ تم رفع الصورة</div>`;
+      box.classList.add("loaded");
+    } catch (err) {
+      prev.innerHTML = `<div>📷 انقر لرفع صورة المنتج</div>`;
+      showToast("❌ فشل رفع الصورة: " + (err.message || ""), "error");
+    }
+  }
+
+  /* The client sends real values for product_name/main_image/category/
+     subcategory/price, but per the migration note above, status/
+     is_active/submitted_by/submitted_at are re-forced server-side
+     regardless of what's sent here — nothing to smuggle in even from a
+     modified client. */
+  async function submitProduct(e) {
+    e.preventDefault();
+
+    const btn         = document.getElementById("prodSubmitBtn");
+    const statusMsg    = document.getElementById("prodStatusMsg");
+    const catSel       = document.getElementById("prodCategory");
+    const newCatInput  = document.getElementById("prodNewCategoryName");
+    const name         = document.getElementById("prodName").value.trim();
+    const imageUrl     = document.getElementById("prodImageUrl").value;
+    const priceRaw     = document.getElementById("prodPrice").value;
+    const price        = parseInt(priceRaw, 10);
+
+    statusMsg.textContent = "";
+
+    if (!name) {
+      statusMsg.textContent = "❌ اسم المنتج مطلوب";
+      statusMsg.style.color = "#b91c1c";
+      return;
+    }
+    if (!catSel.value || (catSel.value === "__new__" && !newCatInput.value.trim())) {
+      statusMsg.textContent = "❌ الفئة مطلوبة";
+      statusMsg.style.color = "#b91c1c";
+      return;
+    }
+    if (!imageUrl) {
+      statusMsg.textContent = "❌ الصورة مطلوبة";
+      statusMsg.style.color = "#b91c1c";
+      return;
+    }
+    if (!priceRaw || !Number.isFinite(price) || price <= 0 || String(price) !== priceRaw.trim()) {
+      statusMsg.textContent = "❌ السعر مطلوب ويجب أن يكون رقماً موجباً";
+      statusMsg.style.color = "#b91c1c";
+      return;
+    }
+
+    btn.disabled = true; btn.textContent = "⏳ جاري الإرسال...";
+    try {
+      let subcategory;
+      if (catSel.value === "__new__") {
+        const newName = newCatInput.value.trim();
+        const slug = slugifyCategoryName(newName);
+        const { data: newCat, error: catErr } = await supabase
+          .from("categories")
+          .insert({ name: newName, slug, is_active: true })
+          .select()
+          .single();
+        if (catErr) throw catErr;
+        subcategory = newCat.slug;
+        CATEGORIES.push(newCat);
+      } else {
+        subcategory = catSel.value;
+      }
+
+      const { error } = await supabase.from("admin_products_catalog").insert({
+        product_name: name,
+        main_image:   imageUrl,
+        category:     "electronics",
+        subcategory:  subcategory,
+        price:        price,
+        status:       "pending_review",
+        is_active:    false,
+        submitted_by: CURRENT_STAFF_ID,
+        submitted_at: new Date().toISOString(),
+      });
+      if (error) throw error;
+
+      statusMsg.textContent = "تم إرسال المنتج للمراجعة، سيظهر في المتجر بعد موافقة الإدارة.";
+      statusMsg.style.color = "#0F5132";
+      document.getElementById("prodForm").reset();
+      document.getElementById("prodImageUrl").value = "";
+      document.getElementById("prodUploadBox").classList.remove("loaded");
+      document.getElementById("prodUploadPrev").innerHTML = `<div>📷 انقر لرفع صورة المنتج</div>`;
+      newCatInput.style.display = "none";
+      newCatInput.value = "";
+      renderCategoryOptions();
+
+      MY_PRODUCTS = await fetchMyProducts();
+      renderMyProducts();
+    } catch (err) {
+      statusMsg.textContent = "❌ فشل الإرسال: " + (err.message || "");
+      statusMsg.style.color = "#b91c1c";
+    } finally {
+      btn.disabled = false; btn.textContent = "📤 إرسال للمراجعة";
+    }
+  }
+
+  /* ═══════════════════════════════════════════════════════════
      LIVE NOTIFICATIONS
   ═══════════════════════════════════════════════════════════ */
   /* type: 'success' | 'error' | omitted (neutral/info — live order &
@@ -1397,8 +1706,23 @@
         btn.classList.add("active");
         document.getElementById("tab-" + tab).classList.add("active");
         if (tab === "messages") markMessagesSeen();
+        if (tab === "add-product" && !ADD_PRODUCT_LOADED) { ADD_PRODUCT_LOADED = true; loadAddProductTab(); }
       });
     });
+
+    /* ── Add product tab ──────────────────────────────────────── */
+    document.getElementById("prodCategory").addEventListener("change", () => {
+      const isNew = document.getElementById("prodCategory").value === "__new__";
+      document.getElementById("prodNewCategoryName").style.display = isNew ? "block" : "none";
+    });
+    document.getElementById("prodUploadBox").addEventListener("click", () => {
+      document.getElementById("prodImageInput").click();
+    });
+    document.getElementById("prodImageInput").addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (file) uploadProdImage(file);
+    });
+    document.getElementById("prodForm").addEventListener("submit", submitProduct);
 
     document.getElementById("modalClose").addEventListener("click", closeModal);
     document.getElementById("modal").addEventListener("click", e => { if (e.target.id === "modal") closeModal(); });
