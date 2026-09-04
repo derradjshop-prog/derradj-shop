@@ -28,6 +28,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let ALL_SELLERS  = [];
   let ALL_AGENTS   = [];
   let ALL_AGENT_EARNINGS = [];
+  let ALL_DIGITAL_SALES_ADMIN = [];
   let EDIT_REVIEW_ID    = null;
   let ORD_ASSIGN_FILTER = '';      /* '' | 'unassigned' | 'completed' | <sellerId> */
   let CURRENT_ROLE = '';
@@ -109,6 +110,25 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const s = status || "pending";
     return `<span class="badge badge-delivery-${esc(s)}">${esc(DELIVERY_LABELS[s] || s)}</span>`;
   }
+
+  /* ── Digital sales commission (agent_digital_sales) — WhatsApp-only
+     items (category='subscriptions'), no orders/order_items row exists
+     for these. Labels mirror agent/dashboard.html's own copies. ── */
+  const DG_ITEM_TYPE_LABELS = {
+    digital_product:      "منتج رقمي",
+    digital_subscription: "اشتراك رقمي",
+  };
+  const DG_ORDER_STATUS_LABELS = {
+    pending:   "⏳ قيد الانتظار",
+    completed: "✅ مكتملة",
+    cancelled: "❌ ملغاة",
+    refunded:  "↩️ مسترجعة",
+  };
+  const DG_PAYMENT_STATUS_LABELS = {
+    unpaid: "💳 غير مدفوعة",
+    paid:   "✅ مدفوعة",
+    failed: "❌ فشل الدفع",
+  };
 
   /* ─────────────────────────────────────────────────────────
      حالة الطلب — is_confirmed (boolean)
@@ -238,6 +258,32 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       .limit(2000);
     if (error) throw error;
     return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     FETCH — كل مبيعات المنتجات/الاشتراكات الرقمية (agent_digital_sales)
+     الأدمن يملك SELECT كاملاً عبر RLS على هذا الجدول (كل الموظفات، لا
+     فقط الحساب الحالي). لا نربط باسم الموظفة عبر FK-hint هنا لتجنّب
+     افتراض اسم قيد صريح لم يُحدَّد في الهجرة — نستخرج الاسم بدلاً من
+     ذلك من ALL_AGENTS (المُحمَّلة أصلاً) عبر agent_id في الواجهة.
+  ───────────────────────────────────────────────────────── */
+  async function fetchAllDigitalSales() {
+    const { data, error } = await supabase
+      .from("agent_digital_sales")
+      .select(`
+        id, agent_id, item_type, product_name, customer_name, customer_phone,
+        quantity, unit_commission, total_commission, order_status, payment_status,
+        commission_status, notes, created_at, approved_by, approved_at, commission_paid_at
+      `)
+      .order("created_at", { ascending: false })
+      .limit(1000);
+    if (error) throw error;
+    return data || [];
+  }
+
+  function dgAgentName(agentId) {
+    const a = ALL_AGENTS.find(x => x.id === agentId);
+    return a ? (a.full_name || a.email) : "—";
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -387,7 +433,112 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
             </span>
           </div>`).join("")
         : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا يوجد موظفو متابعة بعد</p>`}
+      </div>
+
+      ${renderDigitalSalesApprovalSection()}`;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     DIGITAL SALES COMMISSION — approval queue (order_status='pending')
+     + commission payout queue (completed+paid, commission_status='pending').
+     Rendered as part of the "الموظفون" tab rather than a new top-level
+     nav tab — this is an extension of the existing agent-management view,
+     not a separate workflow area.
+  ───────────────────────────────────────────────────────── */
+  function buildDgApprovalRow(r) {
+    const badge = DG_ITEM_TYPE_LABELS[r.item_type] || r.item_type;
+    return `
+      <div class="detail-row" data-dg-id="${esc(r.id)}">
+        <span class="dr-key">${esc(dgAgentName(r.agent_id))}</span>
+        <span class="dr-val">
+          <strong>${esc(r.product_name || "—")}</strong>
+          <span class="pm-tag" style="margin-inline-start:6px;">${esc(badge)}</span>
+          <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">
+            👤 ${esc(r.customer_name || "—")} · الكمية ${esc(r.quantity)} · ${esc(fmtDate(r.created_at))}
+          </span>
+          <span style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <button class="btn-confirm" data-action="dg-approve" data-id="${esc(r.id)}">✅ موافقة</button>
+            <button class="btn-delete"  data-action="dg-reject"  data-id="${esc(r.id)}">❌ رفض</button>
+          </span>
+        </span>
       </div>`;
+  }
+
+  function buildDgPayoutRow(r) {
+    return `
+      <div class="detail-row" data-dg-id="${esc(r.id)}">
+        <span class="dr-key">${esc(dgAgentName(r.agent_id))}</span>
+        <span class="dr-val">
+          <strong>${esc(r.product_name || "—")}</strong>
+          <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">
+            👤 ${esc(r.customer_name || "—")} · 200 دج × ${esc(r.quantity)} = ${esc(fmtMoney(r.total_commission))}
+          </span>
+          <span style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+            <button class="btn-confirm" data-action="dg-mark-paid" data-id="${esc(r.id)}">💰 تحديد العمولة كمدفوعة</button>
+          </span>
+        </span>
+      </div>`;
+  }
+
+  function renderDigitalSalesApprovalSection() {
+    const pendingApproval = ALL_DIGITAL_SALES_ADMIN.filter(r => r.order_status === "pending");
+    const awaitingPayout  = ALL_DIGITAL_SALES_ADMIN.filter(r =>
+      r.order_status === "completed" && r.payment_status === "paid" && r.commission_status === "pending");
+
+    return `
+      <p class="modal-sec-lbl" style="margin:24px 0 14px;">💻 مبيعات رقمية بانتظار الموافقة</p>
+      <div class="detail-rows">
+        ${pendingApproval.length ? pendingApproval.map(buildDgApprovalRow).join("")
+          : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا توجد مبيعات رقمية بانتظار الموافقة</p>`}
+      </div>
+
+      <p class="modal-sec-lbl" style="margin:24px 0 14px;">💰 عمولات رقمية بانتظار الدفع</p>
+      <div class="detail-rows">
+        ${awaitingPayout.length ? awaitingPayout.map(buildDgPayoutRow).join("")
+          : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا توجد عمولات رقمية بانتظار الدفع</p>`}
+      </div>`;
+  }
+
+  async function handleApproveDigitalSale(id, btn) {
+    if (!confirm("هل تريد الموافقة على عملية البيع هذه؟ سيتم تعليمها مكتملة ومدفوعة.")) return;
+    btn.disabled = true;
+    try {
+      await approveDigitalSale(id);
+      ALL_DIGITAL_SALES_ADMIN = await fetchAllDigitalSales();
+      renderAgentsTab();
+    } catch (err) {
+      console.error("approveDigitalSale error:", err);
+      showToast("❌ فشل الموافقة على العملية: " + (err.message || ""));
+      btn.disabled = false;
+    }
+  }
+
+  async function handleRejectDigitalSale(id, btn) {
+    if (!confirm("هل تريد رفض عملية البيع هذه؟ سيتم تعليمها ملغاة.")) return;
+    btn.disabled = true;
+    try {
+      await rejectDigitalSale(id);
+      ALL_DIGITAL_SALES_ADMIN = await fetchAllDigitalSales();
+      renderAgentsTab();
+    } catch (err) {
+      console.error("rejectDigitalSale error:", err);
+      showToast("❌ فشل رفض العملية: " + (err.message || ""));
+      btn.disabled = false;
+    }
+  }
+
+  async function handleMarkDigitalCommissionPaid(id, btn) {
+    if (!confirm("هل تريد تحديد عمولة هذه العملية كمدفوعة؟")) return;
+    btn.disabled = true;
+    try {
+      await markDigitalCommissionPaid(id);
+      ALL_DIGITAL_SALES_ADMIN = await fetchAllDigitalSales();
+      renderAgentsTab();
+    } catch (err) {
+      console.error("markDigitalCommissionPaid error:", err);
+      showToast("❌ فشل تحديد العمولة كمدفوعة: " + (err.message || ""));
+      btn.disabled = false;
+    }
   }
 
   function renderAgentEarningsList(list) {
@@ -513,6 +664,44 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
   async function markOrderDelivered(orderId) {
     const { error } = await supabase.rpc("mark_order_delivered", { p_order_id: orderId });
+    if (error) throw error;
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     DIGITAL SALES COMMISSION (admin approval) — plain .update() calls,
+     the admin already has full RLS UPDATE access on agent_digital_sales;
+     no SECURITY DEFINER function needed (unlike mark_order_delivered()
+     above, which exists specifically because an agent must NOT be able
+     to credit her own physical-order commission — here the agent has
+     no UPDATE ability on this table at all, so the trust boundary is
+     already enforced entirely by RLS itself).
+  ───────────────────────────────────────────────────────── */
+  async function approveDigitalSale(id) {
+    const { error } = await supabase
+      .from("agent_digital_sales")
+      .update({
+        order_status: "completed",
+        payment_status: "paid",
+        approved_by: CURRENT_STAFF_ID,
+        approved_at: new Date().toISOString(),
+      })
+      .eq("id", id);
+    if (error) throw error;
+  }
+
+  async function rejectDigitalSale(id) {
+    const { error } = await supabase
+      .from("agent_digital_sales")
+      .update({ order_status: "cancelled" })
+      .eq("id", id);
+    if (error) throw error;
+  }
+
+  async function markDigitalCommissionPaid(id) {
+    const { error } = await supabase
+      .from("agent_digital_sales")
+      .update({ commission_status: "paid", commission_paid_at: new Date().toISOString() })
+      .eq("id", id);
     if (error) throw error;
   }
 
@@ -2166,8 +2355,16 @@ ${itemsText}
       await handleUnblock(btn.dataset.id, btn);
     });
 
-    /* ── Agents tab — open earnings detail modal ─────────────── */
-    document.getElementById("tab-agents")?.addEventListener("click", e => {
+    /* ── Agents tab — open earnings detail modal / digital sales approval ── */
+    document.getElementById("tab-agents")?.addEventListener("click", async e => {
+      const dgBtn = e.target.closest('[data-action="dg-approve"], [data-action="dg-reject"], [data-action="dg-mark-paid"]');
+      if (dgBtn) {
+        const id = dgBtn.dataset.id;
+        if (dgBtn.dataset.action === "dg-approve")   await handleApproveDigitalSale(id, dgBtn);
+        if (dgBtn.dataset.action === "dg-reject")    await handleRejectDigitalSale(id, dgBtn);
+        if (dgBtn.dataset.action === "dg-mark-paid") await handleMarkDigitalCommissionPaid(id, dgBtn);
+        return;
+      }
       const row = e.target.closest('[data-action="view-agent-earnings"]');
       if (!row) return;
       showAgentEarningsModal(row.dataset.agentId);
@@ -2429,12 +2626,13 @@ ${itemsText}
       const lastSeenOrders   = sessionStorage.getItem("admin_orders_last_seen");
       const lastSeenMessages = sessionStorage.getItem("admin_messages_last_seen");
 
-      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS] = await Promise.all([
+      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS, ALL_DIGITAL_SALES_ADMIN] = await Promise.all([
         fetchOrders(), fetchMessages(),
         fetchReviews().catch(() => []),
         fetchSellers().catch(() => []),
         fetchAgents().catch(() => []),
         fetchAgentEarnings().catch(() => []),
+        fetchAllDigitalSales().catch(() => []),
       ]);
 
       if (lastSeenOrders)   UNSEEN_ORDERS   = ALL_ORDERS.filter(o => new Date(o.created_at)   > new Date(lastSeenOrders)).length;

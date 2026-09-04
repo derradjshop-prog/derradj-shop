@@ -240,6 +240,7 @@
       border-radius: var(--radius-lg); padding: 6px; box-shadow: var(--shadow-sm);
     }
     .tab-btn {
+      position: relative;
       flex: 1; padding: 12px 14px; min-height: 44px; border: none;
       border-radius: var(--radius); font-family: var(--font);
       font-size: 14px; font-weight: 700; cursor: pointer;
@@ -247,6 +248,15 @@
       color: var(--text-light); display: flex; align-items: center;
       justify-content: center; gap: 8px;
     }
+    /* Small unread-message dot — purely additive, independent of the
+       existing .tab-badge count/color logic below (untouched). */
+    .tab-unread-dot {
+      display: none;
+      position: absolute; top: 6px; right: 10px;
+      width: 9px; height: 9px; border-radius: 50%;
+      background: #dc2626; border: 2px solid var(--white);
+    }
+    .tab-unread-dot.show { display: block; }
     .tab-btn.active { background: var(--navy); color: #fff; }
     .tab-btn:not(.active):hover { background: var(--primary-bg); color: var(--navy); }
     .tab-badge {
@@ -602,6 +612,7 @@
     <button class="tab-btn" data-tab="messages">
       ✉️ الرسائل
       <span class="tab-badge" id="tab-badge-messages">—</span>
+      <span class="tab-unread-dot" id="tab-unread-dot-messages"></span>
     </button>
   </div>
 
@@ -627,6 +638,7 @@
     </div>
     <div class="card-list" id="msgList"></div>
   </div>
+
 
 </main>
 
@@ -1191,6 +1203,7 @@
     const badgeEl = document.getElementById("tab-badge-messages");
     badgeEl.classList.toggle("unread", UNSEEN_MESSAGES > 0);
     if (UNSEEN_MESSAGES > 0) badgeEl.textContent = UNSEEN_MESSAGES + " جديد";
+    document.getElementById("tab-unread-dot-messages")?.classList.toggle("show", UNSEEN_MESSAGES > 0);
 
     const list = document.getElementById("msgList");
     if (!filtered.length) {
