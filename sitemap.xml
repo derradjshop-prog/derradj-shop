@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://derradjshop.com/</loc>
-    <lastmod>2026-09-03</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -15,7 +15,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/Electronique/</loc>
-    <lastmod>2026-09-03</lastmod>
+    <lastmod>2026-09-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -1388,6 +1388,15 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://derradjshop.com/Electronique/telephones/samsung-keystone-2-e1200-classic-feature-phone/main.webp</image:loc>
+    </image:image>
+  </url>
+  <url>
+    <loc>https://derradjshop.com/product/SFSF/</loc>
+    <lastmod>2026-09-04</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image>
+      <image:loc>https://derradjshop.com/Electronique/kit-main-libre/SFSF/1788552706921-c5u6xah.jpg</image:loc>
     </image:image>
   </url>
   <url>
