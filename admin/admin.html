@@ -245,6 +245,7 @@
     .badge-delivery-out_for_delivery { background: #ede9fe; color: #5b21b6; }
     .badge-delivery-delivered        { background: #d1fae5; color: #065f46; }
     .badge-delivery-cancelled        { background: #fee2e2; color: #991b1b; }
+    .badge-rejected                  { background: #fee2e2; color: #991b1b; }
 
     .pm-tag {
       display: inline-block;
@@ -1053,6 +1054,10 @@
     <button class="tab-btn" data-tab="agents" id="navBtnAgents" style="display:none;">
       📞 الموظفون
     </button>
+    <button class="tab-btn" data-tab="sellerapps" id="navBtnSellerApps" style="display:none;">
+      📝 طلبات البائعين
+      <span class="tab-badge" id="tab-badge-sellerapps">—</span>
+    </button>
   </div>
 
   <!-- Tab: Orders -->
@@ -1194,6 +1199,9 @@
 
   <!-- Tab: Call agents (الموظفون) — balances/earnings, rendered by admin.js -->
   <div class="tab-content" id="tab-agents"></div><!-- /tab-agents -->
+
+  <!-- Tab: Seller applications (طلبات البائعين) — main-admin-only, rendered by admin.js -->
+  <div class="tab-content" id="tab-sellerapps"></div><!-- /tab-sellerapps -->
 
   <!-- ══ Tab: Reviews ════════════════════════════════════════ -->
   <div class="tab-content" id="tab-reviews">

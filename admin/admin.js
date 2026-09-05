@@ -29,6 +29,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let ALL_AGENTS   = [];
   let ALL_AGENT_EARNINGS = [];
   let ALL_DIGITAL_SALES_ADMIN = [];
+  let ALL_SELLER_APPS = [];
   let EDIT_REVIEW_ID    = null;
   let ORD_ASSIGN_FILTER = '';      /* '' | 'unassigned' | 'completed' | <sellerId> */
   let CURRENT_ROLE = '';
@@ -404,6 +405,167 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     } catch (err) {
       console.error("Unblock error:", err);
       showToast("❌ فشل إلغاء الحظر: " + (err.message || ""), "error");
+      btn.disabled = false;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     SELLER APPLICATIONS TAB (طلبات البائعين) — طلبات التسجيل كبائع
+     خارجي في السوق (seller_applications، من 20260905194233_seller_
+     marketplace.sql). يظهر هذا التبويب فقط لحساب الأدمن الرئيسي
+     (isMainAdmin()) — نفس مستوى حماية تبويبي "البائعين"/"المحظورون"
+     أعلاه، لأن هذه الطلبات تحمل بيانات شخصية لمقدّم الطلب (بريد/هاتف/
+     واتساب) وتُستخدم لاحقاً لإنشاء حساب بائع فعلي عبر الدالة
+     approve_seller_application() (RPC، مرحلة لاحقة لم تُنفَّذ هنا —
+     هذا التبويب للعرض فقط، بلا أزرار قبول/رفض). الحماية الفعلية
+     للقراءة نفسها هي RLS: سياسة seller_applications_admin_all تقبل
+     فقط public.is_admin() على مستوى القاعدة، لذا حتى لو أظهر أحد هذا
+     التبويب يدوياً عبر DevTools لحساب غير أدمن فإن القراءة نفسها
+     ستُرفض من القاعدة.
+  ───────────────────────────────────────────────────────── */
+  async function fetchSellerApplications() {
+    const { data, error } = await supabase
+      .from("seller_applications")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+
+  function safeHttpUrl(v) {
+    const s = String(v || "").trim();
+    return /^https?:\/\//i.test(s) ? s : null;
+  }
+
+  function sellerAppStatusBadge(status) {
+    const s = status || "pending";
+    if (s === "approved") return `<span class="badge badge-approved">✅ مقبول</span>`;
+    if (s === "rejected") return `<span class="badge badge-rejected">❌ مرفوض</span>`;
+    return `<span class="badge badge-pending">⏳ قيد المراجعة</span>`;
+  }
+
+  function renderSellerAppsTab() {
+    const container = document.getElementById("tab-sellerapps");
+    if (!container) return;
+
+    /* قيد المراجعة أولاً، ثم الأحدث فأقدم داخل كل مجموعة حالة */
+    const sorted = [...ALL_SELLER_APPS].sort((a, b) => {
+      if (a.status === "pending" && b.status !== "pending") return -1;
+      if (a.status !== "pending" && b.status === "pending") return 1;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+
+    container.innerHTML = `
+      <p class="modal-sec-lbl" style="margin-bottom:14px;">طلبات التسجيل كبائع (${ALL_SELLER_APPS.length})</p>
+      <div class="detail-rows">
+        ${sorted.length ? sorted.map(a => `
+          <div class="detail-row" data-action="view-sellerapp" data-id="${esc(a.id)}" style="cursor:pointer;">
+            <span class="dr-key">${esc(a.boutique_name || "—")}</span>
+            <span class="dr-val">
+              ${esc(a.full_name || "—")} — <span dir="ltr">${esc(a.phone || "—")}</span> — ${esc(a.email || "—")}
+              <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">
+                ${esc(a.wilaya || "—")}، ${esc(a.commune || "—")} · واتساب: <span dir="ltr">${esc(a.whatsapp || "—")}</span>
+                · ${esc(a.product_type || "—")} · ${esc(fmtDate(a.created_at))}
+              </span>
+            </span>
+            <span style="flex-shrink:0;">${sellerAppStatusBadge(a.status)}</span>
+          </div>`).join("")
+        : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا توجد طلبات تسجيل بعد</p>`}
+      </div>`;
+
+    const badgeEl = document.getElementById("tab-badge-sellerapps");
+    if (badgeEl) badgeEl.textContent = ALL_SELLER_APPS.filter(a => a.status === "pending").length;
+  }
+
+  function showSellerAppModal(appId) {
+    const app = ALL_SELLER_APPS.find(a => a.id === appId);
+    if (!app) return;
+    document.getElementById("modalTitle").textContent =
+      "طلب بائع: " + (app.boutique_name || app.full_name || "—");
+    document.getElementById("modalBody").innerHTML = `
+      <div class="m-section">
+        <div class="m-title">بيانات مقدّم الطلب</div>
+        <div class="info-grid">
+          <div class="info-item"><span class="i-lbl">الاسم الكامل</span><span class="i-val">${esc(app.full_name || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">البريد الإلكتروني</span><span class="i-val" style="direction:ltr;">${esc(app.email || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">الهاتف</span><span class="i-val" style="direction:ltr;">${esc(app.phone || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">واتساب</span><span class="i-val" style="direction:ltr;">${esc(app.whatsapp || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">الولاية</span><span class="i-val">${esc(app.wilaya || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">البلدية</span><span class="i-val">${esc(app.commune || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">الحالة</span><span class="i-val">${sellerAppStatusBadge(app.status)}</span></div>
+          <div class="info-item"><span class="i-lbl">تاريخ التقديم</span><span class="i-val" style="font-size:12px;">${esc(fmtDate(app.created_at))}</span></div>
+        </div>
+      </div>
+      <div class="m-section">
+        <div class="m-title">بيانات المتجر</div>
+        <div class="info-grid">
+          <div class="info-item"><span class="i-lbl">اسم المتجر</span><span class="i-val">${esc(app.boutique_name || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">نوع المنتجات</span><span class="i-val">${esc(app.product_type || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">رابط التواصل الاجتماعي</span>
+            <span class="i-val" style="direction:ltr;word-break:break-all;">
+              ${safeHttpUrl(app.social_link) ? `<a href="${esc(safeHttpUrl(app.social_link))}" target="_blank" rel="noopener noreferrer">${esc(app.social_link)}</a>` : esc(app.social_link || "—")}
+            </span>
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div class="i-lbl" style="margin-bottom:4px;">وصف المتجر</div>
+          <div class="msg-full">${esc(app.boutique_description || "—")}</div>
+        </div>
+      </div>
+      ${app.notes ? `
+      <div class="m-section">
+        <div class="m-title">ملاحظات مقدّم الطلب</div>
+        <div class="msg-full">${esc(app.notes)}</div>
+      </div>` : ""}
+      ${(app.admin_notes || app.reviewed_at) ? `
+      <div class="m-section">
+        <div class="m-title">مراجعة الأدمن</div>
+        <div class="info-grid">
+          <div class="info-item"><span class="i-lbl">تاريخ المراجعة</span><span class="i-val" style="font-size:12px;">${esc(fmtDate(app.reviewed_at))}</span></div>
+        </div>
+        ${app.admin_notes ? `<div class="msg-full" style="margin-top:8px;">${esc(app.admin_notes)}</div>` : ""}
+      </div>` : ""}
+      ${app.status === "pending" ? `
+      <div class="m-section">
+        <span style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn-confirm" data-action="sellerapp-approve" data-id="${esc(app.id)}">✅ قبول الطلب</button>
+          <button class="btn-delete"  data-action="sellerapp-reject"  data-id="${esc(app.id)}">❌ رفض الطلب</button>
+        </span>
+      </div>` : ""}`;
+    openModal();
+  }
+
+  async function handleApproveSellerApp(id, btn) {
+    if (!confirm("هل أنت متأكد من قبول هذا الطلب؟ سيتم إنشاء حساب بائع فعلي.")) return;
+    btn.disabled = true;
+    try {
+      const { error } = await supabase.rpc("approve_seller_application", { app_id: id, notes: null });
+      if (error) throw error;
+      showToast("✅ تم قبول الطلب بنجاح وتم إنشاء حساب البائع");
+      ALL_SELLER_APPS = await fetchSellerApplications();
+      renderSellerAppsTab();
+      showSellerAppModal(id);
+    } catch (err) {
+      console.error("approveSellerApplication error:", err);
+      showToast("❌ فشل قبول الطلب: " + (err.message || ""));
+      btn.disabled = false;
+    }
+  }
+
+  async function handleRejectSellerApp(id, btn) {
+    if (!confirm("هل أنت متأكد من رفض هذا الطلب؟")) return;
+    const reason = (prompt("سبب الرفض (اختياري):", "") || "").trim() || null;
+    btn.disabled = true;
+    try {
+      const { error } = await supabase.rpc("reject_seller_application", { app_id: id, notes: reason });
+      if (error) throw error;
+      showToast("✅ تم رفض الطلب");
+      ALL_SELLER_APPS = await fetchSellerApplications();
+      renderSellerAppsTab();
+      showSellerAppModal(id);
+    } catch (err) {
+      console.error("rejectSellerApplication error:", err);
+      showToast("❌ فشل رفض الطلب: " + (err.message || ""));
       btn.disabled = false;
     }
   }
@@ -2332,6 +2494,7 @@ ${itemsText}
         : tab === "sellers"     ? "👤 إدارة البائعين"
         : tab === "blocked"     ? "🚫 العملاء المحظورون"
         : tab === "agents"      ? "📞 الموظفون (متابعة الطلبيات)"
+        : tab === "sellerapps"  ? "📝 طلبات البائعين"
         : "📚 إدارة المنتجات";
 
         /* فتح التبويب يصفّر عداد "غير مُشاهد" الخاص به */
@@ -2353,6 +2516,13 @@ ${itemsText}
       const btn = e.target.closest('[data-action="unblock"]');
       if (!btn) return;
       await handleUnblock(btn.dataset.id, btn);
+    });
+
+    /* ── Seller applications tab — open detail modal ─────────── */
+    document.getElementById("tab-sellerapps")?.addEventListener("click", e => {
+      const row = e.target.closest('[data-action="view-sellerapp"]');
+      if (!row) return;
+      showSellerAppModal(row.dataset.id);
     });
 
     /* ── Agents tab — open earnings detail modal / digital sales approval ── */
@@ -2438,7 +2608,7 @@ ${itemsText}
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
       if (["confirm", "revert", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message", "start-impersonation",
-           "assign-agent", "unassign-agent", "mark-shipped", "mark-ofd", "mark-delivered"]
+           "assign-agent", "unassign-agent", "mark-shipped", "mark-ofd", "mark-delivered", "sellerapp-approve", "sellerapp-reject"]
             .includes(btn.dataset.action) && !isAdmin()) return;
       if (btn.dataset.action === "confirm")          await handleConfirm(btn.dataset.id, btn);
       if (btn.dataset.action === "revert")           await handleRevert(btn.dataset.id, btn);
@@ -2457,6 +2627,8 @@ ${itemsText}
       if (btn.dataset.action === "mark-shipped")     await handleMarkShipped(btn.dataset.id, btn);
       if (btn.dataset.action === "mark-ofd")         await handleMarkOutForDelivery(btn.dataset.id, btn);
       if (btn.dataset.action === "mark-delivered")   await handleMarkDelivered(btn.dataset.id, btn);
+      if (btn.dataset.action === "sellerapp-approve") await handleApproveSellerApp(btn.dataset.id, btn);
+      if (btn.dataset.action === "sellerapp-reject")  await handleRejectSellerApp(btn.dataset.id, btn);
     });
 
     /* ── Mobile: Orders cards ──────────────────────────────── */
@@ -2616,6 +2788,7 @@ ${itemsText}
       if (isMainAdmin()) {
         document.getElementById("navBtnSellers").style.display = "";
         document.getElementById("navBtnBlocked").style.display = "";
+        document.getElementById("navBtnSellerApps").style.display = "";
       }
       /* "الموظفون" متاح لأي أدمن (ليس حصراً على الأدمن الرئيسي) —
          هذا التبويب للعرض/التعيين فقط، لا يتضمن أي إعداد مالي حساس
@@ -2626,13 +2799,14 @@ ${itemsText}
       const lastSeenOrders   = sessionStorage.getItem("admin_orders_last_seen");
       const lastSeenMessages = sessionStorage.getItem("admin_messages_last_seen");
 
-      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS, ALL_DIGITAL_SALES_ADMIN] = await Promise.all([
+      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS, ALL_DIGITAL_SALES_ADMIN, ALL_SELLER_APPS] = await Promise.all([
         fetchOrders(), fetchMessages(),
         fetchReviews().catch(() => []),
         fetchSellers().catch(() => []),
         fetchAgents().catch(() => []),
         fetchAgentEarnings().catch(() => []),
         fetchAllDigitalSales().catch(() => []),
+        isMainAdmin() ? fetchSellerApplications().catch(() => []) : Promise.resolve([]),
       ]);
 
       if (lastSeenOrders)   UNSEEN_ORDERS   = ALL_ORDERS.filter(o => new Date(o.created_at)   > new Date(lastSeenOrders)).length;
@@ -2656,6 +2830,7 @@ ${itemsText}
         renderSellersTab();
         ALL_BLOCKED = await fetchBlockedCustomers().catch(() => []);
         renderBlockedTab();
+        renderSellerAppsTab();
       }
       renderAgentsTab();
       bindEvents();
