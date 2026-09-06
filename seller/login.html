@@ -296,11 +296,20 @@
 
     try {
       const email = toAuthEmail(contact);
+      console.log("[seller-login] normalized phone -> auth email:", email);
 
       const { data: authData, error: authError } =
         await supabase.auth.signInWithPassword({ email, password });
 
       if (authError || !authData?.user) {
+        if (authError) {
+          console.error("[seller-login] Supabase auth error:", {
+            message: authError.message,
+            status:  authError.status,
+            code:    authError.code,
+            email:   email
+          });
+        }
         setStatus("❌ بيانات غير صحيحة");
         loginBtn.disabled    = false;
         loginBtn.textContent = "دخول";

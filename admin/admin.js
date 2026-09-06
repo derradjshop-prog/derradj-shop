@@ -30,6 +30,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let ALL_AGENT_EARNINGS = [];
   let ALL_DIGITAL_SALES_ADMIN = [];
   let ALL_SELLER_APPS = [];
+  let ALL_PROFILE_CHANGE_REQUESTS = [];
   let EDIT_REVIEW_ID    = null;
   let ORD_ASSIGN_FILTER = '';      /* '' | 'unassigned' | 'completed' | <sellerId> */
   let CURRENT_ROLE = '';
@@ -566,6 +567,171 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     } catch (err) {
       console.error("rejectSellerApplication error:", err);
       showToast("❌ فشل رفض الطلب: " + (err.message || ""));
+      btn.disabled = false;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     SELLER PROFILE CHANGE REQUESTS TAB (طلبات تعديل بيانات البائعين)
+     — طلبات تعديل بيانات ملف بائع مسجَّل بالفعل (seller_profile_
+     change_requests). يظهر هذا التبويب فقط لحساب الأدمن الرئيسي
+     (isMainAdmin()) — نفس مستوى حماية تبويب "طلبات البائعين" أعلاه،
+     لأن هذه الطلبات تحمل بيانات شخصية للبائع (هاتف/اسم/متجر). القبول/
+     الرفض عبر approve_seller_profile_change() / reject_seller_profile_
+     change() (RPC) اللتين تطبّقان التعديل فعلياً على seller_profiles/
+     staff_accounts عند القبول.
+  ───────────────────────────────────────────────────────── */
+  /* seller_profile_change_requests و seller_profiles ليس بينهما FK مباشر
+     (كلاهما يشير إلى staff_accounts فقط) — لذا لا يمكن لـ PostgREST دمجهما
+     عبر embedding في استعلام واحد. نجلب الجداول الثلاثة يدوياً وندمجها هنا. */
+  async function fetchProfileChangeRequests() {
+    const { data: reqRows, error: reqErr } = await supabase
+      .from("seller_profile_change_requests")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (reqErr) throw reqErr;
+    const rows = reqRows || [];
+    const sellerIds = [...new Set(rows.map(r => r.seller_id).filter(Boolean))];
+    if (!sellerIds.length) return rows;
+    const [staffRes, profilesRes] = await Promise.all([
+      supabase.from("staff_accounts").select("id, full_name, email").in("id", sellerIds),
+      supabase.from("seller_profiles").select("seller_id, boutique_name, boutique_description, wilaya, commune, whatsapp, social_link").in("seller_id", sellerIds),
+    ]);
+    if (staffRes.error) throw staffRes.error;
+    if (profilesRes.error) throw profilesRes.error;
+    const staffById       = new Map((staffRes.data || []).map(s => [s.id, s]));
+    const profileBySeller = new Map((profilesRes.data || []).map(p => [p.seller_id, p]));
+    return rows.map(r => ({
+      ...r,
+      seller: staffById.get(r.seller_id) || null,
+      current_profile: profileBySeller.get(r.seller_id) || null,
+    }));
+  }
+
+  function renderProfileChangeRequestsTab() {
+    const container = document.getElementById("tab-sellerprofilechanges");
+    if (!container) return;
+
+    /* قيد المراجعة أولاً، ثم الأحدث فأقدم داخل كل مجموعة حالة */
+    const sorted = [...ALL_PROFILE_CHANGE_REQUESTS].sort((a, b) => {
+      if (a.status === "pending" && b.status !== "pending") return -1;
+      if (a.status !== "pending" && b.status === "pending") return 1;
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+
+    container.innerHTML = `
+      <p class="modal-sec-lbl" style="margin-bottom:14px;">طلبات تعديل بيانات البائعين (${ALL_PROFILE_CHANGE_REQUESTS.length})</p>
+      <div class="detail-rows">
+        ${sorted.length ? sorted.map(r => {
+          const sellerName = r.seller?.full_name || "—";
+          const newName     = r.requested_full_name || "—";
+          const newBoutique = r.requested_boutique_name || "—";
+          return `
+          <div class="detail-row" data-action="view-profilechange" data-id="${esc(r.id)}" style="cursor:pointer;">
+            <span class="dr-key">${esc(sellerName)}</span>
+            <span class="dr-val">
+              الاسم المطلوب: ${esc(newName)} — المتجر المطلوب: ${esc(newBoutique)}
+              <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">
+                ${esc(fmtDate(r.created_at))}
+              </span>
+            </span>
+            <span style="flex-shrink:0;">${sellerAppStatusBadge(r.status)}</span>
+          </div>`;
+        }).join("")
+        : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا توجد طلبات تعديل بعد</p>`}
+      </div>`;
+
+    const badgeEl = document.getElementById("tab-badge-sellerprofilechanges");
+    if (badgeEl) badgeEl.textContent = ALL_PROFILE_CHANGE_REQUESTS.filter(r => r.status === "pending").length;
+  }
+
+  function showProfileChangeRequestModal(requestId) {
+    const req = ALL_PROFILE_CHANGE_REQUESTS.find(r => r.id === requestId);
+    if (!req) return;
+    const cur = req.current_profile || {};
+    const oldSocial = safeHttpUrl(cur.social_link);
+    const newSocial = safeHttpUrl(req.requested_social_link);
+
+    document.getElementById("modalTitle").textContent =
+      "طلب تعديل بيانات: " + (req.seller?.full_name || "—");
+    document.getElementById("modalBody").innerHTML = `
+      <div class="m-section">
+        <div class="m-title">معلومات الطلب</div>
+        <div class="info-grid">
+          <div class="info-item"><span class="i-lbl">البائع</span><span class="i-val">${esc(req.seller?.full_name || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">البريد الإلكتروني</span><span class="i-val" style="direction:ltr;">${esc(req.seller?.email || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">الحالة</span><span class="i-val">${sellerAppStatusBadge(req.status)}</span></div>
+          <div class="info-item"><span class="i-lbl">تاريخ الطلب</span><span class="i-val" style="font-size:12px;">${esc(fmtDate(req.created_at))}</span></div>
+        </div>
+      </div>
+      <div class="m-section">
+        <div class="m-title">المقارنة: الحالي ← المطلوب</div>
+        <div class="detail-rows">
+          <div class="detail-row"><span class="dr-key">الاسم الكامل</span><span class="dr-val">${esc(req.seller?.full_name || "—")} ← ${esc(req.requested_full_name || "—")}</span></div>
+          <div class="detail-row"><span class="dr-key">رقم الهاتف</span><span class="dr-val" style="direction:ltr;">${esc(cur.whatsapp || "—")} ← ${esc(req.requested_phone || "—")}</span></div>
+          <div class="detail-row"><span class="dr-key">اسم المتجر</span><span class="dr-val">${esc(cur.boutique_name || "—")} ← ${esc(req.requested_boutique_name || "—")}</span></div>
+          <div class="detail-row"><span class="dr-key">وصف المتجر</span><span class="dr-val">${esc(cur.boutique_description || "—")} ← ${esc(req.requested_boutique_description || "—")}</span></div>
+          <div class="detail-row"><span class="dr-key">الولاية</span><span class="dr-val">${esc(cur.wilaya || "—")} ← ${esc(req.requested_wilaya || "—")}</span></div>
+          <div class="detail-row"><span class="dr-key">البلدية</span><span class="dr-val">${esc(cur.commune || "—")} ← ${esc(req.requested_commune || "—")}</span></div>
+          <div class="detail-row">
+            <span class="dr-key">رابط التواصل الاجتماعي</span>
+            <span class="dr-val" style="direction:ltr;word-break:break-all;">
+              ${oldSocial ? `<a href="${esc(oldSocial)}" target="_blank" rel="noopener noreferrer">${esc(cur.social_link)}</a>` : esc(cur.social_link || "—")}
+              ←
+              ${newSocial ? `<a href="${esc(newSocial)}" target="_blank" rel="noopener noreferrer">${esc(req.requested_social_link)}</a>` : esc(req.requested_social_link || "—")}
+            </span>
+          </div>
+        </div>
+      </div>
+      ${(req.admin_notes || req.reviewed_at) ? `
+      <div class="m-section">
+        <div class="m-title">مراجعة الأدمن</div>
+        <div class="info-grid">
+          <div class="info-item"><span class="i-lbl">تاريخ المراجعة</span><span class="i-val" style="font-size:12px;">${esc(fmtDate(req.reviewed_at))}</span></div>
+        </div>
+        ${req.admin_notes ? `<div class="msg-full" style="margin-top:8px;">${esc(req.admin_notes)}</div>` : ""}
+      </div>` : ""}
+      ${req.status === "pending" ? `
+      <div class="m-section">
+        <span style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn-confirm" data-action="profilechange-approve" data-id="${esc(req.id)}">✅ قبول التعديل</button>
+          <button class="btn-delete"  data-action="profilechange-reject"  data-id="${esc(req.id)}">❌ رفض التعديل</button>
+        </span>
+      </div>` : ""}`;
+    openModal();
+  }
+
+  async function handleApproveProfileChange(id, btn) {
+    if (!confirm("هل أنت متأكد من قبول تعديل بيانات هذا البائع؟ سيتم تحديث ملفه الشخصي فعلياً.")) return;
+    btn.disabled = true;
+    try {
+      const { error } = await supabase.rpc("approve_seller_profile_change", { request_id: id, notes: null });
+      if (error) throw error;
+      showToast("✅ تم قبول التعديل بنجاح");
+      ALL_PROFILE_CHANGE_REQUESTS = await fetchProfileChangeRequests();
+      renderProfileChangeRequestsTab();
+      showProfileChangeRequestModal(id);
+    } catch (err) {
+      console.error("approveSellerProfileChange error:", err);
+      showToast("❌ فشل قبول التعديل: " + (err.message || ""));
+      btn.disabled = false;
+    }
+  }
+
+  async function handleRejectProfileChange(id, btn) {
+    if (!confirm("هل أنت متأكد من رفض تعديل بيانات هذا البائع؟")) return;
+    const reason = (prompt("سبب الرفض (اختياري):", "") || "").trim() || null;
+    btn.disabled = true;
+    try {
+      const { error } = await supabase.rpc("reject_seller_profile_change", { request_id: id, notes: reason });
+      if (error) throw error;
+      showToast("✅ تم رفض التعديل");
+      ALL_PROFILE_CHANGE_REQUESTS = await fetchProfileChangeRequests();
+      renderProfileChangeRequestsTab();
+      showProfileChangeRequestModal(id);
+    } catch (err) {
+      console.error("rejectSellerProfileChange error:", err);
+      showToast("❌ فشل رفض التعديل: " + (err.message || ""));
       btn.disabled = false;
     }
   }
@@ -2495,6 +2661,7 @@ ${itemsText}
         : tab === "blocked"     ? "🚫 العملاء المحظورون"
         : tab === "agents"      ? "📞 الموظفون (متابعة الطلبيات)"
         : tab === "sellerapps"  ? "📝 طلبات البائعين"
+        : tab === "sellerprofilechanges" ? "📝 طلبات تعديل بيانات البائعين"
         : "📚 إدارة المنتجات";
 
         /* فتح التبويب يصفّر عداد "غير مُشاهد" الخاص به */
@@ -2523,6 +2690,13 @@ ${itemsText}
       const row = e.target.closest('[data-action="view-sellerapp"]');
       if (!row) return;
       showSellerAppModal(row.dataset.id);
+    });
+
+    /* ── Seller profile change requests tab — open detail modal ── */
+    document.getElementById("tab-sellerprofilechanges")?.addEventListener("click", e => {
+      const row = e.target.closest('[data-action="view-profilechange"]');
+      if (!row) return;
+      showProfileChangeRequestModal(row.dataset.id);
     });
 
     /* ── Agents tab — open earnings detail modal / digital sales approval ── */
@@ -2608,7 +2782,8 @@ ${itemsText}
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
       if (["confirm", "revert", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message", "start-impersonation",
-           "assign-agent", "unassign-agent", "mark-shipped", "mark-ofd", "mark-delivered", "sellerapp-approve", "sellerapp-reject"]
+           "assign-agent", "unassign-agent", "mark-shipped", "mark-ofd", "mark-delivered", "sellerapp-approve", "sellerapp-reject",
+           "profilechange-approve", "profilechange-reject"]
             .includes(btn.dataset.action) && !isAdmin()) return;
       if (btn.dataset.action === "confirm")          await handleConfirm(btn.dataset.id, btn);
       if (btn.dataset.action === "revert")           await handleRevert(btn.dataset.id, btn);
@@ -2629,6 +2804,8 @@ ${itemsText}
       if (btn.dataset.action === "mark-delivered")   await handleMarkDelivered(btn.dataset.id, btn);
       if (btn.dataset.action === "sellerapp-approve") await handleApproveSellerApp(btn.dataset.id, btn);
       if (btn.dataset.action === "sellerapp-reject")  await handleRejectSellerApp(btn.dataset.id, btn);
+      if (btn.dataset.action === "profilechange-approve") await handleApproveProfileChange(btn.dataset.id, btn);
+      if (btn.dataset.action === "profilechange-reject")  await handleRejectProfileChange(btn.dataset.id, btn);
     });
 
     /* ── Mobile: Orders cards ──────────────────────────────── */
@@ -2789,6 +2966,7 @@ ${itemsText}
         document.getElementById("navBtnSellers").style.display = "";
         document.getElementById("navBtnBlocked").style.display = "";
         document.getElementById("navBtnSellerApps").style.display = "";
+        document.getElementById("navBtnSellerProfileChanges").style.display = "";
       }
       /* "الموظفون" متاح لأي أدمن (ليس حصراً على الأدمن الرئيسي) —
          هذا التبويب للعرض/التعيين فقط، لا يتضمن أي إعداد مالي حساس
@@ -2799,7 +2977,7 @@ ${itemsText}
       const lastSeenOrders   = sessionStorage.getItem("admin_orders_last_seen");
       const lastSeenMessages = sessionStorage.getItem("admin_messages_last_seen");
 
-      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS, ALL_DIGITAL_SALES_ADMIN, ALL_SELLER_APPS] = await Promise.all([
+      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS, ALL_DIGITAL_SALES_ADMIN, ALL_SELLER_APPS, ALL_PROFILE_CHANGE_REQUESTS] = await Promise.all([
         fetchOrders(), fetchMessages(),
         fetchReviews().catch(() => []),
         fetchSellers().catch(() => []),
@@ -2807,6 +2985,7 @@ ${itemsText}
         fetchAgentEarnings().catch(() => []),
         fetchAllDigitalSales().catch(() => []),
         isMainAdmin() ? fetchSellerApplications().catch(() => []) : Promise.resolve([]),
+        isMainAdmin() ? fetchProfileChangeRequests().catch(() => []) : Promise.resolve([]),
       ]);
 
       if (lastSeenOrders)   UNSEEN_ORDERS   = ALL_ORDERS.filter(o => new Date(o.created_at)   > new Date(lastSeenOrders)).length;
@@ -2831,6 +3010,7 @@ ${itemsText}
         ALL_BLOCKED = await fetchBlockedCustomers().catch(() => []);
         renderBlockedTab();
         renderSellerAppsTab();
+        renderProfileChangeRequestsTab();
       }
       renderAgentsTab();
       bindEvents();
