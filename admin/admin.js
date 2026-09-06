@@ -31,6 +31,9 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let ALL_DIGITAL_SALES_ADMIN = [];
   let ALL_SELLER_APPS = [];
   let ALL_PROFILE_CHANGE_REQUESTS = [];
+  let ALL_SELLERS_FULL = []; // EVERY seller (active + inactive) + profile — full management view, main-admin-only
+  let SELLER_EDIT_MODE = false; // whether the seller profile modal is currently showing the edit form
+  let SELLER_MSG_MODE  = false; // whether the seller profile modal is currently showing the compose-message form
   let EDIT_REVIEW_ID    = null;
   let ORD_ASSIGN_FILTER = '';      /* '' | 'unassigned' | 'completed' | <sellerId> */
   let CURRENT_ROLE = '';
@@ -233,6 +236,53 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
+     FETCH — كل حسابات البائعين (نشطة وغير نشطة) لتبويب الإدارة
+     الكاملة أدناه. مختلف عمداً عن fetchSellers() أعلاه — تلك الدالة
+     تُستخدم لملء قوائم "تعيين لبائع" وقائمة تبويب "البائعين" (إعداد
+     المبلغ المستحق)، وتقتصر على النشطين فقط، وهذا صحيح ويجب أن يبقى
+     كذلك (لا يجوز أن يظهر بائع معطَّل في قائمة تعيين طلب جديد). هذه
+     الدالة الجديدة، على العكس، مخصصة حصراً لعرض/إدارة كل حساب بائع
+     موجود — نشط أو معطَّل — من تبويب الإدارة الكاملة. seller_profiles
+     ليس بينه وبين staff_accounts علاقة FK مباشرة قابلة لـ embedding
+     (نفس ملاحظة fetchProfileChangeRequests أعلاه) لذا نجلب الجدولين
+     يدوياً وندمجهما هنا.
+  ───────────────────────────────────────────────────────── */
+  async function fetchSellersFull() {
+    const { data: staffRows, error: staffErr } = await supabase
+      .from("staff_accounts")
+      .select("id, full_name, email, is_active, show_amount_owed, created_at")
+      .eq("role", "seller")
+      .order("created_at", { ascending: false });
+    if (staffErr) throw staffErr;
+    const rows = staffRows || [];
+    const sellerIds = rows.map(s => s.id);
+    if (!sellerIds.length) return rows.map(s => ({ ...s, profile: null }));
+
+    const { data: profileRows, error: profErr } = await supabase
+      .from("seller_profiles")
+      .select("seller_id, boutique_name, boutique_description, wilaya, commune, whatsapp, social_link")
+      .in("seller_id", sellerIds);
+    if (profErr) throw profErr;
+    const profileBySeller = new Map((profileRows || []).map(p => [p.seller_id, p]));
+    return rows.map(s => ({ ...s, profile: profileBySeller.get(s.id) || null }));
+  }
+
+  /* ── إعادة بناء قائمة فلتر "التعيين" في تبويب الطلبات من ALL_SELLERS
+     الحالية (النشطون فقط) — تُستدعى عند الإقلاع، وأيضاً فوراً بعد
+     تعطيل/تفعيل بائع من تبويب الإدارة الكاملة أدناه، حتى لا يبقى
+     بائع مُعطَّل ظاهراً في قائمة "تعيين لبائع" دون الحاجة لإعادة تحميل
+     الصفحة كاملة. ── */
+  function renderAssignFilterOptions() {
+    const assignFilterEl = document.getElementById("assignFilter");
+    if (!assignFilterEl) return;
+    assignFilterEl.innerHTML = `
+      <option value="">📋 كل حالات التعيين</option>
+      <option value="unassigned">🆕 غير معيّن</option>
+      ${ALL_SELLERS.map(s => `<option value="${esc(s.id)}">👤 ${esc(s.full_name || s.email)}</option>`).join("")}
+      <option value="completed">✅ مكتمل</option>`;
+  }
+
+  /* ─────────────────────────────────────────────────────────
      FETCH — موظفات المتابعة النشطات (لقائمة "تعيين لموظفة")
   ───────────────────────────────────────────────────────── */
   async function fetchAgents() {
@@ -298,24 +348,37 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
      الزر يدوياً عبر DevTools فإن التحديث سيُرفض من القاعدة نفسها
      لأي حساب غير هذا الحساب تحديداً.
   ───────────────────────────────────────────────────────── */
+  function sellerStatusBadge(isActive) {
+    return isActive
+      ? `<span class="badge badge-approved">🟢 نشط</span>`
+      : `<span class="badge badge-rejected">⏸️ معطّل</span>`;
+  }
+
   function renderSellersTab() {
     const container = document.getElementById("tab-sellers");
     if (!container) return;
     container.innerHTML = `
-      <p class="modal-sec-lbl" style="margin-bottom:14px;">البائعون</p>
+      <p class="modal-sec-lbl" style="margin-bottom:14px;">البائعون (${ALL_SELLERS_FULL.length}) — عرض/تعديل/تعطيل/حذف/مراسلة أي حساب بائع</p>
       <div class="detail-rows">
-        ${ALL_SELLERS.length ? ALL_SELLERS.map(s => `
-          <div class="detail-row">
+        ${ALL_SELLERS_FULL.length ? ALL_SELLERS_FULL.map(s => `
+          <div class="detail-row" data-action="view-seller" data-id="${esc(s.id)}" style="cursor:pointer;">
             <span class="dr-key">${esc(s.full_name || s.email)}</span>
-            <span class="dr-val" style="display:flex;align-items:center;justify-content:flex-end;gap:10px;">
-              <span style="font-size:12px;color:var(--text-muted);">إظهار المبلغ المستحق</span>
-              <button type="button" class="pm-toggle ${s.show_amount_owed ? "is-on" : ""}"
-                      data-action="toggle-show-owed" data-id="${esc(s.id)}"
-                      role="switch" aria-checked="${!!s.show_amount_owed}">
-                <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
-                <span class="pm-toggle-label">${s.show_amount_owed ? "🟢 ظاهر" : "⚪ مخفي"}</span>
-              </button>
+            <span class="dr-val">
+              ${esc(s.profile?.boutique_name || "—")} — <span dir="ltr">${esc(s.email || "—")}</span>
+              <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">
+                ${esc(s.profile?.wilaya || "—")}، ${esc(s.profile?.commune || "—")} · انضم ${esc(fmtDate(s.created_at))}
+              </span>
+              <span style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;justify-content:flex-end;" onclick="event.stopPropagation();">
+                <span style="font-size:12px;color:var(--text-muted);">إظهار المبلغ المستحق</span>
+                <button type="button" class="pm-toggle ${s.show_amount_owed ? "is-on" : ""}"
+                        data-action="toggle-show-owed" data-id="${esc(s.id)}"
+                        role="switch" aria-checked="${!!s.show_amount_owed}">
+                  <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
+                  <span class="pm-toggle-label">${s.show_amount_owed ? "🟢 ظاهر" : "⚪ مخفي"}</span>
+                </button>
+              </span>
             </span>
+            <span style="flex-shrink:0;">${sellerStatusBadge(s.is_active)}</span>
           </div>`).join("")
         : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا يوجد بائعون بعد</p>`}
       </div>`;
@@ -323,7 +386,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
   async function handleToggleShowOwed(sellerId, btn) {
     if (!isMainAdmin()) return;
-    const seller = ALL_SELLERS.find(s => s.id === sellerId);
+    const seller = ALL_SELLERS_FULL.find(s => s.id === sellerId);
     if (!seller) return;
     const next = !seller.show_amount_owed;
     btn.disabled = true;
@@ -334,11 +397,293 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         .eq("id", sellerId);
       if (error) throw error;
       seller.show_amount_owed = next;
+      const legacyRef = ALL_SELLERS.find(s => s.id === sellerId);
+      if (legacyRef) legacyRef.show_amount_owed = next;
       renderSellersTab();
     } catch (err) {
       console.error("Toggle show_amount_owed error:", err);
       showToast("❌ فشل تحديث الإعداد: " + (err.message || ""), "error");
     } finally {
+      btn.disabled = false;
+    }
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     SELLER PROFILE MODAL — عرض/تعديل/تعطيل/حذف/مراسلة بائع واحد.
+     main-admin-only (كل الأزرار هنا محمية أيضاً على مستوى القاعدة:
+     admin_update_seller_profile() و admin_delete_seller() هما RPC
+     تتحقق من public.is_main_admin() بنفسها، والتعطيل يعتمد على سياسة
+     staff_accounts_main_admin_update الموجودة أصلاً، والرسالة تعتمد
+     على سياسة seller_admin_messages_main_admin_all — راجع
+     20260906040000_admin_seller_management.sql).
+  ───────────────────────────────────────────────────────── */
+  function showSellerProfileModal(sellerId) {
+    const s = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+    if (!s) return;
+    SELLER_EDIT_MODE = false;
+    SELLER_MSG_MODE  = false;
+    document.getElementById("modalTitle").textContent =
+      "ملف البائع: " + (s.full_name || s.email || "—");
+    renderSellerViewModalBody(s);
+    openModal();
+  }
+
+  function renderSellerViewModalBody(s) {
+    const p = s.profile || {};
+    const social = safeHttpUrl(p.social_link);
+    document.getElementById("modalBody").innerHTML = `
+      <div class="m-section">
+        <div class="m-title">بيانات الحساب</div>
+        <div class="info-grid">
+          <div class="info-item"><span class="i-lbl">الاسم الكامل</span><span class="i-val">${esc(s.full_name || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">البريد الإلكتروني</span><span class="i-val" style="direction:ltr;">${esc(s.email || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">الحالة</span><span class="i-val">${sellerStatusBadge(s.is_active)}</span></div>
+          <div class="info-item"><span class="i-lbl">تاريخ الانضمام</span><span class="i-val" style="font-size:12px;">${esc(fmtDate(s.created_at))}</span></div>
+        </div>
+      </div>
+      <div class="m-section">
+        <div class="m-title">بيانات المتجر</div>
+        <div class="info-grid">
+          <div class="info-item"><span class="i-lbl">اسم المتجر</span><span class="i-val">${esc(p.boutique_name || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">الهاتف / واتساب</span><span class="i-val" style="direction:ltr;">${esc(p.whatsapp || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">الولاية</span><span class="i-val">${esc(p.wilaya || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">البلدية</span><span class="i-val">${esc(p.commune || "—")}</span></div>
+          <div class="info-item"><span class="i-lbl">رابط التواصل الاجتماعي</span>
+            <span class="i-val" style="direction:ltr;word-break:break-all;">
+              ${social ? `<a href="${esc(social)}" target="_blank" rel="noopener noreferrer">${esc(p.social_link)}</a>` : esc(p.social_link || "—")}
+            </span>
+          </div>
+        </div>
+        <div style="margin-top:10px;">
+          <div class="i-lbl" style="margin-bottom:4px;">وصف المتجر</div>
+          <div class="msg-full">${esc(p.boutique_description || "—")}</div>
+        </div>
+      </div>
+      <div class="m-section">
+        <span style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+          <button class="btn-confirm" data-action="seller-edit" data-id="${esc(s.id)}">✏️ تعديل</button>
+          <button class="btn-confirm" data-action="seller-message" data-id="${esc(s.id)}" style="background:#6366f1;color:#fff;border-color:#4f46e5;">✉️ إرسال رسالة</button>
+          <button class="btn-revert" data-action="seller-toggle-active" data-id="${esc(s.id)}">${s.is_active ? "⏸️ تعطيل الحساب" : "▶️ تفعيل الحساب"}</button>
+          <button class="btn-delete" data-action="seller-delete" data-id="${esc(s.id)}">🗑️ حذف</button>
+        </span>
+      </div>`;
+  }
+
+  function renderSellerEditModalBody(s) {
+    const p = s.profile || {};
+    document.getElementById("modalBody").innerHTML = `
+      <div class="m-section">
+        <div class="m-title">تعديل بيانات البائع</div>
+        <div class="rv-form-grid">
+          <div class="rv-field">
+            <label>البريد الإلكتروني (غير قابل للتعديل)</label>
+            <input type="text" value="${esc(s.email || "")}" disabled style="direction:ltr;">
+          </div>
+          <div class="rv-field">
+            <label>الاسم الكامل</label>
+            <input type="text" id="se-full-name" value="${esc(s.full_name || "")}">
+          </div>
+          <div class="rv-field">
+            <label>الهاتف / واتساب</label>
+            <input type="text" id="se-phone" value="${esc(p.whatsapp || "")}" style="direction:ltr;">
+          </div>
+          <div class="rv-field">
+            <label>اسم المتجر</label>
+            <input type="text" id="se-boutique-name" value="${esc(p.boutique_name || "")}">
+          </div>
+          <div class="rv-field full-col">
+            <label>وصف المتجر</label>
+            <textarea id="se-boutique-desc" rows="3">${esc(p.boutique_description || "")}</textarea>
+          </div>
+          <div class="rv-field">
+            <label>الولاية</label>
+            <input type="text" id="se-wilaya" value="${esc(p.wilaya || "")}">
+          </div>
+          <div class="rv-field">
+            <label>البلدية</label>
+            <input type="text" id="se-commune" value="${esc(p.commune || "")}">
+          </div>
+          <div class="rv-field full-col">
+            <label>رابط التواصل الاجتماعي</label>
+            <input type="text" id="se-social" value="${esc(p.social_link || "")}" style="direction:ltr;">
+          </div>
+        </div>
+        <p id="seEditStatus" style="margin-top:8px;font-size:13px;"></p>
+        <span style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn-confirm" data-action="seller-edit-save" data-id="${esc(s.id)}">💾 حفظ</button>
+          <button class="btn-revert" data-action="seller-edit-cancel" data-id="${esc(s.id)}">إلغاء</button>
+        </span>
+      </div>`;
+  }
+
+  function renderSellerMessageModalBody(s) {
+    document.getElementById("modalBody").innerHTML = `
+      <div class="m-section">
+        <div class="m-title">إرسال رسالة إلى ${esc(s.full_name || s.email || "البائع")}</div>
+        <div class="rv-field full-col">
+          <label>نص الرسالة</label>
+          <textarea id="se-msg-text" rows="4" placeholder="اكتب رسالتك هنا..."></textarea>
+        </div>
+        <p id="seMsgStatus" style="margin-top:8px;font-size:13px;"></p>
+        <span style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+          <button class="btn-confirm" data-action="seller-message-send" data-id="${esc(s.id)}">✉️ إرسال</button>
+          <button class="btn-revert" data-action="seller-message-cancel" data-id="${esc(s.id)}">إلغاء</button>
+        </span>
+      </div>`;
+  }
+
+  function handleShowSellerEdit(sellerId) {
+    const s = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+    if (!s) return;
+    SELLER_EDIT_MODE = true;
+    renderSellerEditModalBody(s);
+  }
+
+  function handleCancelSellerEdit(sellerId) {
+    const s = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+    if (!s) return;
+    SELLER_EDIT_MODE = false;
+    renderSellerViewModalBody(s);
+  }
+
+  async function handleSaveSellerEdit(sellerId, btn) {
+    if (!isMainAdmin()) return;
+    const s = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+    if (!s) return;
+    const statusEl = document.getElementById("seEditStatus");
+    const payload = {
+      full_name_in:            (document.getElementById("se-full-name")?.value || "").trim() || null,
+      phone_in:                (document.getElementById("se-phone")?.value || "").trim() || null,
+      boutique_name_in:        (document.getElementById("se-boutique-name")?.value || "").trim() || null,
+      boutique_description_in: (document.getElementById("se-boutique-desc")?.value || "").trim() || null,
+      wilaya_in:               (document.getElementById("se-wilaya")?.value || "").trim() || null,
+      commune_in:              (document.getElementById("se-commune")?.value || "").trim() || null,
+      social_link_in:          (document.getElementById("se-social")?.value || "").trim() || null,
+    };
+    btn.disabled = true;
+    try {
+      const { error } = await supabase.rpc("admin_update_seller_profile", {
+        seller_id_in: sellerId, ...payload,
+      });
+      if (error) throw error;
+      ALL_SELLERS_FULL = await fetchSellersFull();
+      const updated = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+      const legacyRef = ALL_SELLERS.find(x => x.id === sellerId);
+      if (legacyRef && updated) legacyRef.full_name = updated.full_name;
+      renderAssignFilterOptions();
+      renderSellersTab();
+      showToast("✅ تم حفظ بيانات البائع بنجاح");
+      SELLER_EDIT_MODE = false;
+      if (updated) renderSellerViewModalBody(updated);
+    } catch (err) {
+      console.error("admin_update_seller_profile error:", err);
+      if (statusEl) { statusEl.textContent = "❌ فشل الحفظ: " + (err.message || ""); statusEl.style.color = "#b91c1c"; }
+      btn.disabled = false;
+    }
+  }
+
+  async function handleToggleSellerActive(sellerId, btn) {
+    if (!isMainAdmin()) return;
+    const s = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+    if (!s) return;
+    const next = !s.is_active;
+    const confirmMsg = next
+      ? "هل تريد إعادة تفعيل حساب هذا البائع؟"
+      : "هل تريد تعطيل حساب هذا البائع؟ لن يتمكن من تسجيل الدخول بعد ذلك.";
+    if (!confirm(confirmMsg)) return;
+    btn.disabled = true;
+    try {
+      const { error } = await supabase
+        .from("staff_accounts")
+        .update({ is_active: next })
+        .eq("id", sellerId);
+      if (error) throw error;
+      s.is_active = next;
+      /* ALL_SELLERS يغذّي قائمة "تعيين لبائع" في تبويب الطلبات وهو
+         نشطون-فقط بتصميم fetchSellers() — أبقِ هذا الثابت هنا أيضاً:
+         أضف البائع عند التفعيل، أزله عند التعطيل، ثم أعد بناء القائمة. */
+      if (next) {
+        if (!ALL_SELLERS.some(x => x.id === sellerId)) {
+          ALL_SELLERS.push({ id: s.id, full_name: s.full_name, email: s.email, show_amount_owed: s.show_amount_owed });
+          ALL_SELLERS.sort((a, b) => (a.full_name || a.email || "").localeCompare(b.full_name || b.email || ""));
+        }
+      } else {
+        ALL_SELLERS = ALL_SELLERS.filter(x => x.id !== sellerId);
+      }
+      renderAssignFilterOptions();
+      renderSellersTab();
+      showToast(next ? "✅ تم تفعيل الحساب" : "✅ تم تعطيل الحساب");
+      renderSellerViewModalBody(s);
+    } catch (err) {
+      console.error("Toggle seller is_active error:", err);
+      showToast("❌ فشل تحديث حالة الحساب: " + (err.message || ""));
+      btn.disabled = false;
+    }
+  }
+
+  async function handleDeleteSeller(sellerId, btn) {
+    if (!isMainAdmin()) return;
+    if (!confirm("هل أنت متأكد من حذف هذا البائع؟")) return;
+    btn.disabled = true;
+    try {
+      const { error } = await supabase.rpc("admin_delete_seller", { seller_id_in: sellerId });
+      if (error) throw error;
+      ALL_SELLERS_FULL = ALL_SELLERS_FULL.filter(x => x.id !== sellerId);
+      ALL_SELLERS = ALL_SELLERS.filter(x => x.id !== sellerId);
+      renderAssignFilterOptions();
+      renderSellersTab();
+      closeModal();
+      showToast("✅ تم حذف حساب البائع نهائياً");
+    } catch (err) {
+      console.error("admin_delete_seller error:", err);
+      const msg = String(err.message || "");
+      if (msg.includes("cannot be permanently deleted")) {
+        showToast("⚠️ لا يمكن حذف هذا البائع لوجود منتجات/طلبات/سجل مرتبط به — يرجى تعطيل الحساب بدلاً من ذلك");
+      } else {
+        showToast("❌ فشل حذف البائع: " + msg);
+      }
+      btn.disabled = false;
+    }
+  }
+
+  function handleShowSellerMessage(sellerId) {
+    const s = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+    if (!s) return;
+    SELLER_MSG_MODE = true;
+    renderSellerMessageModalBody(s);
+  }
+
+  function handleCancelSellerMessage(sellerId) {
+    const s = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+    if (!s) return;
+    SELLER_MSG_MODE = false;
+    renderSellerViewModalBody(s);
+  }
+
+  async function handleSendSellerMessage(sellerId, btn) {
+    if (!isMainAdmin()) return;
+    const s = ALL_SELLERS_FULL.find(x => x.id === sellerId);
+    if (!s) return;
+    const statusEl = document.getElementById("seMsgStatus");
+    const text = (document.getElementById("se-msg-text")?.value || "").trim();
+    if (!text) {
+      if (statusEl) { statusEl.textContent = "⚠️ يرجى كتابة نص الرسالة"; statusEl.style.color = "#92400e"; }
+      return;
+    }
+    btn.disabled = true;
+    try {
+      const { error } = await supabase.from("seller_admin_messages").insert({
+        seller_id: sellerId,
+        sender_id: CURRENT_STAFF_ID,
+        message:   text,
+      });
+      if (error) throw error;
+      showToast("✅ تم إرسال الرسالة إلى البائع");
+      SELLER_MSG_MODE = false;
+      renderSellerViewModalBody(s);
+    } catch (err) {
+      console.error("send seller_admin_messages error:", err);
+      if (statusEl) { statusEl.textContent = "❌ فشل الإرسال: " + (err.message || ""); statusEl.style.color = "#b91c1c"; }
       btn.disabled = false;
     }
   }
@@ -2671,11 +3016,12 @@ ${itemsText}
       });
     });
 
-    /* ── Sellers tab — toggle "show amount owed" ─────────────── */
+    /* ── Sellers tab — toggle "show amount owed" / open full profile ── */
     document.getElementById("tab-sellers")?.addEventListener("click", async e => {
-      const btn = e.target.closest('[data-action="toggle-show-owed"]');
-      if (!btn) return;
-      await handleToggleShowOwed(btn.dataset.id, btn);
+      const toggleBtn = e.target.closest('[data-action="toggle-show-owed"]');
+      if (toggleBtn) { await handleToggleShowOwed(toggleBtn.dataset.id, toggleBtn); return; }
+      const row = e.target.closest('[data-action="view-seller"]');
+      if (row) showSellerProfileModal(row.dataset.id);
     });
 
     /* ── Blocked customers tab — unblock ─────────────────────── */
@@ -2806,6 +3152,14 @@ ${itemsText}
       if (btn.dataset.action === "sellerapp-reject")  await handleRejectSellerApp(btn.dataset.id, btn);
       if (btn.dataset.action === "profilechange-approve") await handleApproveProfileChange(btn.dataset.id, btn);
       if (btn.dataset.action === "profilechange-reject")  await handleRejectProfileChange(btn.dataset.id, btn);
+      if (btn.dataset.action === "seller-edit")            handleShowSellerEdit(btn.dataset.id);
+      if (btn.dataset.action === "seller-edit-cancel")     handleCancelSellerEdit(btn.dataset.id);
+      if (btn.dataset.action === "seller-edit-save")       await handleSaveSellerEdit(btn.dataset.id, btn);
+      if (btn.dataset.action === "seller-toggle-active")   await handleToggleSellerActive(btn.dataset.id, btn);
+      if (btn.dataset.action === "seller-delete")          await handleDeleteSeller(btn.dataset.id, btn);
+      if (btn.dataset.action === "seller-message")         handleShowSellerMessage(btn.dataset.id);
+      if (btn.dataset.action === "seller-message-cancel")  handleCancelSellerMessage(btn.dataset.id);
+      if (btn.dataset.action === "seller-message-send")    await handleSendSellerMessage(btn.dataset.id, btn);
     });
 
     /* ── Mobile: Orders cards ──────────────────────────────── */
@@ -2988,18 +3342,15 @@ ${itemsText}
         isMainAdmin() ? fetchProfileChangeRequests().catch(() => []) : Promise.resolve([]),
       ]);
 
+      if (isMainAdmin()) {
+        ALL_SELLERS_FULL = await fetchSellersFull().catch(() => []);
+      }
+
       if (lastSeenOrders)   UNSEEN_ORDERS   = ALL_ORDERS.filter(o => new Date(o.created_at)   > new Date(lastSeenOrders)).length;
       if (lastSeenMessages) UNSEEN_MESSAGES = ALL_MESSAGES.filter(m => new Date(m.created_at) > new Date(lastSeenMessages)).length;
       updateLiveBadges();
 
-      const assignFilterEl = document.getElementById("assignFilter");
-      if (assignFilterEl) {
-        assignFilterEl.innerHTML = `
-          <option value="">📋 كل حالات التعيين</option>
-          <option value="unassigned">🆕 غير معيّن</option>
-          ${ALL_SELLERS.map(s => `<option value="${esc(s.id)}">👤 ${esc(s.full_name || s.email)}</option>`).join("")}
-          <option value="completed">✅ مكتمل</option>`;
-      }
+      renderAssignFilterOptions();
 
       renderStats(ALL_ORDERS);
       renderTable(getFiltered());

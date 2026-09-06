@@ -792,6 +792,13 @@
 
   <!-- ══ Tab: My Assigned Messages ═════════════════════════ -->
   <div class="tab-content" id="tab-messages">
+
+    <!-- رسائل من الإدارة (seller_admin_messages) — مختلفة عن رسائل الزبائن
+         أدناه (messages، معيّنة من الأدمن للمتابعة). قسم منفصل واضح
+         التسمية داخل نفس تبويب "رسائلي"، وليس تبويباً جديداً. -->
+    <div id="adminMsgSection"></div>
+
+    <div class="modal-section-title" style="margin:18px 0 10px;">✉️ رسائل الزبائن المعيّنة لك</div>
     <div class="controls-bar">
       <input type="text" class="search-input" id="msgSearchInput"
              placeholder="🔍 بحث بالاسم أو الهاتف أو محتوى الرسالة..."/>
@@ -911,6 +918,7 @@
   /* ── State ─────────────────────────────────────────────── */
   let ALL_ORDERS   = [];
   let ALL_MESSAGES = [];
+  let ALL_ADMIN_MESSAGES = []; // seller_admin_messages — direct notes from the main admin, separate from the customer `messages` above
   let ACTIVE_ORDER = null;
   let CURRENT_STAFF_ID = '';
   let UNSEEN_ORDERS   = 0;
@@ -1146,6 +1154,30 @@
       .limit(500);
     if (error) throw error;
     return data || [];
+  }
+
+  /* ── Direct messages from the main admin (seller_admin_messages) ──
+     A DIFFERENT table from `messages` above — see
+     20260906040000_admin_seller_management.sql. Not used in
+     PREVIEW_MODE (impersonation) -- that read-only inspection path
+     stays exactly as it was before this feature. ── */
+  async function fetchAdminMessages() {
+    const { data, error } = await supabase
+      .from("seller_admin_messages")
+      .select("id, message, is_read, read_at, created_at")
+      .eq("seller_id", CURRENT_STAFF_ID)
+      .order("created_at", { ascending: false })
+      .limit(200);
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function markAdminMessageRead(msgId) {
+    const { error } = await supabase
+      .from("seller_admin_messages")
+      .update({ is_read: true, read_at: new Date().toISOString() })
+      .eq("id", msgId);
+    if (error) throw error;
   }
 
   /* ── My quick-added books (pending admin review or already published) ── */
@@ -1652,12 +1684,57 @@
       </div>`).join("");
   }
 
+  /* ═══════════════════════════════════════════════════════════
+     DIRECT ADMIN MESSAGES — seller_admin_messages، قسم "رسائل من
+     الإدارة" داخل نفس تبويب "رسائلي". غير مرتبطة بـ PREVIEW_MODE
+     (لا تُعرض أثناء معاينة "View as User" — راجع الملاحظة أعلى
+     fetchAdminMessages()).
+  ═══════════════════════════════════════════════════════════ */
+  function renderAdminMessagesSection() {
+    const container = document.getElementById("adminMsgSection");
+    if (!container) return;
+    if (PREVIEW_MODE || !ALL_ADMIN_MESSAGES.length) {
+      container.innerHTML = "";
+      return;
+    }
+    container.innerHTML = `
+      <div class="modal-section-title" style="margin-bottom:10px;">📢 رسائل من الإدارة</div>
+      <div class="qadd-list" style="max-width:none;margin-bottom:6px;">
+        ${ALL_ADMIN_MESSAGES.map(m => `
+          <div class="m-msg-card" data-admin-msg-id="${esc(m.id)}"
+               style="background:${m.is_read ? "var(--white)" : "#eef2ff"};border:1px solid ${m.is_read ? "var(--border)" : "#a5b4fc"};border-radius:var(--radius-lg);padding:14px;box-shadow:var(--shadow-sm);cursor:pointer;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:6px;">
+              <strong>${m.is_read ? "" : "🔵 "}📢 إدارة المتجر</strong>
+              <span style="font-size:11px;color:var(--text-muted);white-space:nowrap;">${esc(fmtDate(m.created_at))}</span>
+            </div>
+            <div style="font-size:13px;white-space:pre-wrap;">${esc(m.message || "—")}</div>
+          </div>`).join("")}
+      </div>`;
+  }
+
+  async function handleOpenAdminMessage(msgId) {
+    const m = ALL_ADMIN_MESSAGES.find(x => x.id === msgId);
+    if (!m) return;
+    if (m.is_read) return; // already read — nothing to mark, just leave the card as-is
+    try {
+      await markAdminMessageRead(msgId);
+      m.is_read = true;
+      m.read_at = new Date().toISOString();
+      if (UNSEEN_MESSAGES > 0) UNSEEN_MESSAGES--;
+      updateLiveBadges();
+      renderAdminMessagesSection();
+    } catch (err) {
+      console.error("markAdminMessageRead error:", err);
+    }
+  }
+
   function renderMessagesTable(messages) {
+    renderAdminMessagesSection();
     renderMsgMobileCards(messages);
     const tbody = document.getElementById("msgTbody");
     document.getElementById("msgCount").textContent =
       messages.length + " رسالة" + (messages.length !== ALL_MESSAGES.length ? ` (من ${ALL_MESSAGES.length})` : "");
-    document.getElementById("tab-badge-messages").textContent = ALL_MESSAGES.length;
+    document.getElementById("tab-badge-messages").textContent = ALL_MESSAGES.length + ALL_ADMIN_MESSAGES.length;
 
     if (!messages.length) {
       tbody.innerHTML = `<tr><td colspan="6" class="empty">${emptyStateHTML("✉️", "لا توجد رسائل معيّنة لك حالياً")}</td></tr>`;
@@ -1998,6 +2075,18 @@
             updateLiveBadges();
             renderMessagesTable(getFilteredMyMessages());
           })
+      .on("postgres_changes",
+          { event: "INSERT", schema: "public", table: "seller_admin_messages", filter: `seller_id=eq.${CURRENT_STAFF_ID}` },
+          payload => {
+            const m = payload.new;
+            if (ALL_ADMIN_MESSAGES.some(x => x.id === m.id)) return;
+            ALL_ADMIN_MESSAGES.unshift(m);
+            if (!m.is_read) UNSEEN_MESSAGES++;
+            showToast("📢 رسالة جديدة من الإدارة");
+            updateLiveBadges();
+            renderAdminMessagesSection();
+            document.getElementById("tab-badge-messages").textContent = ALL_MESSAGES.length + ALL_ADMIN_MESSAGES.length;
+          })
       .subscribe();
   }
 
@@ -2116,6 +2205,14 @@
       if (completeBtn) { await handleMessageComplete(completeBtn.dataset.msgId, completeBtn); return; }
       const card = e.target.closest(".m-msg-card");
       if (card) showMessageModal(card.dataset.msgId);
+    });
+
+    /* ── Direct admin messages (رسائل من الإدارة) — click a card to
+       mark it read (see handleOpenAdminMessage()) ── */
+    document.getElementById("adminMsgSection")?.addEventListener("click", async e => {
+      const card = e.target.closest("[data-admin-msg-id]");
+      if (!card) return;
+      await handleOpenAdminMessage(card.dataset.adminMsgId);
     });
 
     /* ── Quick-add book ──────────────────────────────────────── */
@@ -2268,15 +2365,22 @@
       document.getElementById("sellerBadge").textContent =
         "🛒 بائع" + (staff.full_name ? " — " + staff.full_name : "");
 
-      [ALL_ORDERS, ALL_MESSAGES, MY_SUBMISSIONS, SELLER_PROFILE, LATEST_PROFILE_REQUEST] = await Promise.all([
-        fetchMyOrders(), fetchMyMessages(), fetchMySubmissions(),
+      [ALL_ORDERS, ALL_MESSAGES, ALL_ADMIN_MESSAGES, MY_SUBMISSIONS, SELLER_PROFILE, LATEST_PROFILE_REQUEST] = await Promise.all([
+        fetchMyOrders(), fetchMyMessages(), fetchAdminMessages().catch(() => []), fetchMySubmissions(),
         fetchSellerProfile(), fetchLatestProfileChangeRequest(),
       ]);
+
+      /* رسائل الإدارة غير المقروءة تُحسب ضمن نفس عداد "غير مُشاهد" الذي
+         تعرضه liveBadgeMessages — على عكس رسائل الزبائن (لا عمود is_read
+         لها، تُحسب فقط عبر Realtime أثناء الجلسة)، رسائل الإدارة تحمل
+         حالة قراءة حقيقية محفوظة في القاعدة، فتُحتسب هنا منذ الإقلاع. */
+      UNSEEN_MESSAGES += ALL_ADMIN_MESSAGES.filter(m => !m.is_read).length;
 
       renderProfile(CURRENT_STAFF, SELLER_PROFILE, LATEST_PROFILE_REQUEST);
       renderOrdersTable(getFilteredOrders());
       renderMessagesTable(getFilteredMyMessages());
       renderMySubmissions(MY_SUBMISSIONS);
+      updateLiveBadges();
       bindEvents();
       setupRealtime();
 
