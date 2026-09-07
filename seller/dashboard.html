@@ -1112,7 +1112,7 @@
 
     const { data: staff, error } = await supabase
       .from("staff_accounts")
-      .select("id, full_name, email, role, is_active, show_amount_owed")
+      .select("id, full_name, email, role, is_active")
       .eq("id", session.user.id)
       .maybeSingle();
 

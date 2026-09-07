@@ -227,7 +227,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   async function fetchSellers() {
     const { data, error } = await supabase
       .from("staff_accounts")
-      .select("id, full_name, email, show_amount_owed")
+      .select("id, full_name, email")
       .eq("role", "seller")
       .eq("is_active", true)
       .order("full_name");
@@ -238,8 +238,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   /* ─────────────────────────────────────────────────────────
      FETCH — كل حسابات البائعين (نشطة وغير نشطة) لتبويب الإدارة
      الكاملة أدناه. مختلف عمداً عن fetchSellers() أعلاه — تلك الدالة
-     تُستخدم لملء قوائم "تعيين لبائع" وقائمة تبويب "البائعين" (إعداد
-     المبلغ المستحق)، وتقتصر على النشطين فقط، وهذا صحيح ويجب أن يبقى
+     تُستخدم لملء قوائم "تعيين لبائع"، وتقتصر على النشطين فقط، وهذا صحيح ويجب أن يبقى
      كذلك (لا يجوز أن يظهر بائع معطَّل في قائمة تعيين طلب جديد). هذه
      الدالة الجديدة، على العكس، مخصصة حصراً لعرض/إدارة كل حساب بائع
      موجود — نشط أو معطَّل — من تبويب الإدارة الكاملة. seller_profiles
@@ -250,7 +249,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   async function fetchSellersFull() {
     const { data: staffRows, error: staffErr } = await supabase
       .from("staff_accounts")
-      .select("id, full_name, email, is_active, show_amount_owed, created_at")
+      .select("id, full_name, email, is_active, created_at")
       .eq("role", "seller")
       .order("created_at", { ascending: false });
     if (staffErr) throw staffErr;
@@ -339,7 +338,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
-     SELLERS TAB — إعداد "إظهار المبلغ المستحق" لكل بائع
+     SELLERS TAB — عرض/تعديل/تعطيل/حذف/مراسلة أي حساب بائع
      يظهر هذا التبويب فقط لحساب الأدمن الرئيسي (isMainAdmin()) —
      هذا مجرد تسهيل واجهة. الحماية الفعلية هي سياسة RLS
      staff_accounts_main_admin_update التي تقبل فقط
@@ -368,44 +367,11 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
               <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">
                 ${esc(s.profile?.wilaya || "—")}، ${esc(s.profile?.commune || "—")} · انضم ${esc(fmtDate(s.created_at))}
               </span>
-              <span style="display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;justify-content:flex-end;" onclick="event.stopPropagation();">
-                <span style="font-size:12px;color:var(--text-muted);">إظهار المبلغ المستحق</span>
-                <button type="button" class="pm-toggle ${s.show_amount_owed ? "is-on" : ""}"
-                        data-action="toggle-show-owed" data-id="${esc(s.id)}"
-                        role="switch" aria-checked="${!!s.show_amount_owed}">
-                  <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
-                  <span class="pm-toggle-label">${s.show_amount_owed ? "🟢 ظاهر" : "⚪ مخفي"}</span>
-                </button>
-              </span>
             </span>
             <span style="flex-shrink:0;">${sellerStatusBadge(s.is_active)}</span>
           </div>`).join("")
         : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا يوجد بائعون بعد</p>`}
       </div>`;
-  }
-
-  async function handleToggleShowOwed(sellerId, btn) {
-    if (!isMainAdmin()) return;
-    const seller = ALL_SELLERS_FULL.find(s => s.id === sellerId);
-    if (!seller) return;
-    const next = !seller.show_amount_owed;
-    btn.disabled = true;
-    try {
-      const { error } = await supabase
-        .from("staff_accounts")
-        .update({ show_amount_owed: next })
-        .eq("id", sellerId);
-      if (error) throw error;
-      seller.show_amount_owed = next;
-      const legacyRef = ALL_SELLERS.find(s => s.id === sellerId);
-      if (legacyRef) legacyRef.show_amount_owed = next;
-      renderSellersTab();
-    } catch (err) {
-      console.error("Toggle show_amount_owed error:", err);
-      showToast("❌ فشل تحديث الإعداد: " + (err.message || ""), "error");
-    } finally {
-      btn.disabled = false;
-    }
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -604,7 +570,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
          أضف البائع عند التفعيل، أزله عند التعطيل، ثم أعد بناء القائمة. */
       if (next) {
         if (!ALL_SELLERS.some(x => x.id === sellerId)) {
-          ALL_SELLERS.push({ id: s.id, full_name: s.full_name, email: s.email, show_amount_owed: s.show_amount_owed });
+          ALL_SELLERS.push({ id: s.id, full_name: s.full_name, email: s.email });
           ALL_SELLERS.sort((a, b) => (a.full_name || a.email || "").localeCompare(b.full_name || b.email || ""));
         }
       } else {
@@ -3016,10 +2982,8 @@ ${itemsText}
       });
     });
 
-    /* ── Sellers tab — toggle "show amount owed" / open full profile ── */
+    /* ── Sellers tab — open full profile ── */
     document.getElementById("tab-sellers")?.addEventListener("click", async e => {
-      const toggleBtn = e.target.closest('[data-action="toggle-show-owed"]');
-      if (toggleBtn) { await handleToggleShowOwed(toggleBtn.dataset.id, toggleBtn); return; }
       const row = e.target.closest('[data-action="view-seller"]');
       if (row) showSellerProfileModal(row.dataset.id);
     });
@@ -3323,8 +3287,7 @@ ${itemsText}
         document.getElementById("navBtnSellerProfileChanges").style.display = "";
       }
       /* "الموظفون" متاح لأي أدمن (ليس حصراً على الأدمن الرئيسي) —
-         هذا التبويب للعرض/التعيين فقط، لا يتضمن أي إعداد مالي حساس
-         مثل "إظهار المبلغ المستحق". */
+         هذا التبويب للعرض/التعيين فقط، لا يتضمن أي إعداد مالي حساس. */
       document.getElementById("navBtnAgents").style.display = "";
 
       /* حساب "غير مُشاهد منذ آخر زيارة" قبل أي بيانات جديدة تصل عبر Realtime */
