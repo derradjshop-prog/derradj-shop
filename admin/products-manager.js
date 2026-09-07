@@ -178,6 +178,11 @@
   let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' | 'subscriptions' | 'pending' */
   let PROD_SUBFILTER = 'all';     /* electronics-only: 'all' | a categories.slug */
   let PROD_SEARCH_QUERY = '';
+  /* Bulk-delete selection — IDs, so it survives renderTable() re-renders
+     (availability toggle, drag reorder, filter switch) intact. Only
+     "Select All" is filter-aware (getFilteredProducts()); the Set itself
+     can hold ids currently hidden by a filter without losing them. */
+  let SELECTED_PRODUCT_IDS = new Set();
   let DRAG_SRC_ID = null;
   let BOOK_SORT_MODE = 'manual';
   let BOOK_SALES = new Map();
@@ -582,6 +587,36 @@
     .pm-empty {
       text-align:center; padding:40px 20px;
       color:#94a3b8; font-size:15px;
+    }
+
+    /* ── Bulk selection bar + checkboxes ─────────────────── */
+    .pm-row-checkbox, .pm-mcard-checkbox {
+      width:17px; height:17px; cursor:pointer; accent-color:#059669;
+      flex-shrink:0;
+    }
+    .pm-mcard-checkbox-wrap { display:flex; align-items:flex-start; padding-top:3px; }
+    .pm-bulk-bar {
+      display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+      background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;
+      padding:10px 14px; margin-bottom:14px;
+    }
+    .pm-bulk-selectall {
+      display:flex; align-items:center; gap:6px;
+      font-size:13px; font-weight:700; color:#334155; cursor:pointer;
+    }
+    .pm-bulk-count { font-size:13px; font-weight:800; color:#475569; margin-inline-end:auto; }
+    .btn-pm-bulk-del {
+      padding:9px 18px; background:#dc2626; color:#fff; border:none;
+      border-radius:9px; font-size:13px; font-weight:800; cursor:pointer;
+      font-family:'Cairo',sans-serif; transition:background .2s; white-space:nowrap;
+    }
+    .btn-pm-bulk-del:hover:not(:disabled) { background:#b91c1c; }
+    .btn-pm-bulk-del:disabled { background:#cbd5e1; cursor:not-allowed; }
+    @media (max-width:600px) {
+      .pm-bulk-bar { padding:10px; }
+      .pm-bulk-count { width:100%; margin-inline-end:0; order:1; }
+      .btn-pm-bulk-del { flex:1; order:3; }
+      .pm-bulk-selectall { order:2; }
     }
 
     /* ── Availability cell ───────────────────────────────── */
@@ -989,10 +1024,19 @@
           <span class="orders-count" id="pmResultsCount"></span>
         </div>
 
+        <div class="pm-bulk-bar" id="pmBulkBar">
+          <label class="pm-bulk-selectall">
+            <input type="checkbox" id="pmBulkSelectAll"> تحديد الكل (النتائج الظاهرة)
+          </label>
+          <span class="pm-bulk-count" id="pmBulkCount">لم يتم تحديد أي منتج</span>
+          <button type="button" class="btn-pm-bulk-del" id="pmBulkDeleteBtn" disabled>🗑️ حذف المنتجات المحددة</button>
+        </div>
+
         <div class="pm-tbl-wrap">
           <table class="pm-tbl">
             <thead>
               <tr>
+                <th style="width:34px;"><input type="checkbox" class="pm-row-checkbox" id="pmSelectAllCheckbox" title="تحديد الكل"></th>
                 <th>الصورة</th>
                 <th>اسم المنتج</th>
                 <th>الفئة</th>
@@ -1003,7 +1047,7 @@
               </tr>
             </thead>
             <tbody id="pmTbody">
-              <tr><td colspan="7" class="pm-empty">⏳ جاري التحميل...</td></tr>
+              <tr><td colspan="8" class="pm-empty">⏳ جاري التحميل...</td></tr>
             </tbody>
           </table>
         </div>
@@ -1749,7 +1793,7 @@
     /* Drag & drop reordering */
     bindDragEvents(pmTbody);
 
-    /* ── Mobile cards: only availability toggle + reorder are interactive ── */
+    /* ── Mobile cards: checkbox + availability toggle + reorder are interactive ── */
     const pmMobileCards = document.getElementById('pmMobileCards');
     pmMobileCards?.addEventListener('click', e => {
       const moveBtn = e.target.closest('button[data-pma="moveup"], button[data-pma="movedown"]');
@@ -1766,6 +1810,27 @@
         setAvailability(availBtn.dataset.pmid, next);
       }
     });
+
+    /* ── Bulk selection — row/card checkboxes + both "select all" entry
+       points (table header, hidden on mobile; bulk-bar checkbox, always
+       visible) ── */
+    pmTbody?.addEventListener('change', e => {
+      const cb = e.target.closest('input[data-pma="select"]');
+      if (!cb) return;
+      toggleProductSelection(cb.dataset.pmid, cb.checked);
+    });
+    pmMobileCards?.addEventListener('change', e => {
+      const cb = e.target.closest('input[data-pma="select"]');
+      if (!cb) return;
+      toggleProductSelection(cb.dataset.pmid, cb.checked);
+    });
+    document.getElementById('pmSelectAllCheckbox')?.addEventListener('change', e => {
+      handleSelectAllToggle(e.target.checked);
+    });
+    document.getElementById('pmBulkSelectAll')?.addEventListener('change', e => {
+      handleSelectAllToggle(e.target.checked);
+    });
+    document.getElementById('pmBulkDeleteBtn')?.addEventListener('click', handleBulkDeleteClick);
 
     /* Delete — only reachable from inside the edit modal */
     document.getElementById('pmDeleteBtn')?.addEventListener('click', async function () {
@@ -1860,7 +1925,7 @@
   async function loadProducts() {
     const tbody = document.getElementById('pmTbody');
     if (!tbody) return;
-    tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">⏳ جاري التحميل...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="pm-empty">⏳ جاري التحميل...</td></tr>`;
 
     console.log('[PM] loadProducts — querying admin_products_catalog');
 
@@ -1870,7 +1935,8 @@
 
       if (!session) {
         console.warn('[PM] No active session — products cannot load');
-        tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">🔒 يجب تسجيل الدخول</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" class="pm-empty">🔒 يجب تسجيل الدخول</td></tr>`;
+        updateBulkSelectionUI();
         return;
       }
 
@@ -1924,6 +1990,12 @@
       ALL_PM_PRODUCTS = data || [];
       PM_LAST_LOADED = Date.now();
 
+      /* Drop selections for products that no longer exist (deleted
+         elsewhere, or just removed by this same bulk-delete run) so the
+         count/button never reference a stale id. */
+      const liveIds = new Set(ALL_PM_PRODUCTS.map(p => p.id));
+      SELECTED_PRODUCT_IDS.forEach(id => { if (!liveIds.has(id)) SELECTED_PRODUCT_IDS.delete(id); });
+
       /* Show/hide the "column missing" warning banner */
       const warning = document.getElementById('pmOrderWarning');
       if (warning) warning.style.display = DISPLAY_ORDER_SUPPORTED ? 'none' : 'block';
@@ -1937,12 +2009,13 @@
       }
     } catch (err) {
       console.error('[PM] loadProducts failed:', err);
-      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">
+      tbody.innerHTML = `<tr><td colspan="8" class="pm-empty">
         ❌ فشل تحميل المنتجات: ${esc(err.message)}
         <br><small style="font-size:11px;color:#94a3b8;margin-top:4px;display:block;">
           افتح Developer Console (F12) وابحث عن رسائل [PM] للتفاصيل
         </small>
       </td></tr>`;
+      updateBulkSelectionUI();
     }
   }
 
@@ -2286,6 +2359,7 @@
     const dragLocked = salesMode || subFiltered;
 
     return `<tr draggable="${dragLocked ? 'false' : 'true'}" data-pmid="${esc(p.id)}" class="${isPending ? 'pm-row-pending' : ''}">
+        <td><input type="checkbox" class="pm-row-checkbox" data-pma="select" data-pmid="${esc(p.id)}" ${SELECTED_PRODUCT_IDS.has(p.id) ? 'checked' : ''}></td>
         <td>${imgHtml}</td>
         <td>
           <strong style="font-size:13px;display:block;">${esc(p.product_name)}</strong>
@@ -2331,6 +2405,7 @@
     const isPending = p.status === 'pending_review';
 
     return `<div class="pm-mcard ${isPending ? 'pm-row-pending' : ''}" data-pmid="${esc(p.id)}">
+        <div class="pm-mcard-checkbox-wrap"><input type="checkbox" class="pm-mcard-checkbox" data-pma="select" data-pmid="${esc(p.id)}" ${SELECTED_PRODUCT_IDS.has(p.id) ? 'checked' : ''}></div>
         ${imgHtml}
         <div class="pm-mcard-body">
           <div class="pm-mcard-name">${esc(p.product_name)}</div>
@@ -2359,7 +2434,7 @@
     updateSubfilterBadges();
 
     if (!ALL_PM_PRODUCTS.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">
+      tbody.innerHTML = `<tr><td colspan="8" class="pm-empty">
         <div style="font-size:15px;">لا توجد منتجات بعد.</div>
         <div style="font-size:12px;color:#94a3b8;margin-top:6px;max-width:420px;margin-left:auto;margin-right:auto;line-height:1.6;">
           إذا أضفت منتجاً ولا يظهر هنا، افتح Developer Console (F12) وابحث عن رسائل <strong>[PM]</strong>.
@@ -2369,6 +2444,7 @@
       </td></tr>`;
       document.getElementById('pmRetryBtn')?.addEventListener('click', loadProducts);
       if (mcards) mcards.innerHTML = `<div class="pm-empty">لا توجد منتجات بعد.</div>`;
+      updateBulkSelectionUI();
       return;
     }
 
@@ -2380,13 +2456,15 @@
     }
 
     if (!list.length) {
-      tbody.innerHTML = `<tr><td colspan="7" class="pm-empty">لا توجد منتجات مطابقة</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="pm-empty">لا توجد منتجات مطابقة</td></tr>`;
       if (mcards) mcards.innerHTML = `<div class="pm-empty">لا توجد منتجات مطابقة</div>`;
+      updateBulkSelectionUI();
       return;
     }
 
     tbody.innerHTML = list.map(rowHtml).join('');
     if (mcards) mcards.innerHTML = list.map(mobileCardHtml).join('');
+    updateBulkSelectionUI();
   }
 
   /* ══════════════════════════════════════════════════════════
@@ -3314,6 +3392,163 @@
         saveBtn.textContent = EDIT_PRODUCT_ID ? '💾 حفظ التعديلات' : '🚀 نشر المنتج';
       }
     }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     BULK SELECTION + BULK DELETE
+  ══════════════════════════════════════════════════════════ */
+  function toggleProductSelection(id, checked) {
+    if (!id) return;
+    if (checked) SELECTED_PRODUCT_IDS.add(id);
+    else SELECTED_PRODUCT_IDS.delete(id);
+    /* A product's row (desktop table) and card (mobile) checkboxes are
+       two separate DOM nodes for the same id — keep both in sync so
+       switching between views never shows a stale checked state. */
+    document.querySelectorAll(`input[data-pma="select"][data-pmid="${id}"]`)
+      .forEach(cb => { cb.checked = checked; });
+    updateBulkSelectionUI();
+  }
+
+  /* "Select All" only ever touches what's currently visible under the
+     active category filter/subfilter/search — selecting inside a
+     filtered view can never silently pull in rows the admin can't see. */
+  function handleSelectAllToggle(checked) {
+    getFilteredProducts().forEach(p => {
+      if (checked) SELECTED_PRODUCT_IDS.add(p.id);
+      else SELECTED_PRODUCT_IDS.delete(p.id);
+    });
+    renderTable();
+  }
+
+  function updateBulkSelectionUI() {
+    const visibleIds = getFilteredProducts().map(p => p.id);
+    const selectedVisible = visibleIds.filter(id => SELECTED_PRODUCT_IDS.has(id)).length;
+    const total = SELECTED_PRODUCT_IDS.size;
+
+    const countEl = document.getElementById('pmBulkCount');
+    if (countEl) {
+      countEl.textContent = total > 0 ? `تم تحديد ${total} منتج${total > 1 ? 'ات' : ''}` : 'لم يتم تحديد أي منتج';
+    }
+    const delBtn = document.getElementById('pmBulkDeleteBtn');
+    if (delBtn && !delBtn.dataset.busy) delBtn.disabled = total === 0;
+
+    [document.getElementById('pmSelectAllCheckbox'), document.getElementById('pmBulkSelectAll')].forEach(cb => {
+      if (!cb) return;
+      cb.checked = visibleIds.length > 0 && selectedVisible === visibleIds.length;
+      cb.indeterminate = selectedVisible > 0 && selectedVisible < visibleIds.length;
+    });
+  }
+
+  function selectedProductsList() {
+    return ALL_PM_PRODUCTS.filter(p => SELECTED_PRODUCT_IDS.has(p.id));
+  }
+
+  /* Deletes every product in `products`, one row at a time (same DB call
+     deleteProduct() uses), so a failure on one product never blocks or
+     falsely reports the others. Storage/local-image cleanup only runs
+     for rows that actually confirmed deleted — mirrors deleteProduct()'s
+     "commit first, clean up after" rule. Takes plain admin_products_catalog
+     row objects (id, product_name, main_image, gallery_images) — never
+     reads ALL_PM_PRODUCTS/SELECTED_PRODUCT_IDS — so it works unchanged for
+     a caller outside this tab (see confirmAndBulkDelete/window.PMProducts
+     below). Returns { succeeded, failed }; never throws. */
+  async function bulkDeletePermanently(products) {
+    const succeeded = [];
+    const failed = [];
+
+    for (const p of products) {
+      try {
+        /* .select('id') confirms the row was actually deleted (not just
+           "no error") — RLS can otherwise let a delete "succeed" with 0
+           rows affected, which must never be reported as a success. */
+        const { data, error } = await sb.from('admin_products_catalog').delete().eq('id', p.id).select('id');
+        if (error) throw error;
+        if (!data || !data.length) throw new Error('لم يتم العثور على المنتج أو لا توجد صلاحية كافية');
+        succeeded.push(p);
+      } catch (err) {
+        console.error('[PM] bulk delete failed for', p.id, p.product_name, err);
+        failed.push({ product: p, error: err });
+      }
+    }
+
+    if (succeeded.length) {
+      const urls = succeeded.flatMap(collectImageUrls);
+      for (const u of urls) {
+        const local = parseLocalImagePath(u);
+        if (local && window.LocalFS) await window.LocalFS.deleteProductImage(local);
+      }
+      const { failed: failedImages } = await cleanupOrphanedImages(urls);
+      if (failedImages.length) {
+        console.warn('[PM] could not remove image(s) from Storage after bulk delete:', failedImages);
+      }
+      triggerPageRebuild(`حذف جماعي: ${succeeded.length} منتج`);
+    }
+
+    return { succeeded, failed };
+  }
+
+  /* Shared confirm → delete → report flow so "permanently delete these
+     products" only ever looks and behaves ONE way across the admin,
+     whether triggered from this tab's own bulk-delete button or from
+     another screen that also lists real products (e.g. bestseller-
+     picks.js's "المنتجات الأكثر مبيعاً" — see window.PMProducts below)
+     — never a second, divergent deletion system. `onConfirmed` (optional)
+     fires right after the admin confirms and before the delete loop
+     starts, so the caller can flip its own button into a busy state at
+     the right moment. Returns null if the admin cancelled, otherwise
+     { succeeded, failed } (same shape as bulkDeletePermanently). */
+  async function confirmAndBulkDelete(products, onConfirmed) {
+    if (!products.length) return null;
+
+    const preview = products.slice(0, 6).map(p => `• ${p.product_name}`).join('\n');
+    const remainder = products.length - 6;
+    const more = remainder > 0 ? `\n… و${remainder} منتج${remainder > 1 ? 'ات' : ''} أخرى` : '';
+    const confirmed = await DZDialog.confirm(
+      `سيتم حذف ${products.length} منتج${products.length > 1 ? 'ات' : ''} نهائياً من قاعدة البيانات ومن الموقع، بما في ذلك صورها — ولا يمكن التراجع عن هذا الإجراء:\n\n${preview}${more}`,
+      { title: '⚠️ حذف نهائي', danger: true, confirmText: `حذف ${products.length} منتج`, cancelText: 'إلغاء' }
+    );
+    if (!confirmed) return null;
+
+    if (typeof onConfirmed === 'function') onConfirmed();
+
+    const { succeeded, failed } = await bulkDeletePermanently(products);
+
+    if (failed.length) {
+      const names = failed.slice(0, 6)
+        .map(f => `• ${f.product.product_name}: ${f.error.message || f.error}`).join('\n');
+      await DZDialog.alert(
+        `تم حذف ${succeeded.length} من ${products.length} منتج بنجاح.\nفشل حذف ${failed.length}:\n${names}`,
+        { title: '⚠️ حذف جزئي', type: 'warning' }
+      );
+    } else {
+      showToast(`✅ تم حذف ${succeeded.length} منتج بنجاح`);
+    }
+
+    return { succeeded, failed };
+  }
+
+  /* Public API — the only sanctioned way for another admin screen to
+     permanently delete real products. See confirmAndBulkDelete's comment. */
+  window.PMProducts = { confirmAndBulkDelete };
+
+  async function handleBulkDeleteClick() {
+    const targets = selectedProductsList();
+    if (!targets.length) return;
+
+    const btn = document.getElementById('pmBulkDeleteBtn');
+    const result = await confirmAndBulkDelete(targets, () => {
+      if (btn) { btn.dataset.busy = '1'; btn.disabled = true; btn.textContent = '⏳ جارٍ الحذف...'; }
+    });
+    if (!result) return; /* cancelled — nothing changed */
+
+    /* Keep failed ids selected so the admin can see + retry exactly what
+       didn't delete; only drop the ones that actually succeeded. */
+    result.succeeded.forEach(p => SELECTED_PRODUCT_IDS.delete(p.id));
+
+    await loadProducts();
+
+    if (btn) { delete btn.dataset.busy; btn.textContent = '🗑️ حذف المنتجات المحددة'; }
+    updateBulkSelectionUI();
   }
 
   /* ══════════════════════════════════════════════════════════

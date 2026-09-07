@@ -22,7 +22,7 @@
   }
   function escAttr(v) { return esc(v).replaceAll('"', '&quot;'); }
 
-  const PICK_SELECT = 'id,display_order,product_id,admin_products_catalog(id,catalog_id,product_name,product_name_ar,category,subcategory,price,slug,main_image,is_active)';
+  const PICK_SELECT = 'id,display_order,product_id,admin_products_catalog(id,catalog_id,product_name,product_name_ar,category,subcategory,price,slug,main_image,gallery_images,is_active)';
 
   /* ── Resolve a stored main_image into a displayable URL — copied
      verbatim from admin/products-manager.js's resolveThumbSrc() so the
@@ -66,6 +66,11 @@
   let DRAG_SRC_ID = null;
   let loadedOnce = false;
   let BROWSE_QUERY = '';
+  /* Bulk-delete selection — keyed by the real admin_products_catalog id
+     (not the pick row id), so it lines up with what window.PMProducts
+     .confirmAndBulkDelete() actually deletes. A "missing" pick (its
+     product already gone) has no id to key on and is never selectable. */
+  let SELECTED_PICK_PRODUCT_IDS = new Set();
 
   /* ══════════════════════════════════════════════════════════
      DATA
@@ -77,11 +82,21 @@
         .order('display_order', { ascending: true });
       if (error) throw error;
       PICKS = data || [];
+      pruneStaleSelection();
     } catch (err) {
       console.warn('[BP] failed to load bestseller picks:', err.message || err);
       PICKS = [];
+      pruneStaleSelection();
       showToast('❌ فشل تحميل قائمة الأكثر مبيعاً: ' + (err.message || ''), 'error');
     }
+  }
+
+  /* Drops any selected id whose pick no longer exists (deleted elsewhere,
+     unpicked, or just removed by this same bulk-delete run) so the
+     count/button never reference a stale id. */
+  function pruneStaleSelection() {
+    const liveIds = new Set(PICKS.filter(p => p.admin_products_catalog).map(p => p.admin_products_catalog.id));
+    SELECTED_PICK_PRODUCT_IDS.forEach(id => { if (!liveIds.has(id)) SELECTED_PICK_PRODUCT_IDS.delete(id); });
   }
 
   async function loadEnabledFlag() {
@@ -154,7 +169,9 @@
   async function removePick(pickId) {
     if (!(await DZDialog.confirm('إزالة هذا المنتج من الأكثر مبيعاً؟ (لن يتم حذف المنتج نفسه)', { danger: true, confirmText: 'إزالة' }))) return;
     const prev = PICKS;
+    const removed = PICKS.find(p => p.id === pickId);
     PICKS = PICKS.filter(p => p.id !== pickId);
+    if (removed?.admin_products_catalog) SELECTED_PICK_PRODUCT_IDS.delete(removed.admin_products_catalog.id);
     render();
     try {
       const { error } = await sb.from('bestseller_picks').delete().eq('id', pickId);
@@ -165,6 +182,80 @@
       render();
       showToast('❌ فشلت الإزالة: ' + (err.message || ''), 'error');
     }
+  }
+
+  /* ══════════════════════════════════════════════════════════
+     BULK SELECTION + BULK DELETE — deletes the actual product (not just
+     its pick), through the exact same shared path as the "إدارة
+     المنتجات" tab's own bulk-delete: window.PMProducts.confirmAndBulkDelete()
+     (admin/products-manager.js). Same confirm-dialog copy, same
+     per-row delete + Storage/local-image cleanup, same success/partial-
+     failure reporting — never a second, divergent deletion system.
+     Deleting a product cascades its bestseller_picks row automatically
+     (admin/best-selling-products.sql: product_id ... ON DELETE CASCADE),
+     so a plain loadPicks() + render() afterward is enough to drop it
+     from this list too. ══════════════════════════════════════ */
+  function selectablePickProducts() {
+    return PICKS.filter(p => p.admin_products_catalog).map(p => p.admin_products_catalog);
+  }
+
+  function toggleProductSelection(pid, checked) {
+    if (!pid) return;
+    if (checked) SELECTED_PICK_PRODUCT_IDS.add(pid);
+    else SELECTED_PICK_PRODUCT_IDS.delete(pid);
+    document.querySelectorAll(`input[data-bpa="select"][data-pid="${pid}"]`)
+      .forEach(cb => { cb.checked = checked; });
+    updateBulkSelectionUI();
+  }
+
+  function handleSelectAllToggle(checked) {
+    selectablePickProducts().forEach(p => {
+      if (checked) SELECTED_PICK_PRODUCT_IDS.add(p.id);
+      else SELECTED_PICK_PRODUCT_IDS.delete(p.id);
+    });
+    render();
+  }
+
+  function updateBulkSelectionUI() {
+    const selectableIds = selectablePickProducts().map(p => p.id);
+    const selectedCount = selectableIds.filter(id => SELECTED_PICK_PRODUCT_IDS.has(id)).length;
+    const total = SELECTED_PICK_PRODUCT_IDS.size;
+
+    const countEl = document.getElementById('bpBulkCount');
+    if (countEl) {
+      countEl.textContent = total > 0 ? `تم تحديد ${total} منتج${total > 1 ? 'ات' : ''}` : 'لم يتم تحديد أي منتج';
+    }
+    const delBtn = document.getElementById('bpBulkDeleteBtn');
+    if (delBtn && !delBtn.dataset.busy) delBtn.disabled = total === 0;
+
+    const selectAll = document.getElementById('bpSelectAllCheckbox');
+    if (selectAll) {
+      selectAll.checked = selectableIds.length > 0 && selectedCount === selectableIds.length;
+      selectAll.indeterminate = selectedCount > 0 && selectedCount < selectableIds.length;
+    }
+  }
+
+  async function handleBulkDeleteClick() {
+    const targets = selectablePickProducts().filter(p => SELECTED_PICK_PRODUCT_IDS.has(p.id));
+    if (!targets.length) return;
+    if (!window.PMProducts?.confirmAndBulkDelete) {
+      showToast('❌ وظيفة الحذف غير متاحة — أعد تحميل الصفحة', 'error');
+      return;
+    }
+
+    const btn = document.getElementById('bpBulkDeleteBtn');
+    const result = await window.PMProducts.confirmAndBulkDelete(targets, () => {
+      if (btn) { btn.dataset.busy = '1'; btn.disabled = true; btn.textContent = '⏳ جارٍ الحذف...'; }
+    });
+    if (!result) return; /* cancelled — nothing changed */
+
+    result.succeeded.forEach(p => SELECTED_PICK_PRODUCT_IDS.delete(p.id));
+
+    await loadPicks();
+    render();
+
+    if (btn) { delete btn.dataset.busy; btn.textContent = '🗑️ حذف المنتجات المحددة'; }
+    updateBulkSelectionUI();
   }
 
   /* Mutates display_order = 1..N in place and returns just the rows that changed. */
@@ -328,8 +419,12 @@
     const badge = missing
       ? `<span class="bp-badge bp-badge-danger">⚠ محذوف</span>`
       : (inactive ? `<span class="bp-badge bp-badge-warn">⚠ غير نشط</span>` : '');
+    const checked = !missing && SELECTED_PICK_PRODUCT_IDS.has(p.id);
     return `
       <div class="bp-row" draggable="true" data-pick-id="${escAttr(pick.id)}">
+        <input type="checkbox" class="pm-row-checkbox" data-bpa="select"
+               ${missing ? 'disabled title="لا يمكن حذف منتج محذوف مسبقاً"' : `data-pid="${escAttr(p.id)}"`}
+               ${checked ? 'checked' : ''}>
         <span class="bp-drag-handle" title="اسحب لإعادة الترتيب">⠿</span>
         <span class="bp-rank">${i + 1}</span>
         ${missing ? `<div class="bp-thumb-ph">📦</div>` : thumbImgHtml(p, 'bp-thumb')}
@@ -358,10 +453,12 @@
     if (count) count.textContent = PICKS.length + ' منتج';
     if (!PICKS.length) {
       list.innerHTML = `<div class="bp-empty">لا توجد منتجات في قسم الأكثر مبيعاً بعد — استخدم البحث أعلاه لإضافة منتجات.</div>`;
+      updateBulkSelectionUI();
       return;
     }
     list.innerHTML = PICKS.map((pick, i) => pickRowHtml(pick, i)).join('');
     bindDragEvents(list);
+    updateBulkSelectionUI();
   }
 
   function render() {
@@ -688,6 +785,13 @@
         </div>
         <div class="bp-search-results" id="bpSearchResults"></div>
       </div>
+      <div class="pm-bulk-bar" id="bpBulkBar">
+        <label class="pm-bulk-selectall">
+          <input type="checkbox" id="bpSelectAllCheckbox"> تحديد الكل
+        </label>
+        <span class="pm-bulk-count" id="bpBulkCount">لم يتم تحديد أي منتج</span>
+        <button type="button" class="btn-pm-bulk-del" id="bpBulkDeleteBtn" disabled>🗑️ حذف المنتجات المحددة</button>
+      </div>
       <div class="bp-list" id="bpList">
         <div class="bp-empty">⏳ جاري التحميل...</div>
       </div>
@@ -729,6 +833,18 @@
       const downBtn = e.target.closest('[data-bpa="down"]');
       if (downBtn && !downBtn.disabled) { movePickStep(downBtn.dataset.pickId, 1); return; }
     });
+
+    /* Bulk selection — row checkboxes + both "select all"/bulk-delete
+       entry points, same reuse pattern as products-manager.js. */
+    tab.addEventListener('change', e => {
+      const cb = e.target.closest('input[data-bpa="select"]');
+      if (!cb || cb.disabled) return;
+      toggleProductSelection(cb.dataset.pid, cb.checked);
+    });
+    document.getElementById('bpSelectAllCheckbox').addEventListener('change', e => {
+      handleSelectAllToggle(e.target.checked);
+    });
+    document.getElementById('bpBulkDeleteBtn').addEventListener('click', handleBulkDeleteClick);
 
     /* "الترتيب" number field — Enter commits + blurs; focusout (bubbles) saves. */
     tab.addEventListener('keydown', e => {

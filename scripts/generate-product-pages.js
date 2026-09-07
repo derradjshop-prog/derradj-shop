@@ -456,6 +456,7 @@ function renderPage(view, dims) {
       <a href="/ordre/" class="btn-header-cta">🛒 اطلب الآن</a>
       <button class="cart-btn" aria-label="فتح السلة">🛒<span class="cart-badge" aria-live="polite"></span></button>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة"><span></span><span></span><span></span></button>
+      <a href="/seller/register.html" class="btn-header-cta">🏪 التسجيل كبائع</a>
     </div>
   </div>
 </header>
@@ -482,6 +483,7 @@ function renderPage(view, dims) {
   <a href="/faq">الأسئلة الشائعة</a>
   <a href="/contact">تواصل معنا</a>
   <a href="/ordre/" class="mobile-cta-link">🛒 اطلب الآن</a>
+  <a href="/seller/register.html">🏪 التسجيل كبائع</a>
 </div>
 
 <!-- ════ MAIN — pre-rendered, real content for crawlers & no-JS ════ -->
@@ -606,6 +608,7 @@ function renderBookPage(view, dims) {
       <a href="/ordre/" class="btn-header-cta">🛒 اطلب الآن</a>
       <button class="cart-btn" aria-label="فتح السلة">🛒<span class="cart-badge" aria-live="polite"></span></button>
       <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="القائمة"><span></span><span></span><span></span></button>
+      <a href="/seller/register.html" class="btn-header-cta">🏪 التسجيل كبائع</a>
     </div>
   </div>
 </header>
@@ -632,6 +635,7 @@ function renderBookPage(view, dims) {
   <a href="/faq">الأسئلة الشائعة</a>
   <a href="/contact">تواصل معنا</a>
   <a href="/ordre/" class="mobile-cta-link">🛒 اطلب الآن</a>
+  <a href="/seller/register.html">🏪 التسجيل كبائع</a>
 </div>
 
 <!-- ════ MAIN — pre-rendered, real content for crawlers & no-JS ════ -->
