@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   console.log("✅ Admin Login JS Loaded");
 
   // ✅ بيانات Supabase الصحيحة (من مشروعك)
@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ✅ تأكد أن مكتبة Supabase محمّلة
   if (!window.supabase || !window.supabase.createClient) {
-    alert("❌ مكتبة Supabase غير محمّلة. أضف supabase-js قبل admin-login.js");
+    await DZDialog.alert("مكتبة Supabase غير محمّلة. أضف supabase-js قبل admin-login.js", { type: 'error' });
     return;
   }
 

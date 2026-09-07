@@ -17,7 +17,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
      and bestsellers.js all run on this page, so they must reuse the same
      GoTrueClient instance instead of each creating their own (multiple
      instances racing on token refresh silently breaks auth/session). */
-  if (!window.sbClient) { alert("❌ Supabase غير محمّل."); return; }
+  if (!window.sbClient) { DZDialog.alert("Supabase غير محمّل.", { type: "error" }); return; }
   const supabase = window.sbClient;
 
   /* ── State ─────────────────────────────────────────────── */
@@ -556,7 +556,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const confirmMsg = next
       ? "هل تريد إعادة تفعيل حساب هذا البائع؟"
       : "هل تريد تعطيل حساب هذا البائع؟ لن يتمكن من تسجيل الدخول بعد ذلك.";
-    if (!confirm(confirmMsg)) return;
+    if (!(await DZDialog.confirm(confirmMsg))) return;
     btn.disabled = true;
     try {
       const { error } = await supabase
@@ -589,7 +589,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
   async function handleDeleteSeller(sellerId, btn) {
     if (!isMainAdmin()) return;
-    if (!confirm("هل أنت متأكد من حذف هذا البائع؟")) return;
+    if (!(await DZDialog.confirm("هل أنت متأكد من حذف هذا البائع؟", { danger: true, confirmText: "حذف" }))) return;
     btn.disabled = true;
     try {
       const { error } = await supabase.rpc("admin_delete_seller", { seller_id_in: sellerId });
@@ -704,7 +704,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
   async function handleUnblock(blockId, btn) {
     if (!isMainAdmin()) return;
-    if (!confirm("هل تريد إلغاء حظر هذا العميل؟")) return;
+    if (!(await DZDialog.confirm("هل تريد إلغاء حظر هذا العميل؟"))) return;
     btn.disabled = true;
     try {
       const { error } = await supabase
@@ -760,15 +760,13 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const container = document.getElementById("tab-sellerapps");
     if (!container) return;
 
-    /* قيد المراجعة أولاً، ثم الأحدث فأقدم داخل كل مجموعة حالة */
-    const sorted = [...ALL_SELLER_APPS].sort((a, b) => {
-      if (a.status === "pending" && b.status !== "pending") return -1;
-      if (a.status !== "pending" && b.status === "pending") return 1;
-      return new Date(b.created_at) - new Date(a.created_at);
-    });
+    /* لا تُعرض هنا سوى الطلبات الجديدة/غير المراجَعة (status = pending)؛
+       المقبولة والمرفوضة تبقى في القاعدة لكنها تُستبعد من هذه القائمة. */
+    const pending = ALL_SELLER_APPS.filter(a => a.status === "pending");
+    const sorted = [...pending].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
     container.innerHTML = `
-      <p class="modal-sec-lbl" style="margin-bottom:14px;">طلبات التسجيل كبائع (${ALL_SELLER_APPS.length})</p>
+      <p class="modal-sec-lbl" style="margin-bottom:14px;">طلبات التسجيل كبائع (${pending.length})</p>
       <div class="detail-rows">
         ${sorted.length ? sorted.map(a => `
           <div class="detail-row" data-action="view-sellerapp" data-id="${esc(a.id)}" style="cursor:pointer;">
@@ -782,11 +780,11 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
             </span>
             <span style="flex-shrink:0;">${sellerAppStatusBadge(a.status)}</span>
           </div>`).join("")
-        : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا توجد طلبات تسجيل بعد</p>`}
+        : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا توجد طلبات تسجيل جديدة</p>`}
       </div>`;
 
     const badgeEl = document.getElementById("tab-badge-sellerapps");
-    if (badgeEl) badgeEl.textContent = ALL_SELLER_APPS.filter(a => a.status === "pending").length;
+    if (badgeEl) badgeEl.textContent = pending.length;
   }
 
   function showSellerAppModal(appId) {
@@ -848,7 +846,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   async function handleApproveSellerApp(id, btn) {
-    if (!confirm("هل أنت متأكد من قبول هذا الطلب؟ سيتم إنشاء حساب بائع فعلي.")) return;
+    if (!(await DZDialog.confirm("هل أنت متأكد من قبول هذا الطلب؟ سيتم إنشاء حساب بائع فعلي."))) return;
     btn.disabled = true;
     try {
       const { error } = await supabase.rpc("approve_seller_application", { app_id: id, notes: null });
@@ -865,8 +863,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   async function handleRejectSellerApp(id, btn) {
-    if (!confirm("هل أنت متأكد من رفض هذا الطلب؟")) return;
-    const reason = (prompt("سبب الرفض (اختياري):", "") || "").trim() || null;
+    if (!(await DZDialog.confirm("هل أنت متأكد من رفض هذا الطلب؟", { danger: true, confirmText: "رفض" }))) return;
+    const reason = ((await DZDialog.prompt("سبب الرفض (اختياري):")) || "").trim() || null;
     btn.disabled = true;
     try {
       const { error } = await supabase.rpc("reject_seller_application", { app_id: id, notes: reason });
@@ -1013,7 +1011,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   async function handleApproveProfileChange(id, btn) {
-    if (!confirm("هل أنت متأكد من قبول تعديل بيانات هذا البائع؟ سيتم تحديث ملفه الشخصي فعلياً.")) return;
+    if (!(await DZDialog.confirm("هل أنت متأكد من قبول تعديل بيانات هذا البائع؟ سيتم تحديث ملفه الشخصي فعلياً."))) return;
     btn.disabled = true;
     try {
       const { error } = await supabase.rpc("approve_seller_profile_change", { request_id: id, notes: null });
@@ -1030,8 +1028,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   async function handleRejectProfileChange(id, btn) {
-    if (!confirm("هل أنت متأكد من رفض تعديل بيانات هذا البائع؟")) return;
-    const reason = (prompt("سبب الرفض (اختياري):", "") || "").trim() || null;
+    if (!(await DZDialog.confirm("هل أنت متأكد من رفض تعديل بيانات هذا البائع؟", { danger: true, confirmText: "رفض" }))) return;
+    const reason = ((await DZDialog.prompt("سبب الرفض (اختياري):")) || "").trim() || null;
     btn.disabled = true;
     try {
       const { error } = await supabase.rpc("reject_seller_profile_change", { request_id: id, notes: reason });
@@ -1139,7 +1137,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   async function handleApproveDigitalSale(id, btn) {
-    if (!confirm("هل تريد الموافقة على عملية البيع هذه؟ سيتم تعليمها مكتملة ومدفوعة.")) return;
+    if (!(await DZDialog.confirm("هل تريد الموافقة على عملية البيع هذه؟ سيتم تعليمها مكتملة ومدفوعة."))) return;
     btn.disabled = true;
     try {
       await approveDigitalSale(id);
@@ -1153,7 +1151,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   async function handleRejectDigitalSale(id, btn) {
-    if (!confirm("هل تريد رفض عملية البيع هذه؟ سيتم تعليمها ملغاة.")) return;
+    if (!(await DZDialog.confirm("هل تريد رفض عملية البيع هذه؟ سيتم تعليمها ملغاة.", { danger: true, confirmText: "رفض" }))) return;
     btn.disabled = true;
     try {
       await rejectDigitalSale(id);
@@ -1167,7 +1165,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   async function handleMarkDigitalCommissionPaid(id, btn) {
-    if (!confirm("هل تريد تحديد عمولة هذه العملية كمدفوعة؟")) return;
+    if (!(await DZDialog.confirm("هل تريد تحديد عمولة هذه العملية كمدفوعة؟"))) return;
     btn.disabled = true;
     try {
       await markDigitalCommissionPaid(id);
@@ -1364,71 +1362,6 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ─────────────────────────────────────────────────────────
-     VIEW AS USER — معاينة للقراءة فقط، بدون أي جلسة دخول حقيقية
-     للمستخدم المستهدف. كل RPC يتحقق من is_admin() في قاعدة
-     البيانات نفسها، فهذه القائمة الأمامية فقط للعرض.
-  ───────────────────────────────────────────────────────── */
-  async function fetchImpersonationTargets() {
-    const { data, error } = await supabase
-      .from("staff_accounts")
-      .select("id, full_name, email, role")
-      .neq("role", "admin")
-      .eq("is_active", true)
-      .order("full_name");
-    if (error) throw error;
-    return data || [];
-  }
-
-  async function startImpersonation(targetId) {
-    const { error } = await supabase.rpc("impersonation_start_log", { target_staff_id: targetId });
-    if (error) throw error;
-  }
-
-  function buildViewAsModalHTML(targets) {
-    if (!targets.length) {
-      return `<p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px 0;">لا يوجد حسابات بائعين نشطة لمعاينتها حالياً.</p>`;
-    }
-    const options = targets.map(t =>
-      `<option value="${esc(t.id)}">${esc(t.full_name || t.email)} — ${esc(t.role)}</option>`
-    ).join("");
-    return `
-      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;line-height:1.6;">
-        تعرض معاينة للقراءة فقط — تشاهد بيانات وواجهة المستخدم المختار تماماً كما يراها،
-        لكن أزرار الإجراءات (مثل "إنهاء الطلب" أو تغيير توفر الكتب) تكون معطّلة.
-      </p>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <select class="filter-select" id="viewAsSelect" style="flex:1;min-width:180px;">
-          ${options}
-        </select>
-        <button class="btn-confirm" id="viewAsStartBtn" data-action="start-impersonation">👁 بدء المعاينة</button>
-      </div>`;
-  }
-
-  async function handleStartImpersonation(btn) {
-    const select   = document.getElementById("viewAsSelect");
-    const targetId = select?.value;
-    if (!targetId) return;
-    const target = (await fetchImpersonationTargets()).find(t => t.id === targetId);
-
-    btn.disabled = true;
-    btn.textContent = "⏳...";
-    try {
-      await startImpersonation(targetId);
-      sessionStorage.setItem("impersonation_active", "true");
-      sessionStorage.setItem("impersonation_target_id", targetId);
-      sessionStorage.setItem("impersonation_target_email", target?.email || "");
-      sessionStorage.setItem("impersonation_target_name", target?.full_name || "");
-      sessionStorage.setItem("impersonation_started_at", new Date().toISOString());
-      location.href = "../seller/dashboard.html?previewAs=" + encodeURIComponent(targetId);
-    } catch (err) {
-      console.error("Start impersonation error:", err);
-      alert("❌ فشل بدء المعاينة:\n" + (err.message || ""));
-      btn.disabled = false;
-      btn.textContent = "👁 بدء المعاينة";
-    }
-  }
-
-  /* ─────────────────────────────────────────────────────────
      CONFIRM — تحديث is_confirmed إلى true (زر "✅ تم الاستلام")
   ───────────────────────────────────────────────────────── */
   async function confirmOrder(orderId) {
@@ -1573,7 +1506,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
      HANDLE DELETE MESSAGE
   ───────────────────────────────────────────────────────── */
   async function handleDeleteMessage(msgId, btn) {
-    if (!confirm("هل أنت متأكد من حذف هذه الرسالة نهائياً؟")) return;
+    if (!(await DZDialog.confirm("هل أنت متأكد من حذف هذه الرسالة نهائياً؟", { danger: true, confirmText: "حذف" }))) return;
     btn.disabled    = true;
     btn.textContent = "⏳...";
     try {
@@ -1585,7 +1518,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       if (document.getElementById("modal").classList.contains("open")) closeModal();
     } catch (err) {
       console.error("Delete message error:", err);
-      alert("❌ خطأ في حذف الرسالة:\n" + (err.message || ""));
+      await DZDialog.alert("خطأ في حذف الرسالة:\n" + (err.message || ""), { type: "error" });
       btn.disabled    = false;
       btn.textContent = "🗑 حذف";
     }
@@ -1771,7 +1704,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   ───────────────────────────────────────────────────────── */
   async function handleAssign(entityType, entityId, btn) {
     const sellerId = btn.dataset.sellerId || document.getElementById("assignSellerSelect")?.value;
-    if (!sellerId) { alert("⚠️ يرجى اختيار بائع أولاً"); return; }
+    if (!sellerId) { await DZDialog.alert("يرجى اختيار بائع أولاً", { type: "warning" }); return; }
 
     btn.disabled = true;
     const prevText = btn.textContent;
@@ -1795,7 +1728,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       else                        { renderMessagesTable(getFilteredMessages()); showMessageModal(entityId); }
     } catch (err) {
       console.error("Assign error:", err);
-      alert("❌ فشل التعيين:\n" + (err.message || ""));
+      await DZDialog.alert("فشل التعيين:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -1823,7 +1756,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       else                        { renderMessagesTable(getFilteredMessages()); showMessageModal(entityId); }
     } catch (err) {
       console.error("Unassign error:", err);
-      alert("❌ فشل إزالة التعيين:\n" + (err.message || ""));
+      await DZDialog.alert("فشل إزالة التعيين:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = "🔒 الاحتفاظ به مع الأدمن";
     }
@@ -1834,7 +1767,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   ───────────────────────────────────────────────────────── */
   async function handleAssignAgent(orderId, btn) {
     const agentId = btn.dataset.agentId || document.getElementById("assignAgentSelect")?.value;
-    if (!agentId) { alert("⚠️ يرجى اختيار موظفة أولاً"); return; }
+    if (!agentId) { await DZDialog.alert("يرجى اختيار موظفة أولاً", { type: "warning" }); return; }
 
     btn.disabled = true;
     const prevText = btn.textContent;
@@ -1851,7 +1784,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
     } catch (err) {
       console.error("Assign agent error:", err);
-      alert("❌ فشل تعيين الموظفة:\n" + (err.message || ""));
+      await DZDialog.alert("فشل تعيين الموظفة:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -1868,7 +1801,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
     } catch (err) {
       console.error("Unassign agent error:", err);
-      alert("❌ فشل إزالة التعيين:\n" + (err.message || ""));
+      await DZDialog.alert("فشل إزالة التعيين:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = "🔒 إزالة التعيين";
     }
@@ -1889,7 +1822,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
     } catch (err) {
       console.error("Mark shipped error:", err);
-      alert("❌ فشل تحديث الحالة:\n" + (err.message || ""));
+      await DZDialog.alert("فشل تحديث الحالة:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -1907,7 +1840,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
     } catch (err) {
       console.error("Mark out-for-delivery error:", err);
-      alert("❌ فشل تحديث الحالة:\n" + (err.message || ""));
+      await DZDialog.alert("فشل تحديث الحالة:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -1918,28 +1851,31 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
      يدوياً) لضمان أن commission_paid المعروض يطابق ما فعلته الدالة
      فعلاً على القاعدة، ولتحديث تبويب "الموظفون" بنفس الرحلة. */
   async function handleMarkDelivered(orderId, btn) {
-    if (!confirm("هل تريد تأكيد استلام الزبون للطلبية؟\nسيتم دفع عمولة الموظفة المعيّنة تلقائياً (إن وُجدت).")) return;
+    if (!(await DZDialog.confirm("هل تريد تأكيد استلام الزبون للطلبية؟\nسيتم دفع عمولة الموظفة المعيّنة تلقائياً (إن وُجدت)."))) return;
     btn.disabled = true;
     const prevText = btn.textContent;
     btn.textContent = "⏳...";
     try {
       await markOrderDelivered(orderId);
+      await confirmOrder(orderId);
       const order = ALL_ORDERS.find(o => o.id === orderId);
       if (order) {
         order.delivery_status = "delivered";
         order.delivered_at = new Date().toISOString();
+        order.is_confirmed = true;
         if (order.assigned_agent_id) order.commission_paid = true;
       }
       if (order?.assigned_agent_id) {
         ALL_AGENT_EARNINGS = await fetchAgentEarnings().catch(() => ALL_AGENT_EARNINGS);
         if (isAdmin()) renderAgentsTab();
       }
+      renderStats(ALL_ORDERS);
       renderTable(getFiltered());
       if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
       showToast("📦 تم تأكيد استلام الطلبية" + (order?.assigned_agent_id ? " ودفع عمولة الموظفة" : ""));
     } catch (err) {
       console.error("Mark delivered error:", err);
-      alert("❌ فشل تحديث الحالة:\n" + (err.message || ""));
+      await DZDialog.alert("فشل تحديث الحالة:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -2024,7 +1960,6 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
           </div>
           <div class="m-card-actions">
             <button class="btn-details" data-id="${esc(o.id)}" data-action="details">عرض التفاصيل الكاملة</button>
-            <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
           </div>
         </div>`;
     }).join("");
@@ -2119,17 +2054,12 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
           <button class="btn-tbl-details" data-id="${esc(o.id)}" data-action="details">تفاصيل</button>`;
       }
 
-      /* زر وصل الدفع */
-      const receiptBtn = o.receipt_url
-        ? `<a href="${esc(o.receipt_url)}" target="_blank" rel="noopener" class="btn-receipt">🧾 عرض الوصل</a>`
-        : `<span style="color:var(--text-muted);font-size:11px;">لا يوجد وصل</span>`;
+      /* زر حذف الطلب */
+      const deleteBtn = isAdmin()
+        ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑️ حذف الطلب</button>`
+        : ``;
 
-      /* زر تم الاستلام / زر الإرجاع لقيد المعالجة */
-      const confirmBtn = confirmed
-        ? `<button class="btn-confirm" disabled>✔ تم الاستلام</button>`
-        : isAdmin()
-          ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تم الاستلام</button>`
-          : ``;
+      /* زر الإرجاع لقيد المعالجة */
       const revertBtn = confirmed && isAdmin()
         ? `<button class="btn-revert" data-id="${esc(o.id)}" data-action="revert">↩️ إرجاع لقيد المعالجة</button>`
         : ``;
@@ -2160,11 +2090,8 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
           <td class="nowrap">${assignCell}</td>
           <td class="td-actions">
             <div class="actions-col">
-              ${receiptBtn}
-              <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
-              ${confirmBtn}
+              ${deleteBtn}
               ${revertBtn}
-              ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
             </div>
           </td>
         </tr>`;
@@ -2201,7 +2128,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
     } catch (err) {
       console.error("Confirm error:", err);
-      alert("❌ خطأ في تحديث الطلب:\n" + (err.message || ""));
+      await DZDialog.alert("خطأ في تحديث الطلب:\n" + (err.message || ""), { type: "error" });
       btn.disabled    = false;
       btn.textContent = "✅ تم الاستلام";
     }
@@ -2211,7 +2138,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
      HANDLE REVERT (إرجاع لقيد المعالجة)
   ───────────────────────────────────────────────────────── */
   async function handleRevert(orderId, btn) {
-    if (!confirm("هل تريد إرجاع هذا الطلب لحالة \"قيد المعالجة\"؟")) return;
+    if (!(await DZDialog.confirm('هل تريد إرجاع هذا الطلب لحالة "قيد المعالجة"؟'))) return;
 
     btn.disabled    = true;
     btn.textContent = "⏳ جاري الإرجاع...";
@@ -2233,7 +2160,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
     } catch (err) {
       console.error("Revert error:", err);
-      alert("❌ خطأ في إرجاع الطلب:\n" + (err.message || ""));
+      await DZDialog.alert("خطأ في إرجاع الطلب:\n" + (err.message || ""), { type: "error" });
       btn.disabled    = false;
       btn.textContent = "↩️ إرجاع لقيد المعالجة";
     }
@@ -2246,7 +2173,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const order = ALL_ORDERS.find(o => o.id === orderId);
     const name  = order?.full_name || "هذا الطلب";
 
-    if (!confirm(`هل أنت متأكد من حذف طلب "${name}"؟\nسيُحذف الطلب ومنتجاته نهائياً ولا يمكن التراجع.`)) return;
+    if (!(await DZDialog.confirm(`هل أنت متأكد من حذف طلب "${name}"؟\nسيُحذف الطلب ومنتجاته نهائياً ولا يمكن التراجع.`, { danger: true, confirmText: "حذف الطلب" }))) return;
 
     btn.disabled    = true;
     btn.textContent = "⏳...";
@@ -2265,50 +2192,9 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
 
     } catch (err) {
       console.error("Delete error:", err);
-      alert("❌ خطأ في الحذف:\n" + (err.message || ""));
+      await DZDialog.alert("خطأ في الحذف:\n" + (err.message || ""), { type: "error" });
       btn.disabled    = false;
       btn.textContent = "🗑 حذف الطلب";
-    }
-  }
-
-  /* ─────────────────────────────────────────────────────────
-     رسالة تأكيد الطلب — نسخ للحافظة (واتساب / تيليغرام)
-  ───────────────────────────────────────────────────────── */
-  function buildConfirmationMessage(o) {
-    const items = o.order_items || [];
-    const itemsText = items.length
-      ? items.map(it => `- ${it.product_name} : ${fmtMoney(it.subtotal)}`).join("\n")
-      : "-";
-
-    return `مرحبا ${o.full_name || ""}
-طلبيتك:
-${itemsText}
-توصيل: ${fmtMoney(o.shipping_fee)}
-المجموع الكلي: ${fmtMoney(o.total_price)}
-
-للتأكيد، رجاء الرد بـ "نعم" لتأكيد الطلبية او "لا" لالغائها`;
-  }
-
-  async function handleCopyMessage(orderId, btn) {
-    const order = ALL_ORDERS.find(o => o.id === orderId);
-    if (!order) return;
-
-    const text = buildConfirmationMessage(order);
-    const original = btn ? btn.innerHTML : null;
-
-    try {
-      await navigator.clipboard.writeText(text);
-      if (btn) {
-        btn.classList.add("copied");
-        btn.innerHTML = "✅ تم النسخ!";
-        setTimeout(() => {
-          btn.classList.remove("copied");
-          btn.innerHTML = original;
-        }, 1800);
-      }
-    } catch (err) {
-      console.error("Copy error:", err);
-      alert("❌ فشل نسخ الرسالة:\n" + (err.message || ""));
     }
   }
 
@@ -2322,7 +2208,7 @@ ${itemsText}
     const raw  = input.value.trim();
     const cost = raw === "" ? null : Number(raw);
     if (raw !== "" && (isNaN(cost) || cost < 0)) {
-      alert("❌ أدخل قيمة رقمية صحيحة للتكلفة.");
+      await DZDialog.alert("أدخل قيمة رقمية صحيحة للتكلفة.", { type: "warning" });
       return;
     }
 
@@ -2357,7 +2243,7 @@ ${itemsText}
       }
     } catch (err) {
       console.error("Save purchase cost error:", err);
-      alert("❌ فشل حفظ التكلفة:\n" + (err.message || ""));
+      await DZDialog.alert("فشل حفظ التكلفة:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -2425,11 +2311,6 @@ ${itemsText}
       : ``;
 
     /* ── Action buttons ── */
-    const confirmBtn = confirmed
-      ? `<button class="btn-confirm" disabled>✔ تم الاستلام</button>`
-      : isAdmin()
-        ? `<button class="btn-confirm" data-id="${esc(o.id)}" data-action="confirm">✅ تم الاستلام</button>`
-        : ``;
     const revertBtn = confirmed && isAdmin()
       ? `<button class="btn-revert" data-id="${esc(o.id)}" data-action="revert">↩️ إرجاع لقيد المعالجة</button>`
       : ``;
@@ -2503,13 +2384,10 @@ ${itemsText}
 
       <!-- Actions -->
       <div class="modal-actions">
-        <button class="btn-copy-msg" data-id="${esc(o.id)}" data-action="copy-message">📋 نسخ رسالة التأكيد</button>
-        ${confirmBtn}
         ${revertBtn}
         ${isAdmin() ? `<button class="btn-delete" data-id="${esc(o.id)}" data-action="delete">🗑 حذف الطلب</button>` : ``}
       </div>
 
-      ${buildAssignmentSectionHTML(o, "order")}
       ${buildAgentSectionHTML(o)}`;
   }
 
@@ -2709,7 +2587,7 @@ ${itemsText}
       renderReviewsTable(getFilteredReviews());
     } catch (err) {
       console.error("Review approval error:", err);
-      alert("❌ فشل التحديث: " + (err.message || ""));
+      await DZDialog.alert("فشل التحديث: " + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prev;
     }
@@ -2717,7 +2595,7 @@ ${itemsText}
 
   /* ── Handle delete ─────────────────────────────────────── */
   async function handleReviewDelete(id, btn) {
-    if (!confirm("هل أنت متأكد من حذف هذا التقييم نهائياً؟")) return;
+    if (!(await DZDialog.confirm("هل أنت متأكد من حذف هذا التقييم نهائياً؟", { danger: true, confirmText: "حذف" }))) return;
     btn.disabled = true;
     btn.textContent = "⏳...";
     try {
@@ -2727,7 +2605,7 @@ ${itemsText}
       if (document.getElementById("modal").classList.contains("open")) closeModal();
     } catch (err) {
       console.error("Delete review error:", err);
-      alert("❌ خطأ في الحذف: " + (err.message || ""));
+      await DZDialog.alert("خطأ في الحذف: " + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = "🗑 حذف";
     }
@@ -2940,19 +2818,6 @@ ${itemsText}
       location.href = "login.html";
     });
 
-    /* ── View as User ────────────────────────────────────────── */
-    document.getElementById("viewAsBtn")?.addEventListener("click", async () => {
-      document.getElementById("modalTitle").textContent = "👁 معاينة كمستخدم";
-      document.getElementById("modalBody").innerHTML = `<p style="text-align:center;color:var(--text-muted);">⏳ جاري التحميل...</p>`;
-      openModal();
-      try {
-        const targets = await fetchImpersonationTargets();
-        document.getElementById("modalBody").innerHTML = buildViewAsModalHTML(targets);
-      } catch (err) {
-        document.getElementById("modalBody").innerHTML = `<p style="color:var(--red);text-align:center;">❌ فشل تحميل القائمة: ${esc(err.message || "")}</p>`;
-      }
-    });
-
     /* ── Tab switching ─────────────────────────────────────── */
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
@@ -2965,9 +2830,8 @@ ${itemsText}
           tab === "orders"      ? "📦 إدارة الطلبات"
         : tab === "messages"    ? "✉️ الرسائل الواردة"
         : tab === "reviews"     ? "⭐ إدارة التقييمات"
-        : tab === "bestsellers" ? "📚 الكتب المباعة"
+        : tab === "bestsellers" ? "📚 المنتجات المباعة"
         : tab === "bestpicks"   ? "🔥 المنتجات الأكثر مبيعاً"
-        : tab === "contact"     ? "📞 اتصال العمل"
         : tab === "sellers"     ? "👤 إدارة البائعين"
         : tab === "blocked"     ? "🚫 العملاء المحظورون"
         : tab === "agents"      ? "📞 الموظفون (متابعة الطلبيات)"
@@ -3034,7 +2898,7 @@ ${itemsText}
       try {
         ALL_MESSAGES = await fetchMessages();
         renderMessagesTable(getFilteredMessages());
-      } catch (err) { alert("❌ فشل التحديث: " + (err.message || "")); }
+      } catch (err) { await DZDialog.alert("فشل التحديث: " + (err.message || ""), { type: "error" }); }
       btn.disabled = false; btn.textContent = "↻ تحديث";
     });
 
@@ -3071,7 +2935,7 @@ ${itemsText}
         ALL_ORDERS = await fetchOrders();
         renderStats(ALL_ORDERS);
         renderTable(getFiltered());
-      } catch (err) { alert("❌ فشل التحديث: " + (err.message || "")); }
+      } catch (err) { await DZDialog.alert("فشل التحديث: " + (err.message || ""), { type: "error" }); }
       btn.disabled = false; btn.textContent = "↻ تحديث";
     });
 
@@ -3084,14 +2948,13 @@ ${itemsText}
       if (btn.dataset.action === "revert")        await handleRevert(btn.dataset.id, btn);
       if (btn.dataset.action === "delete")        await handleDelete(btn.dataset.id, btn);
       if (btn.dataset.action === "details")       showOrderModal(btn.dataset.id);
-      if (btn.dataset.action === "copy-message")  await handleCopyMessage(btn.dataset.id, btn);
     });
 
     /* Event delegation — المودال */
     document.getElementById("modalBody").addEventListener("click", async e => {
       const btn = e.target.closest("[data-action]");
       if (!btn) return;
-      if (["confirm", "revert", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message", "start-impersonation",
+      if (["confirm", "revert", "delete", "delete-msg", "assign-order", "unassign-order", "assign-message", "unassign-message",
            "assign-agent", "unassign-agent", "mark-shipped", "mark-ofd", "mark-delivered", "sellerapp-approve", "sellerapp-reject",
            "profilechange-approve", "profilechange-reject"]
             .includes(btn.dataset.action) && !isAdmin()) return;
@@ -3104,8 +2967,6 @@ ${itemsText}
       if (btn.dataset.action === "assign-message")   await handleAssign("message", btn.dataset.entityId, btn);
       if (btn.dataset.action === "unassign-message") await handleUnassign("message", btn.dataset.entityId, btn);
       if (btn.dataset.action === "show-history")     await handleShowHistory(btn.dataset.entityType, btn.dataset.entityId, btn);
-      if (btn.dataset.action === "start-impersonation") await handleStartImpersonation(btn);
-      if (btn.dataset.action === "copy-message")     await handleCopyMessage(btn.dataset.id, btn);
       if (btn.dataset.action === "save-cost")        await handleSaveCost(btn.dataset.itemId, btn.dataset.orderId, btn);
       if (btn.dataset.action === "assign-agent")     await handleAssignAgent(btn.dataset.id, btn);
       if (btn.dataset.action === "unassign-agent")   await handleUnassignAgent(btn.dataset.id, btn);
@@ -3130,8 +2991,6 @@ ${itemsText}
     document.getElementById("ordersMobileCards").addEventListener("click", async e => {
       const detailsBtn = e.target.closest("[data-action='details']");
       if (detailsBtn) { showOrderModal(detailsBtn.dataset.id); return; }
-      const copyBtn = e.target.closest("[data-action='copy-message']");
-      if (copyBtn) { await handleCopyMessage(copyBtn.dataset.id, copyBtn); return; }
     });
 
     /* ── Mobile: Messages cards ─────────────────────────────── */
@@ -3158,7 +3017,7 @@ ${itemsText}
       try {
         ALL_REVIEWS = await fetchReviews();
         renderReviewsTable(getFilteredReviews());
-      } catch (err) { alert("❌ فشل التحديث: " + (err.message || "")); }
+      } catch (err) { await DZDialog.alert("فشل التحديث: " + (err.message || ""), { type: "error" }); }
       btn.disabled = false; btn.textContent = "↻ تحديث";
     });
 
@@ -3278,8 +3137,6 @@ ${itemsText}
       document.getElementById("adminBadge").textContent =
         "👑 Admin" + (staff.full_name ? " — " + staff.full_name : "");
 
-      document.getElementById("viewAsBtn").style.display = "inline-flex";
-
       if (isMainAdmin()) {
         document.getElementById("navBtnSellers").style.display = "";
         document.getElementById("navBtnBlocked").style.display = "";
@@ -3332,7 +3189,7 @@ ${itemsText}
 
     } catch (err) {
       console.error("Boot error:", err);
-      alert("❌ خطأ في تحميل لوحة التحكم:\n" + (err.message || JSON.stringify(err)));
+      await DZDialog.alert("خطأ في تحميل لوحة التحكم:\n" + (err.message || JSON.stringify(err)), { type: "error" });
     }
   }
 

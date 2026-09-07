@@ -229,11 +229,11 @@
     const VALID_PM = ["prepaid", "cash_on_delivery"];
     const VALID_DT = ["home", "office"];
     if (!VALID_PM.includes(pm)) {
-      alert("❌ طريقة الدفع غير صالحة. يرجى اختيار طريقة دفع من القائمة.");
+      await DZDialog.alert("طريقة الدفع غير صالحة. يرجى اختيار طريقة دفع من القائمة.", { type: "warning" });
       return;
     }
     if (!VALID_DT.includes(deliveryType)) {
-      alert("❌ طريقة التوصيل غير صالحة. يرجى اختيار طريقة توصيل صحيحة.");
+      await DZDialog.alert("طريقة التوصيل غير صالحة. يرجى اختيار طريقة توصيل صحيحة.", { type: "warning" });
       return;
     }
     const wilayaCode   = WILAYA_CODE[wilaya] || null;
@@ -261,26 +261,26 @@
         alertEl2.classList.add("show");
         alertEl2.scrollIntoView({ behavior: "smooth", block: "center" });
       } else {
-        alert(msg2);
+        await DZDialog.alert(msg2.replace(/^[❌⚠️✅]\s*/, ""), { type: "warning" });
       }
       return;
     }
 
     /* ── تحقق إضافي: بيانات المنتجات ───────────────────── */
     if (items.length === 0) {
-      alert("❌ يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.");
+      await DZDialog.alert("يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.", { type: "warning" });
       return;
     }
     if (!wilaya) {
-      alert("❌ يرجى اختيار الولاية قبل إرسال الطلب.");
+      await DZDialog.alert("يرجى اختيار الولاية قبل إرسال الطلب.", { type: "warning" });
       return;
     }
     if (!commune) {
-      alert("❌ يرجى اختيار البلدية / المنطقة قبل إرسال الطلب.");
+      await DZDialog.alert("يرجى اختيار البلدية / المنطقة قبل إرسال الطلب.", { type: "warning" });
       return;
     }
     if (!pm) {
-      alert("❌ يرجى اختيار طريقة الدفع.");
+      await DZDialog.alert("يرجى اختيار طريقة الدفع.", { type: "warning" });
       return;
     }
 
@@ -397,7 +397,7 @@
         alertEl.classList.add("show");
         alertEl.scrollIntoView({ behavior: "smooth", block: "center" });
       } else {
-        alert(userMsg);
+        await DZDialog.alert(userMsg.replace(/^[❌⚠️✅]\s*/, ""), { type: "error" });
       }
     }
   });

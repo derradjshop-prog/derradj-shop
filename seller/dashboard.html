@@ -904,12 +904,13 @@
   </div>
 </div>
 
+<script src="../js/dialog.js"></script>
 <script>
 (function () {
   "use strict";
 
   /* ── Supabase ──────────────────────────────────────────── */
-  if (!window.supabase?.createClient) { alert("❌ Supabase غير محمّل."); return; }
+  if (!window.supabase?.createClient) { DZDialog.alert("Supabase غير محمّل.", { type: "error" }); return; }
 
   const SUPABASE_URL      = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
@@ -1503,7 +1504,7 @@
 
   async function handleOrderComplete(orderId, btn) {
     if (PREVIEW_MODE) return;
-    if (!confirm("هل تريد تأكيد تسليم هذا الطلب؟")) return;
+    if (!(await DZDialog.confirm("هل تريد تأكيد تسليم هذا الطلب؟", { type: "question" }))) return;
     btn.disabled = true;
     const prevText = btn.textContent;
     btn.textContent = "⏳...";
@@ -1527,7 +1528,7 @@
 
   async function handleOrderRevert(orderId, btn) {
     if (PREVIEW_MODE) return;
-    if (!confirm('هل تريد التراجع عن هذا الطلب وإرجاعه إلى "معيّن لك"؟')) return;
+    if (!(await DZDialog.confirm('هل تريد التراجع عن هذا الطلب وإرجاعه إلى "معيّن لك"؟', { type: "warning" }))) return;
     btn.disabled = true;
     const prevText = btn.textContent;
     btn.textContent = "⏳...";
@@ -1553,7 +1554,7 @@
     if (PREVIEW_MODE) return;
     const order = ALL_ORDERS.find(x => x.id === orderId);
     const name  = order?.full_name || "هذا الطلب";
-    if (!confirm(`هل أنت متأكد أنك تريد حذف طلب "${name}"؟\nلا يمكن التراجع عن هذا الإجراء.`)) return;
+    if (!(await DZDialog.confirm(`هل أنت متأكد أنك تريد حذف طلب "${name}"؟\nلا يمكن التراجع عن هذا الإجراء.`, { type: "warning", danger: true, confirmText: "حذف" }))) return;
     btn.disabled = true;
     const prevText = btn.textContent;
     btn.textContent = "⏳...";
@@ -1580,7 +1581,7 @@
     const order = ALL_ORDERS.find(x => x.id === orderId);
     const phone = (order?.phone || "").trim();
     if (!phone) return;
-    if (!confirm("هل أنت متأكد من حظر هذا العميل؟")) return;
+    if (!(await DZDialog.confirm("هل أنت متأكد من حظر هذا العميل؟", { type: "warning", danger: true, confirmText: "حظر" }))) return;
     btn.disabled = true;
     const prevText = btn.textContent;
     btn.textContent = "⏳...";
@@ -1618,7 +1619,7 @@
     const raw  = input.value.trim();
     const cost = raw === "" ? null : Number(raw);
     if (raw !== "" && (isNaN(cost) || cost < 0)) {
-      alert("❌ أدخل قيمة رقمية صحيحة للتكلفة.");
+      await DZDialog.alert("أدخل قيمة رقمية صحيحة للتكلفة.", { type: "warning" });
       return;
     }
 
@@ -1643,7 +1644,7 @@
       if (ACTIVE_ORDER?.id === orderId) showOrderModal(orderId);
     } catch (err) {
       console.error("Save purchase cost error:", err);
-      alert("❌ فشل حفظ التكلفة:\n" + (err.message || ""));
+      await DZDialog.alert("فشل حفظ التكلفة:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -2024,7 +2025,7 @@
       if (document.getElementById("modal").classList.contains("open")) showMessageModal(msgId);
     } catch (err) {
       console.error("Complete message error:", err);
-      alert("❌ فشل تحديث الرسالة:\n" + (err.message || ""));
+      await DZDialog.alert("فشل تحديث الرسالة:\n" + (err.message || ""), { type: "error" });
       btn.disabled = false;
       btn.textContent = prevText;
     }
@@ -2149,7 +2150,7 @@
           ALL_ORDERS = await fetchMyOrders();
         }
         renderOrdersTable(getFilteredOrders());
-      } catch (err) { alert("❌ فشل التحديث: " + (err.message || "")); }
+      } catch (err) { await DZDialog.alert("فشل التحديث: " + (err.message || ""), { type: "error" }); }
       btn.disabled = false; btn.textContent = "↻ تحديث";
     });
 
@@ -2189,7 +2190,7 @@
           ALL_MESSAGES = await fetchMyMessages();
         }
         renderMessagesTable(getFilteredMyMessages());
-      } catch (err) { alert("❌ فشل التحديث: " + (err.message || "")); }
+      } catch (err) { await DZDialog.alert("فشل التحديث: " + (err.message || ""), { type: "error" }); }
       btn.disabled = false; btn.textContent = "↻ تحديث";
     });
 
@@ -2257,10 +2258,10 @@
     sessionStorage.removeItem("impersonation_started_at");
   }
 
-  function endPreview(message) {
+  async function endPreview(message, type = "warning") {
     if (PREVIEW_TIMER_INTERVAL) clearInterval(PREVIEW_TIMER_INTERVAL);
     clearImpersonationState();
-    if (message) alert(message);
+    if (message) await DZDialog.alert(message.replace(/^[❌⚠️✅]\s*/, ""), { type });
     location.href = "../admin/admin.html";
   }
 
@@ -2308,7 +2309,7 @@
       .maybeSingle();
 
     if (!me || !me.is_active || me.role !== "admin") {
-      endPreview("🚫 وضع المعاينة متاح فقط للأدمن.");
+      await endPreview("🚫 وضع المعاينة متاح فقط للأدمن.", "error");
       return;
     }
 
@@ -2319,7 +2320,7 @@
     const { data: profileRows, error: profErr } =
       await supabase.rpc("impersonation_get_staff_profile", { target_staff_id: targetId });
     if (profErr || !profileRows || !profileRows.length) {
-      endPreview("❌ تعذّر تحميل بيانات المعاينة:\n" + (profErr?.message || "مستخدم غير صالح أو غير نشط."));
+      await endPreview("❌ تعذّر تحميل بيانات المعاينة:\n" + (profErr?.message || "مستخدم غير صالح أو غير نشط."), "error");
       return;
     }
     const target = profileRows[0];
@@ -2386,7 +2387,7 @@
 
     } catch (err) {
       console.error("Boot error:", err);
-      alert("❌ خطأ في تحميل الصفحة:\n" + (err.message || JSON.stringify(err)));
+      await DZDialog.alert("خطأ في تحميل الصفحة:\n" + (err.message || JSON.stringify(err)), { type: "error" });
     }
   }
 

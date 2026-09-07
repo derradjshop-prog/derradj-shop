@@ -1587,7 +1587,7 @@
       showToast('📝 تم حفظ المسودة — يمكنك إكمالها لاحقاً من "＋ إضافة منتج جديد"');
     });
     document.getElementById('pmDraftDiscardBtn')?.addEventListener('click', async () => {
-      if (!confirm('تجاهل المسودة نهائياً؟ لن تتمكن من استرجاعها بعد ذلك.')) return;
+      if (!(await DZDialog.confirm('تجاهل المسودة نهائياً؟ لن تتمكن من استرجاعها بعد ذلك.', { danger: true, confirmText: 'تجاهل' }))) return;
       await window.DraftManager?.clearDraft(PM_DRAFT_ID);
       closeDraftConfirmDialog();
       closeModal();
@@ -1770,7 +1770,7 @@
     /* Delete — only reachable from inside the edit modal */
     document.getElementById('pmDeleteBtn')?.addEventListener('click', async function () {
       if (!EDIT_PRODUCT_ID) return;
-      if (!confirm('حذف هذا المنتج نهائياً؟ لا يمكن التراجع عن هذا الإجراء.')) return;
+      if (!(await DZDialog.confirm('حذف هذا المنتج نهائياً؟ لا يمكن التراجع عن هذا الإجراء.', { danger: true, confirmText: 'حذف' }))) return;
       const ok = await deleteProduct(EDIT_PRODUCT_ID, this);
       if (ok) closeModal();
     });
@@ -3462,7 +3462,7 @@
     if (!cat) return;
     const count = ALL_PM_PRODUCTS.filter(p => isElec(p) && resolveCategorySlug(p) === cat.slug).length;
     if (count) { showToast(`❌ لا يمكن حذف "${cat.name}" — ${count} منتج مرتبط به`, 'error'); return; }
-    if (!confirm(`حذف التصنيف "${cat.name}" نهائياً؟`)) return;
+    if (!(await DZDialog.confirm(`حذف التصنيف "${cat.name}" نهائياً؟`, { danger: true, confirmText: 'حذف' }))) return;
 
     try {
       const { error } = await sb.from('categories').delete().eq('id', id);

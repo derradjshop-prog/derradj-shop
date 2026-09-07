@@ -249,16 +249,17 @@
 <script src="../whatsapp-float.js" defer></script>
 <script src="../js/search.js" defer></script>
 <script src="../js/search-products.js"></script>
+<script src="../js/dialog.js"></script>
 
 <script>
-(function () {
+(async function () {
   "use strict";
 
   const SUPABASE_URL      = "https://jbmcbjzcedqpvnhbmrhk.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk";
 
   if (!window.supabase?.createClient) {
-    alert("❌ Supabase غير محمّل.");
+    await DZDialog.alert("Supabase غير محمّل.", { type: 'error' });
     return;
   }
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

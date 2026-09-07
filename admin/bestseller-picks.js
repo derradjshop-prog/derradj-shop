@@ -152,7 +152,7 @@
   }
 
   async function removePick(pickId) {
-    if (!confirm('إزالة هذا المنتج من الأكثر مبيعاً؟ (لن يتم حذف المنتج نفسه)')) return;
+    if (!(await DZDialog.confirm('إزالة هذا المنتج من الأكثر مبيعاً؟ (لن يتم حذف المنتج نفسه)', { danger: true, confirmText: 'إزالة' }))) return;
     const prev = PICKS;
     PICKS = PICKS.filter(p => p.id !== pickId);
     render();

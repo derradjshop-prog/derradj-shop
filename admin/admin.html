@@ -75,19 +75,6 @@
       transition: background .2s;
     }
     .btn-logout:hover { background: rgba(255,255,255,.18); }
-    .btn-view-as {
-      background: #1e3a8a;
-      border: 1px solid #3b82f6;
-      color: #93c5fd;
-      padding: 7px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-      font-family: var(--font);
-      transition: background .2s;
-    }
-    .btn-view-as:hover { background: #1d4ed8; color: #fff; }
     .btn-home {
       background: rgba(255,255,255,.08);
       border: 1px solid rgba(255,255,255,.18);
@@ -340,7 +327,9 @@
     .btn-revert:hover:not(:disabled) { background: #f59e0b; color: #fff; border-color: #f59e0b; }
     .btn-revert:disabled { background: #f1f5f9; color: var(--text-muted); border-color: var(--border); cursor: default; }
 
-    /* نسخ رسالة تأكيد الطلب — ألوان الهوية: Navy / Emerald / Gold / Paper */
+    /* نسخ رابط/تنزيل الصورة في محرر المنتج (admin/products-manager.js) —
+       الاسم .btn-copy-msg تاريخي من ميزة نسخ رسالة تأكيد الطلب المحذوفة،
+       لكن الصنف ما زال مستخدَماً فعلياً هنا فلا يُحذف. */
     .btn-copy-msg {
       display: inline-flex;
       align-items: center;
@@ -587,8 +576,7 @@
     }
     .modal-actions .btn-confirm,
     .modal-actions .btn-delete,
-    .modal-actions .btn-revert,
-    .modal-actions .btn-copy-msg { flex: 1; justify-content: center; }
+    .modal-actions .btn-revert { flex: 1; justify-content: center; }
 
     /* ── Keep old styles for messages modal ── */
     .m-section { margin-bottom: 22px; }
@@ -618,8 +606,10 @@
     }
     @media (max-width: 700px) {
       .admin-main { padding: 12px 10px; }
-      .stats-grid { grid-template-columns: 1fr; gap: 10px; }
-      .stat-num   { font-size: 28px; }
+      .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; }
+      .stat-card  { padding: 10px 8px; gap: 3px; }
+      .stat-num   { font-size: 20px; }
+      .stat-label { font-size: 10.5px; }
       .info-grid  { grid-template-columns: 1fr; }
       .controls-bar { flex-direction: column; align-items: stretch; gap: 8px; }
       .search-input { min-width: unset; }
@@ -648,10 +638,27 @@
 
     @media (max-width: 480px) {
       .admin-main  { padding: 10px 8px; }
-      .stats-grid  { gap: 8px; }
-      .stat-card   { padding: 14px 16px; }
+      .stats-grid  { gap: 6px; }
+      .stat-card   { padding: 8px 6px; }
+      .stat-num    { font-size: 18px; }
+      .stat-label  { font-size: 10px; }
       .controls-bar { padding: 10px 12px; }
       .orders-count { display: none; }
+
+      /* رأس الأدمن على الشاشات الضيقة جداً: منع التداخل بين الشعار والأزرار */
+      .admin-header { padding: 0 10px; gap: 8px; }
+      .header-logo {
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 38vw;
+      }
+      .header-right { gap: 6px; }
+      .btn-home, .btn-logout {
+        padding: 5px 9px;
+        font-size: 11px;
+      }
     }
 
     /* Scroll hint for mobile table */
@@ -670,22 +677,9 @@
       .table-wrap { display: none; }
       .mobile-cards-list { display: flex; flex-direction: column; gap: 10px; }
 
-      /* Tab bar: equal 3-column grid — no horizontal overflow */
-      .tabs-bar {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        padding: 5px;
-        gap: 4px;
-        margin-bottom: 16px;
-      }
-      .tab-btn {
-        flex-direction: column;
-        padding: 10px 4px;
-        font-size: 12px;
-        gap: 3px;
-        min-width: 0;
-        text-align: center;
-      }
+      /* Tab bar mobile layout lives in the authoritative rule further down
+         (after the base .tabs-bar/.tab-btn declaration) so cascade order
+         is correct — see the "TABS – mobile" block below. */
       .tab-badge {
         min-width: 18px;
         height: 18px;
@@ -725,8 +719,7 @@
       .btn-details:hover { background: #1e40af; }
 
       .m-card-actions { display: flex; flex-direction: column; gap: 8px; }
-      .m-card-actions .btn-details,
-      .m-card-actions .btn-copy-msg {
+      .m-card-actions .btn-details {
         width: 100%; justify-content: center; padding: 11px; font-size: 14px;
       }
 
@@ -837,6 +830,32 @@
       background: rgba(255,255,255,.25);
     }
     .tab-btn:not(.active) .tab-badge { background: #e2e8f0; color: var(--text-light); }
+
+    /* ━━ TABS – mobile (≤768px): wraps into multiple rows, no scroll/squeeze ━━
+       Placed after the base .tabs-bar/.tab-btn rule above (and before the
+       ≤480px override below) so it wins the cascade at matching widths —
+       this is the single authoritative mobile nav rule. Grid + auto-fit lets
+       2–3 items per row depending on available width, each in its own box. */
+    @media (max-width: 768px) {
+      .tabs-bar {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+        gap: 8px;
+        padding: 8px;
+        margin-bottom: 16px;
+      }
+      .tab-btn {
+        flex-direction: column;
+        white-space: normal;
+        text-align: center;
+        line-height: 1.3;
+        padding: 10px 6px;
+        font-size: 12px;
+        gap: 4px;
+        min-width: 0;
+      }
+    }
+
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
@@ -897,8 +916,8 @@
 
     /* ━━ TABS – extra-small screens (≤ 480px) ━━━━━━━━━━━━━━━━ */
     @media (max-width: 480px) {
-      .tabs-bar { padding: 4px; gap: 3px; }
-      .tab-btn  { padding: 8px 3px; font-size: 11px; }
+      .tabs-bar { padding: 6px; gap: 6px; }
+      .tab-btn  { padding: 8px 4px; font-size: 11px; }
     }
   </style>
 
@@ -936,8 +955,7 @@
   .orders-tbl .btn-confirm,
   .orders-tbl .btn-delete,
   .orders-tbl .btn-revert,
-  .orders-tbl .btn-receipt,
-  .orders-tbl .btn-copy-msg {
+  .orders-tbl .btn-receipt {
     padding: 5px 7px;
     font-size: 11px;
     gap: 3px;
@@ -1006,7 +1024,6 @@
   <div class="header-right">
     <a class="btn-home" href="../index.html">🏠 الصفحة الرئيسية</a>
     <span class="admin-badge" id="adminBadge">...</span>
-    <button class="btn-view-as" id="viewAsBtn" style="display:none;">👁 معاينة كمستخدم</button>
     <button class="btn-logout" id="logoutBtn">خروج</button>
   </div>
 </header>
@@ -1037,13 +1054,10 @@
       <span class="tab-badge" id="tab-badge-reviews">—</span>
     </button>
     <button class="tab-btn" data-tab="bestsellers">
-      📚 الكتب المباعة
+      📚 المنتجات المباعة
     </button>
     <button class="tab-btn" data-tab="bestpicks">
       🔥 المنتجات الأكثر مبيعاً
-    </button>
-    <button class="tab-btn" data-tab="contact">
-      📞 اتصال العمل
     </button>
     <button class="tab-btn" data-tab="sellers" id="navBtnSellers" style="display:none;">
       👤 البائعين
@@ -1192,8 +1206,6 @@
 
   <!-- Tab: Curated best-selling products (homepage section) — fully managed by admin/bestseller-picks.js -->
   <div class="tab-content" id="tab-bestpicks"></div><!-- /tab-bestpicks -->
-
-  <div class="tab-content" id="tab-contact"></div><!-- /tab-contact -->
 
   <!-- Tab: Sellers — main-admin-only setting, rendered by admin.js -->
   <div class="tab-content" id="tab-sellers"></div><!-- /tab-sellers -->
@@ -1374,12 +1386,12 @@
 </div>
 
 <script src="supabase-client.js"></script>
+<script src="../js/dialog.js"></script>
 <script src="admin.js"></script>
 <script src="local-fs.js"></script>
 <script src="draft-manager.js"></script>
 <script src="products-manager.js"></script>
 <script src="bestsellers.js"></script>
 <script src="bestseller-picks.js"></script>
-<script src="business-contact-settings.js"></script>
 </body>
 </html>
