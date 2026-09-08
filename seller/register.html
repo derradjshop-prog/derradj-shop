@@ -55,6 +55,18 @@
       box-shadow: 0 4px 32px rgba(0,0,0,.10);
     }
 
+    /* === الجوال: تقليص الفراغ الفارغ الكبير بين الهيدر وبطاقة التسجيل ===
+       لا تغيير على سطح المكتب — فقط padding علوي/سفلي أصغر لصفحة main
+       بحيث تبدأ البطاقة بمسافة طبيعية (~24px) أسفل الهيدر مباشرة. */
+    @media (max-width: 640px) {
+      .seller-register-main {
+        padding: 24px 12px 40px;
+      }
+      .reg-card {
+        padding: 28px 20px;
+      }
+    }
+
     .login-logo {
       font-size: 20px;
       font-weight: 900;
@@ -170,6 +182,221 @@
     .footer-note a { color: var(--primary); font-weight: 700; text-decoration: none; }
     .footer-note a:hover { text-decoration: underline; }
 
+    /* === إظهار/إخفاء كلمة المرور === */
+    .pw-wrap { position: relative; }
+    .pw-wrap input { padding-left: 42px; }
+    .pw-toggle {
+      position: absolute;
+      left: 6px;
+      top: 50%;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 6px;
+      color: var(--muted);
+      line-height: 0;
+    }
+    .pw-toggle:hover { color: var(--text); }
+    .pw-toggle svg { width: 16px; height: 16px; display: block; }
+
+    .pw-match-msg {
+      font-size: 12px;
+      font-weight: 700;
+      min-height: 14px;
+    }
+    .pw-match-msg.match    { color: #059669; }
+    .pw-match-msg.no-match { color: #b91c1c; }
+
+    /* === حقل الهاتف: يمنع انعكاس ترتيب الأرقام داخل صفحة RTL === */
+    .ltr-phone-input {
+      direction: ltr;
+      text-align: right;
+    }
+
+    /* === Dropdown ثنائي اللغة (ولاية / بلدية) — نفس تطبيق صفحة "تقديم الطلب" === */
+    .custom-select-wrap { position: relative; }
+
+    .cs-trigger {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-family: var(--font);
+      color: var(--text-muted);
+      background: var(--white);
+      cursor: pointer;
+      direction: rtl;
+      text-align: right;
+      box-sizing: border-box;
+      transition: border-color .2s, box-shadow .2s, background .15s;
+      min-height: 46px;
+    }
+    .cs-trigger:focus { outline: none; }
+    .cs-trigger.open,
+    .cs-trigger:focus-visible {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(29,78,216,.1);
+    }
+    .cs-trigger.disabled {
+      background: var(--bg-alt);
+      cursor: not-allowed;
+      opacity: 0.65;
+      pointer-events: none;
+    }
+    .cs-trigger.has-value { color: var(--text); }
+
+    .cs-trigger-label {
+      flex: 1;
+      text-align: right;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+      align-items: flex-end;
+    }
+    .cs-tl-ar { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.3; }
+    .cs-tl-fr { font-size: 11px; font-weight: 600; color: var(--text-muted); }
+
+    .cs-chevron {
+      width: 18px; height: 18px;
+      flex-shrink: 0;
+      color: var(--text-muted);
+      transition: transform .2s;
+    }
+    .cs-trigger.open .cs-chevron { transform: rotate(180deg); }
+
+    .cs-panel {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0; left: 0;
+      background: #fff;
+      border: 1.5px solid var(--primary);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 32px rgba(0,0,0,.15);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .cs-panel.open {
+      display: flex;
+      animation: csDropIn .15s ease;
+    }
+    @keyframes csDropIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+
+    .cs-panel-header {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px 10px;
+      border-bottom: 1.5px solid var(--bg-alt);
+      flex-shrink: 0;
+    }
+    .cs-panel-title { font-size: 15px; font-weight: 800; color: var(--text); }
+    .cs-close-btn {
+      width: 30px; height: 30px;
+      border-radius: 99px;
+      background: var(--bg-alt);
+      border: none; cursor: pointer;
+      font-size: 13px; color: var(--text-light);
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+    }
+    .cs-close-btn:hover { background: var(--border); }
+
+    .cs-search-bar {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--bg-alt);
+      display: flex; align-items: center; gap: 8px;
+      flex-shrink: 0;
+    }
+    .cs-search-icon { width: 15px; height: 15px; color: var(--text-muted); flex-shrink: 0; }
+    .cs-search-input {
+      flex: 1; border: none; outline: none;
+      font-size: 14px; font-family: var(--font);
+      direction: rtl; background: transparent; color: var(--text); padding: 2px 0;
+    }
+    .cs-search-input::placeholder { color: var(--text-muted); }
+
+    .cs-list {
+      overflow-y: auto;
+      max-height: 230px;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+      touch-action: pan-y;
+    }
+
+    .cs-panel.cs-flip-up { animation: csDropInUp .15s ease; }
+    @keyframes csDropInUp {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .cs-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--bg-alt);
+      direction: rtl; text-align: right;
+      transition: background .1s;
+      display: flex; flex-direction: column; gap: 1px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cs-item:last-child { border-bottom: none; }
+    .cs-item:hover, .cs-item.focused { background: rgba(29,78,216,.06); }
+    .cs-item.is-selected { background: rgba(29,78,216,.06); }
+    .cs-item-ar { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.4; }
+    .cs-item-fr { font-size: 11px; color: var(--text-muted); font-weight: 600; }
+    .cs-item.is-selected .cs-item-ar { color: var(--primary); }
+    .cs-item.is-selected .cs-item-fr { color: rgba(29,78,216,.55); }
+    .cs-empty { padding: 20px 16px; text-align: center; color: var(--text-muted); font-size: 14px; direction: rtl; transition: color .2s; }
+    .cs-empty.cs-empty-alert { color: var(--accent); font-weight: 700; }
+    @keyframes csShake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    .cs-empty-shake { animation: csShake .4s ease; }
+
+    .cs-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.5); z-index: 9998;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .cs-backdrop.show { display: block; }
+
+    @media (max-width: 640px) {
+      .cs-panel {
+        position: fixed !important;
+        bottom: 0;
+        left: 0 !important; right: 0 !important; top: auto !important;
+        border-radius: 20px 20px 0 0;
+        border: none;
+        box-shadow: 0 -4px 40px rgba(0,0,0,.2);
+        max-height: 72vh;
+        animation: none !important;
+        transition: bottom 0.16s ease, max-height 0.16s ease;
+        padding-bottom: env(safe-area-inset-bottom, 0px);
+      }
+      .cs-panel.open { animation: csSlideUp .22s cubic-bezier(.22,.61,.36,1) !important; }
+      @keyframes csSlideUp { from { transform:translateY(100%); } to { transform:translateY(0); } }
+      .cs-panel-header { display: flex !important; }
+      .cs-list {
+        max-height: none; flex: 1;
+        touch-action: pan-y;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+      }
+      .cs-item { padding: 14px 20px; min-height: 52px; }
+      .cs-item-ar { font-size: 15px; }
+      .cs-item-fr { font-size: 12px; }
+      .cs-search-bar { padding: 12px 16px; }
+      .cs-search-input { font-size: 16px; }
+    }
+
     .success-box {
       text-align: center;
       padding: 20px 10px 6px;
@@ -251,24 +478,34 @@
     <div class="section-title">المعلومات الشخصية</div>
 
     <div class="form-group">
-      <label for="full_name">الاسم الكامل</label>
-      <input type="text" id="full_name" name="full_name" placeholder="الاسم الكامل" required/>
+      <label for="full_name">الاسم و اللقب</label>
+      <input type="text" id="full_name" name="full_name" placeholder="الاسم و اللقب" maxlength="20" required/>
+      <div class="field-error" id="err_full_name"></div>
     </div>
 
     <div class="form-group">
       <label for="phone">رقم الهاتف</label>
-      <input type="text" id="phone" name="phone" placeholder="0555 12 34 56" required/>
+      <input type="tel" id="phone" name="phone" class="ltr-phone-input" placeholder="0555123456"
+             inputmode="numeric" autocomplete="tel" maxlength="10"
+             pattern="^(05|06|07)[0-9]{8}$" required/>
       <div class="field-error" id="err_phone"></div>
     </div>
 
     <div class="form-group">
       <label for="password">كلمة المرور</label>
-      <input type="password" id="password" name="password" placeholder="6 أحرف على الأقل" required autocomplete="new-password"/>
+      <div class="pw-wrap">
+        <input type="password" id="password" name="password" placeholder="6 أحرف على الأقل" required autocomplete="new-password"/>
+        <button type="button" class="pw-toggle" data-target="password" aria-label="إظهار كلمة المرور"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
     </div>
 
     <div class="form-group">
       <label for="confirm_password">تأكيد كلمة المرور</label>
-      <input type="password" id="confirm_password" name="confirm_password" placeholder="أعد إدخال كلمة المرور" required autocomplete="new-password"/>
+      <div class="pw-wrap">
+        <input type="password" id="confirm_password" name="confirm_password" placeholder="أعد إدخال كلمة المرور" required autocomplete="new-password"/>
+        <button type="button" class="pw-toggle" data-target="confirm_password" aria-label="إظهار كلمة المرور"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg></button>
+      </div>
+      <div class="pw-match-msg" id="pwMatchMsg"></div>
       <div class="field-error" id="err_password"></div>
     </div>
 
@@ -285,18 +522,58 @@
     </div>
 
     <div class="form-group">
-      <label for="wilaya">الولاية</label>
-      <input type="text" id="wilaya" name="wilaya" placeholder="مثال: الجزائر" required/>
+      <label>الولاية</label>
+      <div class="custom-select-wrap" id="wilayaWrap">
+        <button type="button" class="cs-trigger" id="wilayaInput"
+                aria-haspopup="listbox" aria-expanded="false">
+          <svg class="cs-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          <span class="cs-trigger-label">اختر الولاية...</span>
+        </button>
+        <div class="cs-panel" id="wilayaDropdown" role="listbox">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">اختر الولاية</span>
+            <button type="button" class="cs-close-btn" aria-label="إغلاق">✕</button>
+          </div>
+          <div class="cs-search-bar">
+            <svg class="cs-search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+            <input type="text" class="cs-search-input" placeholder="ابحث عن الولاية..." autocomplete="off" inputmode="search">
+          </div>
+          <div class="cs-list"></div>
+        </div>
+        <input type="hidden" id="wilayaHidden" name="wilaya">
+      </div>
+      <div class="field-error" id="err_wilaya"></div>
     </div>
 
     <div class="form-group">
-      <label for="commune">البلدية</label>
-      <input type="text" id="commune" name="commune" placeholder="مثال: باب الزوار" required/>
+      <label>البلدية</label>
+      <div class="custom-select-wrap" id="communeWrap">
+        <button type="button" class="cs-trigger disabled" id="communeInput"
+                aria-haspopup="listbox" aria-expanded="false" disabled>
+          <svg class="cs-chevron" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd"/></svg>
+          <span class="cs-trigger-label">اختر الولاية أولاً</span>
+        </button>
+        <div class="cs-panel" id="communeDropdown" role="listbox">
+          <div class="cs-panel-header">
+            <span class="cs-panel-title">اختر البلدية / المنطقة</span>
+            <button type="button" class="cs-close-btn" aria-label="إغلاق">✕</button>
+          </div>
+          <div class="cs-search-bar">
+            <svg class="cs-search-icon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd"/></svg>
+            <input type="text" class="cs-search-input" placeholder="ابحث عن البلدية..." autocomplete="off" inputmode="search">
+          </div>
+          <div class="cs-list"></div>
+        </div>
+        <input type="hidden" id="communeHidden" name="commune">
+      </div>
+      <div class="field-error" id="err_commune"></div>
     </div>
 
     <div class="form-group">
       <label for="whatsapp">رقم الواتساب</label>
-      <input type="text" id="whatsapp" name="whatsapp" placeholder="0555 12 34 56" required/>
+      <input type="tel" id="whatsapp" name="whatsapp" class="ltr-phone-input" placeholder="0555123456"
+             inputmode="numeric" autocomplete="tel" maxlength="10"
+             pattern="^(05|06|07)[0-9]{8}$" required/>
       <div class="field-error" id="err_whatsapp"></div>
     </div>
 
@@ -311,9 +588,6 @@
       <label for="product_type">نوع المنتجات التي تنوي بيعها</label>
       <select id="product_type" name="product_type" required>
         <option value="" disabled selected>اختر نوع المنتجات</option>
-        <option value="electronics">إلكترونيات</option>
-        <option value="books">كتب</option>
-        <option value="other">غير ذلك</option>
       </select>
     </div>
 
@@ -377,16 +651,15 @@
 
   function setFieldError(id, msg) {
     const el = document.getElementById(id);
-    if (el) el.textContent = msg || "";
+    if (el) {
+      el.textContent = msg || "";
+      /* الغِ أي display:none قد تكون CustomSelect (ولاية/بلدية) ضبطته */
+      el.style.display = "";
+    }
   }
 
   function onlyDigits10(v) {
     return String(v || "").replace(/\D+/g, "").slice(0, 10);
-  }
-
-  function isValidAlgerianPhone(v) {
-    const d = onlyDigits10(v);
-    return d.length === 10 && d.charAt(0) === "0";
   }
 
   function normalizePhone(v) {
@@ -396,15 +669,94 @@
     return p;
   }
 
-  function isValidNormalizedPhone(p) {
-    return p.length === 10 && p.charAt(0) === "0";
+  /* رقم جزائري صحيح: 10 أرقام بالضبط، يبدأ بـ 05 أو 06 أو 07 */
+  function isValidDzMobile(v) {
+    return /^(05|06|07)[0-9]{8}$/.test(String(v || ""));
   }
+
+  /* ── حماية الحقول من انعكاس الأرقام + منع تجاوز 10 أرقام ──── */
+  function wireDigitsOnlyPhoneField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", () => {
+      el.value = el.value.replace(/\D+/g, "").slice(0, 10);
+    });
+  }
+  wireDigitsOnlyPhoneField("phone");
+  wireDigitsOnlyPhoneField("whatsapp");
+
+  /* ── إظهار / إخفاء كلمة المرور (أيقونة عين بسيطة أحادية اللون) ── */
+  const EYE_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8Z"/><circle cx="12" cy="12" r="3"/></svg>';
+  const EYE_OFF_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.9 19.9 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a19.86 19.86 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>' +
+    '<line x1="1" y1="1" x2="23" y2="23"/></svg>';
+
+  document.querySelectorAll(".pw-toggle").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const input = document.getElementById(btn.dataset.target);
+      if (!input) return;
+      const show = input.type === "password";
+      input.type = show ? "text" : "password";
+      btn.innerHTML = show ? EYE_OFF_ICON : EYE_ICON;
+      btn.setAttribute("aria-label", show ? "إخفاء كلمة المرور" : "إظهار كلمة المرور");
+    });
+  });
+
+  /* ── تطابق كلمتي المرور (تنبيه فوري أثناء الكتابة) ────────── */
+  const pwEl        = document.getElementById("password");
+  const pwConfirmEl = document.getElementById("confirm_password");
+  const pwMatchMsg  = document.getElementById("pwMatchMsg");
+
+  function updatePasswordMatchMsg() {
+    const confirmVal = pwConfirmEl.value;
+    if (!confirmVal) {
+      pwMatchMsg.textContent = "";
+      pwMatchMsg.className = "pw-match-msg";
+      return;
+    }
+    if (pwEl.value === confirmVal) {
+      pwMatchMsg.textContent = "✔ كلمتا المرور متطابقتان";
+      pwMatchMsg.className = "pw-match-msg match";
+    } else {
+      pwMatchMsg.textContent = "✘ كلمتا المرور غير متطابقتين";
+      pwMatchMsg.className = "pw-match-msg no-match";
+    }
+  }
+  pwEl.addEventListener("input", updatePasswordMatchMsg);
+  pwConfirmEl.addEventListener("input", updatePasswordMatchMsg);
+
+  /* ── تحميل أنواع/فئات المنتجات من نفس مصدر بيانات صفحة الوكيل
+     (جدول categories في Supabase — بدون اختراع فئات جديدة) ─── */
+  async function loadProductTypes() {
+    const sel = document.getElementById("product_type");
+    const { data, error } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order");
+    if (error) { console.error("loadProductTypes:", error); return; }
+    (data || []).forEach((c) => {
+      const opt = document.createElement("option");
+      opt.value = c.slug;
+      opt.textContent = (c.icon ? c.icon + " " : "") + c.name;
+      sel.appendChild(opt);
+    });
+  }
+  loadProductTypes();
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     setStatus("");
+    setFieldError("err_full_name", "");
     setFieldError("err_phone", "");
     setFieldError("err_password", "");
+    setFieldError("err_wilaya", "");
+    setFieldError("err_commune", "");
     setFieldError("err_whatsapp", "");
 
     const full_name  = document.getElementById("full_name").value.trim();
@@ -415,8 +767,8 @@
     const confirmPassword = document.getElementById("confirm_password").value;
     const boutique_name = document.getElementById("boutique_name").value.trim();
     const boutique_description = document.getElementById("boutique_description").value.trim() || null;
-    const wilaya     = document.getElementById("wilaya").value.trim();
-    const commune    = document.getElementById("commune").value.trim();
+    const wilaya     = document.getElementById("wilayaHidden").value.trim();
+    const commune    = document.getElementById("communeHidden").value.trim();
     const whatsapp   = document.getElementById("whatsapp").value.trim();
     const social_link = document.getElementById("social_link").value.trim() || null;
     const product_type = document.getElementById("product_type").value;
@@ -424,10 +776,16 @@
 
     let hasError = false;
 
-    if (!full_name) { setStatus("يرجى إدخال الاسم الكامل"); hasError = true; }
+    if (!full_name) {
+      setFieldError("err_full_name", "يرجى إدخال الاسم و اللقب");
+      hasError = true;
+    } else if (full_name.length > 20) {
+      setFieldError("err_full_name", "الاسم و اللقب يجب ألا يتجاوز 20 حرفًا");
+      hasError = true;
+    }
 
-    if (!isValidNormalizedPhone(normalizedPhone)) {
-      setFieldError("err_phone", "رقم هاتف غير صحيح، يجب أن يتكون من 10 أرقام ويبدأ بـ 0");
+    if (!isValidDzMobile(normalizedPhone)) {
+      setFieldError("err_phone", "رقم هاتف غير صحيح، يجب أن يتكون من 10 أرقام ويبدأ بـ 05 أو 06 أو 07");
       hasError = true;
     }
 
@@ -440,11 +798,11 @@
     }
 
     if (!boutique_name) { setStatus("يرجى إدخال اسم المتجر"); hasError = true; }
-    if (!wilaya)  { setStatus("يرجى إدخال الولاية"); hasError = true; }
-    if (!commune) { setStatus("يرجى إدخال البلدية"); hasError = true; }
+    if (!wilaya)  { setFieldError("err_wilaya", "يرجى اختيار الولاية"); hasError = true; }
+    if (!commune) { setFieldError("err_commune", "يرجى اختيار البلدية"); hasError = true; }
 
-    if (!isValidAlgerianPhone(whatsapp)) {
-      setFieldError("err_whatsapp", "رقم واتساب غير صحيح، يجب أن يتكون من 10 أرقام ويبدأ بـ 0");
+    if (!isValidDzMobile(normalizePhone(whatsapp))) {
+      setFieldError("err_whatsapp", "رقم واتساب غير صحيح، يجب أن يتكون من 10 أرقام ويبدأ بـ 05 أو 06 أو 07");
       hasError = true;
     }
 
@@ -529,5 +887,359 @@
   });
 })();
 </script>
+
+<!-- خلفية معتمة للـ bottom sheet على الجوال (Wilaya/Commune) -->
+<div id="csBackdrop" class="cs-backdrop" aria-hidden="true"></div>
+
+<!-- ════ الولاية/البلدية: نفس مصدر البيانات ومنطق صفحة "تقديم الطلب" ═══
+     communes.js يعرّف window.EXTRA_COMMUNES، ثم app.js يبني منه
+     window._wilayaData / window._communesMap ويستدعي
+     window.initLocationSelects() المعرَّفة أدناه — دون أي بيانات
+     ولايات/بلديات جديدة يتم كتابتها هنا. ═════════════════════════ -->
+<script src="../ordre/communes.js"></script>
+<script>
+class CustomSelect {
+  constructor({ inputId, dropdownId, hiddenId, errorId, onSelect, panelTitle }) {
+    this.trigger    = document.getElementById(inputId);
+    this.panel      = document.getElementById(dropdownId);
+    this.hidden     = document.getElementById(hiddenId);
+    this.errorEl    = errorId ? document.getElementById(errorId) : null;
+    this.onSelect   = onSelect || null;
+    this.items      = [];
+    this.filtered   = [];
+    this.selected   = null;
+    const labelEl   = this.trigger.querySelector('.cs-trigger-label');
+    this._placeholder = labelEl ? labelEl.textContent.trim() : 'اختر...';
+    this._searchEl  = this.panel.querySelector('.cs-search-input');
+    this._listEl    = this.panel.querySelector('.cs-list');
+    this._titleEl   = this.panel.querySelector('.cs-panel-title');
+    this._closeBtn  = this.panel.querySelector('.cs-close-btn');
+    this._backdrop  = document.getElementById('csBackdrop');
+    if (this._titleEl && panelTitle) this._titleEl.textContent = panelTitle;
+    this._bindEvents();
+  }
+
+  setItems(items) {
+    this.items      = items;
+    this.filtered   = [...items];
+    this.selected   = null;
+    this.hidden.value = '';
+    if (this._searchEl) this._searchEl.value = '';
+    this._updateTrigger();
+  }
+
+  enable(placeholder) {
+    this._placeholder = placeholder || 'ابحث...';
+    this.trigger.classList.remove('disabled');
+    this.trigger.disabled = false;
+    this._updateTrigger();
+  }
+
+  disable(placeholder) {
+    this._placeholder = placeholder || 'اختر الولاية أولاً';
+    this.trigger.classList.add('disabled');
+    this.trigger.disabled = true;
+    this.selected = null;
+    this.hidden.value = '';
+    this._updateTrigger();
+    this._closePanel();
+  }
+
+  _bindEvents() {
+    this.trigger.addEventListener('click', (e) => {
+      if (this.trigger.classList.contains('disabled')) return;
+      e.stopPropagation();
+      this.panel.classList.contains('open') ? this._closePanel() : this._openPanel();
+    });
+
+    if (this._searchEl) {
+      this._searchEl.addEventListener('input', () => this._filter(this._searchEl.value));
+      this._searchEl.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+        e.preventDefault();
+        if (this.filtered.length > 0) {
+          this._select(this.filtered[0]);
+        } else {
+          this._alertNoResult();
+        }
+      });
+    }
+
+    if (this._closeBtn) {
+      this._closeBtn.addEventListener('click', () => this._closePanel());
+    }
+
+    document.addEventListener('click', (e) => {
+      if (!this.panel.contains(e.target) && e.target !== this.trigger) this._closePanel();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.panel.classList.contains('open')) {
+        this._closePanel();
+        this.trigger.focus();
+      }
+    });
+
+    if (this._backdrop) {
+      this._backdrop.addEventListener('click', () => this._closePanel());
+    }
+  }
+
+  _filter(q) {
+    const term = q.trim().toLowerCase();
+    this.filtered = term
+      ? this.items.filter(it =>
+          it.label.toLowerCase().includes(term) ||
+          (it.sublabel && it.sublabel.toLowerCase().includes(term)) ||
+          it.value.toLowerCase().includes(term))
+      : [...this.items];
+    this._render();
+  }
+
+  _render() {
+    if (!this.filtered.length) {
+      this._listEl.innerHTML = `<div class="cs-empty">لا توجد نتائج مطابقة</div>`;
+      return;
+    }
+    this._listEl.innerHTML = this.filtered.map(it => {
+      const isSel = this.selected && it.value === this.selected.value;
+      const ar    = it.label.replace(/</g, '&lt;');
+      const fr    = it.sublabel
+        ? `<span class="cs-item-fr">${it.sublabel.replace(/</g, '&lt;')}</span>` : '';
+      return `<div class="cs-item${isSel ? ' is-selected' : ''}"
+                   data-value="${it.value.replace(/"/g, '&quot;')}"
+                   data-label="${it.label.replace(/"/g, '&quot;')}"
+                   data-sublabel="${(it.sublabel || '').replace(/"/g, '&quot;')}"
+                   role="option" aria-selected="${isSel}">
+                <span class="cs-item-ar">${ar}</span>${fr}
+              </div>`;
+    }).join('');
+
+    this._listEl.querySelectorAll('.cs-item').forEach(el => {
+      const pick = () => this._select({
+        label:    el.dataset.label,
+        value:    el.dataset.value,
+        sublabel: el.dataset.sublabel || '',
+      });
+      el.addEventListener('mousedown', e => { e.preventDefault(); pick(); });
+
+      let _tsY = 0;
+      el.addEventListener('touchstart', e => {
+        _tsY = e.touches[0].clientY;
+      }, { passive: true });
+      el.addEventListener('touchend', e => {
+        if (Math.abs(e.changedTouches[0].clientY - _tsY) > 8) return;
+        e.preventDefault();
+        pick();
+      });
+    });
+  }
+
+  _alertNoResult() {
+    const emptyEl = this._listEl.querySelector('.cs-empty');
+    if (!emptyEl) return;
+    emptyEl.textContent = '⚠️ لا توجد نتيجة — جرّب كلمة مختلفة';
+    emptyEl.classList.add('cs-empty-alert', 'cs-empty-shake');
+    setTimeout(() => {
+      emptyEl.classList.remove('cs-empty-shake');
+      setTimeout(() => {
+        emptyEl.textContent = 'لا توجد نتائج مطابقة';
+        emptyEl.classList.remove('cs-empty-alert');
+      }, 2000);
+    }, 400);
+  }
+
+  _select(item) {
+    this.selected     = item;
+    this.hidden.value = item.value;
+    if (this.errorEl) this.errorEl.style.display = 'none';
+    this._updateTrigger();
+    this._closePanel();
+    if (this.onSelect) this.onSelect(item.value, item.label, item.sublabel);
+  }
+
+  _updateTrigger() {
+    const labelEl = this.trigger.querySelector('.cs-trigger-label');
+    if (!labelEl) return;
+    if (this.selected) {
+      this.trigger.classList.add('has-value');
+      labelEl.innerHTML =
+        `<span class="cs-tl-ar">${this.selected.label.replace(/</g, '&lt;')}</span>` +
+        (this.selected.sublabel
+          ? `<span class="cs-tl-fr">${this.selected.sublabel.replace(/</g, '&lt;')}</span>` : '');
+    } else {
+      this.trigger.classList.remove('has-value');
+      labelEl.textContent = this._placeholder;
+    }
+  }
+
+  _openPanel() {
+    this.panel.classList.add('open');
+    this.trigger.classList.add('open');
+    this.trigger.setAttribute('aria-expanded', 'true');
+    this.filtered = [...this.items];
+    if (this._searchEl) this._searchEl.value = '';
+    this._render();
+
+    if (window.innerWidth <= 640 && this._backdrop) {
+      this._backdrop.classList.add('show');
+
+      this._savedScrollY = window.scrollY;
+      document.body.style.position = 'fixed';
+      document.body.style.top      = `-${this._savedScrollY}px`;
+      document.body.style.width    = '100%';
+
+      if (window.visualViewport) {
+        this._vvHandler = () => this._adjustForKeyboard();
+        window.visualViewport.addEventListener('resize', this._vvHandler);
+        window.visualViewport.addEventListener('scroll', this._vvHandler);
+      }
+    } else {
+      this._positionPanelDesktop();
+      this._desktopReposHandler = (e) => {
+        if (e && e.target && this.panel.contains(e.target)) return;
+        this._closePanel();
+      };
+      window.addEventListener('scroll', this._desktopReposHandler, { passive: true, capture: true });
+      window.addEventListener('resize', this._desktopReposHandler, { passive: true });
+      if (this._searchEl) this._searchEl.focus();
+    }
+  }
+
+  _positionPanelDesktop() {
+    const panel   = this.panel;
+    const trigger = this.trigger;
+    const rect    = trigger.getBoundingClientRect();
+    const vh      = window.innerHeight;
+    const gap     = 6;
+    const margin  = 12;
+    const searchH = panel.querySelector('.cs-search-bar')?.offsetHeight || 44;
+    const minListH = 140;
+    const idealListH = 230;
+
+    const spaceBelow = vh - rect.bottom - gap - margin;
+    const spaceAbove = rect.top - gap - margin;
+
+    panel.style.position = 'fixed';
+    panel.style.left     = rect.left + 'px';
+    panel.style.width    = rect.width + 'px';
+    panel.style.right    = 'auto';
+
+    let listMax;
+    const needed = idealListH + searchH + 8;
+    if (spaceBelow >= needed || spaceBelow >= spaceAbove) {
+      panel.classList.remove('cs-flip-up');
+      panel.style.top    = (rect.bottom + gap) + 'px';
+      panel.style.bottom = 'auto';
+      listMax = Math.max(minListH, Math.min(idealListH, spaceBelow - searchH - 8));
+    } else {
+      panel.classList.add('cs-flip-up');
+      panel.style.bottom = (vh - rect.top + gap) + 'px';
+      panel.style.top    = 'auto';
+      listMax = Math.max(minListH, Math.min(idealListH, spaceAbove - searchH - 8));
+    }
+    this._listEl.style.maxHeight = listMax + 'px';
+  }
+
+  _adjustForKeyboard() {
+    const vv = window.visualViewport;
+    if (!vv || window.innerWidth > 640) return;
+    const keyboardH = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    this.panel.style.bottom    = keyboardH + 'px';
+    this.panel.style.maxHeight = Math.floor(vv.height * 0.88) + 'px';
+  }
+
+  _closePanel() {
+    this.panel.classList.remove('open');
+    this.trigger.classList.remove('open');
+    this.trigger.setAttribute('aria-expanded', 'false');
+    if (this._backdrop) this._backdrop.classList.remove('show');
+
+    if (this._savedScrollY !== undefined) {
+      document.body.style.position = '';
+      document.body.style.top      = '';
+      document.body.style.width    = '';
+      window.scrollTo(0, this._savedScrollY);
+      this._savedScrollY = undefined;
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    if (this._vvHandler && window.visualViewport) {
+      window.visualViewport.removeEventListener('resize', this._vvHandler);
+      window.visualViewport.removeEventListener('scroll', this._vvHandler);
+      this._vvHandler = null;
+    }
+
+    if (this._desktopReposHandler) {
+      window.removeEventListener('scroll', this._desktopReposHandler, { capture: true });
+      window.removeEventListener('resize', this._desktopReposHandler);
+      this._desktopReposHandler = null;
+    }
+
+    this.panel.style.position = '';
+    this.panel.style.top      = '';
+    this.panel.style.bottom   = '';
+    this.panel.style.left     = '';
+    this.panel.style.right    = '';
+    this.panel.style.width    = '';
+    this.panel.style.maxHeight = '';
+    this.panel.classList.remove('cs-flip-up');
+    if (this._listEl) this._listEl.style.maxHeight = '';
+  }
+}
+
+/* تهيئة dropdowns بعد تحميل بيانات communes من app.js (يُستدعى من app.js) */
+window.initLocationSelects = function () {
+  const wilayaData  = window._wilayaData  || [];
+  const communesMap = window._communesMap || {};
+
+  const WILAYA_FR = {
+    "أدرار":"Adrar","الشلف":"Chlef","الأغواط":"Laghouat","أم البواقي":"Oum El Bouaghi",
+    "باتنة":"Batna","بجاية":"Béjaïa","بسكرة":"Biskra","بشار":"Béchar","البليدة":"Blida",
+    "البويرة":"Bouira","تمنراست":"Tamanrasset","تبسة":"Tébessa","تلمسان":"Tlemcen",
+    "تيارت":"Tiaret","تيزي وزو":"Tizi Ouzou","الجزائر":"Alger","الجلفة":"Djelfa",
+    "جيجل":"Jijel","سطيف":"Sétif","سعيدة":"Saïda","سكيكدة":"Skikda",
+    "سيدي بلعباس":"Sidi Bel Abbès","عنابة":"Annaba","قالمة":"Guelma",
+    "قسنطينة":"Constantine","المدية":"Médéa","مستغانم":"Mostaganem","المسيلة":"M'Sila",
+    "معسكر":"Mascara","ورقلة":"Ouargla","وهران":"Oran","البيض":"El Bayadh",
+    "إليزي":"Illizi","برج بوعريريج":"Bordj Bou Arréridj","بومرداس":"Boumerdès",
+    "الطارف":"El Tarf","تندوف":"Tindouf","تيسمسيلت":"Tissemsilt","الوادي":"El Oued",
+    "خنشلة":"Khenchela","سوق أهراس":"Souk Ahras","تيبازة":"Tipaza","ميلة":"Mila",
+    "عين الدفلى":"Aïn Defla","النعامة":"Naâma","عين تموشنت":"Aïn Témouchent",
+    "غرداية":"Ghardaïa","غليزان":"Relizane","تيميمون":"Timimoun",
+    "أولاد جلال":"Ouled Djellal","بني عباس":"Béni Abbès","عين صالح":"In Salah",
+    "عين قزام":"In Guezzam","تقرت":"Touggourt","دجانت":"Djanet",
+    "المغير":"El M'Ghair","المنيعة":"El Menia",
+  };
+
+  const enrichedWilaya = wilayaData.map(w => ({
+    ...w, sublabel: WILAYA_FR[w.value] || '',
+  }));
+
+  const communeSel = new CustomSelect({
+    inputId:    'communeInput',
+    dropdownId: 'communeDropdown',
+    hiddenId:   'communeHidden',
+    errorId:    'err_commune',
+    panelTitle: 'اختر البلدية / المنطقة',
+  });
+
+  new CustomSelect({
+    inputId:    'wilayaInput',
+    dropdownId: 'wilayaDropdown',
+    hiddenId:   'wilayaHidden',
+    errorId:    'err_wilaya',
+    panelTitle: 'اختر الولاية',
+    onSelect: (val) => {
+      const communes = (communesMap[val] || []).map(c => ({ label: c, value: c }));
+      communeSel.setItems(communes);
+      if (communes.length) communeSel.enable('ابحث عن البلدية أو المنطقة...');
+      else                  communeSel.disable('لا توجد بلديات متاحة');
+    },
+  }).setItems(enrichedWilaya);
+};
+</script>
+<script src="../ordre/app.js"></script>
 </body>
 </html>
