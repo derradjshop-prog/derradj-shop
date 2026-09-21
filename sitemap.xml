@@ -3,7 +3,7 @@
         xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://derradjshop.com/</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
@@ -15,7 +15,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/Electronique/</loc>
-    <lastmod>2026-09-17</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -971,24 +971,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://derradjshop.com/product/hoco-c109a-18w-qc30-fast-charger-with-type-c-cable/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/hoco-c109a-18w-qc30-fast-charger-with-type-c-cable/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/hoco-du201-24a-micro-usb-fast-charging-data-cable-1m/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/cables-usb/hoco-du201-24a-micro-usb-fast-charging-data-cable-1m/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://derradjshop.com/product/hoco-ew04-plus-true-wireless-earbuds/</loc>
     <lastmod>2026-08-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -1007,15 +989,6 @@
     </image:image>
   </url>
   <url>
-    <loc>https://derradjshop.com/product/hoco-ho-07-lightning-to-usb-30-otg-adapter/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/cables-usb/hoco-ho-07-lightning-to-usb-30-otg-adapter/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://derradjshop.com/product/hoco-j123c-60000mah-power-bank-pd-20w/</loc>
     <lastmod>2026-08-30</lastmod>
     <changefreq>weekly</changefreq>
@@ -1026,7 +999,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/product/hoco-j132-10000mah-power-bank-225w-pd20w/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -1044,7 +1017,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/product/hoco-j132b-30000mah-power-bank-225w-pd20w/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -1053,7 +1026,7 @@
   </url>
   <url>
     <loc>https://derradjshop.com/product/hoco-q16-10000mah-2-in-1-power-bank-useu-adapter/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -1061,98 +1034,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://derradjshop.com/product/hoco-x88-usb-a-to-type-c-3a-fast-charging-cable/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/cables-usb/hoco-x88-usb-a-to-type-c-3a-fast-charging-cable/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/huawei-honor-wired-earphones-with-microphone/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/kit-main-libre/huawei-honor-wired-earphones-with-microphone/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/ipx8-waterproof-phone-pouch-transparent-black/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/autre/ipx8-waterproof-phone-pouch-transparent-black/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/ipx8-waterproof-phone-pouch-with-strap/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/autre/ipx8-waterproof-phone-pouch-with-strap/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/kd-s23-type-c-to-type-c-charging-data-cable/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/cables-usb/kd-s23-type-c-to-type-c-charging-data-cable/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/modio-sm03-smart-watch-22-sim-bluetooth-53/</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/smartwatch/modio-sm03-smart-watch-22-sim-bluetooth-53/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/modio-sm06-smart-watch-22-sim-bluetooth-53/</loc>
-    <lastmod>2026-09-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/smartwatch/modio-sm06-smart-watch-22-sim-bluetooth-53/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/oppo-45w-supervooc-fast-charger-aaa/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/oppo-45w-supervooc-fast-charger-aaa/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/oppo-dl129-usb-a-to-type-c-supervooc-8a-charging-cable/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/cables-usb/oppo-dl129-usb-a-to-type-c-supervooc-8a-charging-cable/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/oppo-dl2023-45w-supervooc-45a-usb-a-to-type-c-cable/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/cables-usb/oppo-dl2023-45w-supervooc-45a-usb-a-to-type-c-cable/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://derradjshop.com/product/slike-bs007-lcd-7h-tws-wireless-earbuds/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -1160,26 +1043,8 @@
     </image:image>
   </url>
   <url>
-    <loc>https://derradjshop.com/product/slike-dr-57-type-c-to-iphone-27w-fast-charging-cable-1m/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/cables-usb/slike-dr-57-type-c-to-iphone-27w-fast-charging-cable-1m/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/slike-kz-124-20w-gan-usb-a-usb-c-charger/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/slike-kz-124-20w-gan-usb-a-usb-c-charger/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
     <loc>https://derradjshop.com/product/slike-sw02s-7h-tws-wireless-earbuds/</loc>
-    <lastmod>2026-09-07</lastmod>
+    <lastmod>2026-09-21</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
     <image:image>
@@ -1202,15 +1067,6 @@
     <priority>0.8</priority>
     <image:image>
       <image:loc>https://derradjshop.com/Electronique/airpods/soundcore-r50i-true-wireless-earbuds/main.webp</image:loc>
-    </image:image>
-  </url>
-  <url>
-    <loc>https://derradjshop.com/product/xiaomi-mdy-17-en-45w-turbo-charging-power-adapter/</loc>
-    <lastmod>2026-09-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-    <image:image>
-      <image:loc>https://derradjshop.com/Electronique/prise-chargeur/xiaomi-mdy-17-en-45w-turbo-charging-power-adapter/main.webp</image:loc>
     </image:image>
   </url>
 </urlset>
