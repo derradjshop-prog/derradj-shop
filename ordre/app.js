@@ -128,7 +128,8 @@
       const qty = Math.max(1, parseInt(row.querySelector(".pr-qty-input")?.value) || 1);
       const cat = (window.PRODUCTS_CATALOG || [])[idx];
       if (!isNaN(idx) && cat && !cat.hidden && cat.available !== false) {
-        items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty, category: cat.category || null });
+        /* bookQty = عدد نسخ الكتب الفعلية للعمولة: الباقة تُحتسب بعدد كتبها */
+        items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty, category: cat.category || null, bookQty: (cat.bookCount || 1) * qty });
       }
     });
     return items;
@@ -142,7 +143,7 @@
   function calcAgentCommission(items) {
     const totalBookQty = items
       .filter(it => it.category === 'books')
-      .reduce((s, it) => s + (parseInt(it.qty, 10) || 0), 0);
+      .reduce((s, it) => s + (parseInt(it.bookQty != null ? it.bookQty : it.qty, 10) || 0), 0);
     if (totalBookQty <= 0) return 0;
     return 100 + (totalBookQty - 1) * 50;
   }
@@ -217,7 +218,7 @@
     const phone        = onlyDigits10(document.getElementById("phoneInput")?.value || "");
     const address      = document.getElementById("addressInput")?.value?.trim() || "";
     const wilaya       = document.getElementById("wilayaHidden")?.value?.trim() || "";
-    const commune      = document.getElementById("communeHidden")?.value?.trim() || null;
+    let   commune      = document.getElementById("communeHidden")?.value?.trim() || null;
     const notes        = document.getElementById("notes")?.value?.trim()        || null;
     const pm           = document.querySelector('input[name="payment_method"]:checked')?.value || "";
     const deliveryType = document.querySelector('input[name="delivery_type"]:checked')?.value  || "home";
@@ -236,6 +237,8 @@
       return;
     }
     const wilayaCode   = WILAYA_CODE[wilaya] || null;
+    /* استلام من نقطة توصيل: لا بلدية — نحفظ قيمة توضيحية بدل الفراغ */
+    if (deliveryType === "office") commune = "مكتب zr express";
 
     const items          = getProductItems();
     const subtotal       = items.reduce((s, it) => s + it.subtotal, 0);

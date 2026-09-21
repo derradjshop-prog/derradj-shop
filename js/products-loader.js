@@ -46,7 +46,6 @@
      AirPods-branded — are intentionally left unclassified). */
   const LEGACY_SUBCATEGORY_BY_CATALOG_ID = { 87: 'airpods' };
   const LEGACY_SUBCATEGORY_BY_VALUE = {
-    smart_watch: 'smartwatch',
     power_bank:  'power-bank',
   };
   function resolveCategorySlug(p) {
@@ -579,6 +578,171 @@
     section.style.display = '';
   }
 
+  /* ── "باقة كتب من اختيارك" — customer-built book bundle ────────────
+     The customer picks any BUNDLE.size in-stock books; the bundle price is
+     the sum of their live prices minus BUNDLE.discountPct (rounded to 10 DZD).
+     Config, pricing and the cart line live in cart.js (DerradjCart.BUNDLE /
+     DerradjCart.addBundle) so every page that has a cart agrees on them;
+     this file only renders the homepage card and the book-picker popup.
+     ⚠ ordre/index.html mirrors the same constants (BOOK_BUNDLE) — keep in sync. ── */
+  const BUNDLE_FALLBACK = { catalogId: 1000, size: 5, discountPct: 20, title: 'باقة 5 كتب من اختيارك' };
+  function bundleCfg() { return (window.DerradjCart && window.DerradjCart.BUNDLE) || BUNDLE_FALLBACK; }
+  /* covers shown on the card: these five when in stock, topped up from any in-stock books */
+  const BUNDLE_PREVIEW_IDS = [2, 8, 26, 20, 237];
+  let bundlePool = [];   /* in-stock books, in catalog order — refreshed on every render */
+
+  function buildBundleCard(preview) {
+    const cfg = bundleCfg();
+    const covers = preview.map(bk =>
+      `<img class="bundle-cover" src="${resolveImage(bk)}" alt="${escAttr(arName(bk))}"
+            loading="lazy" decoding="async" width="120" height="180" ${IMG_ONERROR}>`).join('');
+    return `<div class="product-card bundle-card">
+      <div class="product-badge sale">وفّر ${cfg.discountPct}٪</div>
+      <a href="#" class="product-img-area bundle-covers" data-bundle-pick
+         aria-label="اختيار كتب ${escAttr(cfg.title)}">${covers}</a>
+      <div class="product-info">
+        <div class="product-cat-label">📦 باقة كتب</div>
+        <a href="#" data-bundle-pick style="text-decoration:none;color:inherit;">
+          <h3 class="product-name">${esc(cfg.title)}</h3>
+        </a>
+        <p class="product-card-summary">اختر أي ${cfg.size} كتب متوفرة — خصم ${cfg.discountPct}٪</p>
+        <div class="product-prices bundle-note">يظهر السعر فور اختيار كتبك</div>
+        <div class="product-card-btns">
+          <button type="button" class="btn-add-cart" data-bundle-pick>📚 اختيار الكتب</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  function bundleDialog() {
+    let dlg = document.getElementById('bundleDialog');
+    if (!dlg) {
+      dlg = document.createElement('dialog');
+      dlg.id = 'bundleDialog';
+      dlg.className = 'bundle-dialog';
+      dlg.addEventListener('click', e => { if (e.target === dlg || e.target.closest('[data-bundle-close]')) dlg.close(); });
+      document.body.appendChild(dlg);
+    }
+    return dlg;
+  }
+
+  /* Book picker: searchable list of in-stock books, pick exactly BUNDLE.size,
+     live total / discount / bundle price, then "add to cart". */
+  function openBundlePicker() {
+    const cfg  = bundleCfg();
+    const fmt  = n => Number(n).toLocaleString('en-US');
+    const dlg  = bundleDialog();
+    const cart = window.DerradjCart;
+    dlg.classList.add('bp');
+    dlg.innerHTML = `
+      <div class="bundle-dialog-head">
+        <h3>📦 ${esc(cfg.title)}</h3>
+        <button type="button" class="bundle-dialog-x" data-bundle-close aria-label="إغلاق">✕</button>
+      </div>
+      <div class="bp-tools">
+        <p class="bp-hint">اختر <b>${cfg.size} كتب</b> من الكتب المتوفرة وسيُخصم <b>${cfg.discountPct}٪</b> من مجموع أسعارها.</p>
+        <input type="search" class="bp-search" placeholder="🔍 ابحث عن كتاب..." autocomplete="off" aria-label="بحث عن كتاب">
+      </div>
+      <ul class="bp-list">
+        ${bundlePool.map(bk => {
+          const nm = arName(bk);
+          const hay = (nm + ' ' + otherName(bk) + ' ' + (bk.slug || '')).toLowerCase();
+          return `<li class="bp-item" data-hay="${escAttr(hay)}"><label class="bp-row">
+            <input type="checkbox" value="${bk.catalog_id}">
+            <img src="${resolveImage(bk)}" alt="" width="44" height="66" loading="lazy" ${IMG_ONERROR}>
+            <span class="bp-name">${esc(nm)}</span>
+            <span class="bp-price">${fmt(bk.price)} دج</span>
+            <span class="bp-tick" aria-hidden="true">✓</span>
+          </label></li>`;
+        }).join('')}
+      </ul>
+      <div class="bp-empty" hidden>لا توجد كتب مطابقة</div>
+      <div class="bp-foot">
+        <div class="bp-count"></div>
+        <div class="bp-sum"></div>
+        <button type="button" class="bp-add" disabled>✅ اطلب الآن</button>
+      </div>`;
+
+    const boxes  = [...dlg.querySelectorAll('.bp-row input')];
+    const addBtn = dlg.querySelector('.bp-add');
+    const priceOf = id => Number((bundlePool.find(b => b.catalog_id === id) || {}).price) || 0;
+
+    function sync() {
+      const ids   = boxes.filter(b => b.checked).map(b => Number(b.value));
+      const total = ids.reduce((s, id) => s + priceOf(id), 0);
+      const full  = ids.length === cfg.size;
+      boxes.forEach(b => {
+        b.disabled = !b.checked && ids.length >= cfg.size;
+        b.closest('.bp-row').classList.toggle('is-on', b.checked);
+        b.closest('.bp-row').classList.toggle('is-locked', b.disabled);
+      });
+      dlg.querySelector('.bp-count').textContent = `تم اختيار ${ids.length} من ${cfg.size}`;
+      const sum = dlg.querySelector('.bp-sum');
+      if (!ids.length) {
+        sum.innerHTML = '<span class="bp-sum-hint">اختر كتبك لترى السعر</span>';
+      } else if (!full) {
+        sum.innerHTML = `<div><span>مجموع الكتب</span><b>${fmt(total)} دج</b></div>
+          <span class="bp-sum-hint">اختر ${cfg.size - ids.length} ${cfg.size - ids.length === 1 ? 'كتاباً' : 'كتب'} أخرى لتفعيل الخصم</span>`;
+      } else {
+        const price = cart.bundlePrice(total);
+        sum.innerHTML = `<div><span>مجموع الكتب</span><s>${fmt(total)} دج</s></div>
+          <div><span>خصم ${cfg.discountPct}٪</span><b class="bp-off">− ${fmt(total - price)} دج</b></div>
+          <div class="bp-total"><span>سعر الباقة</span><strong>${fmt(price)} دج</strong></div>`;
+      }
+      addBtn.disabled = !full;
+    }
+    boxes.forEach(b => b.addEventListener('change', sync));
+
+    const search = dlg.querySelector('.bp-search');
+    const empty  = dlg.querySelector('.bp-empty');
+    search.addEventListener('input', () => {
+      const q = search.value.trim().toLowerCase();
+      let shown = 0;
+      dlg.querySelectorAll('.bp-item').forEach(li => {
+        const ok = !q || li.dataset.hay.includes(q);
+        li.hidden = !ok;
+        if (ok) shown++;
+      });
+      empty.hidden = shown > 0;
+    });
+
+    addBtn.addEventListener('click', () => {
+      const ids = boxes.filter(b => b.checked).map(b => Number(b.value));
+      /* "اطلب الآن": الباقة وحدها في السلة ثم مباشرة إلى صفحة الطلب */
+      if (cart && cart.addBundle(ids, { checkout: true })) dlg.close();
+    });
+
+    sync();
+    if (typeof dlg.showModal === 'function') dlg.showModal(); else dlg.setAttribute('open', '');
+  }
+
+  /* Bundle section — sits right under "المنتجات الأكثر مبيعاً"; stays hidden
+     unless there are at least BUNDLE.size books in stock to choose from. */
+  function renderHomepageBundles(products) {
+    const section = document.getElementById('bundles-section');
+    const grid    = document.getElementById('homeBundlesGrid');
+    if (!section || !grid) return;
+    const cfg = bundleCfg();
+    bundlePool = products.filter(p => p.category === 'books' && p.stock_status !== 'out_of_stock');
+    if (bundlePool.length < cfg.size) { section.style.display = 'none'; return; }
+
+    const preview = BUNDLE_PREVIEW_IDS.map(id => bundlePool.find(p => p.catalog_id === id)).filter(Boolean);
+    for (const bk of bundlePool) { if (preview.length >= cfg.size) break; if (!preview.includes(bk)) preview.push(bk); }
+
+    const tpl = document.createElement('template');
+    tpl.innerHTML = buildBundleCard(preview.slice(0, cfg.size));
+    grid.replaceChildren(tpl.content);
+    section.style.display = '';
+    if (!section._bundleBound) {
+      section._bundleBound = true;
+      section.addEventListener('click', e => {
+        if (!e.target.closest('[data-bundle-pick]')) return;
+        e.preventDefault();
+        openBundlePicker();
+      });
+    }
+  }
+
   /* ── Build SEARCH_PRODUCTS entries for new products ── */
   function extendSearch(products) {
     if (!window.SEARCH_PRODUCTS) return;
@@ -710,6 +874,7 @@
       window.SUPABASE_PRODUCTS = products;
 
       extendCatalog(products);
+      renderHomepageBundles(products);
       renderHomepageProducts(products);
       renderHomepageBooks(products, bookSortMode);
 

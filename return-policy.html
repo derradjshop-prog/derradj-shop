@@ -61,249 +61,172 @@
   <link rel="stylesheet" href="style.css" />
 
   <style>
-    /* ── Return Policy page styles ── */
-    .rp-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      background: rgba(255,255,255,0.15);
-      border: 1px solid rgba(255,255,255,0.3);
-      color: #fff;
-      padding: 6px 16px;
-      border-radius: 999px;
-      font-size: 13px;
-      font-weight: 600;
-      margin-bottom: 18px;
+    /* ── Return Policy page (classes prefixed pol- to avoid clashing with
+       the related-products .rp-card in style.css) ── */
+    html { scroll-behavior: smooth; }
+    @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+    .pol-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+      color: #fff; padding: 6px 16px; border-radius: 999px;
+      font-size: 13px; font-weight: 600; margin-bottom: 18px;
     }
-    .rp-meta {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 18px;
-    }
-    .rp-meta-pill {
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.2);
-      color: rgba(255,255,255,0.85);
-      font-size: 12.5px;
-      font-weight: 600;
-      padding: 5px 14px;
-      border-radius: 999px;
+    .pol-meta { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 22px; }
+    .pol-meta-pill {
+      background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+      color: rgba(255,255,255,.9); font-size: 12.5px; font-weight: 600;
+      padding: 5px 14px; border-radius: 999px;
     }
 
-    /* Quick nav chips */
-    .rp-quicknav {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 16px;
-      padding: 18px 24px;
-      margin-bottom: 22px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    /* Page shell: sidebar + content on desktop, single column on mobile */
+    .pol-page { background: #f8fafc; direction: ltr; text-align: left; }
+    .pol-layout {
+      max-width: 1080px; margin: 0 auto; padding: 44px 20px 64px;
+      display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 32px; align-items: start;
     }
-    .rp-quicknav h3 {
-      font-size: 12px;
-      font-weight: 700;
-      color: #9ca3af;
-      text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin: 0 0 12px 0;
+    .pol-main { min-width: 0; }
+
+    /* Key facts strip */
+    .pol-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 20px; }
+    .pol-fact {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+      padding: 16px 18px; box-shadow: 0 2px 12px rgba(0,0,0,.04);
     }
-    .rp-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    .pol-fact b { display: block; font-size: 22px; font-weight: 900; color: #1e3a8a; line-height: 1.2; }
+    .pol-fact span { display: block; margin-top: 4px; font-size: 13px; color: #6b7280; line-height: 1.5; }
+
+    /* Table of contents */
+    .pol-quicknav {
+      position: sticky; top: 96px;
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+      padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.04);
     }
-    .rp-chips a {
-      background: #f3f4f6;
-      color: #374151;
-      font-size: 13px;
-      font-weight: 600;
-      padding: 6px 14px;
-      border-radius: 999px;
-      text-decoration: none;
-      transition: background .18s, color .18s;
-      border: 1px solid transparent;
+    .pol-quicknav h3 {
+      font-size: 11.5px; font-weight: 800; color: #9ca3af;
+      text-transform: uppercase; letter-spacing: .8px; margin: 0 0 10px 6px;
     }
-    .rp-chips a:hover {
-      background: #1B2A4A;
-      color: #fff;
-      text-decoration: none;
-      border-color: #1B2A4A;
+    .pol-chips { display: flex; flex-direction: column; gap: 2px; }
+    .pol-chips a {
+      color: #374151; font-size: 14px; font-weight: 600; padding: 9px 12px;
+      border-radius: 10px; text-decoration: none; border-left: 3px solid transparent;
+      transition: background .15s, color .15s, border-color .15s;
     }
+    .pol-chips a:hover { background: #f3f4f6; text-decoration: none; }
+    .pol-chips a.active { background: #eff6ff; color: #1d4ed8; border-left-color: #1d4ed8; }
 
     /* Section cards */
-    .rp-card {
-      background: #fff;
-      border: 1px solid #e5e7eb;
-      border-radius: 18px;
-      padding: 28px 32px;
-      margin-bottom: 20px;
-      box-shadow: 0 2px 14px rgba(0,0,0,.04);
+    .pol-card {
+      background: #fff; border: 1px solid #e5e7eb; border-radius: 18px;
+      padding: 28px 32px; margin-bottom: 20px; box-shadow: 0 2px 14px rgba(0,0,0,.04);
+      scroll-margin-top: 96px; width: auto; max-width: none; min-width: 0;
     }
-    .rp-card h2 {
-      font-size: 18px;
-      font-weight: 800;
-      color: #111827;
-      margin: 0 0 6px 0;
-      display: flex;
-      align-items: center;
-      gap: 10px;
+    .pol-card h2 {
+      font-size: 19px; font-weight: 800; color: #111827; margin: 0 0 18px;
+      padding-bottom: 14px; border-bottom: 1px solid #f1f5f9; line-height: 1.4;
     }
-    .rp-card h2::after {
-      content: "";
-      display: block;
-      width: 48px;
-      height: 3px;
-      background: linear-gradient(90deg, #1B2A4A, #12203a);
-      border-radius: 3px;
-      margin-top: 10px;
+    .pol-card p { color: #374151; font-size: 15.5px; line-height: 1.85; margin: 0 0 12px; }
+    .pol-card p:last-child { margin-bottom: 0; }
+    .pol-card hr { border: none; border-top: 1px solid #f1f5f9; margin: 20px 0; }
+    .pol-card ul, .pol-card ol { margin: 0 0 12px; padding: 0; list-style: none; }
+    .pol-card ul li {
+      position: relative; padding: 4px 0 4px 32px; margin: 0;
+      color: #374151; font-size: 15.5px; line-height: 1.8;
     }
-    .rp-card-header {
-      margin-bottom: 18px;
+    .pol-card ul li::before {
+      content: "•"; position: absolute; left: 6px; top: 4px;
+      color: #1d4ed8; font-weight: 900;
     }
-    .rp-card p {
-      color: #374151;
-      font-size: 15px;
-      line-height: 1.8;
-      margin: 0 0 12px 0;
+    .pol-card ul.pol-list-ok li::before, .pol-card ul.pol-list-no li::before {
+      top: 6px; left: 4px; width: 20px; height: 20px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; line-height: 1;
     }
-    .rp-card p:last-child { margin-bottom: 0; }
-    .rp-card ul,
-    .rp-card ol {
-      color: #374151;
-      font-size: 15px;
-      line-height: 1.85;
-      margin: 0 0 12px;
-      padding-left: 22px;
-    }
-    .rp-card li { margin-bottom: 7px; }
-    .rp-card li:last-child { margin-bottom: 0; }
-    .rp-card hr {
-      border: none;
-      border-top: 1px solid #f3f4f6;
-      margin: 18px 0;
-    }
+    .pol-card ul.pol-list-ok li::before { content: "✓"; background: #dcfce7; color: #166534; }
+    .pol-card ul.pol-list-no li::before { content: "✕"; background: #fee2e2; color: #991b1b; }
 
     /* Alert boxes */
-    .rp-box {
-      border-radius: 12px;
-      padding: 13px 18px;
-      margin-top: 16px;
-      font-size: 14px;
-      line-height: 1.7;
-    }
-    .rp-box-green  { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
-    .rp-box-yellow { background: #fefce8; border: 1px solid #fde047; color: #713f12; }
-    .rp-box-red    { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
-    .rp-box-blue   { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
+    .pol-box { border-radius: 12px; padding: 14px 18px; margin-top: 18px; font-size: 14.5px; line-height: 1.75; }
+    .pol-box-green  { background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; }
+    .pol-box-yellow { background: #fefce8; border: 1px solid #fde047; color: #713f12; }
+    .pol-box-red    { background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; }
+    .pol-box-blue   { background: #eff6ff; border: 1px solid #bfdbfe; color: #1e40af; }
 
-    /* Steps list */
-    .rp-steps {
-      counter-reset: step-counter;
-      list-style: none;
-      padding: 0;
-      margin: 0 0 12px;
+    /* Numbered steps (block li + absolutely-positioned counter so inline
+       <strong> text flows normally instead of becoming flex items) */
+    .pol-steps { counter-reset: step; }
+    .pol-card ol.pol-steps li {
+      counter-increment: step; position: relative; display: block;
+      padding: 12px 0 12px 46px; border-bottom: 1px solid #f1f5f9;
+      font-size: 15.5px; color: #374151; line-height: 1.75;
     }
-    .rp-steps li {
-      counter-increment: step-counter;
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      padding: 10px 0;
-      border-bottom: 1px solid #f3f4f6;
-      font-size: 15px;
-      color: #374151;
-      line-height: 1.7;
-    }
-    .rp-steps li:last-child { border-bottom: none; }
-    .rp-steps li::before {
-      content: counter(step-counter);
-      min-width: 28px;
-      height: 28px;
-      background: linear-gradient(135deg, #1B2A4A, #12203a);
-      color: #fff;
-      font-size: 13px;
-      font-weight: 800;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      margin-top: 2px;
+    .pol-card ol.pol-steps li:last-child { border-bottom: none; }
+    .pol-card ol.pol-steps li::before {
+      content: counter(step); position: absolute; left: 0; top: 12px;
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, #1d4ed8, #1e3a8a); color: #fff;
+      font-size: 13.5px; font-weight: 800; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
     }
 
-    /* Contact section */
-    .rp-contact {
+    /* Contact CTA */
+    .pol-contact {
       background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #065f46);
-      border-radius: 20px;
-      padding: 40px 36px;
-      text-align: center;
-      margin-top: 8px;
+      border-radius: 20px; padding: 40px 32px; text-align: center; scroll-margin-top: 96px;
     }
-    .rp-contact h2 {
-      color: #fff;
-      font-size: 22px;
-      font-weight: 900;
-      margin: 0 0 10px 0;
+    .pol-contact h2 { color: #fff; font-size: 24px; font-weight: 900; margin: 0 0 10px; }
+    .pol-contact p { color: rgba(255,255,255,.78); font-size: 15.5px; max-width: 480px; margin: 0 auto 26px; line-height: 1.75; }
+    .pol-contact-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+    .pol-btn-wa, .pol-btn-outline {
+      display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+      color: #fff; font-size: 15px; font-weight: 700; padding: 14px 28px;
+      border-radius: 12px; text-decoration: none; transition: background .2s;
     }
-    .rp-contact p {
-      color: rgba(255,255,255,0.72);
-      font-size: 15px;
-      max-width: 460px;
-      margin: 0 auto 26px;
-      line-height: 1.7;
-    }
-    .rp-contact-btns {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .rp-btn-wa {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      background: #22c55e;
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 13px 28px;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: background .2s;
-    }
-    .rp-btn-wa:hover { background: #16a34a; color: #fff; text-decoration: none; }
-    .rp-btn-outline {
-      display: inline-flex;
-      align-items: center;
-      gap: 9px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.25);
-      color: #fff;
-      font-size: 15px;
-      font-weight: 700;
-      padding: 13px 28px;
-      border-radius: 12px;
-      text-decoration: none;
-      transition: background .2s;
-    }
-    .rp-btn-outline:hover { background: rgba(255,255,255,0.18); color: #fff; text-decoration: none; }
+    .pol-btn-wa { background: #22c55e; }
+    .pol-btn-wa:hover { background: #16a34a; color: #fff; text-decoration: none; }
+    .pol-btn-outline { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.28); }
+    .pol-btn-outline:hover { background: rgba(255,255,255,.18); color: #fff; text-decoration: none; }
 
-    /* RTL overrides for nav/footer */
-    header.main-header,
-    .mobile-menu,
-    footer.main-footer { direction: rtl; }
+    /* RTL for nav/footer, LTR for content */
+    header.main-header, .mobile-menu, footer.main-footer { direction: rtl; }
+    .inner-hero { direction: ltr; }
+    .pol-card, .pol-fact, .pol-quicknav, .pol-box { text-align: left; }
 
-    /* LTR for content */
-    .inner-hero,
-    .inner-content { direction: ltr; }
+    /* Tablet: TOC becomes a horizontal scrolling bar */
+    @media (max-width: 900px) {
+      .pol-layout { grid-template-columns: minmax(0, 1fr); gap: 18px; padding: 28px 16px 48px; }
+      .pol-quicknav {
+        position: sticky; top: 0; z-index: 20; padding: 8px; border-radius: 14px;
+        margin: 0 -4px;
+      }
+      .pol-quicknav h3 { display: none; }
+      .pol-chips {
+        flex-direction: row; gap: 6px; overflow-x: auto; -webkit-overflow-scrolling: touch;
+        scrollbar-width: none; scroll-snap-type: x proximity;
+      }
+      .pol-chips::-webkit-scrollbar { display: none; }
+      .pol-chips a {
+        flex: 0 0 auto; white-space: nowrap; background: #f3f4f6; border-left: 0;
+        border-radius: 999px; padding: 8px 14px; font-size: 13px; scroll-snap-align: start;
+      }
+      .pol-chips a.active { background: #1d4ed8; color: #fff; }
+      .pol-card, .pol-contact { scroll-margin-top: 72px; }
+    }
 
+    /* Phone */
     @media (max-width: 640px) {
-      .rp-card { padding: 20px 18px; }
-      .rp-contact { padding: 30px 18px; }
-      .rp-contact h2 { font-size: 18px; }
-      .rp-quicknav { padding: 16px 18px; }
+      .pol-facts { grid-template-columns: 1fr; gap: 10px; }
+      .pol-fact { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+      .pol-fact b { font-size: 20px; min-width: 76px; }
+      .pol-fact span { margin: 0; }
+      .pol-card { padding: 20px 18px; border-radius: 16px; margin-bottom: 16px; }
+      .pol-card h2 { font-size: 17px; margin-bottom: 14px; padding-bottom: 12px; }
+      .pol-card p, .pol-card ul li, .pol-card ol.pol-steps li { font-size: 15px; }
+      .pol-contact { padding: 30px 18px; border-radius: 16px; }
+      .pol-contact h2 { font-size: 20px; }
+      .pol-contact-btns { flex-direction: column; }
+      .pol-btn-wa, .pol-btn-outline { width: 100%; }
+      .pol-meta-pill { font-size: 12px; }
     }
   </style>
 </head>
@@ -366,24 +289,25 @@
 <!-- ── Hero ── -->
 <section class="inner-hero">
   <div class="container">
-    <div class="rp-badge">🛡️ Customer Protection Policy</div>
+    <div class="pol-badge">🛡️ Customer Protection Policy</div>
     <h1>Return &amp; Exchange Policy</h1>
     <p>Your satisfaction is our priority. We stand behind every product we send — please read our policy carefully before ordering.</p>
-    <div class="rp-meta">
-      <span class="rp-meta-pill">📅 Last updated: May 2026</span>
-      <span class="rp-meta-pill">🇩🇿 Applies to all orders in Algeria</span>
-      <span class="rp-meta-pill">⏱ 48-hour contact window</span>
+    <div class="pol-meta">
+      <span class="pol-meta-pill">📅 Last updated: May 2026</span>
+      <span class="pol-meta-pill">🇩🇿 Applies to all orders in Algeria</span>
+      <span class="pol-meta-pill">⏱ 48-hour contact window</span>
     </div>
   </div>
 </section>
 
 <!-- ── Main Content ── -->
-<div class="inner-content">
+<div class="pol-page">
+<div class="pol-layout">
 
   <!-- Quick Navigation -->
-  <nav class="rp-quicknav" aria-label="Jump to section">
+  <nav class="pol-quicknav" aria-label="Jump to section">
     <h3>Jump to section</h3>
-    <div class="rp-chips">
+    <div class="pol-chips">
       <a href="#overview">Overview</a>
       <a href="#accepted">Accepted Returns</a>
       <a href="#not-accepted">Not Accepted</a>
@@ -394,9 +318,18 @@
     </div>
   </nav>
 
+  <div class="pol-main">
+
+  <!-- Key facts -->
+  <div class="pol-facts">
+    <div class="pol-fact"><b>48 hours</b><span>to contact us after delivery</span></div>
+    <div class="pol-fact"><b>24 hours</b><span>for our team to respond</span></div>
+    <div class="pol-fact"><b>Free</b><span>exchange or refund when the error is ours</span></div>
+  </div>
+
   <!-- 1 · Overview -->
-  <div class="rp-card" id="overview">
-    <div class="rp-card-header">
+  <div class="pol-card" id="overview">
+    <div class="pol-card-header">
       <h2>📋 Overview</h2>
     </div>
     <p>
@@ -405,18 +338,18 @@
     <p>
       This page explains when returns and exchanges are accepted, the required time frame for submitting a request, what you need to provide, and how each case is handled. We aim to resolve every issue fairly, quickly, and without hassle.
     </p>
-    <div class="rp-box rp-box-green">
+    <div class="pol-box pol-box-green">
       ✅ This policy applies to all orders placed through <strong>derradjshop.com</strong> and delivered within Algeria.
     </div>
   </div>
 
   <!-- 2 · Accepted Returns -->
-  <div class="rp-card" id="accepted">
-    <div class="rp-card-header">
+  <div class="pol-card" id="accepted">
+    <div class="pol-card-header">
       <h2>✅ When Returns Are Accepted</h2>
     </div>
     <p>We accept return requests <strong>only</strong> in the following situations:</p>
-    <ul>
+    <ul class="pol-list-ok">
       <li><strong>Defective product:</strong> The product has a manufacturing defect, a printing error, or a quality issue.</li>
       <li><strong>Damaged during delivery:</strong> The product arrived visibly damaged as a result of shipping.</li>
       <li><strong>Wrong product received:</strong> You received a different product from what you ordered.</li>
@@ -424,55 +357,55 @@
     </ul>
     <hr>
     <p><strong>To be eligible, all of the following conditions must be met:</strong></p>
-    <ol class="rp-steps">
+    <ol class="pol-steps">
       <li>You contacted us <strong>within 48 hours</strong> of receiving your order.</li>
       <li>The product is <strong>unused</strong> and in its <strong>original condition</strong> — original packaging, not damaged or altered by the customer.</li>
       <li>You provide <strong>clear photos</strong> or a short video clearly showing the problem (damage, defect, or wrong item).</li>
     </ol>
-    <div class="rp-box rp-box-blue">
+    <div class="pol-box pol-box-blue">
       💡 <strong>Tip:</strong> Photograph the package and product immediately upon receipt, especially if you notice any external damage. This helps us process your request faster.
     </div>
   </div>
 
   <!-- 3 · Not Accepted -->
-  <div class="rp-card" id="not-accepted">
-    <div class="rp-card-header">
+  <div class="pol-card" id="not-accepted">
+    <div class="pol-card-header">
       <h2>🚫 When Returns Are Not Accepted</h2>
     </div>
     <p>The following situations are <strong>not eligible</strong> for a return or exchange:</p>
-    <ul>
+    <ul class="pol-list-no">
       <li>The customer changed their mind after receiving the product.</li>
       <li>The product has been used, read, or is no longer in its original condition.</li>
       <li>The product was damaged by the customer after delivery.</li>
       <li>The return request was submitted after the 48-hour window from delivery.</li>
       <li>The original packaging has been discarded, torn, or is missing.</li>
     </ul>
-    <div class="rp-box rp-box-yellow">
+    <div class="pol-box pol-box-yellow">
       ⚠️ <strong>Please note:</strong> Returns are <strong>not accepted for personal preference or change of mind</strong>. We strongly encourage you to review all product details, descriptions, and photos carefully before placing your order. If you have any questions before ordering, contact us — we are happy to help you choose the right product.
     </div>
   </div>
 
   <!-- 4 · How to Request a Return -->
-  <div class="rp-card" id="how-to-return">
-    <div class="rp-card-header">
+  <div class="pol-card" id="how-to-return">
+    <div class="pol-card-header">
       <h2>📝 How to Submit a Return Request</h2>
     </div>
     <p>If your order meets the conditions above, follow these steps to submit a return or exchange request:</p>
-    <ol class="rp-steps">
+    <ol class="pol-steps">
       <li>Contact us <strong>within 48 hours</strong> of receiving your order — do not wait, as requests outside this window will not be accepted.</li>
       <li>Reach out via <strong>WhatsApp</strong> (fastest) or our <strong>Contact Page</strong>.</li>
       <li>Provide your <strong>order details:</strong> full name, phone number, product name, and order date.</li>
       <li>Attach <strong>clear photos or a video</strong> showing the issue (damage, defect, wrong item, etc.).</li>
       <li>Our team will review your request and respond with next steps within <strong>24 hours</strong>.</li>
     </ol>
-    <div class="rp-box rp-box-green">
+    <div class="pol-box pol-box-green">
       💬 <strong>WhatsApp:</strong> <span dir="ltr" data-business-phone-display-intl>+213 555 49 13 16</span> — the fastest way to reach our support team.
     </div>
   </div>
 
   <!-- 5 · Exchange Policy -->
-  <div class="rp-card" id="exchanges">
-    <div class="rp-card-header">
+  <div class="pol-card" id="exchanges">
+    <div class="pol-card-header">
       <h2>🔄 Exchange Policy</h2>
     </div>
     <p>We accept product exchanges in the following cases:</p>
@@ -488,14 +421,14 @@
     <p>
       If your order could not be delivered or was returned because of <strong>incorrect information provided at checkout</strong> (wrong address, wrong phone number, or the customer was unreachable), additional delivery fees may apply for re-shipping the order.
     </p>
-    <div class="rp-box rp-box-yellow">
+    <div class="pol-box pol-box-yellow">
       ⚠️ Please double-check your name, phone number, and full address before confirming your order. Errors in delivery details are the customer's responsibility.
     </div>
   </div>
 
   <!-- 6 · Our Responsibility -->
-  <div class="rp-card" id="responsibility">
-    <div class="rp-card-header">
+  <div class="pol-card" id="responsibility">
+    <div class="pol-card-header">
       <h2>🛡️ Our Responsibility</h2>
     </div>
     <p>
@@ -509,27 +442,29 @@
     <p>
       In any of these cases, we will either <strong>replace the product</strong> free of charge or provide a <strong>full refund</strong> — whichever option you prefer.
     </p>
-    <div class="rp-box rp-box-red">
+    <div class="pol-box pol-box-red">
       ❌ Products that were damaged by the customer after delivery, products that have been used or altered, and returns requested outside the 48-hour window are <strong>not covered</strong> by this policy and will not be accepted.
     </div>
   </div>
 
   <!-- 7 · Contact -->
-  <div class="rp-contact" id="contact">
+  <div class="pol-contact" id="contact">
     <h2>Need Help With Your Order?</h2>
     <p>Our team is ready to assist you. Reach out within 48 hours of receiving your order and we will resolve your issue as quickly as possible.</p>
-    <div class="rp-contact-btns">
+    <div class="pol-contact-btns">
       <a href="https://wa.me/213776922882?text=Hello%2C%20I%20would%20like%20to%20request%20a%20return%20or%20exchange%20for%20my%20order%20at%20Derradj%20Shop."
-         class="rp-btn-wa" target="_blank" rel="noopener noreferrer" data-business-wa>
+         class="pol-btn-wa" target="_blank" rel="noopener noreferrer" data-business-wa>
         💬 Contact via WhatsApp
       </a>
-      <a href="contact" class="rp-btn-outline">
+      <a href="contact" class="pol-btn-outline">
         📩 Contact Page
       </a>
     </div>
   </div>
 
-</div>
+  </div><!-- /.pol-main -->
+</div><!-- /.pol-layout -->
+</div><!-- /.pol-page -->
 
 <!-- ── Footer ── -->
 <footer class="main-footer">
@@ -590,6 +525,25 @@
   window.addEventListener('scroll', () => {
     header.classList.toggle('scrolled', window.scrollY > 50);
   }, { passive: true });
+  // Highlight the table-of-contents entry for the section in view
+  (function () {
+    const links = [...document.querySelectorAll('.pol-chips a')];
+    const map = new Map(links.map(a => [a.getAttribute('href').slice(1), a]));
+    if (!('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        links.forEach(a => a.classList.remove('active'));
+        const a = map.get(e.target.id);
+        if (a) {
+          a.classList.add('active');
+          const bar = a.parentElement;
+          if (bar.scrollWidth > bar.clientWidth) bar.scrollTo({ left: a.offsetLeft - 16, behavior: 'smooth' });
+        }
+      });
+    }, { rootMargin: '-25% 0px -65% 0px' });
+    map.forEach((_, id) => { const el = document.getElementById(id); if (el) io.observe(el); });
+  })();
 </script>
 <!-- WhatsApp Float -->
 <script src="js/business-contact.js"></script>

@@ -64,7 +64,6 @@
      still show under "All Electronics", just no subcategory chip. ── */
   const LEGACY_SUBCATEGORY_BY_CATALOG_ID = { 87: 'airpods' };
   const LEGACY_SUBCATEGORY_BY_VALUE = {
-    smart_watch: 'smartwatch',
     power_bank:  'power-bank',
   };
   function resolveCategorySlug(p) {

@@ -91,6 +91,9 @@
     { catalogId: 15, name: 'الجسد لا ينسى',                       shortName: 'الجسد لا ينسى',              price: 1800, hidden: true, available: true, image: '' },
     { catalogId: 18, name: 'الثالوث المظلم',                      shortName: 'الثالوث المظلم',             price: 1200, hidden: true, available: true, image: '' },
     { catalogId: 19, name: 'كيف تتقن فن البيع',                   shortName: 'كيف تتقن فن البيع',          price: 1500, hidden: true, available: true, image: '' },
+    /* قالب "باقة كتب من اختيارك" — يجعل السلة تقبل السطر ولا تحذفه؛ السعر والكتب
+       تُحفظ في عنصر السلة نفسه (bundleBooks) وتُعاد حسابها من الكتالوج الحي. */
+    { catalogId: 1000, name: 'باقة 5 كتب من اختيارك', shortName: 'باقة 5 كتب من اختيارك', price: 0, available: true, image: '', category: 'books', isBundle: true },
   ];
 
   /* ══════════════════════════════════════════════════════════
@@ -227,9 +230,46 @@
   }
 
   /* ══════════════════════════════════════════════════════════
+     باقة كتب من اختيارك — يختار الزبون BUNDLE.size كتب متوفرة ويُخصم
+     BUNDLE.discountPct٪ من مجموع أسعارها (مقرّباً لأقرب 10 دج). سطر واحد
+     في السلة (catalogId 1000) يحمل أرقام كتبه في bundleBooks.
+     ⚠ نفس الثوابت مكرّرة في ordre/index.html (BOOK_BUNDLE) — أبقهما متطابقتين.
+  ══════════════════════════════════════════════════════════ */
+  const BUNDLE = { catalogId: 1000, size: 5, discountPct: 20, title: 'باقة 5 كتب من اختيارك' };
+  function bundlePriceOf (total) {
+    return Math.round(total * (100 - BUNDLE.discountPct) / 100 / 10) * 10;
+  }
+  /* يتحقق من أرقام الكتب (عدد صحيح، بلا تكرار، كلها كتب متوفرة) ويعيدها أو null */
+  function resolveBundleBooks (ids) {
+    if (!Array.isArray(ids)) return null;
+    const uniq = Array.from(new Set(ids.map(Number)));
+    if (uniq.length !== BUNDLE.size) return null;
+    const catalog = window.SHOP_CATALOG || [];
+    const books = uniq.map(id => catalog.find(c =>
+      c.catalogId === id && c.category === 'books' && !c.hidden && !c.isBundle));
+    if (books.some(b => !b || b.available === false)) return null;
+    return { ids: uniq, books };
+  }
+  /* يملأ عنصر السلة (الاسم/السعر/الصورة) من الكتالوج الحي — false إن لم يعد صالحاً */
+  function fillBundleItem (item, ids) {
+    const r = resolveBundleBooks(ids);
+    if (!r) return false;
+    const total = r.books.reduce((s, b) => s + (Number(b.price) || 0), 0);
+    item.bundleBooks = r.ids;
+    item.bookNames   = r.books.map(b => b.shortName || b.name);
+    item.price       = bundlePriceOf(total);
+    item.name        = BUNDLE.title + ' (خصم ' + BUNDLE.discountPct + '٪): ' + item.bookNames.join(' + ');
+    item.shortName   = BUNDLE.title;
+    item.image       = r.books[0].image || '';
+    return true;
+  }
+
+  /* ══════════════════════════════════════════════════════════
      إدارة بيانات السلة (localStorage)
   ══════════════════════════════════════════════════════════ */
   const Cart = {
+    BUNDLE,
+    bundlePrice: bundlePriceOf,
     get () {
       try {
         const raw = localStorage.getItem(CART_KEY);
@@ -258,12 +298,24 @@
           return;
         }
         const catalog = window.SHOP_CATALOG || [];
+        let droppedBundle = false;
         const valid = parsed.filter(item => {
           if (!item || typeof item.catalogId !== 'number' || !Number.isFinite(item.catalogId)) return false;
           if (!item.qty || item.qty < 1) return false;
           const p = catalog.find(c => c.catalogId === item.catalogId);
-          return p && !p.hidden;
+          if (!p || p.hidden) return false;
+          if (p.isBundle) {
+            /* الباقة: أعد حساب السعر من الكتالوج الحي، وأسقطها إن نفد أحد كتبها */
+            if (fillBundleItem(item, item.bundleBooks)) return true;
+            droppedBundle = true;
+            return false;
+          }
+          return true;
         });
+        if (droppedBundle) showToast('⚠️ أُزيلت الباقة من السلة لأن أحد كتبها لم يعد متوفراً.', 'warn');
+        if (valid.length === parsed.length && valid.length && JSON.stringify(valid) !== raw) {
+          localStorage.setItem(CART_KEY, JSON.stringify(valid)); /* سعر الباقة تغيّر */
+        }
         if (valid.length !== parsed.length) {
           if (valid.length === 0) {
             localStorage.removeItem(CART_KEY);
@@ -279,7 +331,7 @@
     },
     add (catalogId) {
       const p = window.SHOP_CATALOG.find(c => c.catalogId === catalogId);
-      if (!p || p.hidden) return false;
+      if (!p || p.hidden || p.isBundle) return false; /* الباقة تُضاف عبر addBundle */
 
       /* حماية: رفض المنتجات غير المتوفرة */
       if (p.available === false) {
@@ -303,6 +355,31 @@
         });
       }
       this.save(items);
+      return true;
+    },
+    /* يضيف/يستبدل سطر الباقة (واحد فقط في السلة) — ids = أرقام كتالوج الكتب المختارة.
+       opts.checkout = true → "اطلب الآن": تُمسح السلة القديمة وتبقى الباقة فقط ثم
+       يُوجَّه الزبون مباشرة إلى صفحة الطلب (نفس سلوك btn-buy-now). */
+    addBundle (ids, opts) {
+      const r = resolveBundleBooks(ids);
+      if (!r) {
+        showToast('اختر ' + BUNDLE.size + ' كتب متوفرة مختلفة لإتمام الباقة.', 'warn');
+        return false;
+      }
+      const checkout = !!(opts && opts.checkout);
+      const items = checkout ? [] : this.get().filter(i => i.catalogId !== BUNDLE.catalogId);
+      const item  = { catalogId: BUNDLE.catalogId, priceDisplay: null, qty: 1 };
+      fillBundleItem(item, r.ids);
+      items.push(item);
+      this.save(items);
+      if (checkout) { window.location.href = BASE + '/ordre/'; return true; }
+      updateBadge();
+      renderCart();
+      document.querySelectorAll('.cart-btn').forEach(b => {
+        b.classList.add('cart-btn--bounce');
+        setTimeout(() => b.classList.remove('cart-btn--bounce'), 600);
+      });
+      showToast('✅ تمت إضافة الباقة إلى السلة');
       return true;
     },
     updateQty (catalogId, qty) {
@@ -435,6 +512,7 @@
         </div>
         <div class="cart-item-info">
           <div class="cart-item-name">${item.shortName || item.name}</div>
+          ${Array.isArray(item.bookNames) ? `<div class="cart-item-books">${item.bookNames.join(' • ')}</div>` : ''}
           ${isUnavail
             ? `<div class="cart-item-unavail-badge">🔴 نفذت الكمية</div>`
             : `<div class="cart-item-price">${item.priceDisplay ? item.priceDisplay : formatCartPrice(item.price)} / وحدة</div>

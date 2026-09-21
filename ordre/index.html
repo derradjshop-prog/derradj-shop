@@ -192,6 +192,8 @@
     }
     .field-full { grid-column: 1 / -1; }
     .field-wrap { display: flex; flex-direction: column; gap: 5px; }
+    .field-wrap.is-off > label { color: #94a3b8; }
+    .field-wrap.is-off .custom-select-wrap { opacity: .6; }
     .field-wrap label { font-size: 13px; font-weight: 700; color: var(--text-light); }
     .field-wrap input {
       width: 100%;
@@ -1330,6 +1332,147 @@
       color: var(--primary);
       font-weight: 700;
     }
+
+    /* ══════════════════════════════════════════════════════════
+       تخطيط مختصر: عمودان على الشاشات الكبيرة (بيانات التسليم + الدفع
+       يميناً، المنتجات + الملخص + زر التأكيد يساراً)، وعمود واحد بترتيب
+       منطقي على الهاتف: تسليم ← منتجات ← دفع ← ملاحظة ← ملخص ← تأكيد.
+       تغيير في العرض فقط — كل الـ IDs والمنطق كما هي.
+       ══════════════════════════════════════════════════════════ */
+    .shipping-banner {
+      background: none; color: #047857; box-shadow: none;
+      padding: 0 2px; margin: 0 0 8px; font-size: 13px; justify-content: flex-start; text-align: start;
+    }
+    .checkout-header { padding: 10px 18px; margin-bottom: 12px; }
+
+    /* style.css يحدّ .order-card بـ 720px — نلغي الحد هنا ليتسع العمودان */
+    .order-card { max-width: none !important; }
+    .order-page { padding-top: 24px; }
+    .ch-cols { display: flex; flex-direction: column; }
+    .ch-col  { display: contents; }
+    .ch-delivery { order: 1; } .ch-products { order: 2; } .ch-payment { order: 3; }
+    .ch-receipt  { order: 4; } .ch-notes    { order: 5; } .ch-summary { order: 6; }
+    .ch-guarantee{ order: 7; } .ch-submit   { order: 8; }
+    /* hidden inputs live in the side column — they take no space */
+
+    @media (min-width: 900px) {
+      .ch-cols {
+        display: grid; grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+        gap: 0 16px; align-items: start;
+      }
+      .ch-col { display: block; min-width: 0; }
+    }
+
+    .ch-section { padding: 14px 16px; margin-bottom: 12px; }
+    .ch-section-title { margin-bottom: 10px; padding-bottom: 8px; }
+    .fields-grid { gap: 10px 12px; }
+    .field-wrap input { padding: 10px 13px; }
+
+    /* ملاحظات مطوية */
+    .ch-notes summary {
+      cursor: pointer; list-style: none; font-size: 14px; font-weight: 800; color: var(--text);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ch-notes summary::-webkit-details-marker { display: none; }
+    .ch-notes summary span { font-size: 12px; font-weight: 400; color: var(--text-muted); }
+    .ch-notes summary::after { content: '＋'; margin-inline-start: auto; color: var(--text-muted); font-weight: 900; }
+    .ch-notes[open] summary::after { content: '－'; }
+    .ch-notes .field-wrap { margin-top: 10px; }
+
+    /* التوصيل والضمان: شارات رفيعة */
+    .delivery-guarantee-box.ch-guarantee {
+      flex-direction: row; flex-wrap: wrap; gap: 6px; padding: 10px 12px; margin-bottom: 10px;
+    }
+    .dg-chip {
+      font-size: 12px; font-weight: 700; color: #065f46; background: #fff;
+      border: 1px solid #bbf7d0; border-radius: 99px; padding: 4px 10px; line-height: 1.5;
+    }
+    .dg-chip--ok { background: #059669; border-color: #059669; color: #fff; }
+
+    /* زر التأكيد: في منتصف الصفحة أسفل العمودين */
+    .ch-submit { max-width: 520px; margin: 4px auto 0; }
+    .ch-submit .submit-btn { margin-top: 0; padding: 15px; font-size: 17px; }
+    .ch-submit .form-terms { margin-top: 8px; }
+    .ch-summary #orderSummaryContent { font-size: 13px; }
+
+    /* ── قسم معلومات التسليم: كل الخانات بنفس الارتفاع والحجم ── */
+    .ch-delivery { container-type: inline-size; }
+    .ch-delivery .fields-grid { gap: 12px 14px; align-items: start; }
+    .ch-delivery .field-wrap { gap: 6px; }
+    .ch-delivery .field-wrap > label { font-size: 13px; font-weight: 800; color: var(--text); }
+    .ch-delivery .field-wrap input:not([type="radio"]):not([type="hidden"]) {
+      height: 48px; padding: 0 14px; font-size: 15px; border-radius: 12px; box-sizing: border-box;
+    }
+    .ch-delivery .phone-row { height: 48px; }
+    .ch-delivery .phone-code { border-radius: 12px 0 0 12px; padding: 0 12px; font-size: 13px; }
+    .ch-delivery .phone-row input[type="tel"] { height: 100%; padding: 0 14px; border-radius: 0 12px 12px 0; }
+    .ch-delivery .cs-trigger { min-height: 48px; height: 48px; border-radius: 12px; padding: 0 14px; }
+    .ch-delivery .field-hint { margin-top: 0; font-size: 11.5px; }
+    .ch-delivery .field-error-msg { margin-top: 0; }
+
+    /* خانة الهاتف: صندوق واحد موحّد (الرمز +213 والرقم داخل إطار واحد) */
+    .ch-delivery .phone-row {
+      border: 1.5px solid var(--border); border-radius: 12px; background: var(--bg);
+      overflow: hidden; transition: border-color .2s, box-shadow .2s, background .2s;
+    }
+    .ch-delivery .phone-row:focus-within {
+      border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(27,42,74,.1);
+    }
+    .ch-delivery .phone-row.phone-valid { border-color: #059669; }
+    .ch-delivery .phone-row.phone-error { border-color: var(--accent); }
+    .ch-delivery .phone-code {
+      border: 0 !important; border-radius: 0 !important; background: transparent;
+      border-right: 1.5px solid var(--border) !important; padding: 0 14px;
+    }
+    .ch-delivery .phone-row input[type="tel"],
+    .ch-delivery .phone-row input[type="tel"]:focus,
+    .ch-delivery .phone-row.phone-valid input[type="tel"],
+    .ch-delivery .phone-row.phone-error input[type="tel"] {
+      border: 0 !important; border-radius: 0 !important; background: transparent !important; box-shadow: none !important;
+    }
+
+    /* طريقة التوصيل: بطاقتان صغيرتان متساويتان */
+    .ch-delivery .dm-grid { gap: 8px; margin-top: 0; }
+    .ch-delivery label[style*="margin-bottom:10px"] { margin-bottom: 6px !important; }
+    .ch-delivery .dm-grid .pm-card {
+      min-height: 64px; padding: 7px 8px; gap: 1px; justify-content: center; border-radius: 12px;
+    }
+    .ch-delivery .dm-grid .pm-icon { font-size: 16px; }
+    .ch-delivery .dm-grid .pm-name { font-size: 12.5px; line-height: 1.3; }
+    .ch-delivery .dm-grid .pm-card small { font-size: 10.5px; }
+    .ch-delivery .dm-grid .pm-check { top: 6px; left: 6px; width: 17px; height: 17px; font-size: 10px; }
+
+    /* طريقة الدفع: بطاقتان صغيرتان (الدفع عند الاستلام أولاً = يميناً) */
+    .ch-payment .pm-grid { gap: 8px; }
+    .ch-payment .pm-grid .pm-card {
+      min-height: 64px; padding: 7px 8px; gap: 1px; justify-content: center; border-radius: 12px;
+    }
+    .ch-payment .pm-grid .pm-icon { font-size: 16px; }
+    .ch-payment .pm-grid .pm-name { font-size: 12.5px; line-height: 1.3; }
+    .ch-payment .pm-grid .pm-card small { font-size: 10.5px; }
+    .ch-payment .pm-grid .pm-check { top: 6px; left: 6px; width: 17px; height: 17px; font-size: 10px; }
+
+    /* عمود ضيّق (شاشة صغيرة/تكبير المتصفح): خانة واحدة في كل سطر */
+    @container (max-width: 500px) {
+      .ch-delivery .fields-grid { grid-template-columns: 1fr; }
+      .ch-delivery .field-full { grid-column: auto; }
+    }
+
+    /* إخفاء رمز الأسهم (▲▼) الظاهر أعلى الصفحة: هو عنصر <select> الأصلي الخفي
+       وأسهم حقل الكمية الرقمي. القائمة المخصصة وحقل الكمية يعملان كما هما. */
+    .pr-select-wrap { position: relative; }
+    .pr-select {
+      visibility: hidden !important; opacity: 0 !important; pointer-events: none !important;
+      position: absolute !important; width: 1px !important; height: 1px !important;
+    }
+    select.pr-select { display: none !important; }
+    .pr-qty-input::-webkit-inner-spin-button,
+    .pr-qty-input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+    .pr-qty-input { -moz-appearance: textfield; appearance: textfield; }
+
+    @media (max-width: 899px) {
+      .ch-section { padding: 12px; }
+    }
   </style>
 </head>
 
@@ -1370,7 +1513,7 @@
 
 <!-- ══════════════════════ MAIN ══════════════════════ -->
 <main class="order-page">
-  <div class="container" style="max-width:800px;width:100%;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:0 20px;">
+  <div class="container" style="max-width:1120px;width:100%;box-sizing:border-box;margin-left:auto;margin-right:auto;padding:0 20px;">
 
     <!-- ▶ بانر التوصيل -->
     <div class="shipping-banner">
@@ -1394,8 +1537,10 @@
 
       <form id="orderForm" novalidate method="post" action="javascript:void(0)">
 
+        <div class="ch-cols">
+          <div class="ch-col ch-col-main">
         <!-- ══════════════ 1 · معلومات التسليم ══════════════ -->
-        <div class="ch-section">
+        <div class="ch-section ch-delivery">
           <div class="ch-section-title">📍 معلومات التسليم</div>
 
           <div class="fields-grid">
@@ -1418,8 +1563,31 @@
        inputmode="numeric" autocomplete="tel" maxlength="10"
        dir="rtl" style="text-align:right;">
               </div>
-              <span class="field-hint">10 أرقام تبدأ بـ 05 / 06 / 07</span>
               <span class="field-error-msg" id="phoneError">رقم هاتف غير صحيح</span>
+            </div>
+
+            <!-- طريقة التوصيل -->
+            <div class="field-wrap field-full" style="margin-top:4px;">
+              <label style="margin-bottom:10px;display:block;">طريقة التوصيل *</label>
+              <div class="dm-grid" role="radiogroup" aria-label="طريقة التوصيل">
+
+                <label class="pm-card selected" id="dm_home" for="dt_home">
+                  <input type="radio" name="delivery_type" id="dt_home" value="home" checked>
+                  <span class="pm-check">✓</span>
+                  <span class="pm-icon">🏠</span>
+                  <span class="pm-name">توصيل للمنزل</span>
+                  <small>يصلك الكتاب لباب منزلك</small>
+                </label>
+
+                <label class="pm-card" id="dm_office" for="dt_office">
+                  <input type="radio" name="delivery_type" id="dt_office" value="office">
+                  <span class="pm-check">✓</span>
+                  <span class="pm-icon">📮</span>
+                  <span class="pm-name">استلام من أقرب نقطة توصيل</span>
+                  <small>مكتب بريد أو وكالة قريبة</small>
+                </label>
+
+              </div>
             </div>
 
             <!-- العنوان -->
@@ -1457,8 +1625,8 @@
             </div>
 
             <!-- البلدية (dropdown بحث) -->
-            <div class="field-wrap">
-              <label>البلدية / المنطقة *</label>
+            <div class="field-wrap" id="communeField">
+              <label id="communeLabel">البلدية / المنطقة *</label>
               <div class="custom-select-wrap" id="communeWrap">
                 <button type="button" class="cs-trigger disabled" id="communeInput"
                         aria-haspopup="listbox" aria-expanded="false" disabled>
@@ -1481,85 +1649,15 @@
               <span class="field-error-msg" id="communeError">يرجى اختيار البلدية</span>
             </div>
 
-            <!-- طريقة التوصيل -->
-            <div class="field-wrap field-full" style="margin-top:4px;">
-              <label style="margin-bottom:10px;display:block;">طريقة التوصيل *</label>
-              <div class="dm-grid" role="radiogroup" aria-label="طريقة التوصيل">
-
-                <label class="pm-card selected" id="dm_home" for="dt_home">
-                  <input type="radio" name="delivery_type" id="dt_home" value="home" checked>
-                  <span class="pm-check">✓</span>
-                  <span class="pm-icon">🏠</span>
-                  <span class="pm-name">توصيل للمنزل</span>
-                  <small>يصلك الكتاب لباب منزلك</small>
-                </label>
-
-                <label class="pm-card" id="dm_office" for="dt_office">
-                  <input type="radio" name="delivery_type" id="dt_office" value="office">
-                  <span class="pm-check">✓</span>
-                  <span class="pm-icon">📮</span>
-                  <span class="pm-name">استلام من أقرب نقطة توصيل</span>
-                  <small>مكتب بريد أو وكالة قريبة</small>
-                </label>
-
-              </div>
-            </div>
-
           </div>
-        </div>
-
-        <!-- ══════════════ 2 · المنتجات المطلوبة ══════════════ -->
-        <div class="ch-section">
-          <div class="ch-section-title">🔌 المنتجات المطلوبة</div>
-
-          <!-- قائمة المنتجات (ديناميكية) -->
-          <div id="productsList"></div>
-
-          <!-- رسالة خطأ المنتجات -->
-          <span class="field-error-msg" id="productsError"
-                style="display:none;font-size:14px;font-weight:600;margin-top:8px;">
-            ❌ يرجى اختيار الكتب
-          </span>
-
-          <!-- زر إضافة منتج -->
-          <button type="button" class="btn-add-product" id="addProductBtn">
-            ➕ إضافة منتج
-          </button>
-
-          <!-- ملخص التسعير -->
-          <div class="products-footer">
-            <div class="pf-line">
-              <span>المنتجات</span>
-              <strong id="productsSubtotal" dir="ltr">0 دج</strong>
-            </div>
-            <div class="pf-line" id="shippingLine" style="display:none">
-              <span>التوصيل</span>
-              <strong id="shippingDisplay" dir="ltr">—</strong>
-            </div>
-            <div class="pf-sep" id="totalSep" style="display:none"></div>
-            <div class="pf-line pf-total" id="grandTotalLine" style="display:none">
-              <span>المجموع الكلي</span>
-              <strong id="grandTotalDisplay" dir="ltr">—</strong>
-            </div>
-          </div>
-
-          <input type="hidden" id="productsTotalHidden" name="products_total" value="0">
         </div>
 
         <!-- ══════════════ 3 · طريقة الدفع ══════════════ -->
-        <div class="ch-section">
+        <div class="ch-section ch-payment">
           <div class="ch-section-title">💳 طريقة الدفع</div>
 
           <!-- بطاقتا الاختيار -->
           <div class="pm-grid" role="radiogroup" aria-label="طريقة الدفع">
-
-            <label class="pm-card" id="card_prepay" for="pay_prepay">
-              <input type="radio" name="payment_method" id="pay_prepay" value="prepaid">
-              <span class="pm-check">✓</span>
-              <span class="pm-icon">💳</span>
-              <span class="pm-name">دفع قبل التسليم</span>
-              <small>CCP / BaridiMob</small>
-            </label>
 
             <label class="pm-card selected" id="card_cod" for="pay_cod">
               <input type="radio" name="payment_method" id="pay_cod" value="cash_on_delivery" checked>
@@ -1567,6 +1665,14 @@
               <span class="pm-icon">🏠</span>
               <span class="pm-name">الدفع عند الاستلام</span>
               <small>ادفع عند وصول طلبك</small>
+            </label>
+
+            <label class="pm-card" id="card_prepay" for="pay_prepay">
+              <input type="radio" name="payment_method" id="pay_prepay" value="prepaid">
+              <span class="pm-check">✓</span>
+              <span class="pm-icon">💳</span>
+              <span class="pm-name">دفع قبل التسليم</span>
+              <small>CCP / BaridiMob</small>
             </label>
 
           </div>
@@ -1648,7 +1754,7 @@
         </div>
 
         <!-- ══════════════ 4 · وصل الدفع ══════════════ -->
-        <div class="ch-section" id="receiptSection" style="display:none">
+        <div class="ch-section ch-receipt" id="receiptSection" style="display:none">
           <div class="ch-section-title">
             📎 وصل الدفع
             <span class="receipt-mandatory-badge" id="receiptBadge" style="display:none;">إجباري</span>
@@ -1676,20 +1782,57 @@
           </span>
         </div>
 
-        <!-- ══════════════ 5 · ملاحظات (اختياري) ══════════════ -->
-        <div class="ch-section">
-          <div class="ch-section-title">
-            📝 ملاحظات إضافية
-            <span style="font-size:12px;color:var(--text-muted);font-weight:400;">(اختياري)</span>
-          </div>
+        <!-- ══════════════ 5 · ملاحظات (اختياري) — مطوية لتقصير الصفحة ══════════════ -->
+        <details class="ch-section ch-notes">
+          <summary>📝 إضافة ملاحظة على الطلب <span>(اختياري)</span></summary>
           <div class="field-wrap">
             <input type="text" id="notes" name="notes"
                    placeholder="أي تعليمات أو ملاحظات خاصة بطلبك...">
           </div>
+        </details>
+
+          </div>
+          <div class="ch-col ch-col-side">
+        <!-- ══════════════ 2 · المنتجات المطلوبة ══════════════ -->
+        <div class="ch-section ch-products">
+          <div class="ch-section-title">🔌 المنتجات المطلوبة</div>
+
+          <!-- قائمة المنتجات (ديناميكية) -->
+          <div id="productsList"></div>
+
+          <!-- رسالة خطأ المنتجات -->
+          <span class="field-error-msg" id="productsError"
+                style="display:none;font-size:14px;font-weight:600;margin-top:8px;">
+            ❌ يرجى اختيار الكتب
+          </span>
+
+          <!-- زر إضافة منتج -->
+          <button type="button" class="btn-add-product" id="addProductBtn">
+            ➕ إضافة منتج
+          </button>
+
+          <!-- ملخص التسعير -->
+          <div class="products-footer">
+            <div class="pf-line">
+              <span>المنتجات</span>
+              <strong id="productsSubtotal" dir="ltr">0 دج</strong>
+            </div>
+            <div class="pf-line" id="shippingLine" style="display:none">
+              <span>التوصيل</span>
+              <strong id="shippingDisplay" dir="ltr">—</strong>
+            </div>
+            <div class="pf-sep" id="totalSep" style="display:none"></div>
+            <div class="pf-line pf-total" id="grandTotalLine" style="display:none">
+              <span>المجموع الكلي</span>
+              <strong id="grandTotalDisplay" dir="ltr">—</strong>
+            </div>
+          </div>
+
+          <input type="hidden" id="productsTotalHidden" name="products_total" value="0">
         </div>
 
         <!-- ══════════════ 6 · ملخص الطلب ══════════════ -->
-        <div class="ch-section">
+        <div class="ch-section ch-summary">
           <div class="ch-section-title">✅ ملخص الطلب</div>
           <div id="orderSummaryContent">
             <p style="font-size:14px;color:var(--text-muted);text-align:center;padding:10px 0;">
@@ -1702,30 +1845,17 @@
         <input type="hidden" name="shipping_fee" id="shippingFeeInput" value="0">
         <input type="hidden" name="total_price"  id="grandTotalInput"  value="0">
 
-        <!-- ══════════════ صندوق التوصيل والضمان ══════════════ -->
-        <div class="delivery-guarantee-box">
-          <div class="dg-title">🚚 التوصيل والضمان</div>
+        <!-- ══════════════ التوصيل والضمان (مختصر) ══════════════ -->
+        <div class="delivery-guarantee-box ch-guarantee">
+          <span class="dg-chip">🚚 توصيل 24–48 ساعة لكل الولايات الـ58</span>
+          <span class="dg-chip">🛡️ استرجاع أو استبدال عند التلف</span>
+          <span class="dg-chip dg-chip--ok">✅ ضمان كامل على كل طلب</span>
+        </div>
 
-          <div class="dg-item">
-            <span class="dg-icon">📦</span>
-            <span>يصلك الكتاب خلال <strong>24 إلى 48 ساعة</strong> كحد أقصى لجميع ولايات الجزائر الـ58.</span>
-          </div>
-
-          <div class="dg-item">
-            <span class="dg-icon">🏠</span>
-            <span>يمكنك اختيار <strong>التوصيل للمنزل</strong> أو <strong>الاستلام من مكتب البريد</strong> حسب ما يناسبك.</span>
-          </div>
-
-          <div class="dg-item">
-            <span class="dg-icon">🛡️</span>
-            <span>في حال وصول الكتاب تالفاً، نضمن لك <strong>الاسترجاع الكامل أو إرسال بديل</strong>.</span>
-          </div>
-
-          <div>
-            <span class="dg-guarantee-badge">✅ ضمان كامل على كل طلب</span>
           </div>
         </div>
 
+        <div class="ch-submit">
         <!-- ══════════════ زر التأكيد ══════════════ -->
         <button type="submit" class="submit-btn" id="submitBtn">
           ✅ تأكيد الطلب
@@ -1736,6 +1866,7 @@
           <a href="../terms" target="_blank" rel="noopener noreferrer">الشروط والأحكام</a>
           وسياسة التوصيل والضمان الخاصة بنا.
         </p>
+        </div>
 
       </form>
     </div>
@@ -2018,9 +2149,42 @@ dtRadios.forEach(r => {
   r.addEventListener('change', () => {
     Object.keys(dtCards).forEach(k =>
       dtCards[k].classList.toggle('selected', k === r.value));
+    syncCommuneForDelivery();
     recalcAll();
   });
 });
+
+/* ── البلدية غير مطلوبة عند "استلام من أقرب نقطة توصيل" ──────────
+   شركة التوصيل هي من تحدد نقطة الاستلام في الولاية، فنُعطّل حقل البلدية
+   ونمسح اختياره وأي خطأ ظاهر عليه. عند العودة إلى "توصيل للمنزل" يُعاد
+   تفعيله (إن كانت الولاية مختارة). ── */
+function isOfficeDelivery() {
+  return document.querySelector('input[name="delivery_type"]:checked')?.value === 'office';
+}
+function syncCommuneForDelivery() {
+  const cs    = window._communeSel;
+  const field = document.getElementById('communeField');
+  const label = document.getElementById('communeLabel');
+  const addrField = document.getElementById('addressInput')?.closest('.field-wrap');
+  if (!cs || !field) return;
+  /* الاستلام من نقطة توصيل: لا عنوان (يُخفى السطر) ولا بلدية (يظهر اسم المكتب) */
+  if (addrField) {
+    addrField.style.display = isOfficeDelivery() ? 'none' : '';
+    if (isOfficeDelivery()) addrField.classList.remove('has-error');
+  }
+  if (isOfficeDelivery()) {
+    cs.disable('مكتب zr express');
+    field.classList.add('is-off');
+    field.classList.remove('has-error');
+    document.getElementById('communeError').style.display = 'none';
+    if (label) label.textContent = 'البلدية / المنطقة';
+  } else {
+    field.classList.remove('is-off');
+    if (label) label.textContent = 'البلدية / المنطقة *';
+    if (document.getElementById('wilayaHidden')?.value) cs.enable('ابحث عن البلدية أو المنطقة...');
+    else cs.disable('اختر الولاية أولاً');
+  }
+}
 
 /* ── اختيار طريقة الدفع ─────────────────────────────────────── */
 const pmRadios = document.querySelectorAll('input[name="payment_method"]');
@@ -2352,8 +2516,42 @@ window._refreshProductRowsAvailability = function () {
   });
 };
 
+/* ── باقة كتب من اختيارك — نسخة مطابقة لـ BUNDLE في cart.js (أبقهما متطابقتين).
+   الباقة سطر واحد في السلة (catalogId 1000) يحمل أرقام كتبه في bundleBooks.
+   هنا نعيد بناء مدخل الباقة في PRODUCTS_CATALOG من عنصر السلة نفسه، ونحسب السعر
+   من أسعار الكتب في هذا الكتالوج (مجموعها ناقص النسبة، مقرّباً لأقرب 10 دج)،
+   ونتحقق أن الكتب 5 مختلفة ومتوفرة. إن لم تصلح تُحذف من الطلب. ── */
+var BOOK_BUNDLE = { catalogId: 1000, size: 5, discountPct: 20, title: 'باقة 5 كتب من اختيارك' };
+function registerBundles() {
+  delete window.PRODUCTS_CATALOG[BOOK_BUNDLE.catalogId];
+  var ids = null;
+  try {
+    var cart = JSON.parse(localStorage.getItem('derradj_cart') || '[]');
+    var it = (Array.isArray(cart) ? cart : []).find(function (i) { return i && i.catalogId === BOOK_BUNDLE.catalogId; });
+    ids = it && Array.isArray(it.bundleBooks) ? it.bundleBooks.map(Number) : null;
+  } catch (_) {}
+  if (!ids) return;
+  var uniq = ids.filter(function (id, i) { return ids.indexOf(id) === i; });
+  if (uniq.length !== BOOK_BUNDLE.size) return;
+  var books = uniq.map(function (id) { return window.PRODUCTS_CATALOG[id]; });
+  if (books.some(function (b) { return !b || b.hidden || b.available === false; })) return;
+  var total = books.reduce(function (s, b) { return s + (Number(b.price) || 0); }, 0);
+  window.PRODUCTS_CATALOG[BOOK_BUNDLE.catalogId] = {
+    name:      BOOK_BUNDLE.title + ' (خصم ' + BOOK_BUNDLE.discountPct + '٪): ' +
+               books.map(function (b) { return b.name; }).join(' + '),
+    shortName: '📦 ' + BOOK_BUNDLE.title + ' (خصم ' + BOOK_BUNDLE.discountPct + '٪)',
+    price:     Math.round(total * (100 - BOOK_BUNDLE.discountPct) / 100 / 10) * 10,
+    available: true,
+    category:  'books',
+    isBundle:  true,
+    bookCount: BOOK_BUNDLE.size,
+    paymentUrl: null
+  };
+}
+
 /* تحميل المنتجات من السلة، أو إضافة صف فارغ إذا كانت السلة فارغة */
 function initProductRows() {
+  registerBundles();
 
   /* ── الحد الأقصى لعمر بيانات السلة: 48 ساعة ──────────────
      إذا كانت البيانات أقدم من ذلك نعتبرها "قديمة" ونتجاهلها
@@ -2751,7 +2949,11 @@ window.validateCheckout = function () {
   /* ── البلدية ─────────────────────────────────────────── */
   const communeVal  = (document.getElementById('communeHidden')?.value || '').trim();
   const communeWrap = document.getElementById('communeWrap')?.closest('.field-wrap');
-  if (!communeVal) {
+  if (isOfficeDelivery()) {
+    /* استلام من نقطة توصيل: البلدية غير مطلوبة */
+    if (communeWrap) communeWrap.classList.remove('has-error');
+    document.getElementById('communeError').style.display = 'none';
+  } else if (!communeVal) {
     if (communeWrap) communeWrap.classList.add('has-error');
     document.getElementById('communeError').style.display = 'block';
     /* نُمرر للبلدية فقط إذا كانت الولاية مختارة؛ وإلا تبقى الولاية أولوية */
@@ -3207,6 +3409,7 @@ window.initLocationSelects = function () {
     errorId:    'communeError',
     panelTitle: 'اختر البلدية / المنطقة',
   });
+  window._communeSel = communeSel;
 
   new CustomSelect({
     inputId:    'wilayaInput',
@@ -3219,9 +3422,11 @@ window.initLocationSelects = function () {
       communeSel.setItems(communes);
       if (communes.length) communeSel.enable('ابحث عن البلدية أو المنطقة...');
       else                  communeSel.disable('لا توجد بلديات متاحة');
+      syncCommuneForDelivery();   /* نقطة توصيل ← تبقى البلدية معطّلة */
       recalcAll();
     },
   }).setItems(enrichedWilaya);
+  syncCommuneForDelivery();
 };
 </script>
 

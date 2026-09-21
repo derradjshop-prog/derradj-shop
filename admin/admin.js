@@ -2818,10 +2818,30 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       location.href = "login.html";
     });
 
+    /* ── Hamburger drawer (side menu that holds the tabs) ───── */
+    const tabsBarEl  = document.getElementById("tabsBar");
+    const tabsOverlay = document.getElementById("tabsOverlay");
+    const menuToggle = document.getElementById("menuToggle");
+    function setMenuOpen(open) {
+      tabsBarEl?.classList.toggle("open", open);
+      tabsOverlay?.classList.toggle("open", open);
+      document.body.classList.toggle("menu-open", open);
+      menuToggle?.setAttribute("aria-expanded", open ? "true" : "false");
+      if (open) tabsBarEl?.querySelector(".tab-btn.active, .tab-btn")?.focus();
+      else if (menuToggle && tabsBarEl?.contains(document.activeElement)) menuToggle.focus();
+    }
+    menuToggle?.addEventListener("click", () => setMenuOpen(!tabsBarEl.classList.contains("open")));
+    tabsOverlay?.addEventListener("click", () => setMenuOpen(false));
+    document.getElementById("tabsClose")?.addEventListener("click", () => setMenuOpen(false));
+    document.addEventListener("keydown", e => {
+      if (e.key === "Escape" && tabsBarEl?.classList.contains("open")) setMenuOpen(false);
+    });
+
     /* ── Tab switching ─────────────────────────────────────── */
     document.querySelectorAll(".tab-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const tab = btn.dataset.tab;
+        setMenuOpen(false);
         document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
         document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
         btn.classList.add("active");
@@ -3075,6 +3095,42 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     const lm = document.getElementById("liveBadgeMessages");
     if (lo) { lo.style.display = UNSEEN_ORDERS   > 0 ? "inline-flex" : "none"; lo.textContent = UNSEEN_ORDERS; }
     if (lm) { lm.style.display = UNSEEN_MESSAGES > 0 ? "inline-flex" : "none"; lm.textContent = UNSEEN_MESSAGES; }
+    refreshTabDots();
+  }
+
+  /* Red dot on every menu entry that has something new waiting, and on the
+     hamburger button itself so it is visible while the drawer is closed.
+       orders               → new orders seen live, or orders still pending
+       messages             → messages that arrived since the tab was last opened
+       sellerapps / profile → pending requests (their tab badge holds the count) */
+  function badgeCount(id) {
+    const n = parseInt(document.getElementById(id)?.textContent, 10);
+    return Number.isFinite(n) ? n : 0;
+  }
+  function refreshTabDots() {
+    const flags = {
+      orders:               UNSEEN_ORDERS > 0 || badgeCount("tab-badge-orders") > 0,
+      messages:             UNSEEN_MESSAGES > 0,
+      sellerapps:           badgeCount("tab-badge-sellerapps") > 0,
+      sellerprofilechanges: badgeCount("tab-badge-sellerprofilechanges") > 0,
+    };
+    let any = false;
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      const isNew = !!flags[btn.dataset.tab] && !btn.classList.contains("active");
+      btn.classList.toggle("has-new", isNew);
+      if (isNew && btn.style.display !== "none") any = true;
+    });
+    document.getElementById("menuToggle")?.classList.toggle("has-new", any);
+  }
+  /* The tab badges are rewritten by several render functions — watch them
+     instead of hooking every one. */
+  function watchTabBadges() {
+    const obs = new MutationObserver(refreshTabDots);
+    ["tab-badge-orders", "tab-badge-sellerapps", "tab-badge-sellerprofilechanges"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) obs.observe(el, { childList: true, characterData: true, subtree: true });
+    });
+    refreshTabDots();
   }
 
   function setupRealtime() {
@@ -3186,6 +3242,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       renderAgentsTab();
       bindEvents();
       setupRealtime();
+      watchTabBadges();
 
     } catch (err) {
       console.error("Boot error:", err);
