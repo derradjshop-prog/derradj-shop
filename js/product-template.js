@@ -11,23 +11,14 @@
 
   const SITE_URL = 'https://derradjshop.com';
 
-  /* ── WhatsApp destination number — category-aware. Digital
-     subscriptions (category === 'subscriptions') use a dedicated,
-     hardcoded number that is intentionally NOT part of the
-     centralized business-contact system (see js/business-contact.js
-     header comment). Every other category uses the site-wide
-     business number, admin-editable in site_settings.business_phone;
-     WHATSAPP_NUMBER below is only the build-time/no-JS default —
-     js/business-contact.js overwrites it at runtime via the
-     data-business-wa attribute on the button (see waBtn below), so a
-     number change in the admin dashboard never requires regenerating
-     this page. WHATSAPP_NUMBER_SUBSCRIPTIONS coincidentally starts
-     equal to that default but is a separate, independent value —
-     changing one must never change the other. ── */
+  /* ── WhatsApp destination number — the site-wide business number,
+     admin-editable in site_settings.business_phone; WHATSAPP_NUMBER
+     below is only the build-time/no-JS default — js/business-contact.js
+     overwrites it at runtime via the data-business-wa attribute on the
+     button (see waBtn below), so a number change in the admin dashboard
+     never requires regenerating this page. ── */
   const WHATSAPP_NUMBER = '213776922882';
   const WHATSAPP_DISPLAY = '0776 92 28 82';
-  const WHATSAPP_NUMBER_SUBSCRIPTIONS = '213776922882';
-  const WHATSAPP_DISPLAY_SUBSCRIPTIONS = '0776 92 28 82';
 
   /* ── Single source of truth for the shipping-duration message.
      book-template.js reuses these via the ProductTemplate API
@@ -81,7 +72,6 @@
       books: 'كتب', electronics: 'إلكترونيات', earbuds: 'سماعات',
       laptop: 'إكسسوارات لابتوب', smart_watch: 'ساعات ذكية',
       power_bank: 'بطاريات محمولة', other: 'منتجات أخرى',
-      subscriptions: 'اشتراكات رقمية',
     };
     return m[cat] || cat || 'منتجات';
   }
@@ -118,18 +108,13 @@
     const isAvail   = p.stock_status !== 'out_of_stock';
     const pageUrl   = `${SITE_URL}/product/${encodeURIComponent(slug)}/`;
     const galleryRaw = Array.isArray(p.gallery_images) ? p.gallery_images.filter(Boolean) : [];
-    const isSubscription = p.category === 'subscriptions';
-    const isElectronics = p.category !== 'books' && !isSubscription;
+    const isElectronics = p.category !== 'books';
 
     /* For electronics serve images from the local repository under
        /Electronique/{subcategory}/{slug}/. The main image is always
        `main.webp` in that folder; gallery images reuse their original
-       filename (last path segment). Subscriptions use a flat
-       /subscriptions/{slug}/ folder instead — a subscription plan has
-       no "subcategory of specs" the way electronics does, it's grouped
-       by service (the `subcategory` column stores the service name,
-       e.g. "netflix") which isn't a folder-worthy classification. Books
-       keep the existing behaviour. */
+       filename (last path segment).
+       Books keep the existing behaviour. */
     /* subcategory → folder name: admin_products_catalog stores
        power_bank/smart_watch with underscores, but those two folders
        on disk use hyphens — every other subcategory's folder matches
@@ -145,8 +130,6 @@
     const subdir = sanitizeSubdir(SUBCATEGORY_DIR[p.subcategory] || p.subcategory);
     const folderBase = isElectronics
       ? `/Electronique/${encodeURIComponent(subdir)}/${encodeURIComponent(slug)}`
-      : isSubscription
-      ? `/subscriptions/${encodeURIComponent(slug)}`
       : null;
 
     function filenameFromUrl(u) {
@@ -160,16 +143,13 @@
 
     const gallery = isElectronics
       ? galleryRaw.map(u => `${folderBase}/${encodeURIComponent(filenameFromUrl(u) || 'gallery-1.png')}`)
-      : isSubscription
-      ? [] /* subscriptions show a single logo/plan image — no gallery */
       : galleryRaw.slice();
 
     /* Visible main image (relative/local path for repo). Electronics
-       and subscriptions both use the determined filename under their
-       product folder; books fall back to supplied main_image / first
+       use the determined filename under their product folder; books fall back to supplied main_image / first
        gallery image / logo. */
-    const imgSrc = (isElectronics || isSubscription)
-      ? `${folderBase}/${encodeURIComponent(isSubscription ? 'main.webp' : mainFilename)}`
+    const imgSrc = isElectronics
+      ? `${folderBase}/${encodeURIComponent(mainFilename)}`
       : (p.main_image || gallery[0] || `${SITE_URL}/Logo.jpg`);
 
     const allImgs = [imgSrc, ...gallery.filter(u => u && u !== imgSrc)];
@@ -251,44 +231,24 @@
         </div>`
       : '';
 
-    /* ── Cart button — digital subscriptions never enter the cart or
-       the buy-now/checkout flow; WhatsApp is their only ordering
-       method (see waBtn below). Books/electronics are unaffected. ── */
-    const cartBtn = isSubscription ? '' : isAvail && p.catalog_id
+    const cartBtn = isAvail && p.catalog_id
       ? `<button class="btn-add-cart-sb" id="pdAddCart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</button>`
       : `<button class="btn-add-cart-sb" disabled>🔴 نفذت الكمية</button>`;
 
-    /* ── Buy-now button — disabled (no live link) when out of stock.
-       Omitted entirely for subscriptions (see cartBtn above). ── */
-    const buyNowBtn = isSubscription ? '' : isAvail
+    /* ── Buy-now button — disabled (no live link) when out of stock. ── */
+    const buyNowBtn = isAvail
       ? `<a href="/ordre/" class="btn-buy-now-sb" id="pdOrderNowBtn">🛒 اطلب الآن</a>`
       : `<button class="btn-buy-now-sb" id="pdOrderNowBtn" disabled style="opacity:.6;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 
-    /* ── WhatsApp button — for subscriptions this is the ONLY ordering
-       method, so the message is a real order request (product/plan
-       name + price) instead of the plain inquiry books/electronics
-       still send. Digital subscriptions route to their own dedicated
-       WhatsApp number (WHATSAPP_NUMBER_SUBSCRIPTIONS); every other
-       category keeps the site-wide default, same as the floating
-       widget (whatsapp-float.js). ── */
-    const waMsgText = isSubscription
-      ? `السلام عليكم، أريد طلب:\n${arName}${p.duration ? ' — ' + p.duration : ''}\nالسعر: ${fmtPrice(p.price)} دج`
-      : 'مرحبا، أريد الاستفسار عن هذا المنتج: ' + arName;
+    /* ── WhatsApp button — plain inquiry message; site-wide number. ── */
+    const waMsgText = 'مرحبا، أريد الاستفسار عن هذا المنتج: ' + arName;
     const waMsg = encodeURIComponent(waMsgText);
-    const waNumber = isSubscription ? WHATSAPP_NUMBER_SUBSCRIPTIONS : WHATSAPP_NUMBER;
+    const waNumber = WHATSAPP_NUMBER;
     const waIcon = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
-    /* Subscriptions being out of stock disables the (only) ordering
-       action, matching the disabled-state pattern the cart/buy-now
-       buttons already use for books/electronics. */
-    /* Non-subscription buttons carry data-business-wa + data-wa-message
-       so js/business-contact.js can rewrite the href at runtime if the
-       admin changes the business number — the href below is only the
-       build-time/no-JS fallback. Subscription buttons are left exactly
-       as-is (no data-business-wa) since that number is excluded from
-       the centralized system. */
-    const waBtn = (isSubscription && !isAvail)
-      ? `<button class="btn-whatsapp-sb" disabled style="opacity:.6;cursor:not-allowed;">🔴 نفذت الكمية</button>`
-      : `<a href="https://wa.me/${waNumber}?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-sb"${isSubscription ? '' : ` data-business-wa data-wa-message="${escAttr(waMsgText)}"`}>${waIcon} ${isSubscription ? 'اطلب عبر الواتساب' : 'الطلب عبر الواتساب'}</a>`;
+    /* Carries data-business-wa + data-wa-message so js/business-contact.js
+       can rewrite the href at runtime if the admin changes the business
+       number — the href below is only the build-time/no-JS fallback. */
+    const waBtn = `<a href="https://wa.me/${waNumber}?text=${waMsg}" target="_blank" rel="noopener noreferrer" class="btn-whatsapp-sb" data-business-wa data-wa-message="${escAttr(waMsgText)}">${waIcon} الطلب عبر الواتساب</a>`;
 
     /* ── Structured data ── */
     const absoluteAllImgs = allImgs.map(u => (/^https?:\/\//.test(u) ? u : SITE_URL + u));
@@ -332,7 +292,7 @@
       }
     };
 
-    const categoryPageUrl = isSubscription ? `${SITE_URL}/subscriptions/` : `${SITE_URL}/Electronique/`;
+    const categoryPageUrl = `${SITE_URL}/Electronique/`;
 
     const breadcrumbLd = {
       '@context': 'https://schema.org',
@@ -394,29 +354,17 @@
               <span class="feature-check">✓</span>
               <span><strong>النوع:</strong> ${esc(p.subcategory)}</span>
             </div>` : ''}
-            ${isSubscription && p.duration ? `<div class="product-feature">
-              <span class="feature-check">✓</span>
-              <span><strong>المدة:</strong> ${esc(p.duration)}</span>
-            </div>` : ''}
-            ${isSubscription && p.activation_method ? `<div class="product-feature">
-              <span class="feature-check">✓</span>
-              <span><strong>طريقة التفعيل:</strong> ${esc(p.activation_method)}</span>
-            </div>` : ''}
-            ${isSubscription && p.warranty_info ? `<div class="product-feature">
-              <span class="feature-check">✓</span>
-              <span><strong>الضمان:</strong> ${esc(p.warranty_info)}</span>
-            </div>` : ''}
-            ${!isSubscription ? `<div class="product-feature">
+            <div class="product-feature">
               <span class="feature-check">✓</span>
               <span>توصيل لجميع ولايات الجزائر الـ 58</span>
-            </div>` : ''}
+            </div>
             <div class="product-feature">
               <span class="feature-check">✓</span>
               <span>الدفع مسبق أو عند الاستلام</span>
             </div>
           </div>
 
-          <div class="product-cta-buttons${isSubscription ? ' wa-only' : ''}">
+          <div class="product-cta-buttons">
             ${buyNowBtn}
             ${waBtn}
             ${cartBtn}
@@ -450,23 +398,14 @@
             يمكنك الدفع مسبقاً عبر CCP / BaridiMob أو الدفع عند الاستلام.
           </p>
         </div>
-        ${isSubscription ? `<div class="info-card">
-          <h2>⚡ التفعيل والضمان</h2>
-          <p style="color:#475569;line-height:1.9;font-size:14px;">
-            ${esc(p.activation_method) || 'يتم التفعيل بعد تأكيد الطلب مباشرة.'}
-            ${p.warranty_info ? '<br>' + esc(p.warranty_info) : ''}
-          </p>
-        </div>` : `<div class="info-card">
+        <div class="info-card">
           <h2>🚚 التوصيل</h2>
           <p style="color:#475569;line-height:1.9;font-size:14px;">
             ${SHIPPING_NOTICE_AR}
             يمكنك الاستلام من أقرب نقطة توصيل أو التوصيل للمنزل.
           </p>
-        </div>`}
+        </div>
       </div>
-
-      ${isSubscription ? `<!-- Other plans for the same service — filled by loadOtherPlans() -->
-      <div id="otherPlans"></div>` : ''}
 
       <!-- Related products — filled by loadRelatedProducts() -->
       <div id="relatedProducts"></div>
@@ -479,7 +418,6 @@
       productName: arName,
       price: p.price,
       mainImage: imgSrc,
-      isSubscription,
       subcategory: p.subcategory || null,
       meta: {
         title,
@@ -506,7 +444,7 @@
     esc, escAttr, fmtPrice, stockBadge, catLabelAr, buildProductView, SITE_URL,
     SHIPPING_NOTICE_AR, SHIPPING_NOTICE_AR_SHORT, SHIPPING_NOTICE_EN,
     isArabic, pickNames, truncateAtWord, buildKeywords,
-    WHATSAPP_NUMBER, WHATSAPP_DISPLAY, WHATSAPP_NUMBER_SUBSCRIPTIONS, WHATSAPP_DISPLAY_SUBSCRIPTIONS,
+    WHATSAPP_NUMBER, WHATSAPP_DISPLAY,
   };
 
   if (typeof module !== 'undefined' && module.exports) {

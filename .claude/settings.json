@@ -107,12 +107,16 @@
       "Bash(node -e \"console.log\\(require\\('jsdom/package.json'\\).version\\)\")",
       "Bash(node test-mobile-css.js)",
       "Bash(node --check \"admin/bestsellers.js\")",
-      "Bash(node test-bestsellers.js)"
+      "Bash(node test-bestsellers.js)",
+      "Bash(grep -v \"^./\\\\\\(books\\\\|product\\\\\\)/\")",
+      "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\('style.css','utf8'\\);console.log\\(\\(s.match\\(/{/g\\)||[]\\).length,\\(s.match\\(/}/g\\)||[]\\).length\\)\")",
+      "Bash(node -e \"const s=require\\('fs'\\).readFileSync\\(0,'utf8'\\);console.log\\(\\(s.match\\(/{/g\\)||[]\\).length,\\(s.match\\(/}/g\\)||[]\\).length\\)\")"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",
       "c:\\tmp\\verify-derradj",
-      "\\tmp"
+      "\\tmp",
+      "C:\\Users\\pc\\AppData\\Local\\Temp"
     ]
   }
 }

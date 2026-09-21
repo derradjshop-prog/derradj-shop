@@ -117,7 +117,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   }
 
   /* ── Digital sales commission (agent_digital_sales) — WhatsApp-only
-     items (category='subscriptions'), no orders/order_items row exists
+     items, no orders/order_items row exists
      for these. Labels mirror agent/dashboard.html's own copies. ── */
   const DG_ITEM_TYPE_LABELS = {
     digital_product:      "منتج رقمي",

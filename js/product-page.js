@@ -14,30 +14,7 @@
   const SB_URL = 'https://jbmcbjzcedqpvnhbmrhk.supabase.co';
   const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpibWNianpjZWRxcHZuaGJtcmhrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk2NjU1MDUsImV4cCI6MjA4NTI0MTUwNX0.u_D1K7gFCQmmI_m0do5-VpdXrXXLPQ8BCDMLc3Ew1Yk';
 
-  const { esc, escAttr, buildProductView, pickNames, WHATSAPP_NUMBER_SUBSCRIPTIONS } = window.ProductTemplate;
-
-  /* Mirrors js/products-loader.js's subscriptionOrderMessage() — same
-     WhatsApp order-message wording wherever a subscription card
-     appears (related products, other plans). */
-  function subscriptionOrderMessage(p, name) {
-    const fmt = n => Number(n).toLocaleString('en-US');
-    return `السلام عليكم، أريد طلب:\n${name}${p.duration ? ' — ' + p.duration : ''}\nالسعر: ${fmt(p.price)} دج`;
-  }
-
-  /* ── WhatsApp CTA on related-product / other-plan cards ──
-     Those cards are themselves one big `<a class="rp-card">` linking
-     to the product page, so a real nested `<a href="wa.me/...">` for
-     the WhatsApp action isn't valid HTML (nested anchors) — a plain
-     [data-wa-href] element + this one delegated handler opens the
-     chat in a new tab instead, mirroring how [data-add-to-cart]
-     (cart.js) is delegated from document for the exact same reason. */
-  document.addEventListener('click', function (e) {
-    const el = e.target.closest('[data-wa-href]');
-    if (!el) return;
-    e.preventDefault();
-    e.stopPropagation();
-    window.open(el.dataset.waHref, '_blank', 'noopener,noreferrer');
-  });
+  const { esc, escAttr, buildProductView, pickNames } = window.ProductTemplate;
 
   /* ── Same admin_products_catalog → book-shape mapping the build-time
      generator uses (scripts/generate-product-pages.js's toBookRow),
@@ -146,7 +123,6 @@
     applyMeta(view.meta);
     document.getElementById('pdContent').innerHTML = view.bodyHtml;
 
-    if (view.isSubscription) loadOtherPlans(view.slug, view.subcategory);
     loadRelatedProducts(view.slug, view.catalogId);
     wireInteractions(view, p);
 
@@ -313,74 +289,6 @@
     });
   }
 
-  /* ── "خطط أخرى" — other plans of the same subscription service
-     (e.g. Netflix 1-screen / 2-screens / 5-screens), matched by the
-     shared `subcategory` value (the service name/slug an admin types
-     when adding each plan as its own catalog row — see
-     admin/products-manager.js). Only rendered on subscription product
-     pages; a no-op when the product has no subcategory set or no
-     sibling plans exist. ── */
-  async function loadOtherPlans(currentSlug, subcategory) {
-    const container = document.getElementById('otherPlans');
-    if (!container || !subcategory) return;
-
-    try {
-      const products = await getCatalogProducts(2500);
-      const pool = products && products.length ? products : window.SUPABASE_PRODUCTS || [];
-      const siblings = pool.filter(p =>
-        p.category === 'subscriptions' &&
-        p.subcategory === subcategory &&
-        p.slug !== currentSlug
-      );
-      if (!siblings.length) return;
-
-      const cardsHtml = siblings.map(p => {
-        const url = `/product/${encodeURIComponent(p.slug)}/`;
-        const isAvail = p.stock_status !== 'out_of_stock';
-        const imgSrc = p.slug ? `/subscriptions/${encodeURIComponent(p.slug)}/main.webp` : '/Logo.jpg';
-        const fmt = n => Number(n).toLocaleString('en-US');
-        let priceRow = `<span class="rp-price">${fmt(p.price)} دج</span>`;
-        let discTag = '';
-        if (p.old_price) {
-          priceRow += ` <span class="rp-old-price">${fmt(p.old_price)} دج</span>`;
-          const pct = Math.round((1 - p.price / p.old_price) * 100);
-          if (pct > 0) discTag = `<span class="rp-discount">-${pct}%</span>`;
-        }
-        const stockBadgeHtml = isAvail
-          ? `<span class="rp-stock rp-avail">✅ متوفر</span>`
-          : `<span class="rp-stock rp-unavail">🔴 نفذت الكمية</span>`;
-        const rpName = pickNames(p).ar || p.product_name;
-        /* Other plans are always subscriptions — WhatsApp ordering only,
-           same as everywhere else this category appears (see
-           [data-wa-href] delegated handler below). */
-        const cartBtnHtml = isAvail
-          ? `<span class="rp-btn rp-add-cart" data-wa-href="${escAttr('https://wa.me/' + WHATSAPP_NUMBER_SUBSCRIPTIONS + '?text=' + encodeURIComponent(subscriptionOrderMessage(p, rpName)))}">📱 اطلب عبر الواتساب</span>`
-          : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
-        return `<a href="${url}" class="rp-card">
-          <img src="${escAttr(imgSrc)}" alt="${escAttr(rpName)} — Derradj Shop"
-               class="rp-img" loading="lazy" onerror="this.src='/Logo.jpg'">
-          <div class="rp-body">
-            <div class="rp-name">${esc(rpName)}</div>
-            <div class="rp-price-row">${priceRow}${discTag}</div>
-            ${stockBadgeHtml}
-            ${cartBtnHtml}
-          </div>
-        </a>`;
-      }).join('');
-
-      container.innerHTML = `
-        <div class="rp-section">
-          <h2 class="rp-title">💎 خطط أخرى لنفس الخدمة</h2>
-          <div class="rp-outer" style="overflow-x:auto;">
-            <div class="rp-track" style="animation:none;transform:none;">${cardsHtml}</div>
-          </div>
-        </div>
-      `;
-    } catch (err) {
-      console.warn('[other plans]', err.message);
-    }
-  }
-
   async function loadRelatedProducts(currentSlug, currentCatalogId) {
     const container = document.getElementById('relatedProducts');
     if (!container) return;
@@ -391,7 +299,7 @@
       if (!products) {
         const HEADERS = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
         const SELECT = 'id,catalog_id,product_name,product_name_ar,category,price,old_price,stock_status,main_image,slug';
-        const BASE = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true&limit=50`;
+        const BASE = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true&or=(category.is.null,category.neq.subscriptions)&limit=50`;
         let res = await fetch(BASE + '&order=display_order.asc.nullslast,created_at.desc', { headers: HEADERS });
         if (!res.ok && res.status === 400) {
           res = await fetch(BASE + '&order=created_at.desc', { headers: HEADERS });
@@ -403,6 +311,7 @@
       }
 
       products = products.filter(p =>
+        p.category !== 'subscriptions' &&
         p.slug !== currentSlug &&
         (currentCatalogId == null || p.catalog_id !== currentCatalogId)
       );
@@ -423,8 +332,6 @@
         let imgSrc = p.main_image || '/Logo.jpg';
         if (isBook) {
           imgSrc = p.slug ? `/books/${encodeURIComponent(p.slug)}/main.webp` : imgSrc;
-        } else if (p.category === 'subscriptions') {
-          imgSrc = p.slug ? `/subscriptions/${encodeURIComponent(p.slug)}/main.webp` : imgSrc;
         } else {
           /* subcategory → folder name: power_bank/smart_watch use
              underscores in Supabase but hyphens on disk. Free-text values
@@ -459,19 +366,12 @@
 
         /* أضف إلى السلة مباشرة من البطاقة — يعتمد على نفس نظام
            التفويض بالحدث في cart.js ([data-add-to-cart] على مستوى
-           document)، فلا حاجة لأي منطق سلة إضافي هنا. Digital
-           subscriptions never enter the cart — WhatsApp only (see
-           [data-wa-href] delegated handler below), same rule as the
-           product-details page and every other card on the site. */
-        const cartBtnHtml = p.category === 'subscriptions'
-          ? (isAvail
-              ? `<span class="rp-btn rp-add-cart" data-wa-href="${escAttr('https://wa.me/' + WHATSAPP_NUMBER_SUBSCRIPTIONS + '?text=' + encodeURIComponent(subscriptionOrderMessage(p, rpName)))}">📱 اطلب عبر الواتساب</span>`
-              : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`)
-          : (isAvail && p.catalog_id)
+           document)، فلا حاجة لأي منطق سلة إضافي هنا. */
+        const cartBtnHtml = (isAvail && p.catalog_id)
           ? `<span class="rp-btn rp-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف إلى السلة</span>`
           : `<span class="rp-btn rp-add-cart rp-add-cart--disabled">🔴 نفذت الكمية</span>`;
 
-        const canFallback = !isBook && p.category !== 'subscriptions' && p.main_image;
+        const canFallback = !isBook && p.main_image;
         return `<a href="${url}" class="rp-card">
           <img src="${escAttr(imgSrc)}" ${canFallback ? `data-fallback="${escAttr(p.main_image)}" ` : ''}alt="${escAttr(rpName)} — Derradj Shop"
                class="rp-img" loading="lazy" onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}">

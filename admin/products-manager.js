@@ -13,12 +13,10 @@
   /* ── Top-level categories. Subcategories (Phone Chargers, Power
      Banks, ...) are a separate concept driven entirely by the
      `categories` Supabase table — see ALL_CATEGORIES / loadCategories()
-     below — and apply to electronics only; subscriptions use a plain
-     free-text "service name" field instead (see pmSubFields). ── */
+     below — and apply to electronics only. ── */
   const CATEGORIES = [
     { value: 'books',          label: '📚 كتب' },
     { value: 'electronics',    label: '💻 إلكترونيات' },
-    { value: 'subscriptions',  label: '💎 اشتراكات رقمية' },
   ];
 
   /* ── Electronics subcategories — single source of truth is the
@@ -122,22 +120,6 @@
     return `<br><span style="font-size:11px;color:#64748b;">${esc(cat.icon || '📦')} ${esc(cat.name)}</span>`;
   }
 
-  /* ── At-a-glance status badges for subscription rows (visibility,
-     homepage-display, featured) — full editing stays in the Edit
-     modal (#pmSubFields); this is read-only, just so the admin doesn't
-     have to open every row to see its state. ── */
-  function subStatusBadgesHtml(p) {
-    if (!isSub(p)) return '';
-    const bits = [];
-    if (p.subcategory) bits.push(`<span style="font-size:11px;color:#64748b;">${esc(p.subcategory)}</span>`);
-    bits.push(p.is_active !== false
-      ? `<span style="font-size:11px;color:#059669;">🟢 ظاهر</span>`
-      : `<span style="font-size:11px;color:#dc2626;">🔴 مخفي</span>`);
-    if (p.show_on_homepage === false) bits.push(`<span style="font-size:11px;color:#94a3b8;">🚫 غير مُظهر بالرئيسية</span>`);
-    if (p.is_featured) bits.push(`<span style="font-size:11px;color:#b45309;">⭐ مميز</span>`);
-    return `<br>${bits.join(' · ')}`;
-  }
-
   /* ── State ── */
   let ALL_PM_PRODUCTS = [];
   let PM_LAST_LOADED = 0;
@@ -175,7 +157,7 @@
   let EDIT_ORIGINAL_RESOLVED_SLUG = null;
   /* null = unknown yet, true = column exists in DB, false = column missing */
   let DISPLAY_ORDER_SUPPORTED = null;
-  let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' | 'subscriptions' | 'pending' */
+  let PROD_FILTER = 'all';        /* 'all' | 'books' | 'electronics' | 'pending' */
   let PROD_SUBFILTER = 'all';     /* electronics-only: 'all' | a categories.slug */
   let PROD_SEARCH_QUERY = '';
   /* Bulk-delete selection — IDs, so it survives renderTable() re-renders
@@ -209,9 +191,8 @@
   let DRAFT_ACTIVE = false;        /* true only while the modal is open in add-mode with protection ON */
   let PM_DRAFT_SAVE_TIMER = null;
 
-  /* إلكتروني = كل ما ليس كتاباً ولا اشتراكاً رقمياً */
-  function isElec(p) { return p.category !== 'books' && p.category !== 'subscriptions'; }
-  function isSub(p) { return p.category === 'subscriptions'; }
+  /* إلكتروني = كل ما ليس كتاباً */
+  function isElec(p) { return p.category !== 'books'; }
 
   /* ── Prefer the Arabic name for matching against book_sales_summary,
      which keys rows by whatever name order_items/checkout stored
@@ -468,8 +449,6 @@
     if (!img) return '';
     if (p.category === 'books') {
       if (!/^https?:\/\//.test(img)) img = '/books/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
-    } else if (p.category === 'subscriptions') {
-      if (!/^https?:\/\//.test(img)) img = '/subscriptions/' + img.replace(/\.(png|jpg|jpeg)$/i, '.webp');
     } else if (/^https?:\/\//.test(img)) {
       const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
       const subdir = String(SUBCATEGORY_DIR[p.subcategory] || p.subcategory || 'other')
@@ -1001,7 +980,6 @@
           <button class="prod-sf-btn active" data-pfilter="all">🗂 الكل <span class="prod-sf-badge" id="psb-all">—</span></button>
           <button class="prod-sf-btn" data-pfilter="books">📚 الكتب <span class="prod-sf-badge" id="psb-books">—</span><span class="prod-sf-pending" id="psb-books-pending" style="display:none;"></span></button>
           <button class="prod-sf-btn" data-pfilter="electronics">💻 إلكترونيات <span class="prod-sf-badge" id="psb-electronics">—</span></button>
-          <button class="prod-sf-btn" data-pfilter="subscriptions">💎 اشتراكات <span class="prod-sf-badge" id="psb-subscriptions">—</span></button>
         </div>
         <div class="prod-subfilter-bar prod-subfilter-sub-bar" id="prodSubcatFilterBar" style="display:none;">
           <button class="prod-sf-btn prod-sf-sub-btn active" data-psub="all">🗂 كل الإلكترونيات</button>
@@ -1229,53 +1207,6 @@
           </div>
         </div>
 
-        <div id="pmSubFields" style="display:none;">
-          <div class="pm-fld full">
-            <label>اسم الخدمة — لتجميع خطط نفس الاشتراك (مثال: netflix)</label>
-            <input type="text" id="pmSubName" placeholder="مثال: netflix, chatgpt, canva-pro" dir="ltr">
-            <span class="hint">استخدم نفس الاسم بالضبط لكل خطط نفس الخدمة (مثلاً كل خطط Netflix) — يُستخدم لعرض "خطط أخرى" في صفحة المنتج ولفلترة صفحة الاشتراكات</span>
-          </div>
-          <div class="pm-fld full">
-            <label>مدة الاشتراك (اختياري)</label>
-            <input type="text" id="pmDuration" placeholder="مثال: شهر واحد، 18 شهر">
-          </div>
-          <div class="pm-fld full">
-            <label>طريقة التفعيل (اختياري)</label>
-            <input type="text" id="pmActivation" placeholder="مثال: تفعيل فوري عبر البريد الإلكتروني للعميل">
-          </div>
-          <div class="pm-fld full">
-            <label>الضمان / الدعم (اختياري)</label>
-            <input type="text" id="pmWarranty" placeholder="مثال: ضمان استبدال شهر واحد">
-          </div>
-          <div class="pm-fld">
-            <label>حالة المنتج</label>
-            <button type="button" class="pm-toggle is-on" id="pmVisibleToggle"
-                    role="switch" aria-checked="true" title="ظاهر — اضغط لإخفائه عن الزبائن">
-              <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
-              <span class="pm-toggle-label">🟢 ظاهر</span>
-            </button>
-            <input type="hidden" id="pmVisible" value="true">
-          </div>
-          <div class="pm-fld">
-            <label>إظهار في الرئيسية</label>
-            <button type="button" class="pm-toggle is-on" id="pmHomepageToggle"
-                    role="switch" aria-checked="true" title="يظهر في قسم الاشتراكات بالصفحة الرئيسية">
-              <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
-              <span class="pm-toggle-label">✅ يظهر بالرئيسية</span>
-            </button>
-            <input type="hidden" id="pmHomepage" value="true">
-          </div>
-          <div class="pm-fld">
-            <label>مميز</label>
-            <button type="button" class="pm-toggle" id="pmFeaturedToggle"
-                    role="switch" aria-checked="false" title="وسم المنتج كمميز">
-              <span class="pm-toggle-track"><span class="pm-toggle-thumb"></span></span>
-              <span class="pm-toggle-label">☆ عادي</span>
-            </button>
-            <input type="hidden" id="pmFeatured" value="false">
-          </div>
-        </div>
-
         <hr class="pm-divider">
         <div class="pm-sec-lbl">السعر والمخزون</div>
 
@@ -1397,8 +1328,6 @@
   const PM_DRAFT_FIELD_IDS = [
     'pmName', 'pmNameEn', 'pmNameFr', 'pmCat', 'pmSubcat', 'pmBrand',
     'pmAuthor', 'pmTranslator', 'pmYear',
-    'pmSubName', 'pmDuration', 'pmActivation', 'pmWarranty',
-    'pmVisible', 'pmHomepage', 'pmFeatured',
     'pmPrice', 'pmOldPrice', 'pmStock', 'pmQty',
     'pmShortDesc', 'pmFullDesc', 'pmMainUrl',
     'pmSlug', 'pmSeoTitle', 'pmSeoDesc', 'pmKeywords', 'pmOrder',
@@ -1431,9 +1360,6 @@
       if (el) el.dataset.manualEdit = '1';
     }
     setStockToggle(f.pmStock || 'available');
-    setBoolToggle('pmVisibleToggle', 'pmVisible', ['🟢 ظاهر', '🔴 مخفي'], f.pmVisible !== 'false');
-    setBoolToggle('pmHomepageToggle', 'pmHomepage', ['✅ يظهر بالرئيسية', '🚫 مخفي عن الرئيسية'], f.pmHomepage !== 'false');
-    setBoolToggle('pmFeaturedToggle', 'pmFeatured', ['⭐ مميز', '☆ عادي'], f.pmFeatured === 'true');
     toggleBookFields();
   }
 
@@ -1767,19 +1693,6 @@
       setStockToggle(isAvailNow ? 'out_of_stock' : 'available');
     });
 
-    /* Subscriptions-only toggles — visibility / homepage / featured.
-       Same pattern as the stock toggle above: flip a hidden input, saved
-       together with the rest of the form on submit (no immediate save). */
-    document.getElementById('pmVisibleToggle')?.addEventListener('click', () => {
-      setBoolToggle('pmVisibleToggle', 'pmVisible', ['🟢 ظاهر', '🔴 مخفي']);
-    });
-    document.getElementById('pmHomepageToggle')?.addEventListener('click', () => {
-      setBoolToggle('pmHomepageToggle', 'pmHomepage', ['✅ يظهر بالرئيسية', '🚫 مخفي عن الرئيسية']);
-    });
-    document.getElementById('pmFeaturedToggle')?.addEventListener('click', () => {
-      setBoolToggle('pmFeaturedToggle', 'pmFeatured', ['⭐ مميز', '☆ عادي']);
-    });
-
     /* Order <input> — Enter commits + blurs; focusout (bubbles) saves */
     pmTbody?.addEventListener('keydown', e => {
       const inp = e.target.closest('input[data-pma="order"]');
@@ -1967,6 +1880,9 @@
         throw queryError;
       }
 
+      /* Digital subscriptions were removed from the site — hide any legacy rows. */
+      if (Array.isArray(data)) data = data.filter(p => p.category !== 'subscriptions');
+
       /* ── Detect column support from first row ──────────────────── */
       if (DISPLAY_ORDER_SUPPORTED === null) {
         if (Array.isArray(data) && data.length > 0) {
@@ -2021,8 +1937,8 @@
 
   /* ── display_order is scoped PER CATEGORY (electronics: 1..N, books: 1..N
      independently) — not one global sequence across the whole catalog. ── */
-  const CATEGORY_ORDER = ['electronics', 'books', 'subscriptions'];
-  function categoryKey(p) { return isSub(p) ? 'subscriptions' : isElec(p) ? 'electronics' : 'books'; }
+  const CATEGORY_ORDER = ['electronics', 'books'];
+  function categoryKey(p) { return isElec(p) ? 'electronics' : 'books'; }
 
   /* ── Sort helper: display_order ASC, NULLs last, then created_at ASC.
      Only meaningful within a single category — display_order values
@@ -2077,9 +1993,8 @@
   function getFilteredProducts() {
     const q = PROD_SEARCH_QUERY.toLowerCase();
     return sortedGrouped(ALL_PM_PRODUCTS).filter(p => {
-      if (PROD_FILTER === 'books'         && (isElec(p) || isSub(p))) return false;
+      if (PROD_FILTER === 'books'         && isElec(p)) return false;
       if (PROD_FILTER === 'electronics'   && !isElec(p)) return false;
-      if (PROD_FILTER === 'subscriptions' && !isSub(p)) return false;
       if (PROD_FILTER === 'electronics' && PROD_SUBFILTER !== 'all' &&
           resolveCategorySlug(p) !== PROD_SUBFILTER) return false;
       if (PROD_FILTER === 'pending'     && p.status !== 'pending_review') return false;
@@ -2091,15 +2006,13 @@
 
   function updateSubfilterBadges() {
     const elecCount    = ALL_PM_PRODUCTS.filter(isElec).length;
-    const subCount     = ALL_PM_PRODUCTS.filter(isSub).length;
-    const booksCount   = ALL_PM_PRODUCTS.length - elecCount - subCount;
-    const pendingBooks = ALL_PM_PRODUCTS.filter(p => !isElec(p) && !isSub(p) && p.status === 'pending_review').length;
+    const booksCount   = ALL_PM_PRODUCTS.length - elecCount;
+    const pendingBooks = ALL_PM_PRODUCTS.filter(p => !isElec(p) && p.status === 'pending_review').length;
     const pendingTotal = ALL_PM_PRODUCTS.filter(p => p.status === 'pending_review').length;
     const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
     set('psb-all', ALL_PM_PRODUCTS.length);
     set('psb-books', booksCount);
     set('psb-electronics', elecCount);
-    set('psb-subscriptions', subCount);
     set('tab-badge-products', ALL_PM_PRODUCTS.length);
     set('pmProductCount', ALL_PM_PRODUCTS.length);
 
@@ -2307,26 +2220,6 @@
     applyToggleState(document.getElementById('pmStockToggle'), isAvail);
   }
 
-  /* ── Generic boolean toggle (subscriptions-only fields: visibility /
-     homepage / featured) — flips a hidden "true"/"false" input and
-     updates the button's visual state + label, same idea as
-     setStockToggle above but reusable across all three since they
-     share the exact same on/off shape. `next` lets callers set an
-     explicit state (used when opening the edit modal); omitted, it
-     flips the current value. */
-  function setBoolToggle(btnId, hiddenId, labels, next) {
-    const hidden = document.getElementById(hiddenId);
-    const current = hidden ? hidden.value === 'true' : false;
-    const isOn = next !== undefined ? next : !current;
-    if (hidden) hidden.value = String(isOn);
-    const btn = document.getElementById(btnId);
-    if (!btn) return;
-    btn.classList.toggle('is-on', isOn);
-    btn.setAttribute('aria-checked', String(isOn));
-    const label = btn.querySelector('.pm-toggle-label');
-    if (label) label.textContent = isOn ? labels[0] : labels[1];
-  }
-
   /* Pending-review rows come from a seller's quick-add — surface who and when. */
   function pendingMetaHtml(p) {
     if (p.status !== 'pending_review') return '';
@@ -2337,7 +2230,7 @@
 
   function rowHtml(p) {
     const thumbSrc = resolveThumbSrc(p);
-    const rawFallback = p.category !== 'books' && p.category !== 'subscriptions' && thumbSrc !== p.main_image ? esc(p.main_image || '') : '';
+    const rawFallback = p.category !== 'books' && thumbSrc !== p.main_image ? esc(p.main_image || '') : '';
     const imgHtml = thumbSrc
       ? `<img src="${esc(thumbSrc)}" class="pm-thumb" alt="" ${rawFallback ? `data-fallback="${rawFallback}" ` : ''}onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.outerHTML='<div class=pm-thumb-ph>📦</div>'}">`
       : `<div class="pm-thumb-ph">📦</div>`;
@@ -2367,7 +2260,7 @@
           ${p.slug ? `<span style="font-size:11px;color:#94a3b8;direction:ltr;">/product/${esc(p.slug)}/</span>` : ''}
           ${isPending ? `<span class="badge badge-pending">⏳ بانتظار المراجعة</span>${pendingMetaHtml(p)}` : ''}
         </td>
-        <td style="font-size:13px;font-weight:600;">${esc(catLabel(p.category))}${subcategoryLabelHtml(p)}${subStatusBadgesHtml(p)}</td>
+        <td style="font-size:13px;font-weight:600;">${esc(catLabel(p.category))}${subcategoryLabelHtml(p)}</td>
         <td>
           <strong style="color:#1d4ed8;direction:ltr;display:block;">${fmtPrice(p.price)}</strong>
           ${p.old_price ? `<span style="font-size:12px;text-decoration:line-through;color:#94a3b8;direction:ltr;">${fmtPrice(p.old_price)}</span>` : ''}
@@ -2391,7 +2284,7 @@
   /* ── Mobile card: image, name, availability switch, reorder controls only ── */
   function mobileCardHtml(p) {
     const thumbSrc = resolveThumbSrc(p);
-    const rawFallback = p.category !== 'books' && p.category !== 'subscriptions' && thumbSrc !== p.main_image ? esc(p.main_image || '') : '';
+    const rawFallback = p.category !== 'books' && thumbSrc !== p.main_image ? esc(p.main_image || '') : '';
     const imgHtml = thumbSrc
       ? `<img src="${esc(thumbSrc)}" class="pm-mcard-img" alt="" ${rawFallback ? `data-fallback="${rawFallback}" ` : ''}onerror="if(this.dataset.fallback&&this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.outerHTML='<div class=pm-mcard-img-ph>📦</div>'}">`
       : `<div class="pm-mcard-img-ph">📦</div>`;
@@ -2410,7 +2303,6 @@
         <div class="pm-mcard-body">
           <div class="pm-mcard-name">${esc(p.product_name)}</div>
           ${isElec(p) ? `<div style="font-size:11px;color:#64748b;">${subcategoryLabelHtml(p).replace(/^<br>/, '')}</div>` : ''}
-          ${isSub(p) ? `<div>${subStatusBadgesHtml(p).replace(/^<br>/, '')}</div>` : ''}
           ${isPending ? `<span class="badge badge-pending">⏳ بانتظار المراجعة</span>${pendingMetaHtml(p)}` : ''}
           ${salesMode ? `<span class="pm-sales-badge" title="مرتّب حسب المبيعات الفعلية — الترتيب اليدوي معطّل">🏆 ${bookSalesFor(p)} مبيعات</span>` : ''}
           <div class="pm-mcard-row">
@@ -2672,23 +2564,17 @@
   /* ══════════════════════════════════════════════════════════
      MODAL OPEN / CLOSE
   ══════════════════════════════════════════════════════════ */
-  /* إظهار/إخفاء حقول الكتب (المؤلف/المترجم/سنة النشر) أو حقول الاشتراكات
-     الرقمية (اسم الخدمة/المدة/التفعيل/الضمان + تبديلات الظهور) حسب
-     الفئة المختارة — الفئة الفرعية (Supabase categories) تخص الإلكترونيات
-     فقط. */
+  /* إظهار/إخفاء حقول الكتب (المؤلف/المترجم/سنة النشر) حسب الفئة المختارة —
+     الفئة الفرعية (Supabase categories) تخص الإلكترونيات فقط. */
   function toggleBookFields() {
     const cat = getValue('pmCat');
     const isBooks = cat === 'books';
-    const isSubs = cat === 'subscriptions';
     const el = document.getElementById('pmBookFields');
     if (el) el.style.display = isBooks ? '' : 'none';
-    const subFieldsEl = document.getElementById('pmSubFields');
-    if (subFieldsEl) subFieldsEl.style.display = isSubs ? '' : 'none';
     /* Subcategory dropdown (Supabase `categories` table) only makes
-       sense for electronics — books have no subcategory concept, and
-       subscriptions use the free-text service-name field above instead. */
+       sense for electronics — books have no subcategory concept. */
     const subEl = document.getElementById('pmSubcatWrap');
-    if (subEl) subEl.style.display = (isBooks || isSubs) ? 'none' : '';
+    if (subEl) subEl.style.display = isBooks ? 'none' : '';
   }
 
   async function openModal(product) {
@@ -2736,15 +2622,6 @@
       setValue('pmAuthor',     product.author);
       setValue('pmTranslator', product.translator);
       setValue('pmYear',       product.year);
-      if (product.category === 'subscriptions') {
-        setValue('pmSubName',    product.subcategory);
-        setValue('pmDuration',   product.duration);
-        setValue('pmActivation', product.activation_method);
-        setValue('pmWarranty',   product.warranty_info);
-        setBoolToggle('pmVisibleToggle', 'pmVisible', ['🟢 ظاهر', '🔴 مخفي'], product.is_active !== false);
-        setBoolToggle('pmHomepageToggle', 'pmHomepage', ['✅ يظهر بالرئيسية', '🚫 مخفي عن الرئيسية'], product.show_on_homepage !== false);
-        setBoolToggle('pmFeaturedToggle', 'pmFeatured', ['⭐ مميز', '☆ عادي'], product.is_featured === true);
-      }
       setValue('pmPrice',     product.price);
       setValue('pmOldPrice',  product.old_price);
       setStockToggle(product.stock_status);
@@ -2790,9 +2667,6 @@
   function resetForm() {
     document.getElementById('pmForm')?.reset();
     setStockToggle('available');
-    setBoolToggle('pmVisibleToggle', 'pmVisible', ['🟢 ظاهر', '🔴 مخفي'], true);
-    setBoolToggle('pmHomepageToggle', 'pmHomepage', ['✅ يظهر بالرئيسية', '🚫 مخفي عن الرئيسية'], true);
-    setBoolToggle('pmFeaturedToggle', 'pmFeatured', ['⭐ مميز', '☆ عادي'], false);
     const slugEl = document.getElementById('pmSlug');
     if (slugEl) delete slugEl.dataset.manualEdit;
 
@@ -3085,7 +2959,7 @@
     const wrapEl = clicked.el;
 
     try {
-      if (category === 'books' || category === 'subscriptions') {
+      if (category === 'books') {
         wrapEl?.classList.add('pm-gal-busy');
 
         const newMainBlob = clicked.type === 'staged'
@@ -3176,7 +3050,7 @@
       const written = await window.LocalFS.writeProductImage({
         category, subcategory, slug, filename: 'main.webp', blob: PM_STAGED_MAIN.blob,
       });
-      mainImg = (category === 'books' || category === 'subscriptions') ? `${slug}/main.webp` : '/' + written;
+      mainImg = category === 'books' ? `${slug}/main.webp` : '/' + written;
     }
 
     const existingNums = PM_GALLERY_ITEMS
@@ -3207,7 +3081,7 @@
       if (!session) throw new Error('يجب تسجيل الدخول أولاً');
 
       const category = getValue('pmCat') || 'electronics';
-      const subcatSelected = category === 'subscriptions' ? (getValue('pmSubName') || null) : (getValue('pmSubcat') || null);
+      const subcatSelected = getValue('pmSubcat') || null;
       /* Editing a legacy product whose dropdown was pre-selected to its
          resolved bucket (see openModal): if the admin saves without
          actually changing that selection, keep the original raw DB
@@ -3276,11 +3150,7 @@
         seo_title:         getValue('pmSeoTitle')   || null,
         seo_description:   getValue('pmSeoDesc')    || null,
         keywords:          getValue('pmKeywords')   || null,
-        /* Visibility (ظاهر/مخفي) only has an admin UI control for
-           subscriptions today (see toggleBookFields/#pmSubFields) — for
-           every other category this preserves the exact prior behavior
-           (always active). */
-        is_active:         category === 'subscriptions' ? getValue('pmVisible') !== 'false' : true,
+        is_active:         true,
         status:            'published',
         updated_at:        new Date().toISOString(),
       };
@@ -3306,18 +3176,6 @@
         payload.translator = getValue('pmTranslator') || null;
         const yearRaw = getValue('pmYear');
         payload.year = yearRaw !== '' ? (parseInt(yearRaw) || null) : null;
-      }
-
-      /* Subscriptions-specific fields — only meaningful for
-         category=subscriptions (duration/activation/warranty are plain
-         detail text; is_featured/show_on_homepage back the ⭐مميز and
-         homepage-display admin toggles). */
-      if (payload.category === 'subscriptions') {
-        payload.duration          = getValue('pmDuration')   || null;
-        payload.activation_method = getValue('pmActivation') || null;
-        payload.warranty_info     = getValue('pmWarranty')   || null;
-        payload.is_featured       = getValue('pmFeatured') === 'true';
-        payload.show_on_homepage  = getValue('pmHomepage') !== 'false';
       }
 
       /* product_name/slug/price/full_description and the duplicate-slug

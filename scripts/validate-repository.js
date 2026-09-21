@@ -3,8 +3,7 @@
 
    Safety-net checks for things that have actually broken
    production before: unresolved git-merge conflict markers
-   landing on main (index.html / subscriptions/index.html /
-   sitemap.xml / a generated product page, 2026-08-27), malformed
+   landing on main (index.html / sitemap.xml / a generated product page, 2026-08-27), malformed
    generated output, and local-only config accidentally tracked.
 
    Run manually: node scripts/validate-repository.js

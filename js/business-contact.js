@@ -22,21 +22,9 @@
    up; a returning visitor sees the cached value instantly and the
    fresh value a moment later.
 
-   ── Electronic Subscriptions exclusion (explicit, not accidental) ──
-   subscriptions/index.html and the generated subscription product
-   pages set window.WHATSAPP_NUMBER/WHATSAPP_DISPLAY *before* this
-   script would run, to route to their own dedicated, independently
-   hardcoded number (see js/product-template.js's
-   WHATSAPP_NUMBER_SUBSCRIPTIONS). This script checks that flag first
-   and does nothing at all — no fetch, no DOM writes — when it is set,
-   so the global business number can never reach that page. Those
-   pages also simply don't include this <script> tag at all; the
-   self-check here is a second, defense-in-depth guard.
    ============================================================ */
 (function (root) {
   'use strict';
-
-  if (root.WHATSAPP_NUMBER) return; // Subscriptions override active — stay out entirely.
 
   var DEFAULT_PHONE = { local: '0776922882', display: '0776 92 28 82', intl: '213776922882' };
 

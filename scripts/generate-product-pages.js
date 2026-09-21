@@ -29,7 +29,6 @@ const SITE_URL = 'https://derradjshop.com';
 const ROOT = path.join(__dirname, '..');
 const PRODUCT_DIR = path.join(ROOT, 'product');
 const BOOKS_DIR = path.join(ROOT, 'books');
-const SUBSCRIPTIONS_DIR = path.join(ROOT, 'subscriptions');
 const CACHE_FILE = path.join(__dirname, '.image-dims-cache.json');
 
 /* ── Supabase REST ──
@@ -50,12 +49,11 @@ const PRODUCT_COLUMNS = [
   'short_description', 'full_description',
   'seo_title', 'seo_description', 'keywords', 'brand',
   'author', 'translator', 'year', 'updated_at',
-  'duration', 'activation_method', 'warranty_info', 'show_on_homepage',
 ].join(',');
 
 async function fetchActiveProducts() {
   const headers = { apikey: SB_KEY, Authorization: 'Bearer ' + SB_KEY };
-  const base = `${SB_URL}/rest/v1/admin_products_catalog?select=${PRODUCT_COLUMNS}&is_active=eq.true`;
+  const base = `${SB_URL}/rest/v1/admin_products_catalog?select=${PRODUCT_COLUMNS}&is_active=eq.true&or=(category.is.null,category.neq.subscriptions)`; /* digital subscriptions were removed from the site */
   let res = await fetch(base + '&order=display_order.asc.nullslast,created_at.desc', { headers });
   if (!res.ok && res.status === 400) {
     res = await fetch(base + '&order=created_at.desc', { headers });
@@ -334,36 +332,6 @@ async function localizeElectronicsImagesIfMissing(p) {
   }
 }
 
-/* ── Auto-localize a subscription product's logo the first time it's
-   seen — mirrors localizeBookCoverIfMissing() (flat /subscriptions/
-   {slug}/main.webp folder, no subcategory-dir nesting, since a
-   subscription plan doesn't have "specs" the way electronics does). ── */
-async function localizeSubscriptionImageIfMissing(p) {
-  if (!p.slug || !p.main_image || !/^https?:\/\//.test(p.main_image)) return;
-  const dest = path.join(SUBSCRIPTIONS_DIR, p.slug, 'main.webp');
-  if (fs.existsSync(dest)) return;
-  try {
-    const buf = await downloadToFile(p.main_image);
-    fs.mkdirSync(path.join(SUBSCRIPTIONS_DIR, p.slug), { recursive: true });
-    fs.writeFileSync(dest, buf);
-    console.log(`[generate-product-pages] localized image for subscriptions/${p.slug}/ (${(buf.length / 1024).toFixed(0)}KB from Supabase Storage, one-time)`);
-  } catch (err) {
-    console.warn(`[generate-product-pages] could not localize image for subscriptions/${p.slug}: ${err.message} — will keep serving it from Supabase Storage until this succeeds.`);
-  }
-}
-
-function probeLocalSubscriptionImageDims(slug) {
-  for (const name of ['main.webp', 'main.png', 'main.jpg']) {
-    const file = path.join(SUBSCRIPTIONS_DIR, slug, name);
-    if (!fs.existsSync(file)) continue;
-    try {
-      const dims = getImageSize(fs.readFileSync(file));
-      if (dims) return dims;
-    } catch (_) { /* try next extension */ }
-  }
-  return null;
-}
-
 /* ── Local electronics image dims (repo files) ── */
 function probeLocalElectronicsImageDims(subcategory, slug, filename) {
   const folder = path.join(ROOT, 'Electronique', subcategory || 'other', slug || '');
@@ -444,7 +412,6 @@ function renderPage(view, dims) {
       <a href="/"              class="nav-link">الرئيسية</a>
       <a href="/books/"        class="nav-link">📚 الكتب</a>
       <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
-      <a href="/subscriptions/" class="nav-link">💎 الاشتراكات الرقمية</a>
       <a href="/about"    class="nav-link">من نحن</a>
       <a href="/faq"      class="nav-link">الأسئلة الشائعة</a>
       <a href="/contact"  class="nav-link">تواصل معنا</a>
@@ -478,7 +445,6 @@ function renderPage(view, dims) {
   <a href="/">الرئيسية</a>
   <a href="/books/">📚 الكتب</a>
   <a href="/Electronique/">💻 إلكترونيات</a>
-  <a href="/subscriptions/">💎 الاشتراكات الرقمية</a>
   <a href="/about">من نحن</a>
   <a href="/faq">الأسئلة الشائعة</a>
   <a href="/contact">تواصل معنا</a>
@@ -505,7 +471,7 @@ function renderPage(view, dims) {
 </div>
 
 <!-- ════ SCRIPTS ════════════════════════════════════════════ -->
-${view.isSubscription ? `<script>window.WHATSAPP_NUMBER = ${JSON.stringify(ProductTemplate.WHATSAPP_NUMBER_SUBSCRIPTIONS)}; window.WHATSAPP_DISPLAY = ${JSON.stringify(ProductTemplate.WHATSAPP_DISPLAY_SUBSCRIPTIONS)};</script>\n` : ''}<script src="/js/business-contact.js"></script>
+<script src="/js/business-contact.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/search-products.js"></script>
 <script src="/js/products-loader.js"></script>
@@ -596,7 +562,6 @@ function renderBookPage(view, dims) {
       <a href="/"              class="nav-link">الرئيسية</a>
       <a href="/books/"        class="nav-link" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
       <a href="/Electronique/" class="nav-link">💻 إلكترونيات</a>
-      <a href="/subscriptions/" class="nav-link">💎 الاشتراكات الرقمية</a>
       <a href="/about"    class="nav-link">من نحن</a>
       <a href="/faq"      class="nav-link">الأسئلة الشائعة</a>
       <a href="/contact"  class="nav-link">تواصل معنا</a>
@@ -630,7 +595,6 @@ function renderBookPage(view, dims) {
   <a href="/">الرئيسية</a>
   <a href="/books/" style="color:#2563eb;font-weight:700;">📚 الكتب</a>
   <a href="/Electronique/">💻 إلكترونيات</a>
-  <a href="/subscriptions/">💎 الاشتراكات الرقمية</a>
   <a href="/about">من نحن</a>
   <a href="/faq">الأسئلة الشائعة</a>
   <a href="/contact">تواصل معنا</a>
@@ -714,7 +678,6 @@ function buildSitemap(products, books, changedStaticPages) {
     { loc: `${SITE_URL}/`,                  freq: 'weekly',  pri: '1.0' },
     { loc: `${SITE_URL}/books/`,            freq: 'weekly',  pri: '0.9' },
     { loc: `${SITE_URL}/Electronique/`,     freq: 'weekly',  pri: '0.9' },
-    { loc: `${SITE_URL}/subscriptions/`,    freq: 'weekly',  pri: '0.9' },
     { loc: `${SITE_URL}/about`,        freq: 'monthly', pri: '0.5' },
     { loc: `${SITE_URL}/contact`,      freq: 'monthly', pri: '0.5' },
     { loc: `${SITE_URL}/faq`,          freq: 'monthly', pri: '0.5' },
@@ -725,7 +688,7 @@ function buildSitemap(products, books, changedStaticPages) {
   ];
   /* Static pages get a fresh "today" lastmod only the first time they
      ever appear, or when changedStaticPages[loc] says this run actually
-     rewrote that page's content (home/Electronique/subscriptions grids).
+     rewrote that page's content (home/Electronique grids).
      Every other static page (about/contact/faq/delivery/payment/
      return-policy/terms/books) never gets touched by this script, so
      its lastmod simply carries forward forever until a human commits a
@@ -811,7 +774,7 @@ ${deduped.map(urlBlock).join('\n')}
    so this fallback is fully replaced, never duplicated. ── */
 const STATIC_CARD_CAT_ICON = {
   books: '📚', electronics: '💻', earbuds: '🎧', laptop: '💻',
-  smart_watch: '⌚', power_bank: '🔋', other: '📦', subscriptions: '💎',
+  smart_watch: '⌚', power_bank: '🔋', other: '📦',
 };
 const STATIC_CARD_AR_RE = /[؀-ۿ]/;
 function staticCardArName(p) {
@@ -847,10 +810,6 @@ function staticCardResolveImage(p) {
     const slug = p.slug || '';
     return slug ? `/books/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
   }
-  if (p.category === 'subscriptions') {
-    const slug = p.slug || '';
-    return slug ? `/subscriptions/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
-  }
   if (!p.main_image) return '/Logo.jpg';
   const SUBCATEGORY_DIR = { power_bank: 'power-bank', smart_watch: 'smart-watch' };
   const subdir = String(SUBCATEGORY_DIR[p.subcategory] || p.subcategory || 'other')
@@ -869,13 +828,6 @@ function staticCardPriceHtml(price, oldPrice) {
     if (pct > 0) html += `<span class="discount-tag">-${pct}%</span>`;
   }
   return html;
-}
-/* Mirrors js/products-loader.js's subscriptionOrderMessage() so the
-   static (no-JS/crawler) card and the live JS-rendered card send the
-   exact same WhatsApp order message. */
-function staticSubscriptionOrderMessage(p, name) {
-  const fmt = n => Number(n).toLocaleString('en-US');
-  return `السلام عليكم، أريد طلب:\n${name}${p.duration ? ' — ' + p.duration : ''}\nالسعر: ${fmt(p.price)} دج`;
 }
 function staticCardSummary(p) {
   const raw = (p.short_description || p.full_description || '').replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
@@ -897,24 +849,15 @@ function buildStaticProductCard(p) {
   const imgSrc  = staticCardResolveImage(p);
   const summary = staticCardSummary(p);
   const name    = staticCardArName(p);
-  /* Books and subscriptions keep the Arabic main title unchanged —
+  /* Books keep the Arabic main title unchanged —
      electronics always shows a non-Arabic title (mirrors
      js/products-loader.js buildCard() / electronicsTitle()). */
-  const isSubscription = p.category === 'subscriptions';
-  const titleInfo = (isBook || isSubscription) ? { text: name, isEnglish: false } : staticCardElectronicsTitle(p);
+  const titleInfo = isBook ? { text: name, isEnglish: false } : staticCardElectronicsTitle(p);
   const mainTitle = titleInfo.text;
   const titleDirAttr = titleInfo.isEnglish ? ' dir="ltr"' : '';
-  const fallbackAttr = (!isBook && !isSubscription && p.main_image) ? `data-fallback="${escAttr(p.main_image)}" ` : '';
+  const fallbackAttr = (!isBook && p.main_image) ? `data-fallback="${escAttr(p.main_image)}" ` : '';
   const onerror = `onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}"`;
-  /* Digital subscriptions order through WhatsApp only — mirrors
-     js/products-loader.js's buildCard() and js/product-template.js's
-     product-details page (see those for why: no cart, no buy-now for
-     this category). */
-  const cartBtn = isSubscription
-    ? (isAvail
-        ? `<a href="https://wa.me/${ProductTemplate.WHATSAPP_NUMBER_SUBSCRIPTIONS}?text=${encodeURIComponent(staticSubscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart">📱 اطلب عبر الواتساب</a>`
-        : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`)
-    : isAvail
+  const cartBtn = isAvail
     ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
     : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
 
@@ -1061,17 +1004,15 @@ function listItemsForCategory(rows, kind) {
     const url = kind === 'books'
       ? `${SITE_URL}/books/${encodeURIComponent(p.slug)}/`
       : `${SITE_URL}/product/${encodeURIComponent(p.slug)}/`;
-    if (kind === 'electronics' || kind === 'subscriptions') {
+    if (kind === 'electronics') {
       try { name = ProductTemplate.buildProductView(p).productName || name; } catch (_) { /* keep raw name */ }
     }
     return { '@type': 'ListItem', position: i + 1, url, name };
   });
 }
 
-/* `products` here is electronics-only (subscriptions have their own
-   subset — see main()) and `subscriptions` is that subscriptions-only
-   subset. */
-function refreshCatalogSchemas(products, books, subscriptions) {
+/* `products` here is the electronics (non-book) subset. */
+function refreshCatalogSchemas(products, books) {
   updateCatalogSchema(path.join(ROOT, 'index.html'), data => {
     const business = findFirstJsonLdNode(data, n => n && Array.isArray(n['@type']) && n['@type'].includes('LocalBusiness'));
     if (!business) return false;
@@ -1097,14 +1038,6 @@ function refreshCatalogSchemas(products, books, subscriptions) {
     return true;
   });
 
-  updateCatalogSchema(path.join(SUBSCRIPTIONS_DIR, 'index.html'), data => {
-    const list = findFirstJsonLdNode(data, n => n && n['@type'] === 'ItemList');
-    if (!list) return false;
-    const items = listItemsForCategory(subscriptions, 'subscriptions');
-    list.itemListElement = items;
-    list.numberOfItems = items.length;
-    return true;
-  });
 }
 
 /* ── Main ── */
@@ -1114,16 +1047,10 @@ async function main() {
   const products = rows.filter(p => p.category !== 'books');
   const books    = rows.filter(p => p.category === 'books');
   /* `products` (everything non-book) is what actually gets a
-     /product/{slug}/ page below — electronics and subscriptions share
-     that same generation loop/URL prefix, differing only in how their
-     images are localized/measured (flat /subscriptions/ folder vs
-     /Electronique/{subcategory}/ folder). These two subsets are only
-     used afterwards, to keep each category's own grid/schema (the
-     Electronique page, the subscriptions page) from including the
-     other's rows. */
-  const electronicsOnly = products.filter(p => p.category !== 'subscriptions');
-  const subscriptionsOnly = products.filter(p => p.category === 'subscriptions');
-  console.log(`[generate-product-pages] ${electronicsOnly.length} electronics product(s), ${subscriptionsOnly.length} subscription(s), ${books.length} book(s) found.`);
+     /product/{slug}/ page below; electronicsOnly feeds the Electronique
+     grid/schema. */
+  const electronicsOnly = products;
+  console.log(`[generate-product-pages] ${electronicsOnly.length} electronics product(s), ${books.length} book(s) found.`);
 
   const cache = loadCache();
   const writtenSlugs = new Set();
@@ -1149,17 +1076,11 @@ async function main() {
     }
     console.log(`[generate-product-pages] processing product/${p.slug}/ (catalog_id=${p.catalog_id})...`);
     try {
-      if (p.category === 'subscriptions') {
-        await localizeSubscriptionImageIfMissing(p);
-      } else {
-        await localizeElectronicsImagesIfMissing(p);
-      }
+      await localizeElectronicsImagesIfMissing(p);
       const view = ProductTemplate.buildProductView(p);
       let dims = null;
       try {
-        if (view.mainImage && view.mainImage.startsWith('/subscriptions/')) {
-          dims = probeLocalSubscriptionImageDims(p.slug || '');
-        } else if (view.mainImage && !/^https?:\/\//.test(view.mainImage) && view.mainImage.startsWith('/')) {
+        if (view.mainImage && !/^https?:\/\//.test(view.mainImage) && view.mainImage.startsWith('/')) {
           /* local repo path like /Electronique/{sub}/{slug}/filename */
           const parts = view.mainImage.split('/').filter(Boolean);
           const sub = parts[1] || 'other';
@@ -1275,15 +1196,11 @@ async function main() {
      homepage for content that isn't at risk of being orphaned. */
   const electronicsPageChanged = injectStaticGrid(path.join(ROOT, 'Electronique', 'index.html'), 'electronicsGrid', electronicsOnly);
   const homeElectronicsChanged = injectStaticGrid(path.join(ROOT, 'index.html'), 'homeElectronicsGrid', electronicsOnly);
-  /* Subscriptions — same reasoning as electronics above: small catalog,
-     so the added static weight is negligible and worth the crawlability. */
-  const subscriptionsPageChanged = injectStaticGrid(path.join(SUBSCRIPTIONS_DIR, 'index.html'), 'subscriptionsGrid', subscriptionsOnly);
-  const homeSubscriptionsChanged = injectStaticGrid(path.join(ROOT, 'index.html'), 'homeSubscriptionsGrid', subscriptionsOnly.filter(p => p.show_on_homepage !== false));
 
-  refreshCatalogSchemas(electronicsOnly, books, subscriptionsOnly);
+  refreshCatalogSchemas(electronicsOnly, books);
 
-  /* Only the 3 static pages whose visible content this script actually
-     injects (home, Electronique, subscriptions) ever have a legitimate
+  /* Only the 2 static pages whose visible content this script actually
+     injects (home, Electronique) ever have a legitimate
      reason for their sitemap <lastmod> to move — and only on a run
      where their grid content really changed. Every other static page
      (about/contact/faq/...) has its lastmod carried forward untouched
@@ -1291,9 +1208,8 @@ async function main() {
      them to "today" on every run (the old behaviour) was the cause of
      the recurring sitemap.xml merge conflicts. */
   const changedStaticPages = {
-    [`${SITE_URL}/`]: homeElectronicsChanged || homeSubscriptionsChanged,
+    [`${SITE_URL}/`]: homeElectronicsChanged,
     [`${SITE_URL}/Electronique/`]: electronicsPageChanged,
-    [`${SITE_URL}/subscriptions/`]: subscriptionsPageChanged,
   };
 
   const sitemap = buildSitemap(products, books, changedStaticPages);

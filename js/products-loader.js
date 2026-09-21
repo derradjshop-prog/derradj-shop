@@ -23,7 +23,6 @@
     smart_watch: '⌚',
     power_bank:  '🔋',
     other:       '📦',
-    subscriptions: '💎',
   };
 
   /* ── Electronics subcategories — single source of truth is the
@@ -51,7 +50,7 @@
     power_bank:  'power-bank',
   };
   function resolveCategorySlug(p) {
-    if (!p || p.category === 'books' || p.category === 'subscriptions') return null;
+    if (!p || p.category === 'books') return null;
     const byId = LEGACY_SUBCATEGORY_BY_CATALOG_ID[p.catalog_id];
     if (byId) return byId;
     const raw = p.subcategory;
@@ -124,7 +123,6 @@
       books: 'كتب', electronics: 'إلكترونيات', earbuds: 'سماعات',
       laptop: 'إكسسوارات لابتوب', smart_watch: 'ساعات ذكية',
       power_bank: 'بطاريات محمولة', other: 'منتجات أخرى',
-      subscriptions: 'اشتراكات رقمية',
     };
     return m[cat] || cat;
   }
@@ -144,25 +142,6 @@
       if (pct > 0) html += `<span class="discount-tag">-${pct}%</span>`;
     }
     return html;
-  }
-
-  /* ── Digital subscriptions route to their own dedicated WhatsApp
-     number — mirrors WHATSAPP_NUMBER_SUBSCRIPTIONS in
-     js/product-template.js (this file runs standalone on pages that
-     don't load that module, e.g. the homepage/category grids, so the
-     value is mirrored here rather than imported — update both if it
-     ever changes). Books/electronics keep the site's default number,
-     set directly where their card button is built. ── */
-  var WHATSAPP_NUMBER_SUBSCRIPTIONS = '213776922882';
-
-  /* ── WhatsApp order-message text for a subscription card/product —
-     mirrors js/product-template.js's product-details page message so
-     the wording is consistent wherever a customer starts the order
-     from. Not used for books/electronics, which keep the plain
-     inquiry-style WhatsApp message they already had. ── */
-  function subscriptionOrderMessage(p, name) {
-    const fmt = n => Number(n).toLocaleString('en-US');
-    return `السلام عليكم، أريد طلب:\n${name}${p.duration ? ' — ' + p.duration : ''}\nالسعر: ${fmt(p.price)} دج`;
   }
 
   /* ── Electronics subcategory → actual /Electronique/ folder name.
@@ -196,10 +175,6 @@
       const slug = p.slug || '';
       return slug ? `/books/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
     }
-    if (p.category === 'subscriptions') {
-      const slug = p.slug || '';
-      return slug ? `/subscriptions/${encodeURIComponent(slug)}/main.webp` : (p.main_image || '/Logo.jpg');
-    }
     let img = p.main_image || '';
     if (!img) return '/Logo.jpg';
     const sub = subcategoryDir(String(p.subcategory || 'other'));
@@ -216,7 +191,7 @@
      giving up on the generic logo — so a missing local mirror shows
      the actual product photo instead of silently degrading. ── */
   function imgFallbackAttrs(p) {
-    if (p.category === 'books' || p.category === 'subscriptions' || !p.main_image) return '';
+    if (p.category === 'books' || !p.main_image) return '';
     return `data-fallback="${escAttr(p.main_image)}" `;
   }
   const IMG_ONERROR = `onerror="if(this.dataset.fallback&amp;&amp;this.src!==this.dataset.fallback){this.src=this.dataset.fallback}else{this.src='/Logo.jpg'}"`;
@@ -238,15 +213,7 @@
     const summary  = cardSummary(p);
 
     const name = arName(p);
-    /* Digital subscriptions order through WhatsApp only — no cart, no
-       buy-now (see js/product-template.js's product-details page for
-       the same rule). Routes to their own dedicated WhatsApp number
-       (WHATSAPP_NUMBER_SUBSCRIPTIONS above). */
-    const cartBtn = p.category === 'subscriptions'
-      ? (isAvail
-          ? `<a href="https://wa.me/${WHATSAPP_NUMBER_SUBSCRIPTIONS}?text=${encodeURIComponent(subscriptionOrderMessage(p, name))}" target="_blank" rel="noopener noreferrer" class="btn-add-cart btn-add-cart--wa">📱 اطلب عبر الواتساب</a>`
-          : `<button class="btn-add-cart btn-add-cart--wa" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`)
-      : isAvail
+    const cartBtn = isAvail
       ? `<button class="btn-add-cart" data-add-to-cart="${p.catalog_id}">🛒 أضف للسلة</button>`
       : `<button class="btn-add-cart" disabled style="opacity:.5;cursor:not-allowed;">🔴 نفذت الكمية</button>`;
     /* Main card title: electronics always show a non-Arabic title —
@@ -257,20 +224,13 @@
        title unchanged. Everything else on the card (alt text, search
        index, SEO/H1 on the product page) keeps using the Arabic name
        regardless of category. */
-    const titleInfo = (isBook || p.category === 'subscriptions')
+    const titleInfo = isBook
       ? { text: name, isEnglish: false }
       : electronicsTitle(p);
     const mainTitle = titleInfo.text;
     const titleDirAttr = titleInfo.isEnglish ? ' dir="ltr"' : '';
-    /* Subscriptions have no `categories`-table subcategory — the
-       subcategory column instead holds the service name an admin typed
-       (e.g. "netflix"), used as-is to group plans of the same service
-       on subscriptions/index.html's filter chips (see that page's
-       inline script). */
     const subcatAttr = subcat
       ? ` data-subcategory="${escAttr(subcat.slug)}"`
-      : (p.category === 'subscriptions' && p.subcategory)
-      ? ` data-subcategory="${escAttr(p.subcategory)}"`
       : '';
     return `<div class="product-card" data-product-url="${url}" data-sb-product-id="${p.id}"${subcatAttr}>
       <div class="${badgeCls}" data-avail-badge="${p.catalog_id}">${badgeTxt}</div>
@@ -286,7 +246,7 @@
         </a>
         ${summary ? `<p class="product-card-summary">${esc(summary)}</p>` : ''}
         <div class="product-prices">${priceHTML(p.price, p.old_price)}</div>
-        <div class="product-card-btns${p.category === 'subscriptions' ? ' product-card-btns--wa' : ''}">
+        <div class="product-card-btns">
           <a href="${url}" class="btn-order-card">${icon} تفاصيل</a>
           ${cartBtn}
         </div>
@@ -391,8 +351,8 @@
   }
 
   async function fetchProducts() {
-    const SELECT  = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active,display_order,show_on_homepage,duration';
-    const BASE    = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true`;
+    const SELECT  = 'id,catalog_id,product_name,product_name_ar,product_name_fr,category,subcategory,price,old_price,stock_status,main_image,short_description,slug,keywords,brand,is_active,display_order,show_on_homepage';
+    const BASE    = SB_URL + `/rest/v1/admin_products_catalog?select=${SELECT}&is_active=eq.true&or=(category.is.null,category.neq.subscriptions)`;
 
     /* First try: ordered by display_order ASC NULLS LAST, then created_at DESC */
     let res = await fetch(BASE + '&order=display_order.asc.nullslast,created_at.desc', { headers: HEADERS });
@@ -487,46 +447,14 @@
               || document.getElementById('electronicsGrid');
     if (!grid) return;
 
-    /* Only non-books, non-subscriptions go in the electronics/products
-       section (subscriptions get their own section — see
-       renderHomepageSubscriptions below). Shuffled at display time only —
+    /* Only non-books go in the electronics/products section.
+       Shuffled at display time only —
        the fetch above is still ordered by the admin's display_order,
        untouched in window.SUPABASE_PRODUCTS. */
-    const elec = shuffleArray(products.filter(p => p.category !== 'books' && p.category !== 'subscriptions'));
+    const elec = shuffleArray(products.filter(p => p.category !== 'books'));
     if (!elec.length) { showElectronicsLoadError(); return; }
 
     grid.replaceChildren(buildCardsFragment(elec));
-  }
-
-  /* ── Render the homepage/category-page subscriptions grid — mirrors
-     renderHomepageProducts() above. Respects the per-product
-     show_on_homepage admin toggle (defaults true when unset, so
-     nothing needs backfilling) — the subscriptions category page grid
-     (#subscriptionsGrid) always shows every active subscription
-     regardless of that flag, same as how the Electronique page shows
-     every active electronics product regardless of its homepage-only
-     analog. ── */
-  function renderHomepageSubscriptions(products) {
-    const homeGrid = document.getElementById('homeSubscriptionsGrid');
-    const pageGrid = document.getElementById('subscriptionsGrid');
-    if (!homeGrid && !pageGrid) return;
-
-    const all = products.filter(p => p.category === 'subscriptions');
-
-    if (homeGrid) {
-      const section = document.getElementById('subscriptions-section');
-      const forHome = shuffleArray(all.filter(p => p.show_on_homepage !== false));
-      if (forHome.length) {
-        homeGrid.replaceChildren(buildCardsFragment(forHome));
-        if (section) section.style.display = '';
-      } else if (section) {
-        section.style.display = 'none';
-      }
-    }
-
-    if (pageGrid) {
-      pageGrid.replaceChildren(all.length ? buildCardsFragment(shuffleArray(all)) : document.createDocumentFragment());
-    }
   }
 
   /* ── Render the homepage books carousel — mirrors
@@ -573,13 +501,14 @@
       const url = SB_URL + '/rest/v1/bestseller_picks'
         + '?select=display_order,admin_products_catalog!inner(*)'
         + '&admin_products_catalog.is_active=eq.true'
+        + '&admin_products_catalog.or=(category.is.null,category.neq.subscriptions)'
         + '&order=display_order.asc';
       const res = await fetch(url, { headers: HEADERS });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const rows = await res.json();
       return (rows || [])
         .map(row => row.admin_products_catalog)
-        .filter(Boolean);
+        .filter(p => p && p.category !== 'subscriptions' && p.stock_status !== 'out_of_stock');
     } catch (err) {
       console.warn('[products-loader] bestseller picks unavailable:', err.message || err);
       return [];
@@ -587,7 +516,7 @@
   }
 
   /* ── Bestsellers display order: positions 1-4 follow a fixed
-     category pattern — Electronics, Subscription, Electronics (a
+     category pattern — Electronics, Books, Electronics (a
      different product than position 1), Books — position 5 onward is
      a plain full shuffle of everything left. Each slot pulls the
      highest-priority eligible pick still unused from its category
@@ -599,8 +528,7 @@
      the fixed pattern only holds fully when all three categories have
      enough eligible products. ── */
   function composeBestsellerOrder(picks) {
-    const electronics = shuffleArray(picks.filter(p => p.category !== 'books' && p.category !== 'subscriptions'));
-    const subscriptions = shuffleArray(picks.filter(p => p.category === 'subscriptions'));
+    const electronics = shuffleArray(picks.filter(p => p.category !== 'books'));
     const books = shuffleArray(picks.filter(p => p.category === 'books'));
 
     const used = new Set();
@@ -612,7 +540,7 @@
 
     const firstFour = [
       takeFrom(electronics),
-      takeFrom(subscriptions),
+      takeFrom(books),
       takeFrom(electronics),
       takeFrom(books),
     ];
@@ -718,7 +646,7 @@
      giving up caching for the heavier fields. ── */
   async function fetchLiveStockStatuses() {
     try {
-      const url = SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,stock_status&is_active=eq.true';
+      const url = SB_URL + '/rest/v1/admin_products_catalog?select=catalog_id,stock_status&is_active=eq.true&or=(category.is.null,category.neq.subscriptions)';
       const res = await fetch(url, { headers: HEADERS });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const rows = await res.json();
@@ -775,12 +703,15 @@
         }
       }
 
+      /* Digital subscriptions were removed from the site — never render
+         any that still exist in the DB or in an older cached payload. */
+      products = products.filter(p => p.category !== 'subscriptions');
+
       window.SUPABASE_PRODUCTS = products;
 
       extendCatalog(products);
       renderHomepageProducts(products);
       renderHomepageBooks(products, bookSortMode);
-      renderHomepageSubscriptions(products);
 
       /* Extend search after search-products.js has run */
       if (window.SEARCH_PRODUCTS) {
