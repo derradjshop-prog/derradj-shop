@@ -239,6 +239,18 @@
   function bundlePriceOf (total) {
     return Math.round(total * (100 - BUNDLE.discountPct) / 100 / 10) * 10;
   }
+  /* الحد الأدنى للكتب في الطلب: مجموع نسخ الكتب ≥ 3 (الباقة = 5 كتب).
+     ⚠ نفس القيمة في ordre/index.html (MIN_BOOKS_PER_ORDER). */
+  const MIN_BOOKS = 3;
+  function bookCountOf (items) {
+    const catalog = window.SHOP_CATALOG || [];
+    return items.reduce((n, item) => {
+      const p = catalog.find(c => c.catalogId === item.catalogId);
+      if (!p || p.category !== 'books' || p.available === false) return n;
+      return n + (p.isBundle ? BUNDLE.size : 1) * (parseInt(item.qty) || 1);
+    }, 0);
+  }
+
   /* يتحقق من أرقام الكتب (عدد صحيح، بلا تكرار، كلها كتب متوفرة) ويعيدها أو null */
   function resolveBundleBooks (ids) {
     if (!Array.isArray(ids)) return null;
@@ -548,6 +560,19 @@
         <button class="cart-checkout-btn" disabled style="background:#94a3b8;cursor:not-allowed;">
           🚫 احذف المنتجات غير المتوفرة أولاً
         </button>`;
+    } else if (bookCountOf(items) > 0 && bookCountOf(items) < MIN_BOOKS) {
+      const missing = MIN_BOOKS - bookCountOf(items);
+      footer.innerHTML = `
+        <div class="cart-unavail-warning">
+          📚 الحد الأدنى لطلب الكتب هو ${MIN_BOOKS} كتب — أضف ${missing === 1 ? 'كتاباً آخر' : missing + ' كتب أخرى'} أو زد الكمية لإتمام الطلب.
+        </div>
+        <div class="cart-total-row">
+          <span>المجموع الكلي</span>
+          <strong>${formatCartPrice(total)}</strong>
+        </div>
+        <button class="cart-checkout-btn" disabled style="background:#94a3b8;cursor:not-allowed;">
+          📚 أضف ${missing === 1 ? 'كتاباً آخر' : missing + ' كتب أخرى'} لإتمام الطلب
+        </button>`;
     } else {
       footer.innerHTML = `
         <div class="cart-total-row">
@@ -708,9 +733,24 @@
             showToast('عذرًا، نفذت الكمية من هذا المنتج حالياً.', 'warn');
             return;
           }
-          /* مسح السلة القديمة وإضافة هذا الكتاب فقط (Cart.save يُحدّث الطابع الزمني) */
-          Cart.clear();
-          Cart.add(cid);
+          if (p.category === 'books') {
+            /* الكتب: حد أدنى MIN_BOOKS — نُبقي السلة ونضيف الكتاب إن لم يكن فيها،
+               فإن لم يكتمل العدد نفتح السلة بدل الذهاب لصفحة الطلب */
+            if (!Cart.get().some(i => i.catalogId === cid)) Cart.add(cid);
+            updateBadge();
+            const n = bookCountOf(Cart.get());
+            if (n < MIN_BOOKS) {
+              renderCart();
+              openCart();
+              const missing = MIN_BOOKS - n;
+              showToast('📚 الحد الأدنى ' + MIN_BOOKS + ' كتب — أضف ' + (missing === 1 ? 'كتاباً آخر' : missing + ' كتب أخرى') + ' لإتمام الطلب.', 'warn');
+              return;
+            }
+          } else {
+            /* مسح السلة القديمة وإضافة هذا المنتج فقط (Cart.save يُحدّث الطابع الزمني) */
+            Cart.clear();
+            Cart.add(cid);
+          }
         }
       }
       /* الانتقال لصفحة الطلب سواء أُضيف الكتاب أم لا */

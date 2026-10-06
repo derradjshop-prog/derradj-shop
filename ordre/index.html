@@ -1797,19 +1797,25 @@
         <div class="ch-section ch-products">
           <div class="ch-section-title">🔌 المنتجات المطلوبة</div>
 
-          <!-- قائمة المنتجات (ديناميكية) -->
+          <!-- قائمة المنتجات — تُبنى من السلة فقط (لا اختيار يدوي) -->
           <div id="productsList"></div>
+
+          <!-- منتجات أُزيلت من السلة لأنها نفذت -->
+          <div id="removedNotice" style="display:none;font-size:14px;font-weight:600;margin-top:8px;color:var(--accent);"></div>
+
+          <!-- الحد الأدنى للكتب (3) -->
+          <div id="minBooksNotice" style="display:none;font-size:14px;font-weight:700;margin-top:8px;padding:10px 12px;border-radius:10px;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;"></div>
+
+          <!-- السلة فارغة -->
+          <div id="emptyCartMsg" style="display:none;text-align:center;padding:18px 12px;font-weight:600;">
+            🛒 سلتك فارغة — <a href="/" style="color:var(--primary);">تصفّح المتجر وأضف منتجات</a>
+          </div>
 
           <!-- رسالة خطأ المنتجات -->
           <span class="field-error-msg" id="productsError"
                 style="display:none;font-size:14px;font-weight:600;margin-top:8px;">
-            ❌ يرجى اختيار الكتب
+            ❌ سلتك فارغة — أضف منتجات من المتجر أولاً
           </span>
-
-          <!-- زر إضافة منتج -->
-          <button type="button" class="btn-add-product" id="addProductBtn">
-            ➕ إضافة منتج
-          </button>
 
           <!-- ملخص التسعير -->
           <div class="products-footer">
@@ -2269,12 +2275,15 @@ function buildOptions() {
   }).join('');
 }
 
-/* إعادة ترقيم الصفوف حسب ترتيبها الفعلي في DOM */
+/* إعادة ترقيم الصفوف حسب ترتيبها الفعلي في DOM + رسالة السلة الفارغة */
 function renumberRows() {
-  document.querySelectorAll('#productsList .product-row').forEach(function(row, idx) {
+  var rows = document.querySelectorAll('#productsList .product-row');
+  rows.forEach(function(row, idx) {
     var badge = row.querySelector('.pr-num-badge');
     if (badge) badge.textContent = '📦 منتج ' + (idx + 1);
   });
+  var empty = document.getElementById('emptyCartMsg');
+  if (empty) empty.style.display = rows.length ? 'none' : 'block';
 }
 
 /* ── تهيئة القائمة المخصصة للمنتج — تفتح دائماً لأسفل ─── */
@@ -2325,7 +2334,9 @@ function initPrCustomSelect(row, hiddenSel) {
                ? list.querySelector('[data-value="' + val + '"]')
                : null;
     if (item) {
-      trigger.querySelector('.pr-cs-label').textContent = item.textContent;
+      /* الاسم الكامل (القائمة تعرض الاسم المختصر) */
+      var cat = window.PRODUCTS_CATALOG[parseInt(val)];
+      trigger.querySelector('.pr-cs-label').textContent = (cat && cat.name) || item.textContent;
       trigger.classList.add('has-value');
       list.querySelectorAll('.pr-cs-item').forEach(function(el) {
         el.classList.toggle('is-selected', el === item);
@@ -2337,11 +2348,11 @@ function initPrCustomSelect(row, hiddenSel) {
     }
   }
 
-  /* فتح / إغلاق عند النقر على الزر */
-  trigger.addEventListener('click', function(e) {
-    e.stopPropagation();
-    panel.classList.contains('open') ? closePanel() : openPanel();
-  });
+  /* لا اختيار يدوي للمنتج: المنتج يأتي من السلة فقط، فالزر للعرض فقط */
+  trigger.disabled = true;
+  trigger.style.cursor = 'default';
+  var chevron = trigger.querySelector('.pr-cs-chevron');
+  if (chevron) chevron.style.display = 'none';
 
   /* اختيار منتج من القائمة */
   list.addEventListener('click', function(e) {
@@ -2384,7 +2395,7 @@ function createProductRow() {
       <button type="button" class="pr-delete" title="حذف المنتج">✕</button>
     </div>
     <div class="pr-select-wrap">
-      <label>اختر المنتج *</label>
+      <label>المنتج</label>
       <select class="pr-select" required
               style="position:absolute;opacity:0;width:1px;height:1px;pointer-events:none;"
               tabindex="-1" aria-hidden="true">
@@ -2468,12 +2479,6 @@ function createProductRow() {
   return row;
 }
 
-/* زر إضافة منتج: صف فارغ جديد + إعادة ترقيم */
-document.getElementById('addProductBtn').addEventListener('click', function() {
-  document.getElementById('productsList').appendChild(createProductRow());
-  renumberRows();
-});
-
 /* إعادة بناء القوائم بعد تحميل التوفر من Supabase */
 window._refreshProductRowsAvailability = function () {
   document.querySelectorAll('#productsList .product-row').forEach(function (row) {
@@ -2490,12 +2495,12 @@ window._refreshProductRowsAvailability = function () {
         '</div>';
     }).join('');
 
-    /* إذا كان المنتج المحدد حالياً غير متوفر، أعد ضبط الصف */
+    /* إذا كان المنتج في الصف غير متوفر، احذف الصف (لا اختيار يدوي بديل) */
     var curIdx = parseInt(sel.value);
     if (!isNaN(curIdx) && window.PRODUCTS_CATALOG[curIdx] && window.PRODUCTS_CATALOG[curIdx].available === false) {
-      sel.value = '';
-      if (trigger) trigger.textContent = 'اختر المنتج...';
-      trigger && trigger.classList.remove('has-value');
+      row.remove();
+      renumberRows();
+      return;
     }
 
     /* إعادة ربط أحداث اختيار العنصر */
@@ -2545,6 +2550,7 @@ function registerBundles() {
     category:  'books',
     isBundle:  true,
     bookCount: BOOK_BUNDLE.size,
+    bundleBooks: uniq,
     paymentUrl: null
   };
 }
@@ -2581,12 +2587,30 @@ function initProductRows() {
     } catch { return []; }
   }());
 
-  /* تجاهل المنتجات المخفية أو غير الصالحة. */
+  /* تجاهل المنتجات المخفية أو غير الصالحة أو غير المتوفرة (ونُعلم الزبون بالأخيرة). */
+  var removedNames = [];
   var cartItems = rawItems.filter(function (item) {
     if (!item || typeof item.catalogId !== 'number') return false;
     var cat = (window.PRODUCTS_CATALOG || [])[item.catalogId];
-    return cat && !cat.hidden;
+    if (!cat || cat.hidden) return false;
+    if (cat.available === false || (item.catalogId === BOOK_BUNDLE.catalogId && !cat.isBundle)) {
+      removedNames.push(cat.name);
+      return false;
+    }
+    return true;
   });
+  /* باقة لم تُسجَّل (أحد كتبها نفذ) لا تظهر في الكتالوج أصلاً */
+  if (rawItems.some(function (i) { return i && i.catalogId === BOOK_BUNDLE.catalogId; }) &&
+      !window.PRODUCTS_CATALOG[BOOK_BUNDLE.catalogId]) {
+    removedNames.push(BOOK_BUNDLE.title + ' (أحد كتبها نفذ)');
+  }
+  if (removedNames.length) {
+    var notice = document.getElementById('removedNotice');
+    if (notice) {
+      notice.textContent = '⚠️ نفذت الكمية من: ' + removedNames.join('، ') + ' — تمت إزالته من طلبك.';
+      notice.style.display = 'block';
+    }
+  }
 
   /* تنظيف localStorage إذا كانت البيانات فاسدة */
   if (rawItems.length > 0 && cartItems.length !== rawItems.length) {
@@ -2621,9 +2645,8 @@ function initProductRows() {
         }
       }
     });
-  } else {
-    list.appendChild(createProductRow());
   }
+  /* السلة فارغة: لا صف فارغ — renumberRows() يعرض رسالة "سلتك فارغة" */
 
   renumberRows();
   recalcAll();
@@ -2751,7 +2774,41 @@ function getShippingCost() {
   return { cost: dt === 'home' ? p.h : p.o, officeUnavailable: false };
 }
 
+/* ── الحد الأدنى للكتب: مجموع نسخ الكتب في الطلب ≥ 3 (الباقة = 5 كتب).
+   طلب بلا كتب (إلكترونيات فقط) غير معني. نفس القيمة في cart.js و app.js. ── */
+var MIN_BOOKS_PER_ORDER = 3;
+window.MIN_BOOKS_PER_ORDER = MIN_BOOKS_PER_ORDER;
+function getBookCount() {
+  var n = 0;
+  document.querySelectorAll('#productsList .product-row').forEach(function (row) {
+    var idx = parseInt(row.querySelector('.pr-select')?.value);
+    var cat = isNaN(idx) ? null : window.PRODUCTS_CATALOG[idx];
+    if (!cat || cat.category !== 'books') return;
+    var q = Math.max(1, parseInt(row.querySelector('.pr-qty-input')?.value) || 1);
+    n += (cat.bookCount || 1) * q;
+  });
+  return n;
+}
+function minBooksMessage(n) {
+  var missing = MIN_BOOKS_PER_ORDER - n;
+  return '📚 الحد الأدنى لطلب الكتب هو ' + MIN_BOOKS_PER_ORDER + ' كتب — في طلبك ' + n +
+    '. أضف ' + (missing === 1 ? 'كتاباً آخر' : missing + ' كتب أخرى') +
+    ' من <a href="/books/" style="color:inherit;text-decoration:underline;">المتجر</a> أو زد الكمية.';
+}
+function updateMinBooksNotice() {
+  var el = document.getElementById('minBooksNotice');
+  if (!el) return;
+  var n = getBookCount();
+  if (n > 0 && n < MIN_BOOKS_PER_ORDER) {
+    el.innerHTML = minBooksMessage(n);
+    el.style.display = 'block';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
 function recalcAll() {
+  updateMinBooksNotice();
   const subtotal = getProductsTotal();
   const { cost: shipping, officeUnavailable } = getShippingCost();
   const hasWilaya = !!document.getElementById('wilayaHidden')?.value?.trim();
@@ -2973,7 +3030,7 @@ window.validateCheckout = function () {
   const productsErrEl = document.getElementById('productsError');
   if (!rows.length) {
     if (!alertEl.classList.contains('show')) {
-      alertEl.textContent = '❌ يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.';
+      alertEl.textContent = '❌ سلتك فارغة — أضف منتجات من المتجر قبل تأكيد الطلب.';
       alertEl.classList.add('show');
     }
     productsErrEl.style.display = 'block';
@@ -3011,6 +3068,16 @@ window.validateCheckout = function () {
         alertEl.classList.add('show');
       }
       if (!firstErrorEl && firstBadRow) firstErrorEl = firstBadRow;
+      valid = false;
+    }
+    /* الحد الأدنى للكتب */
+    const bookCount = getBookCount();
+    if (ok && bookCount > 0 && bookCount < MIN_BOOKS_PER_ORDER) {
+      if (!alertEl.classList.contains('show')) {
+        alertEl.innerHTML = '❌ ' + minBooksMessage(bookCount);
+        alertEl.classList.add('show');
+      }
+      if (!firstErrorEl) firstErrorEl = document.getElementById('minBooksNotice');
       valid = false;
     }
     /* إخفاء رسالة الخطأ إذا كانت المنتجات صحيحة */

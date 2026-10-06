@@ -321,6 +321,9 @@
         const j = Math.floor(Math.random() * (i + 1));
         [products[i], products[j]] = [products[j], products[i]];
       }
+      /* المتوفر أولاً، ونفذت الكمية في الأخير */
+      const isOut = p => p.stock_status === 'out_of_stock';
+      products = products.filter(p => !isOut(p)).concat(products.filter(isOut));
 
       const count = Math.min(products.length, 8 + Math.floor(Math.random() * 5));
       const selected = products.slice(0, count);

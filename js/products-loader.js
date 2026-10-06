@@ -271,6 +271,15 @@
   }
   window.shuffleProducts = shuffleArray;
 
+  /* ── المتوفر أولاً، ونفذت الكمية في الأخير — تقسيم مستقر لا يغيّر
+     الترتيب داخل كل مجموعة (عشوائي / الأكثر مبيعاً / ترتيب الأدمن).
+     يقبل صفوف Supabase (stock_status) والصفوف المحوّلة (available). ── */
+  function availableFirst(arr) {
+    const isOut = p => p.stock_status === 'out_of_stock' || p.available === false;
+    return arr.filter(p => !isOut(p)).concat(arr.filter(isOut));
+  }
+  window.availableFirst = availableFirst;
+
   function esc(v) {
     return String(v ?? '')
       .replaceAll('&', '&amp;').replaceAll('<', '&lt;')
@@ -450,7 +459,7 @@
        Shuffled at display time only —
        the fetch above is still ordered by the admin's display_order,
        untouched in window.SUPABASE_PRODUCTS. */
-    const elec = shuffleArray(products.filter(p => p.category !== 'books'));
+    const elec = availableFirst(shuffleArray(products.filter(p => p.category !== 'books')));
     if (!elec.length) { showElectronicsLoadError(); return; }
 
     grid.replaceChildren(buildCardsFragment(elec));
@@ -471,6 +480,7 @@
     let books = products.filter(p => p.category === 'books');
     if (!books.length) return;
     if (bookSortMode !== 'best_selling') books = shuffleArray(books);
+    books = availableFirst(books);
 
     grid.replaceChildren(buildCardsFragment(books));
   }

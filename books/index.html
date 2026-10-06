@@ -768,7 +768,7 @@ document.addEventListener('derradj:catalog-loaded', function (e) {
        intended feature, not arbitrary order. Shuffling once here (not
        inside renderBooks()) keeps the order stable while the visitor
        filters/searches, instead of re-shuffling on every keystroke. */
-    ALL_BOOKS = e.detail.bookSortMode === 'best_selling' ? books : window.shuffleProducts(books);
+    ALL_BOOKS = window.availableFirst(e.detail.bookSortMode === 'best_selling' ? books : window.shuffleProducts(books));
     renderBooks();
   });
 

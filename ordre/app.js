@@ -129,7 +129,8 @@
       const cat = (window.PRODUCTS_CATALOG || [])[idx];
       if (!isNaN(idx) && cat && !cat.hidden && cat.available !== false) {
         /* bookQty = عدد نسخ الكتب الفعلية للعمولة: الباقة تُحتسب بعدد كتبها */
-        items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty, category: cat.category || null, bookQty: (cat.bookCount || 1) * qty });
+        /* catalogIds: أرقام المنتجات الفعلية للتحقق من التوفر — الباقة تُفكّ إلى كتبها */
+        items.push({ name: cat.name, price: cat.price, qty, subtotal: cat.price * qty, category: cat.category || null, bookQty: (cat.bookCount || 1) * qty, catalogIds: cat.bundleBooks || [idx] });
       }
     });
     return items;
@@ -161,6 +162,21 @@
     return null;
   }
 
+  /* ── تحقق حيّ من التوفر لحظة الإرسال ────────────────────
+     الكتالوج المحمّل عند فتح الصفحة قد يكون قديماً (صفحة مفتوحة منذ مدة،
+     أو كاش 60 ثانية)، لذلك نسأل Supabase مباشرة قبل إنشاء الطلب.
+     يُرجع أرقام المنتجات التي جعلها الأدمن غير متوفرة أو عطّلها. */
+  async function findUnavailableLive(ids) {
+    const { data, error } = await supabase
+      .from("admin_products_catalog")
+      .select("catalog_id, stock_status, is_active")
+      .in("catalog_id", ids);
+    if (error) throw error;
+    return [...new Set((data || [])
+      .filter(r => r.stock_status === "out_of_stock" || r.is_active === false)
+      .map(r => r.catalog_id))];
+  }
+
   /* ── مساعد: ترجمة كود الخطأ إلى رسالة واضحة ─────────── */
   /* رقم التواصل المعروض هنا هو رقم العمل المركزي (site_settings.business_phone
      عبر window.BUSINESS_PHONE، يضبطه js/business-contact.js). يبقى الرقم
@@ -175,6 +191,12 @@
 
     if (msg.includes("blocked_phone")) {
       return "لا يمكن تقديم الطلب بهذا الرقم. يرجى التواصل مع إدارة المنصة.";
+    }
+    /* رفض من trigger قاعدة البيانات enforce_order_stock */
+    if (msg.includes("product_unavailable")) {
+      const names = String(err?.message || "").split("product_unavailable:")[1]?.trim();
+      return "❌ عذرًا، نفذت الكمية من: " + (names || "أحد المنتجات") +
+        "\nيرجى إزالته من طلبك وإعادة المحاولة (أو تحديث الصفحة).";
     }
     if (code === "42501" || msg.includes("row-level security") || msg.includes("rls")) {
       return (
@@ -270,7 +292,15 @@
 
     /* ── تحقق إضافي: بيانات المنتجات ───────────────────── */
     if (items.length === 0) {
-      await DZDialog.alert("يرجى إضافة منتج واحد على الأقل قبل تأكيد الطلب.", { type: "warning" });
+      await DZDialog.alert("سلتك فارغة — أضف منتجات من المتجر قبل تأكيد الطلب.", { type: "warning" });
+      return;
+    }
+    const MIN_BOOKS = window.MIN_BOOKS_PER_ORDER || 3;
+    const bookTotal = items
+      .filter(it => it.category === "books")
+      .reduce((s, it) => s + (it.bookQty || it.qty), 0);
+    if (bookTotal > 0 && bookTotal < MIN_BOOKS) {
+      await DZDialog.alert(`الحد الأدنى لطلب الكتب هو ${MIN_BOOKS} كتب (في طلبك ${bookTotal}). أضف كتباً أخرى أو زد الكمية.`, { type: "warning" });
       return;
     }
     if (!wilaya) {
@@ -291,6 +321,34 @@
       if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = "✅ تأكيد الطلب"; }
     };
     if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = "⏳ جاري الإرسال..."; }
+
+    /* ── تحقق حيّ من التوفر (لا نعتمد على بيانات الصفحة المحمّلة) ── */
+    const catalogIds = [...new Set(items.flatMap(it => it.catalogIds))];
+    let unavailIds;
+    try {
+      unavailIds = await findUnavailableLive(catalogIds);
+    } catch (err) {
+      console.error("❌ Live stock check failed:", err);
+      resetBtn();
+      await DZDialog.alert("تعذّر التحقق من توفر المنتجات. تحقق من اتصالك بالإنترنت وأعد المحاولة.", { type: "warning" });
+      return;
+    }
+    if (unavailIds.length > 0) {
+      const catalog = window.PRODUCTS_CATALOG || [];
+      unavailIds.forEach(id => { if (catalog[id]) catalog[id].available = false; });
+      /* باقة تحتوي كتاباً نفذ → الباقة كلها غير متوفرة، وإلا يبقى سطرها ويُرفض الطلب مجدداً */
+      catalog.forEach(p => {
+        if (p && p.bundleBooks && p.bundleBooks.some(id => unavailIds.includes(id))) p.available = false;
+      });
+      const names = unavailIds.map(id => catalog[id]?.name || ("#" + id)).join("، ");
+      /* إعادة بناء الصفوف لإزالة المنتجات غير المتوفرة من الاختيار */
+      if (typeof window._refreshProductRowsAvailability === "function") window._refreshProductRowsAvailability();
+      if (typeof window.recalcAll === "function") window.recalcAll();
+      if (typeof window.updateSummary === "function") window.updateSummary();
+      resetBtn();
+      await DZDialog.alert("عذرًا، نفذت الكمية من: " + names + ". تمت إزالته من طلبك، راجع الطلب ثم أعد التأكيد.", { type: "warning" });
+      return;
+    }
 
     try {
 
@@ -341,6 +399,7 @@
         receipt_url:    receiptUrl,
         notes:          notes,
         agent_commission: agentCommission,
+        catalog_ids:    catalogIds,   /* يتحقق منها trigger enforce_order_stock */
       };
       console.log("📝 Inserting order:", orderPayload);
 
