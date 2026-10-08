@@ -133,7 +133,8 @@
       "Bash(PYTHONIOENCODING=utf-8 python \"C:/Users/pc/AppData/Local/Temp/claude/c--Users-pc-Desktop-derradj-shop/c40aef26-9e98-4030-9855-e22db86d1186/scratchpad/commune.py\")",
       "Bash(node \"C:/Users/pc/AppData/Local/Temp/claude/c--Users-pc-Desktop-derradj-shop/845e47d6-7323-416b-9c2d-e7e64b1688f3/scratchpad/cmp.js\")",
       "Bash(grep -noE \".{0,60}\\(addToCart|cart|ordre\\).{0,60}\" books/propaganda/index.html)",
-      "Bash(awk 'NR>=2500 && NR<=2515' ordre/index.html)"
+      "Bash(awk 'NR>=2500 && NR<=2515' ordre/index.html)",
+      "PowerShell(node --check admin/admin.js)"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",

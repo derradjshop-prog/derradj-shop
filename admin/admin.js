@@ -28,6 +28,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
   let ALL_SELLERS  = [];
   let ALL_AGENTS   = [];
   let ALL_AGENT_EARNINGS = [];
+  let ALL_AGENT_RESETS   = [];
   let ALL_DIGITAL_SALES_ADMIN = [];
   let ALL_SELLER_APPS = [];
   let ALL_PROFILE_CHANGE_REQUESTS = [];
@@ -309,6 +310,39 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       .limit(2000);
     if (error) throw error;
     return data || [];
+  }
+
+  /* ─────────────────────────────────────────────────────────
+     FETCH — سجل تصفير أرصدة الموظفات (agent_balance_resets)
+     الرصيد المعروض = عمولات ما بعد آخر تصفير فقط — انظر
+     20261007000000_agent_balance_resets.sql.
+  ───────────────────────────────────────────────────────── */
+  async function fetchAgentBalanceResets() {
+    const { data, error } = await supabase
+      .from("agent_balance_resets")
+      .select("id, agent_id, reset_at, amount_before")
+      .order("reset_at", { ascending: false });
+    if (error) throw error;
+    return data || [];
+  }
+
+  function agentLastResetAt(agentId) {
+    const r = ALL_AGENT_RESETS.find(x => x.agent_id === agentId);
+    return r ? new Date(r.reset_at) : null;
+  }
+
+  function agentBalance(agentId) {
+    const since = agentLastResetAt(agentId);
+    return ALL_AGENT_EARNINGS
+      .filter(e => e.agent_id === agentId && (!since || new Date(e.created_at) > since))
+      .reduce((s, e) => s + Number(e.amount || 0), 0);
+  }
+
+  async function resetAgentBalance(agentId, amountBefore) {
+    const { error } = await supabase
+      .from("agent_balance_resets")
+      .insert({ agent_id: agentId, amount_before: amountBefore, reset_by: CURRENT_STAFF_ID });
+    if (error) throw error;
   }
 
   /* ─────────────────────────────────────────────────────────
@@ -1055,8 +1089,7 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     if (!container) return;
     const rows = ALL_AGENTS.map(a => {
       const earnings = ALL_AGENT_EARNINGS.filter(e => e.agent_id === a.id);
-      const total = earnings.reduce((s, e) => s + Number(e.amount || 0), 0);
-      return { agent: a, count: earnings.length, total };
+      return { agent: a, count: earnings.length, total: agentBalance(a.id), lastReset: agentLastResetAt(a.id) };
     });
     container.innerHTML = `
       <p class="modal-sec-lbl" style="margin-bottom:14px;">الموظفون (متابعة الطلبيات)</p>
@@ -1067,6 +1100,10 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
             <span class="dr-val">
               <strong>${esc(fmtMoney(r.total))}</strong>
               <span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">${r.count} طلبية مكتملة — اضغط لعرض التفاصيل</span>
+              ${r.lastReset ? `<span style="display:block;font-size:11px;color:var(--text-muted);margin-top:2px;">آخر تصفير: ${esc(fmtDate(r.lastReset.toISOString()))}</span>` : ""}
+              <span style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
+                <button class="btn-delete" data-action="reset-agent-balance" data-agent-id="${esc(r.agent.id)}" ${r.total > 0 ? "" : "disabled"}>🔄 تصفير الرصيد</button>
+              </span>
             </span>
           </div>`).join("")
         : `<p style="color:var(--text-muted);font-size:13px;padding:12px;">لا يوجد موظفو متابعة بعد</p>`}
@@ -1174,6 +1211,27 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
     } catch (err) {
       console.error("markDigitalCommissionPaid error:", err);
       showToast("❌ فشل تحديد العمولة كمدفوعة: " + (err.message || ""));
+      btn.disabled = false;
+    }
+  }
+
+  async function handleResetAgentBalance(agentId, btn) {
+    const agent = ALL_AGENTS.find(a => a.id === agentId);
+    if (!agent) return;
+    const amount = agentBalance(agentId);
+    const name = agent.full_name || agent.email;
+    if (!(await DZDialog.confirm(
+      `هل تريد تصفير رصيد ${name}؟ الرصيد الحالي ${fmtMoney(amount)} سيصبح 0 (سجل العمولات يبقى محفوظاً).`,
+      { danger: true, confirmText: "تصفير" }))) return;
+    btn.disabled = true;
+    try {
+      await resetAgentBalance(agentId, amount);
+      ALL_AGENT_RESETS = await fetchAgentBalanceResets();
+      renderAgentsTab();
+      showToast("✅ تم تصفير رصيد " + name);
+    } catch (err) {
+      console.error("resetAgentBalance error:", err);
+      showToast("❌ فشل تصفير الرصيد: " + (err.message || ""));
       btn.disabled = false;
     }
   }
@@ -2903,6 +2961,11 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
         if (dgBtn.dataset.action === "dg-mark-paid") await handleMarkDigitalCommissionPaid(id, dgBtn);
         return;
       }
+      const resetBtn = e.target.closest('[data-action="reset-agent-balance"]');
+      if (resetBtn) {
+        await handleResetAgentBalance(resetBtn.dataset.agentId, resetBtn);
+        return;
+      }
       const row = e.target.closest('[data-action="view-agent-earnings"]');
       if (!row) return;
       showAgentEarningsModal(row.dataset.agentId);
@@ -3207,12 +3270,13 @@ console.log('[admin.js] loaded — BUILD 2026-06-01-v6 — DB-driven category + 
       const lastSeenOrders   = sessionStorage.getItem("admin_orders_last_seen");
       const lastSeenMessages = sessionStorage.getItem("admin_messages_last_seen");
 
-      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS, ALL_DIGITAL_SALES_ADMIN, ALL_SELLER_APPS, ALL_PROFILE_CHANGE_REQUESTS] = await Promise.all([
+      [ALL_ORDERS, ALL_MESSAGES, ALL_REVIEWS, ALL_SELLERS, ALL_AGENTS, ALL_AGENT_EARNINGS, ALL_AGENT_RESETS, ALL_DIGITAL_SALES_ADMIN, ALL_SELLER_APPS, ALL_PROFILE_CHANGE_REQUESTS] = await Promise.all([
         fetchOrders(), fetchMessages(),
         fetchReviews().catch(() => []),
         fetchSellers().catch(() => []),
         fetchAgents().catch(() => []),
         fetchAgentEarnings().catch(() => []),
+        fetchAgentBalanceResets().catch(() => []),
         fetchAllDigitalSales().catch(() => []),
         isMainAdmin() ? fetchSellerApplications().catch(() => []) : Promise.resolve([]),
         isMainAdmin() ? fetchProfileChangeRequests().catch(() => []) : Promise.resolve([]),

@@ -936,10 +936,20 @@
       .order("created_at", { ascending: false });
     if (error) throw error;
     const rows = data || [];
+    /* رصيدي = عمولات ما بعد آخر تصفير من الأدمن (agent_balance_resets).
+       إن فشل الجلب (الجدول غير موجود بعد) يُعامل كأنه لا تصفير. */
+    const { data: resets } = await supabase
+      .from("agent_balance_resets")
+      .select("reset_at")
+      .eq("agent_id", CURRENT_STAFF_ID)
+      .order("reset_at", { ascending: false })
+      .limit(1);
+    const lastReset = resets?.[0] ? new Date(resets[0].reset_at) : null;
+    const sinceReset = rows.filter(r => !lastReset || new Date(r.created_at) > lastReset);
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const total = rows.reduce((s, r) => s + Number(r.amount || 0), 0);
-    const month = rows
+    const total = sinceReset.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const month = sinceReset
       .filter(r => new Date(r.created_at) >= monthStart)
       .reduce((s, r) => s + Number(r.amount || 0), 0);
     return { total, count: rows.length, month };
