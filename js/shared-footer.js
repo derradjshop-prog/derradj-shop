@@ -8,16 +8,8 @@
 (function () {
   'use strict';
 
-  /* ── The site-wide business number is admin-editable
-     (site_settings.business_phone); js/business-contact.js resolves it
-     into window.BUSINESS_PHONE before this script runs and is the source
-     of truth here — the literal below is only the fallback for the rare
-     case business-contact.js hasn't run yet. The tel link/number are
-     tagged with data-business-tel/data-business-phone-display so
-     business-contact.js can update them at runtime if the admin changes
-     the number, without a page rebuild. ── */
-  var WA_NUMBER  = (window.BUSINESS_PHONE && window.BUSINESS_PHONE.intl)    || '213776922882';
-  var WA_DISPLAY = (window.BUSINESS_PHONE && window.BUSINESS_PHONE.display) || '0776 92 28 82';
+  var WA_NUMBER  = '213555491316';
+  var WA_DISPLAY = '0555 49 13 16';
 
   var FOOTER_HTML = `
     <div class="footer-top">

@@ -134,7 +134,11 @@
       "Bash(node \"C:/Users/pc/AppData/Local/Temp/claude/c--Users-pc-Desktop-derradj-shop/845e47d6-7323-416b-9c2d-e7e64b1688f3/scratchpad/cmp.js\")",
       "Bash(grep -noE \".{0,60}\\(addToCart|cart|ordre\\).{0,60}\" books/propaganda/index.html)",
       "Bash(awk 'NR>=2500 && NR<=2515' ordre/index.html)",
-      "PowerShell(node --check admin/admin.js)"
+      "PowerShell(node --check admin/admin.js)",
+      "Bash(grep -vE \"^./\\(books|product\\)/[^/]+/index.html$\")",
+      "Bash(grep -rnoE -I --exclude-dir=node_modules --exclude-dir=.git \"[+0-9 \\(\\)-]{0,6}7 ?76 ?92 ?28 ?82\" .)",
+      "Bash(awk '$1!=$2')",
+      "Bash(grep -rhoI --exclude-dir=node_modules --exclude-dir=.git -E \".{0,80}business-contact.{0,80}\" .)"
     ],
     "additionalDirectories": [
       "\\tmp\\verify-derradj",

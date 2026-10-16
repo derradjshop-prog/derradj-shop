@@ -1,12 +1,8 @@
 (function () {
   'use strict';
 
-  /* ── The site-wide business number is resolved by js/business-contact.js
-     into window.BUSINESS_PHONE (admin-editable; site_settings.business_phone).
-     The literal below is only the fallback before that resolves. ── */
-  var WHATSAPP_NUMBER = (window.BUSINESS_PHONE && window.BUSINESS_PHONE.intl) || '213776922882';
+  var WHATSAPP_NUMBER = '213555491316';
   var BRAND = 'Derradj Shop';
-  var floatLink = null;
 
   // Resolve social.png relative to this script, so it works from any page depth.
   var SCRIPT_SRC = (document.currentScript && document.currentScript.src) || '';
@@ -120,7 +116,6 @@
     a.appendChild(img);
 
     document.body.appendChild(a);
-    floatLink = a;
 
     // Rebuild message late, in case h1 was inserted by another script after DOMContentLoaded
     setTimeout(function () {
@@ -128,14 +123,6 @@
       a.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(updated);
     }, 600);
   }
-
-  // Business number resolved (or changed) after this button was already
-  // built — refresh its href.
-  document.addEventListener('business-phone-ready', function (e) {
-    if (!floatLink || !e.detail) return;
-    WHATSAPP_NUMBER = e.detail.intl;
-    floatLink.href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(buildMessage());
-  });
 
   function init() {
     injectStyles();

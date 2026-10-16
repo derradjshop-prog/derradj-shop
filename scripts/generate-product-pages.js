@@ -471,7 +471,6 @@ function renderPage(view, dims) {
 </div>
 
 <!-- ════ SCRIPTS ════════════════════════════════════════════ -->
-<script src="/js/business-contact.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/search-products.js"></script>
 <script src="/js/products-loader.js"></script>
@@ -621,7 +620,6 @@ function renderBookPage(view, dims) {
 </div>
 
 <!-- ════ SCRIPTS ════════════════════════════════════════════ -->
-<script src="/js/business-contact.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="/js/search-products.js"></script>
 <script src="/js/products-loader.js"></script>
